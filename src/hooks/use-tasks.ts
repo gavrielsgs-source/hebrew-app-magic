@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ export function useTasks() {
       }
 
       // Add a default type if it's missing
+      // Use optional chaining to safely access properties
       return data.map(task => ({
         ...task,
         type: task.type || 'task' // Provide a default value if type is null or missing
