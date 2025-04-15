@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,7 +7,7 @@ type NewTask = {
   description?: string | null;
   status: string;
   priority: string;
-  type: string;
+  type?: string | null; // Added type field as optional
   due_date?: string | null; // Using string for ISO dates
   car_id?: string | null;
   lead_id?: string | null;
@@ -30,7 +29,11 @@ export function useTasks() {
         throw error;
       }
 
-      return data;
+      // Add a default type if it's missing
+      return data.map(task => ({
+        ...task,
+        type: task.type || 'task' // Provide a default value if type is null or missing
+      }));
     },
   });
 

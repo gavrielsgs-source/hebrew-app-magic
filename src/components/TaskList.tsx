@@ -97,7 +97,7 @@ export function TaskList({ extended = false }: TaskListProps) {
                 variant="outline" 
                 className="text-xs"
               >
-                {getTaskTypeLabel(task.type)}
+                {getTaskTypeLabel(task.type || null)}
               </Badge>
             </div>
           </div>
