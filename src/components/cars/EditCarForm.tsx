@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         kilometers: parseInt(values.kilometers),
         price: parseInt(values.price),
         registration_year: values.registration_year ? parseInt(values.registration_year) : null,
+        status: car.status, // Include the status property from the existing car
         images
       });
       onCancel();
