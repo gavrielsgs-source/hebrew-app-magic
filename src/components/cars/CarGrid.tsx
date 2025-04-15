@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 import { getCarImages } from "@/lib/image-utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CarDetails } from "./CarDetails";
 
 interface CarGridProps {
   cars: Car[];
@@ -19,6 +20,7 @@ interface CarGridProps {
 export function CarGrid({ cars, isLoading }: CarGridProps) {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [carImages, setCarImages] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState(false);
   
@@ -136,13 +138,21 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
               שלח בוואטסאפ
             </Button>
             
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setSelectedCar(car);
+                setIsDetailsOpen(true);
+              }}
+            >
               צפה בפרטים
             </Button>
           </CardFooter>
         </Card>
       ))}
       
+      {/* WhatsApp Dialog */}
       <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -150,6 +160,18 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
           </DialogHeader>
           {selectedCar && (
             <WhatsappTemplateSelector car={selectedCar} onClose={() => setIsWhatsappOpen(false)} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Car Details Dialog */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>פרטי רכב</DialogTitle>
+          </DialogHeader>
+          {selectedCar && (
+            <CarDetails car={selectedCar} />
           )}
         </DialogContent>
       </Dialog>

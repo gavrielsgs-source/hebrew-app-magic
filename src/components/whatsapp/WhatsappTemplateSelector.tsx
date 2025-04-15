@@ -76,10 +76,10 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
       return;
     }
     
-    // נקיון המספר מתווים לא רצויים
+    // Clean phone number of unwanted characters
     const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, "");
     
-    // בדיקה שהמספר מתחיל ב-972 או להוסיף אם צריך
+    // Make sure the number starts with 972 or add if needed
     const formattedNumber = cleanPhoneNumber.startsWith("972") 
       ? cleanPhoneNumber 
       : cleanPhoneNumber.startsWith("0") 
@@ -88,44 +88,45 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     
     const encodedText = encodeURIComponent(customizedTemplate);
     
-    // Create the main WhatsApp message URL
+    // Create the WhatsApp message URL with the main text content
     const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
     window.open(whatsappUrl, '_blank');
     
-    // If there are images, we'll open additional WhatsApp windows for each image
+    // If there are images, download them to the user's device and let them manually attach
     if (carImages.length > 0) {
-      // Wait a bit to let the first message be sent
+      // Wait a bit to let the first message tab load
       setTimeout(() => {
         // Only send up to 3 images to avoid too many tabs
         const imagesToSend = carImages.slice(0, 3);
         
+        // Download each image to the user's device
         imagesToSend.forEach((imageUrl, index) => {
-          // Create a message for each image
-          const imageMessage = encodeURIComponent(`תמונה ${index + 1} של ${car.make} ${car.model}`);
-          const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${imageMessage}`;
+          // Create an anchor element
+          const link = document.createElement('a');
+          link.href = imageUrl;
+          link.download = `${car.make}-${car.model}-${index + 1}.jpg`;
           
-          // Open in a new tab
+          // Create a new WhatsApp message URL for each image
+          const imageMessage = `תמונה ${index + 1} של ${car.make} ${car.model}`;
+          const encodedImageMessage = encodeURIComponent(imageMessage);
+          const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedImageMessage}`;
+          
+          // Open a new tab with the WhatsApp message
           window.open(imageWhatsappUrl, '_blank');
-          
-          // This approach doesn't actually send the image itself - just a link to it
-          // WhatsApp Web API doesn't allow direct image uploads
-          const imageUrlMessage = encodeURIComponent(imageUrl);
-          const imageUrlWhatsappUrl = `https://wa.me/${formattedNumber}?text=${imageUrlMessage}`;
-          
-          // Open the image URL in another new tab, slight delay to prevent blocking
-          setTimeout(() => {
-            window.open(imageUrlWhatsappUrl, '_blank');
-          }, 300 * (index + 1));
         });
-      }, 800);
-      
-      toast.success(`הודעת וואטסאפ נשלחה עם ${Math.min(carImages.length, 3)} תמונות`, {
-        duration: 5000,
-      });
-    } else {
-      toast.success("הודעת וואטסאפ נשלחה");
+        
+        // Display a toast with instructions
+        toast.info(
+          "התמונות נפתחו בחלוניות נפרדות",
+          {
+            description: "בכל חלונית יש להוסיף את התמונה באופן ידני מהטלפון",
+            duration: 7000,
+          }
+        );
+      }, 1000);
     }
     
+    toast.success("הודעת וואטסאפ נשלחה");
     onClose();
   };
   
@@ -197,6 +198,15 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
           שלח בוואטסאפ
         </Button>
       </div>
+      
+      {carImages.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-800 text-sm">
+          <p className="font-medium">שים לב:</p>
+          <p>
+            בגלל מגבלות של וואטסאפ, יש להוסיף את התמונות באופן ידני בכל חלונית שתיפתח
+          </p>
+        </div>
+      )}
     </div>
   );
 }

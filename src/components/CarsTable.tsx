@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Car, Share2, Edit, Plus, UserPlus, Send } from "lucide-react";
+import { Car, Share2, Edit, Plus, UserPlus, Send, Eye } from "lucide-react";
 import { useCars } from "@/hooks/use-cars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AddCarForm } from "./cars/AddCarForm";
@@ -17,11 +17,13 @@ import { AddLeadForm } from "./leads/AddLeadForm";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "./whatsapp/WhatsappTemplateSelector";
+import { CarDetails } from "./cars/CarDetails";
 
 export function CarsTable() {
   const { cars, isLoading } = useCars();
   const [selectedCar, setSelectedCar] = useState<any | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   return (
     <div>
@@ -105,7 +107,18 @@ export function CarsTable() {
                       >
                         <Send className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        title="צפה בפרטים"
+                        onClick={() => {
+                          setSelectedCar(car);
+                          setIsDetailsOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" title="ערוך">
                         <Edit className="h-4 w-4" />
                       </Button>
                     </div>
@@ -117,6 +130,7 @@ export function CarsTable() {
         </Table>
       </div>
 
+      {/* WhatsApp Dialog */}
       <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -124,6 +138,18 @@ export function CarsTable() {
           </DialogHeader>
           {selectedCar && (
             <WhatsappTemplateSelector car={selectedCar} onClose={() => setIsWhatsappOpen(false)} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Car Details Dialog */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>פרטי רכב</DialogTitle>
+          </DialogHeader>
+          {selectedCar && (
+            <CarDetails car={selectedCar} />
           )}
         </DialogContent>
       </Dialog>
