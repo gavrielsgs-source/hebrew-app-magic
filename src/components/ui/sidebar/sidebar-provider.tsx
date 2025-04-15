@@ -9,7 +9,8 @@ import {
   SIDEBAR_COOKIE_MAX_AGE,
   SIDEBAR_WIDTH,
   SIDEBAR_WIDTH_ICON,
-  SIDEBAR_KEYBOARD_SHORTCUT
+  SIDEBAR_KEYBOARD_SHORTCUT,
+  SidebarContextType
 } from "./sidebar-context"
 
 export const SidebarProvider = React.forwardRef<
@@ -73,7 +74,7 @@ export const SidebarProvider = React.forwardRef<
 
     const state = open ? "expanded" : "collapsed"
 
-    const contextValue = React.useMemo<SidebarContext>(
+    const contextValue = React.useMemo<SidebarContextType>(
       () => ({
         state,
         open,
