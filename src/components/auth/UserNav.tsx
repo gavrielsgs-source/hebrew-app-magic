@@ -17,7 +17,7 @@ import { LogOut, User, UserCircle } from "lucide-react";
 
 export function UserNav() {
   const { user, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { profile, isLoading } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -44,6 +44,9 @@ export function UserNav() {
   // אם אין משתמש, לא מציג כלום
   if (!user) return null;
 
+  // Debug log to track profile loading
+  console.log("UserNav - Profile state:", { profile, isLoading });
+
   // קבלת האות הראשונה מהאימייל או משם המשתמש לתצוגה באווטאר
   const userInitial = profile?.full_name 
     ? profile.full_name[0].toUpperCase() 
@@ -56,7 +59,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar>
-            <AvatarFallback>{userInitial}</AvatarFallback>
+            <AvatarFallback>{isLoading ? "..." : userInitial}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

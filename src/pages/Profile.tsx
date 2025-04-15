@@ -43,6 +43,7 @@ export default function Profile() {
   // Update form when profile data loads
   useEffect(() => {
     if (profile) {
+      console.log("Profile data loaded:", profile);
       form.reset({
         full_name: profile.full_name || "",
         phone: profile.phone || "",
@@ -53,7 +54,11 @@ export default function Profile() {
   }, [profile, form]);
 
   const onSubmit = async (values: ProfileFormValues) => {
-    await updateProfile.mutateAsync(values);
+    try {
+      await updateProfile.mutateAsync(values);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
   const handleRetry = () => {
