@@ -3,6 +3,23 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function getCarImages(carId: string): Promise<string[]> {
   try {
+    // Check if the cars bucket exists, if not create it
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const carsBucketExists = buckets?.some(bucket => bucket.name === 'cars');
+    
+    if (!carsBucketExists) {
+      console.log('Cars bucket does not exist, creating it...');
+      const { error } = await supabase.storage.createBucket('cars', {
+        public: true,
+        fileSizeLimit: 10485760, // 10MB
+      });
+      
+      if (error) {
+        console.error('Error creating cars bucket:', error);
+        return [];
+      }
+    }
+    
     const { data, error } = await supabase
       .storage
       .from('cars')

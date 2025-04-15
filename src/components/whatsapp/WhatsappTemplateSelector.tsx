@@ -96,17 +96,30 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     if (carImages.length > 0) {
       // Wait a bit to let the first message be sent
       setTimeout(() => {
-        carImages.forEach((imageUrl, index) => {
-          // Only send the first 3 images to avoid too many tabs
-          if (index < 3) {
-            const imageMessage = encodeURIComponent(`תמונה ${index + 1} של ${car.make} ${car.model}`);
-            const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${imageMessage}`;
-            window.open(imageWhatsappUrl, '_blank');
-          }
+        // Only send up to 3 images to avoid too many tabs
+        const imagesToSend = carImages.slice(0, 3);
+        
+        imagesToSend.forEach((imageUrl, index) => {
+          // Create a message for each image
+          const imageMessage = encodeURIComponent(`תמונה ${index + 1} של ${car.make} ${car.model}`);
+          const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${imageMessage}`;
+          
+          // Open in a new tab
+          window.open(imageWhatsappUrl, '_blank');
+          
+          // This approach doesn't actually send the image itself - just a link to it
+          // WhatsApp Web API doesn't allow direct image uploads
+          const imageUrlMessage = encodeURIComponent(imageUrl);
+          const imageUrlWhatsappUrl = `https://wa.me/${formattedNumber}?text=${imageUrlMessage}`;
+          
+          // Open the image URL in another new tab, slight delay to prevent blocking
+          setTimeout(() => {
+            window.open(imageUrlWhatsappUrl, '_blank');
+          }, 300 * (index + 1));
         });
-      }, 1000);
+      }, 800);
       
-      toast.success(`הודעת וואטסאפ נשלחה עם ${Math.min(carImages.length, 3)} תמונות נוספות`, {
+      toast.success(`הודעת וואטסאפ נשלחה עם ${Math.min(carImages.length, 3)} תמונות`, {
         duration: 5000,
       });
     } else {

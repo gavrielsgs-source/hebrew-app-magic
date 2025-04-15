@@ -14,7 +14,7 @@ export default function Cars() {
   const { cars, isLoading } = useCars();
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">ניהול רכבים</h1>
         
@@ -22,7 +22,7 @@ export default function Cars() {
           <DialogTrigger asChild>
             <Button>הוסף רכב חדש</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>הוסף רכב חדש</DialogTitle>
             </DialogHeader>

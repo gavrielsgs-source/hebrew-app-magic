@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCars } from "@/hooks/use-cars";
 import { ImageUploadInput } from "./ImageUploadInput";
 import { carFormSchema, type CarFormValues } from "./car-form-schema";
+import { toast } from "sonner";
 
 interface AddCarFormProps {
   onSuccess?: () => void;
@@ -48,27 +49,38 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   });
 
   const onSubmit = async (values: CarFormValues) => {
-    await addCar.mutateAsync({
-      make: values.make,
-      model: values.model,
-      year: parseInt(values.year),
-      kilometers: parseInt(values.kilometers),
-      price: parseInt(values.price),
-      registration_year: values.registration_year ? parseInt(values.registration_year) : null,
-      description: values.description || "",
-      interior_color: values.interior_color || null,
-      exterior_color: values.exterior_color || null,
-      transmission: values.transmission || null,
-      fuel_type: values.fuel_type || null,
-      engine_size: values.engine_size || null,
-      last_test_date: values.last_test_date || null,
-      ownership_history: values.ownership_history || null,
-      status: "available",
-      images
-    });
-    form.reset();
-    setImages([]);
-    if (onSuccess) onSuccess();
+    try {
+      if (images.length === 0) {
+        const confirmed = window.confirm("לא נבחרו תמונות לרכב. האם ברצונך להמשיך בכל זאת?");
+        if (!confirmed) return;
+      }
+      
+      await addCar.mutateAsync({
+        make: values.make,
+        model: values.model,
+        year: parseInt(values.year),
+        kilometers: parseInt(values.kilometers),
+        price: parseInt(values.price),
+        registration_year: values.registration_year ? parseInt(values.registration_year) : null,
+        description: values.description || "",
+        interior_color: values.interior_color || null,
+        exterior_color: values.exterior_color || null,
+        transmission: values.transmission || null,
+        fuel_type: values.fuel_type || null,
+        engine_size: values.engine_size || null,
+        last_test_date: values.last_test_date || null,
+        ownership_history: values.ownership_history || null,
+        status: "available",
+        images
+      });
+      
+      form.reset();
+      setImages([]);
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("אירעה שגיאה בהוספת הרכב");
+    }
   };
 
   const handleImageChange = (files: FileList | null) => {
@@ -160,45 +172,6 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
           />
           <FormField
             control={form.control}
-            name="ownership_history"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>יד</FormLabel>
-                <FormControl>
-                  <Input placeholder="יד ראשונה" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="interior_color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>צבע פנימי</FormLabel>
-                <FormControl>
-                  <Input placeholder="שחור" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="exterior_color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>צבע חיצוני</FormLabel>
-                <FormControl>
-                  <Input placeholder="לבן" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
             name="transmission"
             render={({ field }) => (
               <FormItem>
@@ -257,12 +230,12 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
           />
           <FormField
             control={form.control}
-            name="registration_year"
+            name="exterior_color"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>שנת רישוי</FormLabel>
+                <FormLabel>צבע חיצוני</FormLabel>
                 <FormControl>
-                  <Input placeholder="2024" {...field} />
+                  <Input placeholder="לבן" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -270,12 +243,12 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
           />
           <FormField
             control={form.control}
-            name="last_test_date"
+            name="ownership_history"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>תאריך טסט אחרון</FormLabel>
+                <FormLabel>יד</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} />
+                  <Input placeholder="יד ראשונה" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
