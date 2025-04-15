@@ -56,11 +56,15 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      await addTask.mutateAsync({
+      // Format the date to ISO string if it exists
+      const formattedValues = {
         ...values,
+        due_date: values.due_date ? values.due_date.toISOString() : null,
         car_id: values.car_id || null,
         lead_id: values.lead_id || null,
-      });
+      };
+
+      await addTask.mutateAsync(formattedValues);
       form.reset();
       if (onSuccess) onSuccess();
     } catch (error) {
