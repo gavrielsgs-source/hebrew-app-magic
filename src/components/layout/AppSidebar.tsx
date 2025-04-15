@@ -53,10 +53,10 @@ export function AppSidebar() {
               <SidebarMenuButton
                 onClick={() => navigate(item.path)}
                 isActive={location.pathname === item.path}
-                tooltip={item.title}
+                className="w-full flex gap-2 items-center p-2"
               >
                 <item.icon className="h-5 w-5" />
-                <span>{item.title}</span>
+                <span className="font-medium">{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

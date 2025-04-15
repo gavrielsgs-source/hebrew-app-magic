@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -15,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCars } from "@/hooks/use-cars";
+import { Upload } from "lucide-react";
 
 const formSchema = z.object({
   make: z.string().min(2, "נדרשות לפחות 2 אותיות"),
@@ -47,8 +47,51 @@ interface AddCarFormProps {
   onSuccess?: () => void;
 }
 
+interface ImageUploadProps {
+  onChange: (files: FileList | null) => void;
+  value?: File[];
+}
+
+function ImageUploadInput({ onChange, value }: ImageUploadProps) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="grid gap-4">
+      <div className="grid grid-cols-2 gap-4">
+        {value?.map((file, index) => (
+          <div key={index} className="relative aspect-video rounded-lg border overflow-hidden">
+            <img
+              src={URL.createObjectURL(file)}
+              alt={`תמונה ${index + 1}`}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        ))}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={() => inputRef.current?.click()}
+      >
+        <Upload className="h-4 w-4 ml-2" />
+        העלאת תמונות
+      </Button>
+      <input
+        type="file"
+        ref={inputRef}
+        className="hidden"
+        multiple
+        accept="image/*"
+        onChange={(e) => onChange(e.target.files)}
+      />
+    </div>
+  );
+}
+
 export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   const { addCar } = useCars();
+  const [images, setImages] = useState<File[]>([]);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -86,14 +129,34 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
       last_test_date: values.last_test_date || null,
       ownership_history: values.ownership_history || null,
       status: "available",
+      images
     });
     form.reset();
+    setImages([]);
     if (onSuccess) onSuccess();
+  };
+
+  const handleImageChange = (files: FileList | null) => {
+    if (files) {
+      setImages(Array.from(files));
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+        <div className="space-y-4">
+          <FormItem>
+            <FormLabel>תמונות הרכב</FormLabel>
+            <FormControl>
+              <ImageUploadInput onChange={handleImageChange} value={images} />
+            </FormControl>
+            <FormDescription>
+              ניתן להעלות מספר תמונות של הרכב
+            </FormDescription>
+          </FormItem>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
