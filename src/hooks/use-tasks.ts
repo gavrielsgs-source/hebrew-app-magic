@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -18,11 +17,12 @@ interface TaskFromDB {
   user_id: string;
   cars: any; // Using any for simplicity, but ideally should be typed properly
   leads: any; // Using any for simplicity, but ideally should be typed properly
+  type?: string | null; // Add optional type field
 }
 
 // Define Task interface with the additional type field
 interface Task extends TaskFromDB {
-  type?: string | null; // Add the type field that we'll add manually
+  type: string; // Make type non-optional with a default
 }
 
 type NewTask = {
@@ -52,11 +52,10 @@ export function useTasks() {
         throw error;
       }
 
-      // Since the 'type' field might not exist in the database yet,
-      // we need to manually add it to each task object
+      // Ensure every task has a type, defaulting to 'task'
       return data.map((task: TaskFromDB): Task => ({
         ...task,
-        type: 'task' // Provide a default value since type is missing in DB
+        type: task.type || 'task'
       }));
     },
   });
@@ -70,11 +69,16 @@ export function useTasks() {
         throw userError || new Error("User not authenticated");
       }
 
-      // Note that due_date is already a string from the form
+      // Ensure type is set to 'task' if not provided
+      const taskWithDefaultType = {
+        ...task,
+        type: task.type || 'task'
+      };
+
       const { data, error } = await supabase
         .from("tasks")
         .insert({
-          ...task,
+          ...taskWithDefaultType,
           user_id: userData.user.id
         })
         .select()

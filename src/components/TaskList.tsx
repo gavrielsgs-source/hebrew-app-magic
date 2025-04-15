@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Clock } from "lucide-react";
@@ -17,14 +16,12 @@ export function TaskList({ extended = false }: TaskListProps) {
   const { tasks, isLoading, updateTask } = useTasks();
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   
-  // סינון משימות להיום אם לא מוצג במצב מורחב
   const today = new Date().toISOString().split('T')[0];
   
   const filteredTasks = tasks
     .filter(task => {
       if (extended) return true;
       
-      // אם משימה היא להיום או בעבר ועדיין לא הושלמה
       const taskDate = task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '';
       return (taskDate <= today && task.status !== 'completed') || !task.due_date;
     })
@@ -42,7 +39,7 @@ export function TaskList({ extended = false }: TaskListProps) {
   const getTaskTypeLabel = (taskType: string | null | undefined) => {
     if (!taskType) return 'משימה';
     
-    switch(taskType) {
+    switch(taskType.toLowerCase()) {
       case 'call': return 'שיחת טלפון';
       case 'meeting': return 'פגישה';
       case 'follow_up': return 'מעקב';
