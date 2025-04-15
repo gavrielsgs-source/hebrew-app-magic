@@ -33,10 +33,25 @@ export function useCars() {
         throw userError || new Error("User not authenticated");
       }
 
+      // Make sure all required fields are included
       const { data, error } = await supabase
         .from("cars")
         .insert({
-          ...car,
+          make: car.make,
+          model: car.model,
+          year: car.year,
+          kilometers: car.kilometers,
+          price: car.price,
+          description: car.description,
+          interior_color: car.interior_color,
+          exterior_color: car.exterior_color,
+          transmission: car.transmission,
+          fuel_type: car.fuel_type,
+          engine_size: car.engine_size,
+          registration_year: car.registration_year,
+          last_test_date: car.last_test_date,
+          ownership_history: car.ownership_history,
+          status: car.status,
           user_id: userData.user.id
         })
         .select()

@@ -48,7 +48,8 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
 
   const onSubmit = async (values: CarFormValues) => {
     await addCar.mutateAsync({
-      ...values,
+      make: values.make,
+      model: values.model,
       year: parseInt(values.year),
       kilometers: parseInt(values.kilometers),
       price: parseInt(values.price),
