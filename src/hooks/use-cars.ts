@@ -29,9 +29,19 @@ export function useCars() {
 
   const addCar = useMutation({
     mutationFn: async (car: NewCar) => {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !userData.user) {
+        toast.error("לא ניתן להוסיף רכב - משתמש לא מחובר");
+        throw userError || new Error("User not authenticated");
+      }
+
       const { data, error } = await supabase
         .from("cars")
-        .insert([{ ...car, status: "available", description: "" }])
+        .insert({
+          ...car,
+          user_id: userData.user.id
+        })
         .select()
         .single();
 
