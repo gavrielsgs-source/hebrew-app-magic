@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -7,6 +6,7 @@ import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
 import { ActivityChart } from "@/components/ActivityChart";
 import { UserNav } from "@/components/auth/UserNav";
+import { SalesAnalytics } from "@/components/analytics/SalesAnalytics";
 
 export default function Dashboard() {
   return (
@@ -78,14 +78,7 @@ export default function Dashboard() {
         </TabsList>
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>פעילות</CardTitle>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <ActivityChart />
-              </CardContent>
-            </Card>
+            <SalesAnalytics />
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>משימות להיום</CardTitle>

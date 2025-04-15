@@ -1,0 +1,60 @@
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
+
+export function SalesAnalytics() {
+  const { data: salesData, isLoading } = useSalesAnalytics();
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>טוען נתוני מכירות...</CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="col-span-4">
+      <CardHeader>
+        <CardTitle>ניתוח מכירות</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={salesData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="month" 
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString('he-IL', { month: 'short', year: '2-digit' });
+                }}
+              />
+              <YAxis />
+              <Tooltip 
+                formatter={(value: number, name: string) => {
+                  switch(name) {
+                    case 'revenue':
+                      return [`₪${value.toLocaleString()}`, 'הכנסות'];
+                    case 'convertedLeads':
+                      return [value, 'לידים שהומרו'];
+                    case 'totalLeads':
+                      return [value, 'סה"כ לידים'];
+                    default:
+                      return [value, name];
+                  }
+                }}
+              />
+              <Bar dataKey="totalLeads" fill="#8884d8" name="סה"כ לידים" />
+              <Bar dataKey="convertedLeads" fill="#82ca9d" name="לידים שהומרו" />
+              <Bar dataKey="revenue" fill="#ffc658" name="הכנסות" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
