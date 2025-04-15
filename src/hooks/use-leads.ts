@@ -5,7 +5,14 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
-type NewLead = Omit<Lead, "id" | "created_at" | "updated_at" | "user_id" | "status"> & { status?: string };
+// Make car_id and other fields optional to match the form values
+type NewLead = Omit<Lead, "id" | "created_at" | "updated_at" | "user_id" | "status"> & { 
+  car_id?: string | null;
+  status?: string;
+  email?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+};
 
 export function useLeads() {
   const queryClient = useQueryClient();
@@ -34,6 +41,12 @@ export function useLeads() {
       if (userError || !userData.user) {
         toast.error("לא ניתן להוסיף ליד - משתמש לא מחובר");
         throw userError || new Error("User not authenticated");
+      }
+
+      // Ensure car_id is provided - required by our DB schema
+      if (!lead.car_id) {
+        toast.error("נדרש לבחור רכב");
+        throw new Error("Car ID is required");
       }
 
       const { data, error } = await supabase
