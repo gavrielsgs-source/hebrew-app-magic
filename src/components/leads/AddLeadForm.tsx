@@ -37,6 +37,7 @@ export function AddLeadForm({ carId }: { carId: string }) {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    // The status field will be added in the mutationFn with a default value
     await addLead.mutateAsync(values);
     form.reset();
   };

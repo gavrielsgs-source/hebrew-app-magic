@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
-type NewLead = Omit<Lead, "id" | "created_at" | "updated_at" | "user_id">;
+type NewLead = Omit<Lead, "id" | "created_at" | "updated_at" | "user_id" | "status"> & { status?: string };
 
 export function useLeads() {
   const queryClient = useQueryClient();
@@ -40,6 +40,7 @@ export function useLeads() {
         .from("leads")
         .insert({
           ...lead,
+          status: lead.status || "new", // Set default status if not provided
           user_id: userData.user.id
         })
         .select()
