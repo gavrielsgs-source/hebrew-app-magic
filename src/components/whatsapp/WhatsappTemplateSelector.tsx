@@ -9,6 +9,7 @@ import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { Separator } from "@/components/ui/separator";
 import { templates } from "./whatsapp-templates";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WhatsappTemplateSelectorProps {
   car: Car;
@@ -19,6 +20,47 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
   const [customizedTemplate, setCustomizedTemplate] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [carImages, setCarImages] = useState<string[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  
+  // Fetch car images from Supabase storage when component mounts
+  useEffect(() => {
+    const fetchCarImages = async () => {
+      if (!car.id) return;
+      
+      setLoadingImages(true);
+      try {
+        const { data, error } = await supabase
+          .storage
+          .from('cars')
+          .list(`${car.id}`);
+          
+        if (error) {
+          console.error('Error fetching car images:', error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          const imageUrls = await Promise.all(
+            data.map(async (file) => {
+              const { data: urlData } = await supabase
+                .storage
+                .from('cars')
+                .getPublicUrl(`${car.id}/${file.name}`);
+              return urlData.publicUrl;
+            })
+          );
+          setCarImages(imageUrls);
+        }
+      } catch (error) {
+        console.error('Error processing car images:', error);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+    
+    fetchCarImages();
+  }, [car.id]);
   
   // Initialize the template when component mounts or when selectedTemplate changes
   useEffect(() => {
@@ -65,10 +107,21 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
         : "972" + cleanPhoneNumber;
     
     const encodedText = encodeURIComponent(customizedTemplate);
+    
+    // Create the main WhatsApp message URL
     const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
     
     window.open(whatsappUrl, '_blank');
-    toast.success("הודעת וואטסאפ נפתחה");
+    
+    // If there are images, we'll prompt the user to send them separately
+    if (carImages.length > 0) {
+      toast.success("הודעת וואטסאפ נפתחה - שים לב שתמונות יש לשלוח בנפרד", {
+        duration: 5000,
+      });
+    } else {
+      toast.success("הודעת וואטסאפ נפתחה");
+    }
+    
     onClose();
   };
   
@@ -122,6 +175,8 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
         <TabsContent value="preview">
           <WhatsappTemplatePreview 
             template={customizedTemplate}
+            images={carImages}
+            loadingImages={loadingImages}
             onEdit={() => {}}
           />
         </TabsContent>

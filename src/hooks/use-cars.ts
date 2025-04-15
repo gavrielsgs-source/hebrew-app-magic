@@ -33,7 +33,7 @@ export function useCars() {
         throw userError || new Error("User not authenticated");
       }
 
-      // Make sure all required fields are included
+      // First insert the car data
       const { data, error } = await supabase
         .from("cars")
         .insert({
@@ -60,6 +60,35 @@ export function useCars() {
       if (error) {
         toast.error("שגיאה בהוספת רכב");
         throw error;
+      }
+
+      // If we have images, upload them
+      if (car.images && car.images.length > 0 && data.id) {
+        const carId = data.id;
+        
+        // Upload each image
+        const uploadPromises = car.images.map(async (image, index) => {
+          const fileExt = image.name.split('.').pop();
+          const filePath = `${carId}/${index}-${Date.now()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('cars')
+            .upload(filePath, image);
+            
+          if (uploadError) {
+            console.error('Error uploading image:', uploadError);
+            return { success: false, error: uploadError };
+          }
+          
+          return { success: true, path: filePath };
+        });
+        
+        const uploadResults = await Promise.all(uploadPromises);
+        const failedUploads = uploadResults.filter(result => !result.success).length;
+        
+        if (failedUploads > 0) {
+          toast.error(`${failedUploads} תמונות לא הועלו בהצלחה`);
+        }
       }
 
       return data;
