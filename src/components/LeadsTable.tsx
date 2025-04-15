@@ -9,80 +9,30 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, MessageSquare, User } from "lucide-react";
-
-// נתוני דוגמה עבור לידים
-const leads = [
-  {
-    id: "1",
-    name: "דני כהן",
-    phone: "050-1234567",
-    email: "dani@example.com",
-    source: "פייסבוק",
-    date: "15/04/2025",
-    status: "חדש",
-  },
-  {
-    id: "2",
-    name: "שרה לוי",
-    phone: "052-7654321",
-    email: "sara@example.com",
-    source: "אינסטגרם",
-    date: "14/04/2025",
-    status: "בטיפול",
-  },
-  {
-    id: "3",
-    name: "יוסי אברהם",
-    phone: "054-9876543",
-    email: "yossi@example.com",
-    source: "ידני",
-    date: "13/04/2025",
-    status: "בהמתנה",
-  },
-  {
-    id: "4",
-    name: "מיכל גולן",
-    phone: "058-1122334",
-    email: "michal@example.com",
-    source: "פייסבוק",
-    date: "12/04/2025",
-    status: "סגור",
-  },
-  {
-    id: "5",
-    name: "אבי דוד",
-    phone: "053-5566778",
-    email: "avi@example.com",
-    source: "אינסטגרם",
-    date: "11/04/2025",
-    status: "חדש",
-  },
-];
-
-// פונקציה להחזרת צבע הבאדג' לפי סטטוס
-const getStatusBadgeColor = (status: string) => {
-  switch (status) {
-    case "חדש":
-      return "bg-blue-500 hover:bg-blue-600";
-    case "בטיפול":
-      return "bg-yellow-500 hover:bg-yellow-600";
-    case "בהמתנה":
-      return "bg-purple-500 hover:bg-purple-600";
-    case "סגור":
-      return "bg-green-500 hover:bg-green-600";
-    default:
-      return "bg-gray-500 hover:bg-gray-600";
-  }
-};
+import { Phone, MessageSquare, User, Plus } from "lucide-react";
+import { useLeads } from "@/hooks/use-leads";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { AddLeadForm } from "./leads/AddLeadForm";
 
 export function LeadsTable() {
+  const { leads, isLoading } = useLeads();
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <Button variant="outline" className="ms-auto">
-          <User className="mr-2 h-4 w-4" /> הוסף ליד חדש
-        </Button>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline">
+              <Plus className="mr-2 h-4 w-4" /> הוסף ליד חדש
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="w-[400px]">
+            <SheetHeader>
+              <SheetTitle>הוסף ליד חדש</SheetTitle>
+            </SheetHeader>
+            <AddLeadForm />
+          </SheetContent>
+        </Sheet>
       </div>
       
       <div className="rounded-md border">
@@ -99,33 +49,77 @@ export function LeadsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {leads.map((lead) => (
-              <TableRow key={lead.id}>
-                <TableCell className="font-medium">{lead.name}</TableCell>
-                <TableCell>{lead.phone}</TableCell>
-                <TableCell>{lead.email}</TableCell>
-                <TableCell>{lead.source}</TableCell>
-                <TableCell>{lead.date}</TableCell>
-                <TableCell>
-                  <Badge className={getStatusBadgeColor(lead.status)}>
-                    {lead.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2 rtl:space-x-reverse">
-                    <Button variant="ghost" size="icon">
-                      <Phone className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center">
+                  טוען...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : leads.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center">
+                  אין לידים להצגה
+                </TableCell>
+              </TableRow>
+            ) : (
+              leads.map((lead) => (
+                <TableRow key={lead.id}>
+                  <TableCell className="font-medium">{lead.name}</TableCell>
+                  <TableCell>{lead.phone}</TableCell>
+                  <TableCell>{lead.email}</TableCell>
+                  <TableCell>{lead.source || "ידני"}</TableCell>
+                  <TableCell>{new Date(lead.created_at).toLocaleDateString('he-IL')}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusBadgeColor(lead.status)}>
+                      {getStatusText(lead.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2 rtl:space-x-reverse">
+                      <Button variant="ghost" size="icon">
+                        <Phone className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon">
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
     </div>
   );
+}
+
+function getStatusBadgeColor(status: string | null) {
+  switch (status) {
+    case "new":
+      return "bg-blue-500 hover:bg-blue-600";
+    case "in_progress":
+      return "bg-yellow-500 hover:bg-yellow-600";
+    case "waiting":
+      return "bg-purple-500 hover:bg-purple-600";
+    case "closed":
+      return "bg-green-500 hover:bg-green-600";
+    default:
+      return "bg-gray-500 hover:bg-gray-600";
+  }
+}
+
+function getStatusText(status: string | null) {
+  switch (status) {
+    case "new":
+      return "חדש";
+    case "in_progress":
+      return "בטיפול";
+    case "waiting":
+      return "בהמתנה";
+    case "closed":
+      return "סגור";
+    default:
+      return "לא ידוע";
+  }
 }

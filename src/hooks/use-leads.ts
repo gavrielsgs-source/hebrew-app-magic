@@ -14,6 +14,7 @@ type NewLead = {
   phone?: string | null;
   notes?: string | null;
   status?: string;
+  source?: string | null;
 };
 
 export function useLeads() {
@@ -45,12 +46,7 @@ export function useLeads() {
         throw userError || new Error("User not authenticated");
       }
 
-      // Ensure car_id is provided - required by our DB schema
-      if (!lead.car_id) {
-        toast.error("נדרש לבחור רכב");
-        throw new Error("Car ID is required");
-      }
-
+      // car_id is now optional
       const { data, error } = await supabase
         .from("leads")
         .insert({

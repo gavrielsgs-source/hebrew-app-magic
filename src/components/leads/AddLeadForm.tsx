@@ -14,36 +14,45 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useLeads } from "@/hooks/use-leads";
+import { useCars } from "@/hooks/use-cars";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(2, "נדרשות לפחות 2 אותיות"),
   email: z.string().email("כתובת אימייל לא תקינה").optional().or(z.literal("")),
   phone: z.string().min(9, "מספר טלפון לא תקין").max(15, "מספר טלפון לא תקין"),
-  notes: z.string().optional(),
-  car_id: z.string().uuid("נא לבחור רכב")
+  notes: z.string().optional().or(z.literal("")),
+  car_id: z.string().uuid("נא לבחור רכב").optional().or(z.literal("")),
+  source: z.string().optional()
 });
 
-export function AddLeadForm({ carId }: { carId: string }) {
+type FormValues = z.infer<typeof formSchema>;
+
+export function AddLeadForm({ carId }: { carId?: string }) {
   const { addLead } = useLeads();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const { cars } = useCars();
+  
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
       phone: "",
       notes: "",
-      car_id: carId
+      car_id: carId || "",
+      source: "ידני"
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     const leadData = {
       name: values.name,
       email: values.email || null,
       phone: values.phone,
       notes: values.notes || null,
-      car_id: values.car_id,
-      follow_up_notes: [] // Initialize empty array for follow up notes
+      car_id: values.car_id || null,
+      source: values.source || "ידני",
+      status: "new"
     };
     
     await addLead.mutateAsync(leadData);
@@ -88,6 +97,56 @@ export function AddLeadForm({ carId }: { carId: string }) {
               <FormControl>
                 <Input placeholder="israel@example.com" {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {!carId && (
+          <FormField
+            control={form.control}
+            name="car_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>רכב (אופציונלי)</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר רכב" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {cars?.map((car) => (
+                      <SelectItem key={car.id} value={car.id}>
+                        {car.make} {car.model} ({car.year})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        <FormField
+          control={form.control}
+          name="source"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>מקור</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר מקור" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="ידני">ידני</SelectItem>
+                  <SelectItem value="פייסבוק">פייסבוק</SelectItem>
+                  <SelectItem value="וואטסאפ">וואטסאפ</SelectItem>
+                  <SelectItem value="אינסטגרם">אינסטגרם</SelectItem>
+                  <SelectItem value="אחר">אחר</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
