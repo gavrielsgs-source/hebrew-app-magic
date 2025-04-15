@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,7 +24,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             <Routes>
               <Route path="/auth" element={<AuthRoute />} />
               <Route
@@ -31,8 +32,7 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <div className="flex min-h-screen w-full">
-                      <AppSidebar />
-                      <main className="flex-1 overflow-auto p-4">
+                      <main className="flex-1 overflow-auto p-4 transition-all duration-300">
                         <Routes>
                           <Route path="/" element={<Index />} />
                           <Route path="/profile" element={<Profile />} />
@@ -41,6 +41,7 @@ const App = () => {
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </main>
+                      <AppSidebar />
                     </div>
                   </ProtectedRoute>
                 }

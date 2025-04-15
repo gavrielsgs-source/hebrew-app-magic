@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { PanelLeft } from "lucide-react"
@@ -25,7 +26,7 @@ export const Sidebar = React.forwardRef<
 >(
   (
     {
-      side = "left",
+      side = "right", // Changed default from left to right
       variant = "sidebar",
       collapsible = "icon",
       className,
@@ -69,7 +70,7 @@ export const Sidebar = React.forwardRef<
           className={cn(
             "fixed inset-y-0 z-10 flex h-svh transition-all duration-300 ease-in-out",
             "group-hover:w-[--sidebar-width]",
-            side === "left" ? "left-0" : "right-0",
+            side === "left" ? "left-0" : "right-0", // This ensures correct side positioning
             state === "expanded" ? "w-[--sidebar-width]" : "w-[--sidebar-width-icon]",
             className
           )}
@@ -77,7 +78,7 @@ export const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar border-r"
+            className="flex h-full w-full flex-col bg-sidebar border-l" // Changed border-r to border-l
           >
             {children}
           </div>

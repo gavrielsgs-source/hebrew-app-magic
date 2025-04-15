@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -6,7 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"; // Updated import path
+} from "@/components/ui/sidebar";
 import { Home, Car, CalendarCheck, Users, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -38,7 +39,7 @@ export function AppSidebar() {
   ];
 
   return (
-    <Sidebar>
+    <Sidebar side="right">
       <SidebarHeader className="p-4 border-b">
         <Button variant="ghost" onClick={() => navigate("/")} className="w-full justify-start gap-2">
           <Home className="h-5 w-5" />
