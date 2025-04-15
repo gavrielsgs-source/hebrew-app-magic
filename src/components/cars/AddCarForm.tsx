@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -9,91 +9,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCars } from "@/hooks/use-cars";
-import { Upload } from "lucide-react";
-
-const formSchema = z.object({
-  make: z.string().min(2, "נדרשות לפחות 2 אותיות"),
-  model: z.string().min(1, "שדה חובה"),
-  year: z.string()
-    .regex(/^\d+$/, "יש להזין מספרים בלבד")
-    .refine(val => {
-      const year = parseInt(val);
-      const currentYear = new Date().getFullYear();
-      return year >= 1900 && year <= currentYear + 1;
-    }, "שנה לא תקינה"),
-  kilometers: z.string()
-    .regex(/^\d+$/, "יש להזין מספרים בלבד"),
-  price: z.string()
-    .regex(/^\d+$/, "יש להזין מספרים בלבד"),
-  description: z.string().optional(),
-  interior_color: z.string().optional(),
-  exterior_color: z.string().optional(),
-  transmission: z.string().optional(),
-  fuel_type: z.string().optional(),
-  engine_size: z.string().optional(),
-  registration_year: z.string()
-    .regex(/^\d+$/, "יש להזין מספרים בלבד")
-    .optional(),
-  last_test_date: z.string().optional(),
-  ownership_history: z.string().optional(),
-});
+import { ImageUploadInput } from "./ImageUploadInput";
+import { carFormSchema, type CarFormValues } from "./car-form-schema";
 
 interface AddCarFormProps {
   onSuccess?: () => void;
 }
 
-interface ImageUploadProps {
-  onChange: (files: FileList | null) => void;
-  value?: File[];
-}
-
-function ImageUploadInput({ onChange, value }: ImageUploadProps) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  return (
-    <div className="grid gap-4">
-      <div className="grid grid-cols-2 gap-4">
-        {value?.map((file, index) => (
-          <div key={index} className="relative aspect-video rounded-lg border overflow-hidden">
-            <img
-              src={URL.createObjectURL(file)}
-              alt={`תמונה ${index + 1}`}
-              className="object-cover w-full h-full"
-            />
-          </div>
-        ))}
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        onClick={() => inputRef.current?.click()}
-      >
-        <Upload className="h-4 w-4 ml-2" />
-        העלאת תמונות
-      </Button>
-      <input
-        type="file"
-        ref={inputRef}
-        className="hidden"
-        multiple
-        accept="image/*"
-        onChange={(e) => onChange(e.target.files)}
-      />
-    </div>
-  );
-}
-
 export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   const { addCar } = useCars();
   const [images, setImages] = useState<File[]>([]);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  
+  const form = useForm<CarFormValues>({
+    resolver: zodResolver(carFormSchema),
     defaultValues: {
       make: "",
       model: "",
@@ -112,20 +46,19 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: CarFormValues) => {
     await addCar.mutateAsync({
-      make: values.make,
-      model: values.model,
+      ...values,
       year: parseInt(values.year),
       kilometers: parseInt(values.kilometers),
       price: parseInt(values.price),
+      registration_year: values.registration_year ? parseInt(values.registration_year) : null,
       description: values.description || "",
       interior_color: values.interior_color || null,
       exterior_color: values.exterior_color || null,
       transmission: values.transmission || null,
       fuel_type: values.fuel_type || null,
       engine_size: values.engine_size || null,
-      registration_year: values.registration_year ? parseInt(values.registration_year) : null,
       last_test_date: values.last_test_date || null,
       ownership_history: values.ownership_history || null,
       status: "available",
