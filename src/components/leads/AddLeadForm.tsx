@@ -37,8 +37,16 @@ export function AddLeadForm({ carId }: { carId: string }) {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // The status field will be added in the mutationFn with a default value
-    await addLead.mutateAsync(values);
+    // Convert form values to NewLead type
+    const leadData = {
+      name: values.name,
+      email: values.email || null,
+      phone: values.phone,
+      notes: values.notes || null,
+      car_id: values.car_id
+    };
+    
+    await addLead.mutateAsync(leadData);
     form.reset();
   };
 

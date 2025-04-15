@@ -5,13 +5,15 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"];
-// Make car_id and other fields optional to match the form values
-type NewLead = Omit<Lead, "id" | "created_at" | "updated_at" | "user_id" | "status"> & { 
+
+// Define NewLead to match the form values structure with correct optional fields
+type NewLead = {
+  name: string;
   car_id?: string | null;
-  status?: string;
   email?: string | null;
   phone?: string | null;
   notes?: string | null;
+  status?: string;
 };
 
 export function useLeads() {
