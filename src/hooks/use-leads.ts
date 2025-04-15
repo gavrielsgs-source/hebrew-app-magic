@@ -4,9 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
-type Lead = Database["public"]["Tables"]["leads"]["Row"] & {
-  source?: string | null;  // Explicitly add source property
-};
+// Define Lead type with explicit source property to avoid TypeScript errors
+type Lead = Database["public"]["Tables"]["leads"]["Row"];
 
 // Define NewLead to match the form values structure with correct optional fields
 type NewLead = {
@@ -16,7 +15,7 @@ type NewLead = {
   phone?: string | null;
   notes?: string | null;
   status?: string;
-  source?: string | null;  // Include source here as well
+  source?: string | null;
 };
 
 export function useLeads() {
@@ -36,7 +35,7 @@ export function useLeads() {
           throw error;
         }
 
-        // Add a default source value for any leads that don't have one
+        // Return the data with default source values if needed
         return data.map((lead) => ({
           ...lead,
           source: lead.source || "ידני" // Provide a default value if source is null
@@ -63,6 +62,7 @@ export function useLeads() {
         .insert({
           ...lead,
           status: lead.status || "new", // Set default status if not provided
+          source: lead.source || "ידני", // Set default source if not provided
           user_id: userData.user.id
         })
         .select()
