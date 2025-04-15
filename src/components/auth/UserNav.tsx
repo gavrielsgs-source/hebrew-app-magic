@@ -1,6 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,10 +13,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, UserCircle } from "lucide-react";
 
 export function UserNav() {
   const { user, signOut } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,11 +37,19 @@ export function UserNav() {
     }
   };
 
+  const navigateToProfile = () => {
+    navigate("/profile");
+  };
+
   // אם אין משתמש, לא מציג כלום
   if (!user) return null;
 
-  // קבלת האות הראשונה מהאימייל לתצוגה באווטאר
-  const userInitial = user.email ? user.email[0].toUpperCase() : "U";
+  // קבלת האות הראשונה מהאימייל או משם המשתמש לתצוגה באווטאר
+  const userInitial = profile?.full_name 
+    ? profile.full_name[0].toUpperCase() 
+    : user.email 
+      ? user.email[0].toUpperCase() 
+      : "U";
 
   return (
     <DropdownMenu>
@@ -56,6 +66,10 @@ export function UserNav() {
         <DropdownMenuItem disabled>
           <User className="ml-2 h-4 w-4" />
           <span>{user.email}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={navigateToProfile}>
+          <UserCircle className="ml-2 h-4 w-4" />
+          <span>פרופיל</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="ml-2 h-4 w-4" />

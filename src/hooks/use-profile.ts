@@ -25,7 +25,7 @@ export function useProfile() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, isError, error } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       if (!user) return null;
@@ -37,6 +37,7 @@ export function useProfile() {
         .single();
 
       if (error) {
+        console.error("Error fetching profile:", error);
         toast.error("שגיאה בטעינת פרופיל");
         throw error;
       }
@@ -44,6 +45,7 @@ export function useProfile() {
       return data as Profile;
     },
     enabled: !!user,
+    retry: 1,
   });
 
   const updateProfile = useMutation({
@@ -56,6 +58,7 @@ export function useProfile() {
         .eq("id", user.id);
 
       if (error) {
+        console.error("Error updating profile:", error);
         toast.error("שגיאה בעדכון פרופיל");
         throw error;
       }
@@ -69,6 +72,8 @@ export function useProfile() {
   return {
     profile,
     isLoading,
+    isError,
+    error,
     updateProfile,
   };
 }

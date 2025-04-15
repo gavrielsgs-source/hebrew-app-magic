@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const profileFormSchema = z.object({
   full_name: z.string().min(2, "נדרשות לפחות 2 אותיות").nullable(),
@@ -25,24 +28,63 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function Profile() {
-  const { profile, isLoading, updateProfile } = useProfile();
+  const { profile, isLoading, isError, error, updateProfile } = useProfile();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      full_name: profile?.full_name || "",
-      phone: profile?.phone || "",
-      company_name: profile?.company_name || "",
-      position: profile?.position || "",
+      full_name: "",
+      phone: "",
+      company_name: "",
+      position: "",
     },
   });
+
+  // Update form when profile data loads
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        full_name: profile.full_name || "",
+        phone: profile.phone || "",
+        company_name: profile.company_name || "",
+        position: profile.position || "",
+      });
+    }
+  }, [profile, form]);
 
   const onSubmit = async (values: ProfileFormValues) => {
     await updateProfile.mutateAsync(values);
   };
 
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">טוען...</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>שגיאה בטעינת פרופיל</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error ? error.message : "אירעה שגיאה. אנא נסה שוב."}
+          </AlertDescription>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-2" 
+            onClick={handleRetry}
+          >
+            <RefreshCw className="h-4 w-4 ml-2" />
+            נסה שוב
+          </Button>
+        </Alert>
+      </div>
+    );
   }
 
   return (
