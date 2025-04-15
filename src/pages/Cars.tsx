@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AddCarForm } from "@/components/cars/AddCarForm";
 import { CarsTable } from "@/components/CarsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Car, Grid, List } from "lucide-react";
+import { Car, Grid, List, Send } from "lucide-react";
 import { useCars } from "@/hooks/use-cars";
 import { CarGrid } from "@/components/cars/CarGrid";
 
@@ -31,24 +31,34 @@ export default function Cars() {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="table">
+      <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-green-700 mb-2">
+          <Send className="h-5 w-5" />
+          <h2 className="font-medium">שליחת פרטי רכב בוואטסאפ</h2>
+        </div>
+        <p className="text-sm text-green-600">
+          ניתן לשלוח פרטי רכב ללקוחות באמצעות וואטסאפ. לחץ על כפתור "שלח בוואטסאפ" בכרטיס הרכב ובחר את התבנית המתאימה.
+        </p>
+      </div>
+
+      <Tabs defaultValue="grid">
         <TabsList className="mb-4">
-          <TabsTrigger value="table" className="flex items-center gap-2">
-            <List className="h-4 w-4" />
-            טבלה
-          </TabsTrigger>
           <TabsTrigger value="grid" className="flex items-center gap-2">
             <Grid className="h-4 w-4" />
             גריד
           </TabsTrigger>
+          <TabsTrigger value="table" className="flex items-center gap-2">
+            <List className="h-4 w-4" />
+            טבלה
+          </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="table">
-          <CarsTable />
-        </TabsContent>
         
         <TabsContent value="grid">
           <CarGrid cars={cars} isLoading={isLoading} />
+        </TabsContent>
+        
+        <TabsContent value="table">
+          <CarsTable />
         </TabsContent>
       </Tabs>
     </div>

@@ -3,7 +3,7 @@ import { Car } from "@/types/car";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
-import { Car as CarIcon, Calendar, Fuel, Gauge } from "lucide-react";
+import { Car as CarIcon, Calendar, Fuel, Gauge, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
@@ -81,11 +81,13 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
             <Button 
               variant="outline" 
               size="sm"
+              className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50"
               onClick={() => {
                 setSelectedCar(car);
                 setIsWhatsappOpen(true);
               }}
             >
+              <Send className="h-4 w-4" />
               שלח בוואטסאפ
             </Button>
             

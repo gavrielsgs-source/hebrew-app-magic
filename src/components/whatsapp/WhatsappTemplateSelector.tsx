@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { WhatsappTemplateForm } from "./WhatsappTemplateForm";
 import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { Separator } from "@/components/ui/separator";
 import { templates } from "./whatsapp-templates";
+import { toast } from "sonner";
 
 interface WhatsappTemplateSelectorProps {
   car: Car;
@@ -19,45 +20,55 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
   const [customizedTemplate, setCustomizedTemplate] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   
-  // Initialize the template when selectedTemplate changes
-  useState(() => {
+  // Initialize the template when component mounts or when selectedTemplate changes
+  useEffect(() => {
     const initialTemplate = selectedTemplate.template
-      .replace("{{make}}", car.make)
-      .replace("{{model}}", car.model)
-      .replace("{{year}}", car.year.toString())
-      .replace("{{price}}", formatPrice(car.price))
-      .replace("{{kilometers}}", car.kilometers?.toString() || "")
-      .replace("{{color}}", car.exterior_color || "")
-      .replace("{{engine}}", car.engine_size || "")
-      .replace("{{transmission}}", car.transmission || "")
-      .replace("{{fuel}}", car.fuel_type || "");
+      .replace(/\{\{make\}\}/g, car.make)
+      .replace(/\{\{model\}\}/g, car.model)
+      .replace(/\{\{year\}\}/g, car.year.toString())
+      .replace(/\{\{price\}\}/g, formatPrice(car.price))
+      .replace(/\{\{kilometers\}\}/g, car.kilometers?.toString() || "לא צוין")
+      .replace(/\{\{color\}\}/g, car.exterior_color || "לא צוין")
+      .replace(/\{\{engine\}\}/g, car.engine_size || "לא צוין")
+      .replace(/\{\{transmission\}\}/g, car.transmission ? 
+        (car.transmission === 'manual' ? 'ידני' : 
+         car.transmission === 'automatic' ? 'אוטומט' : 
+         car.transmission === 'robotics' ? 'רובוטי' : car.transmission) : "לא צוין")
+      .replace(/\{\{fuel\}\}/g, car.fuel_type ? 
+        (car.fuel_type === 'gasoline' ? 'בנזין' : 
+         car.fuel_type === 'diesel' ? 'דיזל' : 
+         car.fuel_type === 'hybrid' ? 'היברידי' : 
+         car.fuel_type === 'electric' ? 'חשמלי' : car.fuel_type) : "לא צוין");
       
     setCustomizedTemplate(initialTemplate);
-  });
+  }, [car, selectedTemplate]);
   
   const handleTemplateChange = (templateId: string) => {
     const newTemplate = templates.find(t => t.id === templateId) || templates[0];
     setSelectedTemplate(newTemplate);
-    
-    // Update customized template with the new template
-    const updatedTemplate = newTemplate.template
-      .replace("{{make}}", car.make)
-      .replace("{{model}}", car.model)
-      .replace("{{year}}", car.year.toString())
-      .replace("{{price}}", formatPrice(car.price))
-      .replace("{{kilometers}}", car.kilometers?.toString() || "")
-      .replace("{{color}}", car.exterior_color || "")
-      .replace("{{engine}}", car.engine_size || "")
-      .replace("{{transmission}}", car.transmission || "")
-      .replace("{{fuel}}", car.fuel_type || "");
-      
-    setCustomizedTemplate(updatedTemplate);
   };
   
   const handleSendWhatsApp = () => {
+    if (!phoneNumber) {
+      toast.error("יש להזין מספר טלפון");
+      return;
+    }
+    
+    // נקיון המספר מתווים לא רצויים
+    const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, "");
+    
+    // בדיקה שהמספר מתחיל ב-972 או להוסיף אם צריך
+    const formattedNumber = cleanPhoneNumber.startsWith("972") 
+      ? cleanPhoneNumber 
+      : cleanPhoneNumber.startsWith("0") 
+        ? "972" + cleanPhoneNumber.substring(1) 
+        : "972" + cleanPhoneNumber;
+    
     const encodedText = encodeURIComponent(customizedTemplate);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
+    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
+    
     window.open(whatsappUrl, '_blank');
+    toast.success("הודעת וואטסאפ נפתחה");
     onClose();
   };
   
@@ -80,12 +91,16 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
           <input
             id="phone"
             type="tel"
-            placeholder="972541234567"
+            placeholder="דוגמה: 0541234567"
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
+            dir="rtl"
           />
         </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          ניתן להזין עם או בלי קידומת (972)
+        </p>
       </div>
       
       <Tabs defaultValue="template" className="w-full">
@@ -119,6 +134,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
         <Button 
           onClick={handleSendWhatsApp}
           disabled={!phoneNumber || !customizedTemplate}
+          className="bg-green-600 hover:bg-green-700"
         >
           שלח בוואטסאפ
         </Button>

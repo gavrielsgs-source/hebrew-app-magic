@@ -1,3 +1,4 @@
+
 import { 
   Table, 
   TableBody, 
@@ -8,14 +9,19 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Car, Share2, Edit, Plus, UserPlus } from "lucide-react";
+import { Car, Share2, Edit, Plus, UserPlus, Send } from "lucide-react";
 import { useCars } from "@/hooks/use-cars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AddCarForm } from "./cars/AddCarForm";
 import { AddLeadForm } from "./leads/AddLeadForm";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { WhatsappTemplateSelector } from "./whatsapp/WhatsappTemplateSelector";
 
 export function CarsTable() {
   const { cars, isLoading } = useCars();
+  const [selectedCar, setSelectedCar] = useState<any | null>(null);
+  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
 
   return (
     <div>
@@ -82,16 +88,25 @@ export function CarsTable() {
                         </SheetTrigger>
                         <SheetContent className="w-[400px]">
                           <SheetHeader>
-                            <SheetTitle>הוס�� ליד חדש</SheetTitle>
+                            <SheetTitle>הוסף ליד חדש</SheetTitle>
                           </SheetHeader>
                           <AddLeadForm carId={car.id} />
                         </SheetContent>
                       </Sheet>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title="שלח בוואטסאפ"
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        onClick={() => {
+                          setSelectedCar(car);
+                          setIsWhatsappOpen(true);
+                        }}
+                      >
+                        <Send className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon">
-                        <Share2 className="h-4 w-4" />
+                        <Edit className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -101,6 +116,17 @@ export function CarsTable() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
+          </DialogHeader>
+          {selectedCar && (
+            <WhatsappTemplateSelector car={selectedCar} onClose={() => setIsWhatsappOpen(false)} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
