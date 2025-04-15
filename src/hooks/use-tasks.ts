@@ -9,7 +9,7 @@ type NewTask = {
   status: string;
   priority: string;
   type: string;
-  due_date?: string | null; // Changed from Date to string
+  due_date?: string | null; // Using string for ISO dates
   car_id?: string | null;
   lead_id?: string | null;
 };
@@ -43,7 +43,7 @@ export function useTasks() {
         throw userError || new Error("User not authenticated");
       }
 
-      // No need to format due_date as it's already a string now
+      // Note that due_date is already a string from the form
       const { data, error } = await supabase
         .from("tasks")
         .insert({
@@ -67,7 +67,7 @@ export function useTasks() {
   });
 
   const updateTask = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Omit<NewTask, 'due_date'>> & { due_date?: string | null } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<NewTask> }) => {
       const { error } = await supabase
         .from("tasks")
         .update(data)

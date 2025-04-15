@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -56,9 +55,9 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      // Format the date to ISO string if it exists and ensure title is explicitly included
+      // Make sure title is explicitly included and convert date to ISO string if present
       const formattedValues = {
-        title: values.title, // Ensure title is explicitly included
+        title: values.title, // Explicitly include title
         description: values.description || null,
         priority: values.priority,
         status: values.status,

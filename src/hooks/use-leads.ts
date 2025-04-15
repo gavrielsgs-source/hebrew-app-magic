@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Lead = Database["public"]["Tables"]["leads"]["Row"] & {
-  source?: string | null;  // Add source property
+  source?: string | null;  // Explicitly add source property
 };
 
 // Define NewLead to match the form values structure with correct optional fields
@@ -16,7 +16,7 @@ type NewLead = {
   phone?: string | null;
   notes?: string | null;
   status?: string;
-  source?: string | null;  // Ensure source is included here
+  source?: string | null;  // Include source here as well
 };
 
 export function useLeads() {
@@ -25,9 +25,7 @@ export function useLeads() {
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
-      // First, let's alter the database to add the source column if it doesn't exist
       try {
-        // Check if source column exists in the leads table, and if not, we'll handle it correctly
         const { data, error } = await supabase
           .from("leads")
           .select("*, cars(*)")
@@ -39,7 +37,7 @@ export function useLeads() {
         }
 
         // Add a default source value for any leads that don't have one
-        return data.map((lead: any) => ({
+        return data.map((lead) => ({
           ...lead,
           source: lead.source || "ידני" // Provide a default value if source is null
         }));
