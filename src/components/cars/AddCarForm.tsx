@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCars } from "@/hooks/use-cars";
-import { useEffect } from "react";
 
 const formSchema = z.object({
   make: z.string().min(2, "נדרשות לפחות 2 אותיות"),
@@ -51,6 +50,8 @@ export function AddCarForm() {
       year: parseInt(values.year),
       kilometers: parseInt(values.kilometers),
       price: parseInt(values.price),
+      status: "available",
+      description: "",
     });
     form.reset();
   };

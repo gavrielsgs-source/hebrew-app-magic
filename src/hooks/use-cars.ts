@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Car = Database["public"]["Tables"]["cars"]["Row"];
+type NewCar = Omit<Car, "id" | "created_at" | "updated_at" | "user_id">;
 
 export function useCars() {
   const queryClient = useQueryClient();
@@ -27,10 +28,10 @@ export function useCars() {
   });
 
   const addCar = useMutation({
-    mutationFn: async (car: Omit<Car, "id" | "created_at" | "updated_at" | "user_id">) => {
+    mutationFn: async (car: NewCar) => {
       const { data, error } = await supabase
         .from("cars")
-        .insert([car])
+        .insert([{ ...car, status: "available", description: "" }])
         .select()
         .single();
 
