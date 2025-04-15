@@ -6,6 +6,7 @@ import { LeadsTable } from "@/components/LeadsTable";
 import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
 import { ActivityChart } from "@/components/ActivityChart";
+import { UserNav } from "@/components/auth/UserNav";
 
 export default function Dashboard() {
   return (
@@ -13,7 +14,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">CarsLead</h1>
         <div className="flex items-center space-x-4 rtl:space-x-reverse">
-          {/* כאן יהיו אייקונים של התראות ופרופיל */}
+          <UserNav />
         </div>
       </div>
 

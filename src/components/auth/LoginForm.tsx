@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +12,14 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg('');
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -32,12 +34,24 @@ export default function LoginForm() {
         description: "ברוך הבא למערכת",
       });
       
+      // לאחר התחברות מוצלחת, מפנה למסך הראשי
       navigate('/');
     } catch (error: any) {
+      console.error('Error logging in:', error);
+      
+      // מטפל בסוגי שגיאות שונים
+      if (error.message.includes('Invalid login credentials')) {
+        setErrorMsg('פרטי התחברות שגויים');
+      } else if (error.message.includes('Email not confirmed')) {
+        setErrorMsg('נא לאשר את האימייל שלך לפני ההתחברות');
+      } else {
+        setErrorMsg(error.message || 'אירעה שגיאה בהתחברות');
+      }
+      
       toast({
         variant: "destructive",
         title: "שגיאה בהתחברות",
-        description: error.message,
+        description: errorMsg,
       });
     } finally {
       setLoading(false);
@@ -76,6 +90,10 @@ export default function LoginForm() {
           />
         </div>
       </div>
+
+      {errorMsg && (
+        <div className="text-red-500 text-sm">{errorMsg}</div>
+      )}
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? 'מתחבר...' : 'התחבר'}

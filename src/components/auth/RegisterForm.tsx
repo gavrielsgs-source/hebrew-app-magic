@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +12,21 @@ export default function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg('');
+
+    // בדיקת חוזק סיסמה בסיסית
+    if (password.length < 6) {
+      setErrorMsg('הסיסמה חייבת להכיל לפחות 6 תווים');
+      setLoading(false);
+      return;
+    }
 
     try {
       const { error } = await supabase.auth.signUp({
@@ -29,15 +38,24 @@ export default function RegisterForm() {
 
       toast({
         title: "נרשמת בהצלחה",
-        description: "בדוק את תיבת הדואר שלך לאישור החשבון",
+        description: "אם דרוש אישור אימייל, אנא בדוק את תיבת הדואר שלך.",
       });
       
-      navigate('/login');
+      // ניווט לדף ההתחברות אחרי הרשמה מוצלחת
+      navigate('/auth', { state: { registered: true } });
     } catch (error: any) {
+      console.error('Error registering:', error);
+      
+      if (error.message.includes('already registered')) {
+        setErrorMsg('האימייל כבר רשום במערכת');
+      } else {
+        setErrorMsg(error.message || 'אירעה שגיאה בהרשמה');
+      }
+      
       toast({
         variant: "destructive",
         title: "שגיאה בהרשמה",
-        description: error.message,
+        description: errorMsg,
       });
     } finally {
       setLoading(false);
@@ -75,7 +93,12 @@ export default function RegisterForm() {
             required
           />
         </div>
+        <p className="text-xs text-gray-500">הסיסמה חייבת להכיל לפחות 6 תווים</p>
       </div>
+
+      {errorMsg && (
+        <div className="text-red-500 text-sm">{errorMsg}</div>
+      )}
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? 'יוצר חשבון...' : 'הרשמה'}
