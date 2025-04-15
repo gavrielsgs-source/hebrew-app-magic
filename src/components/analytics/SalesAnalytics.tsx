@@ -20,6 +20,21 @@ export function SalesAnalytics() {
     );
   }
 
+  if (!salesData || salesData.length === 0) {
+    return (
+      <Card className="col-span-4">
+        <CardHeader>
+          <CardTitle>ניתוח מכירות</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            אין נתוני מכירות להצגה
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="col-span-4">
       <CardHeader>
@@ -46,7 +61,7 @@ export function SalesAnalytics() {
                     case 'convertedLeads':
                       return [value, 'לידים שהומרו'];
                     case 'totalLeads':
-                      return [value, 'סה"כ לידים'];
+                      return [value, 'סה״כ לידים'];
                     default:
                       return [value, name];
                   }

@@ -2,147 +2,119 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Clock } from "lucide-react";
+import { useTasks } from "@/hooks/use-tasks";
+import { format } from "date-fns";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { TaskForm } from "./tasks/TaskForm";
 
 interface TaskListProps {
   extended?: boolean;
 }
 
-interface Task {
-  id: string;
-  title: string;
-  type: string;
-  time: string;
-  date: string;
-  completed: boolean;
-}
-
-// נתוני דוגמה עבור משימות
-const tasks: Task[] = [
-  {
-    id: "1",
-    title: "שיחת טלפון עם דני כהן",
-    type: "שיחת טלפון",
-    time: "10:00",
-    date: "15/04/2025",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "פגישה עם משפחת לוי לגבי יונדאי i10",
-    type: "פגישה",
-    time: "12:30",
-    date: "15/04/2025",
-    completed: false,
-  },
-  {
-    id: "3",
-    title: "לשלוח הצעת מחיר למיכל גולן",
-    type: "משימה",
-    time: "14:00",
-    date: "15/04/2025",
-    completed: false,
-  },
-  {
-    id: "4",
-    title: "לעדכן מלאי סקודה",
-    type: "משימה",
-    time: "16:00",
-    date: "15/04/2025",
-    completed: true,
-  },
-  {
-    id: "5",
-    title: "מעקב אחרי ליד של יוסי אברהם",
-    type: "מעקב",
-    time: "17:30",
-    date: "15/04/2025",
-    completed: false,
-  },
-  {
-    id: "6",
-    title: "פרסום רכבים חדשים בפייסבוק",
-    type: "משימה",
-    time: "09:00",
-    date: "16/04/2025",
-    completed: false,
-  },
-  {
-    id: "7",
-    title: "פגישה עם סוחר מכוניות",
-    type: "פגישה",
-    time: "11:00",
-    date: "16/04/2025",
-    completed: false,
-  },
-];
-
 export function TaskList({ extended = false }: TaskListProps) {
+  const { tasks, isLoading, updateTask } = useTasks();
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  
   // סינון משימות להיום אם לא מוצג במצב מורחב
-  const filteredTasks = extended ? tasks : tasks.filter(task => task.date === "15/04/2025" && !task.completed).slice(0, 5);
+  const today = new Date().toISOString().split('T')[0];
+  
+  const filteredTasks = tasks
+    .filter(task => {
+      if (extended) return true;
+      
+      // אם משימה היא להיום או בעבר ועדיין לא הושלמה
+      const taskDate = task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '';
+      return (taskDate <= today && task.status !== 'completed') || !task.due_date;
+    })
+    .slice(0, extended ? tasks.length : 5);
+  
+  const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
+    await updateTask.mutateAsync({
+      id: taskId,
+      data: {
+        status: isCompleted ? 'completed' : 'pending'
+      }
+    });
+  };
+  
+  const getTaskTypeLabel = (type: string) => {
+    switch (type) {
+      case 'call': return 'שיחת טלפון';
+      case 'meeting': return 'פגישה';
+      case 'follow_up': return 'מעקב';
+      case 'task': 
+      default: return 'משימה';
+    }
+  };
+  
+  if (isLoading) {
+    return <div className="text-center p-4">טוען משימות...</div>;
+  }
   
   return (
     <div className="space-y-4">
-      {filteredTasks.map((task) => (
-        <div
-          key={task.id}
-          className={`flex items-center space-x-4 rtl:space-x-reverse rounded-lg border p-4 ${
-            task.completed ? "bg-gray-50 dark:bg-gray-800" : ""
-          }`}
-        >
-          <Checkbox id={`task-${task.id}`} checked={task.completed} />
-          <div className="flex-1 space-y-1">
-            <p className={`text-sm font-medium leading-none ${
-              task.completed ? "line-through text-muted-foreground" : ""
-            }`}>
-              {task.title}
-            </p>
-            <div className="flex items-center pt-2">
-              <Clock className="mr-1 h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">{task.time}</span>
-              <span className="mx-2 text-muted-foreground">•</span>
-              <Calendar className="mr-1 h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">{task.date}</span>
+      {filteredTasks.length === 0 ? (
+        <div className="text-center p-4 text-muted-foreground">
+          אין משימות להצגה
+        </div>
+      ) : (
+        filteredTasks.map((task) => (
+          <div
+            key={task.id}
+            className={`flex items-center space-x-4 rtl:space-x-reverse rounded-lg border p-4 ${
+              task.status === 'completed' ? "bg-gray-50 dark:bg-gray-800" : ""
+            }`}
+          >
+            <Checkbox 
+              id={`task-${task.id}`} 
+              checked={task.status === 'completed'} 
+              onCheckedChange={(checked) => handleTaskStatusChange(task.id, checked as boolean)}
+            />
+            <div className="flex-1 space-y-1">
+              <p className={`text-sm font-medium leading-none ${
+                task.status === 'completed' ? "line-through text-muted-foreground" : ""
+              }`}>
+                {task.title}
+              </p>
+              <div className="flex items-center pt-2">
+                <Clock className="mr-1 h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  {task.due_date ? format(new Date(task.due_date), 'HH:mm') : 'ללא שעה'}
+                </span>
+                <span className="mx-2 text-muted-foreground">•</span>
+                <Calendar className="mr-1 h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  {task.due_date ? format(new Date(task.due_date), 'dd/MM/yyyy') : 'ללא תאריך'}
+                </span>
+              </div>
+            </div>
+            <div>
+              <Badge 
+                variant="outline" 
+                className="text-xs"
+              >
+                {getTaskTypeLabel(task.type)}
+              </Badge>
             </div>
           </div>
-          <div>
-            <Badge 
-              variant="outline" 
-              className="text-xs"
-            >
-              {task.type}
-            </Badge>
-          </div>
-        </div>
-      ))}
-      
-      {!extended && (
-        <Button variant="ghost" className="w-full" size="sm">
-          הצג את כל המשימות
-        </Button>
+        ))
       )}
+      
+      <Sheet open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" className="w-full" size="sm">
+            {extended ? "הוסף משימה חדשה" : "הצג את כל המשימות"}
+          </Button>
+        </SheetTrigger>
+        <SheetContent className="w-[400px]">
+          <SheetHeader>
+            <SheetTitle>הוסף משימה חדשה</SheetTitle>
+          </SheetHeader>
+          <TaskForm onSuccess={() => setIsAddTaskOpen(false)} />
+        </SheetContent>
+      </Sheet>
     </div>
-  );
-}
-
-// טרם הגדרנו את Badge בקובץ הנפרד
-function Badge({ 
-  variant = "default",
-  className,
-  children,
-}: { 
-  variant?: "default" | "outline"; 
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const baseStyles = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold";
-  const variantStyles = 
-    variant === "default" 
-      ? "bg-primary text-primary-foreground" 
-      : "border border-input bg-background text-foreground";
-  
-  return (
-    <span className={`${baseStyles} ${variantStyles} ${className || ""}`}>
-      {children}
-    </span>
   );
 }

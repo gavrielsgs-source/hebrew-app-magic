@@ -16,49 +16,76 @@ export function useSalesAnalytics() {
   return useQuery({
     queryKey: ["sales-analytics"],
     queryFn: async () => {
-      const { data: leads, error: leadsError } = await supabase
-        .from("leads")
-        .select("*, cars(*)");
+      try {
+        // נסה לקבל נתונים מהמבט sales_analytics שיצרנו
+        const { data: monthlyStats, error: viewError } = await supabase
+          .from("monthly_stats")
+          .select("*");
 
-      if (leadsError) {
-        toast.error("שגיאה בטעינת נתוני מכירות");
-        throw leadsError;
-      }
+        if (!viewError && monthlyStats && monthlyStats.length > 0) {
+          // אם יש נתונים במבט, השתמש בהם
+          return monthlyStats.map(stat => ({
+            month: stat.month,
+            totalLeads: stat.total_leads || 0,
+            convertedLeads: stat.converted_leads || 0,
+            totalCars: stat.total_cars || 0,
+            carsSold: stat.cars_sold || 0,
+            revenue: stat.revenue || 0
+          }));
+        }
 
-      // Group data by month
-      const monthlyStats = leads.reduce((acc: Record<string, SalesAnalytics>, lead) => {
-        const month = new Date(lead.created_at).toISOString().slice(0, 7); // YYYY-MM
+        // במקרה של כישלון או אין נתונים, נסה לבנות את הנתונים באופן ידני
+        console.log("No data in monthly_stats view or error, falling back to manual calculation");
         
-        if (!acc[month]) {
-          acc[month] = {
-            month,
-            totalLeads: 0,
-            convertedLeads: 0,
-            totalCars: 0,
-            carsSold: 0,
-            revenue: 0
-          };
+        const { data: leads, error: leadsError } = await supabase
+          .from("leads")
+          .select("*, cars(*)");
+
+        if (leadsError) {
+          toast.error("שגיאה בטעינת נתוני מכירות");
+          throw leadsError;
         }
+
+        // קבץ נתונים לפי חודש
+        const monthlyData: Record<string, SalesAnalytics> = {};
         
-        acc[month].totalLeads++;
-        if (lead.status === 'closed') {
-          acc[month].convertedLeads++;
-        }
-        
-        if (lead.cars) {
-          acc[month].totalCars++;
-          if (lead.cars.status === 'sold') {
-            acc[month].carsSold++;
-            acc[month].revenue += lead.cars.price || 0;
+        leads.forEach(lead => {
+          const month = new Date(lead.created_at).toISOString().slice(0, 7); // YYYY-MM
+          
+          if (!monthlyData[month]) {
+            monthlyData[month] = {
+              month,
+              totalLeads: 0,
+              convertedLeads: 0,
+              totalCars: 0,
+              carsSold: 0,
+              revenue: 0
+            };
           }
-        }
-        
-        return acc;
-      }, {});
+          
+          monthlyData[month].totalLeads++;
+          if (lead.status === 'closed') {
+            monthlyData[month].convertedLeads++;
+          }
+          
+          if (lead.cars) {
+            monthlyData[month].totalCars++;
+            if (lead.cars.status === 'sold') {
+              monthlyData[month].carsSold++;
+              monthlyData[month].revenue += lead.cars.price || 0;
+            }
+          }
+        });
 
-      return Object.values(monthlyStats).sort((a, b) => 
-        new Date(b.month).getTime() - new Date(a.month).getTime()
-      );
-    }
+        return Object.values(monthlyData).sort((a, b) => 
+          new Date(a.month).getTime() - new Date(b.month).getTime()
+        );
+      } catch (error) {
+        console.error("Error fetching sales analytics:", error);
+        toast.error("שגיאה בטעינת נתוני מכירות");
+        return [];
+      }
+    },
+    refetchInterval: 60000, // רענן כל דקה
   });
 }
