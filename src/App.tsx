@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,30 +24,28 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <SidebarProvider>
-            <div className="min-h-screen flex w-full bg-background">
-              <Routes>
-                <Route path="/auth" element={<AuthRoute />} />
-                <Route
-                  path="*"
-                  element={
-                    <ProtectedRoute>
-                      <div className="flex min-h-screen w-full">
-                        <AppSidebar />
-                        <main className="flex-1 overflow-auto">
-                          <Routes>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/tasks" element={<Tasks />} />
-                            <Route path="/cars" element={<Cars />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </main>
-                      </div>
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
-            </div>
+            <Routes>
+              <Route path="/auth" element={<AuthRoute />} />
+              <Route
+                path="*"
+                element={
+                  <ProtectedRoute>
+                    <div className="flex min-h-screen w-full">
+                      <AppSidebar />
+                      <main className="flex-1 overflow-auto p-4">
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/profile" element={<Profile />} />
+                          <Route path="/tasks" element={<Tasks />} />
+                          <Route path="/cars" element={<Cars />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
           </SidebarProvider>
         </BrowserRouter>
       </TooltipProvider>
@@ -56,16 +53,13 @@ const App = () => {
   );
 };
 
-// רכיב שיפנה משתמשים מחוברים מעמוד ההתחברות ישירות לעמוד הראשי
 function AuthRoute() {
   const { user, loading } = useAuth();
   
   if (loading) return <div className="flex items-center justify-center h-screen">טוען...</div>;
   
-  // אם המשתמש כבר מחובר, מפנה אותו לעמוד הראשי
   if (user) return <Navigate to="/" replace />;
   
-  // אחרת, מציג את עמוד ההתחברות
   return <Auth />;
 }
 

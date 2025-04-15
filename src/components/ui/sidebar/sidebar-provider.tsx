@@ -23,7 +23,7 @@ export const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true,
+      defaultOpen = false, // Changed to false by default
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -99,7 +99,7 @@ export const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
+              "group/sidebar-wrapper grid min-h-svh w-full grid-cols-[auto_1fr] bg-background",
               className
             )}
             ref={ref}
@@ -113,3 +113,4 @@ export const SidebarProvider = React.forwardRef<
   }
 )
 SidebarProvider.displayName = "SidebarProvider"
+
