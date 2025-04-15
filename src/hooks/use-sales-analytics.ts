@@ -18,7 +18,6 @@ export function useSalesAnalytics() {
     queryFn: async () => {
       try {
         // We need to calculate this from the leads and cars tables directly
-        // since monthly_stats view doesn't exist
         console.log("Calculating sales analytics manually");
         
         const { data: leads, error: leadsError } = await supabase

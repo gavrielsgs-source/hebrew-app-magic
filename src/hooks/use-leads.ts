@@ -81,9 +81,28 @@ export function useLeads() {
     },
   });
 
+  const updateLead = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<NewLead> }) => {
+      const { error } = await supabase
+        .from("leads")
+        .update(data)
+        .eq("id", id);
+
+      if (error) {
+        toast.error("שגיאה בעדכון ליד");
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      toast.success("ליד עודכן בהצלחה");
+    },
+  });
+
   return {
     leads,
     isLoading,
     addLead,
+    updateLead,
   };
 }

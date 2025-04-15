@@ -39,10 +39,10 @@ export function TaskList({ extended = false }: TaskListProps) {
     });
   };
   
-  const getTaskTypeLabel = (type: string | null) => {
-    if (!type) return 'משימה';
+  const getTaskTypeLabel = (taskType: string | null) => {
+    if (!taskType) return 'משימה';
     
-    switch(type) {
+    switch(taskType) {
       case 'call': return 'שיחת טלפון';
       case 'meeting': return 'פגישה';
       case 'follow_up': return 'מעקב';
@@ -97,7 +97,7 @@ export function TaskList({ extended = false }: TaskListProps) {
                 variant="outline" 
                 className="text-xs"
               >
-                {getTaskTypeLabel(task.priority)}
+                {getTaskTypeLabel(task.type)}
               </Badge>
             </div>
           </div>

@@ -9,13 +9,20 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, MessageSquare, User, Plus } from "lucide-react";
+import { Phone, MessageSquare, User, Plus, Edit } from "lucide-react";
 import { useLeads } from "@/hooks/use-leads";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AddLeadForm } from "./leads/AddLeadForm";
+import { useState } from "react";
+import { EditLeadForm } from "./leads/EditLeadForm";
 
 export function LeadsTable() {
   const { leads, isLoading } = useLeads();
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  
+  const selectedLead = selectedLeadId 
+    ? leads.find(lead => lead.id === selectedLeadId) 
+    : null;
   
   return (
     <div>
@@ -82,6 +89,23 @@ export function LeadsTable() {
                       <Button variant="ghost" size="icon">
                         <MessageSquare className="h-4 w-4" />
                       </Button>
+                      <Sheet>
+                        <SheetTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => setSelectedLeadId(lead.id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent className="w-[400px]">
+                          <SheetHeader>
+                            <SheetTitle>עריכת ליד</SheetTitle>
+                          </SheetHeader>
+                          {selectedLead && <EditLeadForm lead={selectedLead} />}
+                        </SheetContent>
+                      </Sheet>
                     </div>
                   </TableCell>
                 </TableRow>
