@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,7 +92,7 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
           </FormItem>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="make"
@@ -152,6 +153,19 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
                 <FormLabel>מחיר</FormLabel>
                 <FormControl>
                   <Input placeholder="150000" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="ownership_history"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>יד</FormLabel>
+                <FormControl>
+                  <Input placeholder="יד ראשונה" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -268,20 +282,6 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
             )}
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="ownership_history"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>היסטוריית בעלות</FormLabel>
-              <FormControl>
-                <Textarea placeholder="פרטי בעלות קודמת..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <FormField
           control={form.control}

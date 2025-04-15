@@ -31,8 +31,9 @@ const App = () => {
                 path="*"
                 element={
                   <ProtectedRoute>
-                    <div className="flex min-h-screen w-full">
-                      <main className="flex-1 overflow-auto p-4 transition-all duration-300">
+                    <div className="flex min-h-screen w-full justify-center">
+                      <AppSidebar />
+                      <main className="flex-1 max-w-6xl overflow-auto p-4 transition-all duration-300">
                         <Routes>
                           <Route path="/" element={<Index />} />
                           <Route path="/profile" element={<Profile />} />
@@ -41,7 +42,6 @@ const App = () => {
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </main>
-                      <AppSidebar />
                     </div>
                   </ProtectedRoute>
                 }

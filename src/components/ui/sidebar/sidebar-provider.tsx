@@ -99,7 +99,7 @@ export const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper grid min-h-svh w-full grid-cols-[auto_1fr] bg-background",
+              "group/sidebar-wrapper grid h-full w-full grid-cols-[1fr] md:grid-cols-[auto_1fr] bg-background",
               className
             )}
             ref={ref}
@@ -113,4 +113,3 @@ export const SidebarProvider = React.forwardRef<
   }
 )
 SidebarProvider.displayName = "SidebarProvider"
-
