@@ -13,3 +13,26 @@ export const taskFormSchema = z.object({
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;
+
+// Define Task interface that matches what comes back from the database
+export interface Task {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: string;
+  priority: string;
+  due_date?: string | null;
+  car_id?: string | null;
+  lead_id?: string | null;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  type: string;
+  cars?: {
+    make?: string;
+    model?: string;
+  } | null;
+  leads?: {
+    name?: string;
+  } | null;
+}
