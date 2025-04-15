@@ -7,7 +7,7 @@ import { Car, NewCar } from "@/types/car";
 export function useCars() {
   const queryClient = useQueryClient();
 
-  const { data: cars = [], isLoading } = useQuery({
+  const { data: cars = [], isLoading, error } = useQuery({
     queryKey: ["cars"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -16,12 +16,15 @@ export function useCars() {
         .order("created_at", { ascending: false });
 
       if (error) {
-        toast.error("שגיאה בטעינת רכבים");
+        toast.error("שגיאה בטעינת רכבים", {
+          description: error.message
+        });
         throw error;
       }
 
-      return data;
+      return data as Car[];
     },
+    retry: 2
   });
 
   const addCar = useMutation({
@@ -30,12 +33,14 @@ export function useCars() {
         const { data: userData, error: userError } = await supabase.auth.getUser();
         
         if (userError || !userData.user) {
-          toast.error("לא ניתן להוסיף רכב - משתמש לא מחובר");
+          toast.error("לא ניתן להוסיף רכב", {
+            description: "המשתמש אינו מחובר"
+          });
           throw userError || new Error("User not authenticated");
         }
 
         // First insert the car data
-        const { data, error } = await supabase
+        const { data, error: carError } = await supabase
           .from("cars")
           .insert({
             make: car.make,
@@ -43,36 +48,37 @@ export function useCars() {
             year: car.year,
             kilometers: car.kilometers,
             price: car.price,
-            description: car.description,
-            interior_color: car.interior_color,
-            exterior_color: car.exterior_color,
-            transmission: car.transmission,
-            fuel_type: car.fuel_type,
-            engine_size: car.engine_size,
-            registration_year: car.registration_year,
-            last_test_date: car.last_test_date,
-            ownership_history: car.ownership_history,
-            status: car.status,
+            description: car.description || null,
+            interior_color: car.interior_color || null,
+            exterior_color: car.exterior_color || null,
+            transmission: car.transmission || null,
+            fuel_type: car.fuel_type || null,
+            engine_size: car.engine_size || null,
+            registration_year: car.registration_year || null,
+            last_test_date: car.last_test_date || null,
+            ownership_history: car.ownership_history || null,
+            status: "available",
             user_id: userData.user.id
           })
           .select()
           .single();
 
-        if (error) {
-          toast.error("שגיאה בהוספת רכב");
-          throw error;
+        if (carError) {
+          toast.error("שגיאה בהוספת רכב", {
+            description: carError.message
+          });
+          throw carError;
         }
 
         // If we have images, upload them
         if (car.images && car.images.length > 0 && data.id) {
           const carId = data.id;
           
-          // Upload each image
           const uploadPromises = car.images.map(async (image, index) => {
             const fileExt = image.name.split('.').pop();
             const filePath = `${carId}/${index}-${Date.now()}.${fileExt}`;
             
-            const { error: uploadError, data: uploadData } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
               .from('cars')
               .upload(filePath, image, {
                 cacheControl: '3600',
@@ -80,7 +86,9 @@ export function useCars() {
               });
               
             if (uploadError) {
-              console.error('Error uploading image:', uploadError);
+              toast.error(`שגיאה בהעלאת תמונה ${index + 1}`, {
+                description: uploadError.message
+              });
               return { success: false, error: uploadError };
             }
             
@@ -107,11 +115,18 @@ export function useCars() {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
       toast.success("רכב נוסף בהצלחה");
     },
+    onError: (error) => {
+      console.error("Mutation error:", error);
+      toast.error("שגיאה בהוספת רכב", {
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
   });
 
   return {
     cars,
     isLoading,
+    error,
     addCar,
   };
 }
