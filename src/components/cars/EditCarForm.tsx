@@ -52,12 +52,21 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
     try {
       await updateCar.mutateAsync({
         id: car.id,
-        ...values,
+        make: values.make,
+        model: values.model,
         year: parseInt(values.year),
         kilometers: parseInt(values.kilometers),
         price: parseInt(values.price),
+        description: values.description || null,
+        interior_color: values.interior_color || null,
+        exterior_color: values.exterior_color || null,
+        transmission: values.transmission || null,
+        fuel_type: values.fuel_type || null,
+        engine_size: values.engine_size || null,
         registration_year: values.registration_year ? parseInt(values.registration_year) : null,
-        status: car.status, // Include the status property from the existing car
+        last_test_date: values.last_test_date || null,
+        ownership_history: values.ownership_history || null,
+        status: car.status,
         images
       });
       onCancel();

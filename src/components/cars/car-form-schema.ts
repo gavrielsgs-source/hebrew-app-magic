@@ -23,9 +23,10 @@ export const carFormSchema = z.object({
   engine_size: z.string().optional(),
   registration_year: z.string()
     .regex(/^\d+$/, "יש להזין מספרים בלבד")
-    .optional(),
-  last_test_date: z.string().optional(),
-  ownership_history: z.string().optional(),
+    .optional()
+    .or(z.literal("")), // Allow empty string
+  last_test_date: z.string().optional().or(z.literal("")), // Allow empty string
+  ownership_history: z.string().optional().or(z.literal("")), // Allow empty string
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;

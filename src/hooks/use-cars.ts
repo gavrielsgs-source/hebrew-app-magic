@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -122,7 +121,7 @@ export function useCars() {
   });
 
   const updateCar = useMutation({
-    mutationFn: async ({ id, ...car }: NewCar & { id: string; status?: string | null }) => {
+    mutationFn: async ({ id, ...car }: NewCar & { id: string }) => {
       try {
         const { data: userData, error: userError } = await supabase.auth.getUser();
         
@@ -141,15 +140,15 @@ export function useCars() {
             year: car.year,
             kilometers: car.kilometers,
             price: car.price,
-            description: car.description || null,
-            interior_color: car.interior_color || null,
-            exterior_color: car.exterior_color || null,
-            transmission: car.transmission || null,
-            fuel_type: car.fuel_type || null,
-            engine_size: car.engine_size || null,
-            registration_year: car.registration_year || null,
-            last_test_date: car.last_test_date || null,
-            ownership_history: car.ownership_history || null,
+            description: car.description,
+            interior_color: car.interior_color,
+            exterior_color: car.exterior_color,
+            transmission: car.transmission,
+            fuel_type: car.fuel_type,
+            engine_size: car.engine_size,
+            registration_year: car.registration_year,
+            last_test_date: car.last_test_date,
+            ownership_history: car.ownership_history,
             status: car.status || "available", // Use provided status or default to "available"
           })
           .eq('id', id)
