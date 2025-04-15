@@ -56,9 +56,13 @@ export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      // Format the date to ISO string if it exists
+      // Format the date to ISO string if it exists and ensure title is explicitly included
       const formattedValues = {
-        ...values,
+        title: values.title, // Ensure title is explicitly included
+        description: values.description || null,
+        priority: values.priority,
+        status: values.status,
+        type: values.type,
         due_date: values.due_date ? values.due_date.toISOString() : null,
         car_id: values.car_id || null,
         lead_id: values.lead_id || null,

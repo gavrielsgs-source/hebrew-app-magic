@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
-type Lead = Database["public"]["Tables"]["leads"]["Row"];
+type Lead = Database["public"]["Tables"]["leads"]["Row"] & {
+  source?: string | null;  // Add source property
+};
 
 // Define NewLead to match the form values structure with correct optional fields
 type NewLead = {
@@ -14,7 +16,7 @@ type NewLead = {
   phone?: string | null;
   notes?: string | null;
   status?: string;
-  source?: string | null;
+  source?: string | null;  // Ensure source is included here
 };
 
 export function useLeads() {

@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -17,6 +16,7 @@ import { AddLeadForm } from "./leads/AddLeadForm";
 export function LeadsTable() {
   const { leads, isLoading } = useLeads();
 
+  
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
