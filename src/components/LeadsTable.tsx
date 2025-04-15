@@ -1,3 +1,4 @@
+
 import { 
   Table, 
   TableBody, 
@@ -15,7 +16,6 @@ import { AddLeadForm } from "./leads/AddLeadForm";
 
 export function LeadsTable() {
   const { leads, isLoading } = useLeads();
-
   
   return (
     <div>

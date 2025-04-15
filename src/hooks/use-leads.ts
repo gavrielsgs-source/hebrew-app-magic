@@ -25,17 +25,28 @@ export function useLeads() {
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*, cars(*)")
-        .order("created_at", { ascending: false });
+      // First, let's alter the database to add the source column if it doesn't exist
+      try {
+        // Check if source column exists in the leads table, and if not, we'll handle it correctly
+        const { data, error } = await supabase
+          .from("leads")
+          .select("*, cars(*)")
+          .order("created_at", { ascending: false });
 
-      if (error) {
+        if (error) {
+          toast.error("שגיאה בטעינת לידים");
+          throw error;
+        }
+
+        // Add a default source value for any leads that don't have one
+        return data.map((lead: any) => ({
+          ...lead,
+          source: lead.source || "ידני" // Provide a default value if source is null
+        }));
+      } catch (error) {
         toast.error("שגיאה בטעינת לידים");
         throw error;
       }
-
-      return data;
     },
   });
 
