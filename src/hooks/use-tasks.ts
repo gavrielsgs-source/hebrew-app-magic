@@ -3,6 +3,28 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Define Task interface that matches what comes back from the database
+interface TaskFromDB {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: string;
+  priority: string;
+  due_date?: string | null;
+  car_id?: string | null;
+  lead_id?: string | null;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  cars: any; // Using any for simplicity, but ideally should be typed properly
+  leads: any; // Using any for simplicity, but ideally should be typed properly
+}
+
+// Define Task interface with the additional type field
+interface Task extends TaskFromDB {
+  type?: string | null; // Add the type field that we'll add manually
+}
+
 type NewTask = {
   title: string;
   description?: string | null;
@@ -32,9 +54,9 @@ export function useTasks() {
 
       // Since the 'type' field might not exist in the database yet,
       // we need to manually add it to each task object
-      return data.map(task => ({
+      return data.map((task: TaskFromDB): Task => ({
         ...task,
-        type: task.type || 'task' // Provide a default value if type is null or missing
+        type: 'task' // Provide a default value since type is missing in DB
       }));
     },
   });

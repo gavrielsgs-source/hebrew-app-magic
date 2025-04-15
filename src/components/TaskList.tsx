@@ -39,7 +39,7 @@ export function TaskList({ extended = false }: TaskListProps) {
     });
   };
   
-  const getTaskTypeLabel = (taskType: string | null) => {
+  const getTaskTypeLabel = (taskType: string | null | undefined) => {
     if (!taskType) return 'משימה';
     
     switch(taskType) {
@@ -97,7 +97,7 @@ export function TaskList({ extended = false }: TaskListProps) {
                 variant="outline" 
                 className="text-xs"
               >
-                {getTaskTypeLabel(task.type || null)}
+                {getTaskTypeLabel(task.type)}
               </Badge>
             </div>
           </div>
