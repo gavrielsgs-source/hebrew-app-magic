@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function SalesAnalytics() {
   const { data: salesData, isLoading } = useSalesAnalytics();
@@ -12,6 +13,9 @@ export function SalesAnalytics() {
         <CardHeader>
           <CardTitle>טוען נתוני מכירות...</CardTitle>
         </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[300px] w-full" />
+        </CardContent>
       </Card>
     );
   }
@@ -48,7 +52,7 @@ export function SalesAnalytics() {
                   }
                 }}
               />
-              <Bar dataKey="totalLeads" fill="#8884d8" name="סה"כ לידים" />
+              <Bar dataKey="totalLeads" fill="#8884d8" name="סה״כ לידים" />
               <Bar dataKey="convertedLeads" fill="#82ca9d" name="לידים שהומרו" />
               <Bar dataKey="revenue" fill="#ffc658" name="הכנסות" />
             </BarChart>
