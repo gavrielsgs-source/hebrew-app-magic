@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -9,10 +8,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Car, Share2, Edit, Plus } from "lucide-react";
+import { Car, Share2, Edit, Plus, UserPlus } from "lucide-react";
 import { useCars } from "@/hooks/use-cars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AddCarForm } from "./cars/AddCarForm";
+import { AddLeadForm } from "./leads/AddLeadForm";
 
 export function CarsTable() {
   const { cars, isLoading } = useCars();
@@ -74,6 +74,19 @@ export function CarsTable() {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2 rtl:space-x-reverse">
+                      <Sheet>
+                        <SheetTrigger asChild>
+                          <Button variant="ghost" size="icon" title="הוסף ליד">
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent className="w-[400px]">
+                          <SheetHeader>
+                            <SheetTitle>הוס�� ליד חדש</SheetTitle>
+                          </SheetHeader>
+                          <AddLeadForm carId={car.id} />
+                        </SheetContent>
+                      </Sheet>
                       <Button variant="ghost" size="icon">
                         <Edit className="h-4 w-4" />
                       </Button>
