@@ -1,13 +1,14 @@
-
 import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { Car as CarIcon, Calendar, Gauge, RotateCw, Fuel, AlertTriangle } from "lucide-react";
+import { Car as CarIcon, Calendar, Gauge, RotateCw, Fuel, AlertTriangle, Edit } from "lucide-react";
 import { getCarImages } from "@/lib/image-utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EditCarForm } from "./EditCarForm";
 
 interface CarDetailsProps {
   car: Car;
@@ -16,6 +17,7 @@ interface CarDetailsProps {
 export function CarDetails({ car }: CarDetailsProps) {
   const [images, setImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -32,6 +34,10 @@ export function CarDetails({ car }: CarDetailsProps) {
 
     fetchImages();
   }, [car.id]);
+
+  if (isEditing) {
+    return <EditCarForm car={car} onCancel={() => setIsEditing(false)} />;
+  }
 
   function getStatusBadgeColor(status: string | null) {
     switch (status) {
@@ -61,6 +67,18 @@ export function CarDetails({ car }: CarDetailsProps) {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={() => setIsEditing(true)}
+        >
+          <Edit className="h-4 w-4" />
+          ערוך רכב
+        </Button>
+      </div>
+      
       {/* Image carousel */}
       <div className="relative rounded-lg overflow-hidden bg-muted h-60 sm:h-80">
         {loadingImages ? (
