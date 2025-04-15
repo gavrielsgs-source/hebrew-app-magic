@@ -43,7 +43,11 @@ const formSchema = z.object({
   ownership_history: z.string().optional(),
 });
 
-export function AddCarForm() {
+interface AddCarFormProps {
+  onSuccess?: () => void;
+}
+
+export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   const { addCar } = useCars();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,6 +88,7 @@ export function AddCarForm() {
       status: "available",
     });
     form.reset();
+    if (onSuccess) onSuccess();
   };
 
   return (

@@ -1,5 +1,5 @@
 
-import { Car } from "@/integrations/supabase/types";
+import { Car } from "@/types/car";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";

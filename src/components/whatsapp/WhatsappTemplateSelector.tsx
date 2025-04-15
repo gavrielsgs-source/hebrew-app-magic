@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Car } from "@/integrations/supabase/types";
+import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

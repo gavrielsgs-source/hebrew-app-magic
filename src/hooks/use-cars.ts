@@ -2,10 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { Database } from "@/integrations/supabase/types";
-
-type Car = Database["public"]["Tables"]["cars"]["Row"];
-type NewCar = Omit<Car, "id" | "created_at" | "updated_at" | "user_id" | "features">;
+import { Car, NewCar } from "@/types/car";
 
 export function useCars() {
   const queryClient = useQueryClient();
