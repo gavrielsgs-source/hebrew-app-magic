@@ -4,7 +4,10 @@ import { useTasks } from "@/hooks/use-tasks";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar, Car, Clock, Filter, MoveDown, MoveUp, Phone, User, UserRound } from "lucide-react";
+import { 
+  Calendar, Car, Clock, Filter, MoveDown, 
+  MoveUp, Phone, RefreshCcw, User, UserRound 
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -22,12 +25,13 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type SortField = "due_date" | "priority" | "title" | "status" | "type";
 type SortDirection = "asc" | "desc";
 
 export function TasksTable() {
-  const { tasks, isLoading, updateTask, deleteTask } = useTasks();
+  const { tasks = [], isLoading, error, refetch, updateTask, deleteTask } = useTasks();
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>("due_date");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -44,12 +48,16 @@ export function TasksTable() {
   };
 
   const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
-    await updateTask.mutateAsync({
-      id: taskId,
-      data: {
-        status: isCompleted ? 'completed' : 'pending'
-      }
-    });
+    try {
+      await updateTask.mutateAsync({
+        id: taskId,
+        data: {
+          status: isCompleted ? 'completed' : 'pending'
+        }
+      });
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+    }
   };
 
   const getTaskTypeLabel = (taskType: string | null | undefined) => {
@@ -87,11 +95,12 @@ export function TasksTable() {
     }
   };
 
-  const allTypes = Array.from(new Set(tasks.map(task => task.type || 'task')));
-  const allStatuses = Array.from(new Set(tasks.map(task => task.status || 'pending')));
+  // Determine task types and statuses for filtering
+  const allTypes = Array.from(new Set((tasks || []).map(task => task.type || 'task')));
+  const allStatuses = Array.from(new Set((tasks || []).map(task => task.status || 'pending')));
 
   // Apply filters and sorting
-  const filteredAndSortedTasks = [...tasks]
+  const filteredAndSortedTasks = [...(tasks || [])]
     .filter(task => {
       // Filter by status if statusFilter has selections
       if (statusFilter.length > 0 && !statusFilter.includes(task.status || 'pending')) {
@@ -135,10 +144,6 @@ export function TasksTable() {
       }
     });
 
-  if (isLoading) {
-    return <div className="text-center p-4">טוען משימות...</div>;
-  }
-
   const renderSortIcon = (field: SortField) => {
     if (sortField !== field) return null;
     
@@ -148,6 +153,48 @@ export function TasksTable() {
       <MoveDown className="h-4 w-4 ml-1" />
     );
   };
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">ניהול משימות</h2>
+          <Button 
+            variant="outline" 
+            onClick={() => refetch()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            נסה שנית
+          </Button>
+        </div>
+        <div className="border rounded-lg p-8 text-center">
+          <p className="text-muted-foreground mb-2">לא ניתן לטעון את המשימות</p>
+          <p className="text-sm text-muted-foreground">אנא ודא שהנך מחובר ונסה שנית</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">ניהול משימות</h2>
+        </div>
+        <div className="border rounded-lg overflow-hidden">
+          <div className="p-4">
+            <Skeleton className="h-8 w-32 mb-4" />
+            <div className="space-y-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
