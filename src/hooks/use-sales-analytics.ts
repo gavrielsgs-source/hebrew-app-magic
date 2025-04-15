@@ -17,25 +17,9 @@ export function useSalesAnalytics() {
     queryKey: ["sales-analytics"],
     queryFn: async () => {
       try {
-        // נסה לקבל נתונים מהמבט sales_analytics שיצרנו
-        const { data: monthlyStats, error: viewError } = await supabase
-          .from("monthly_stats")
-          .select("*");
-
-        if (!viewError && monthlyStats && monthlyStats.length > 0) {
-          // אם יש נתונים במבט, השתמש בהם
-          return monthlyStats.map(stat => ({
-            month: stat.month,
-            totalLeads: stat.total_leads || 0,
-            convertedLeads: stat.converted_leads || 0,
-            totalCars: stat.total_cars || 0,
-            carsSold: stat.cars_sold || 0,
-            revenue: stat.revenue || 0
-          }));
-        }
-
-        // במקרה של כישלון או אין נתונים, נסה לבנות את הנתונים באופן ידני
-        console.log("No data in monthly_stats view or error, falling back to manual calculation");
+        // We need to calculate this from the leads and cars tables directly
+        // since monthly_stats view doesn't exist
+        console.log("Calculating sales analytics manually");
         
         const { data: leads, error: leadsError } = await supabase
           .from("leads")
