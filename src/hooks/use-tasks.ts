@@ -30,8 +30,8 @@ export function useTasks() {
         throw error;
       }
 
-      // Add a default type if it's missing
-      // Use optional chaining to safely access properties
+      // Since the 'type' field might not exist in the database yet,
+      // we need to manually add it to each task object
       return data.map(task => ({
         ...task,
         type: task.type || 'task' // Provide a default value if type is null or missing
