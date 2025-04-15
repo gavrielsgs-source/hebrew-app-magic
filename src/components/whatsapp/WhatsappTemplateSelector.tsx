@@ -9,7 +9,7 @@ import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { Separator } from "@/components/ui/separator";
 import { templates } from "./whatsapp-templates";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { getCarImages } from "@/lib/image-utils";
 
 interface WhatsappTemplateSelectorProps {
   car: Car;
@@ -30,28 +30,8 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
       
       setLoadingImages(true);
       try {
-        const { data, error } = await supabase
-          .storage
-          .from('cars')
-          .list(`${car.id}`);
-          
-        if (error) {
-          console.error('Error fetching car images:', error);
-          return;
-        }
-        
-        if (data && data.length > 0) {
-          const imageUrls = await Promise.all(
-            data.map(async (file) => {
-              const { data: urlData } = await supabase
-                .storage
-                .from('cars')
-                .getPublicUrl(`${car.id}/${file.name}`);
-              return urlData.publicUrl;
-            })
-          );
-          setCarImages(imageUrls);
-        }
+        const imageUrls = await getCarImages(car.id);
+        setCarImages(imageUrls);
       } catch (error) {
         console.error('Error processing car images:', error);
       } finally {
@@ -110,16 +90,27 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     
     // Create the main WhatsApp message URL
     const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
-    
     window.open(whatsappUrl, '_blank');
     
-    // If there are images, we'll prompt the user to send them separately
+    // If there are images, we'll open additional WhatsApp windows for each image
     if (carImages.length > 0) {
-      toast.success("הודעת וואטסאפ נפתחה - שים לב שתמונות יש לשלוח בנפרד", {
+      // Wait a bit to let the first message be sent
+      setTimeout(() => {
+        carImages.forEach((imageUrl, index) => {
+          // Only send the first 3 images to avoid too many tabs
+          if (index < 3) {
+            const imageMessage = encodeURIComponent(`תמונה ${index + 1} של ${car.make} ${car.model}`);
+            const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${imageMessage}`;
+            window.open(imageWhatsappUrl, '_blank');
+          }
+        });
+      }, 1000);
+      
+      toast.success(`הודעת וואטסאפ נשלחה עם ${Math.min(carImages.length, 3)} תמונות נוספות`, {
         duration: 5000,
       });
     } else {
-      toast.success("הודעת וואטסאפ נפתחה");
+      toast.success("הודעת וואטסאפ נשלחה");
     }
     
     onClose();
@@ -177,7 +168,6 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
             template={customizedTemplate}
             images={carImages}
             loadingImages={loadingImages}
-            onEdit={() => {}}
           />
         </TabsContent>
       </Tabs>

@@ -24,16 +24,16 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <SidebarProvider defaultOpen={false}>
+          <SidebarProvider defaultOpen={true}>
             <Routes>
               <Route path="/auth" element={<AuthRoute />} />
               <Route
                 path="*"
                 element={
                   <ProtectedRoute>
-                    <div className="flex min-h-screen w-full justify-center">
+                    <div className="flex min-h-screen w-full">
                       <AppSidebar />
-                      <main className="flex-1 max-w-6xl overflow-auto p-4 transition-all duration-300">
+                      <main className="flex-1 mx-auto max-w-6xl overflow-auto p-4 transition-all duration-300">
                         <Routes>
                           <Route path="/" element={<Index />} />
                           <Route path="/profile" element={<Profile />} />

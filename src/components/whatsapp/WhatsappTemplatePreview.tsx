@@ -7,10 +7,9 @@ interface WhatsappTemplatePreviewProps {
   template: string;
   images?: string[];
   loadingImages?: boolean;
-  onEdit: () => void;
 }
 
-export function WhatsappTemplatePreview({ template, images = [], loadingImages = false, onEdit }: WhatsappTemplatePreviewProps) {
+export function WhatsappTemplatePreview({ template, images = [], loadingImages = false }: WhatsappTemplatePreviewProps) {
   // Split the template by new lines and render each line
   const lines = template.split('\n');
   
@@ -91,7 +90,7 @@ export function WhatsappTemplatePreview({ template, images = [], loadingImages =
       
       {images && images.length > 0 && (
         <p className="text-xs text-muted-foreground text-center">
-          שים לב: התמונות יישלחו בנפרד לאחר ההודעה הראשית
+          התמונות יישלחו בנפרד אחרי ההודעה הראשית
         </p>
       )}
     </div>
