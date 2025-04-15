@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,6 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
   const [carImages, setCarImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   
-  // Fetch car images from Supabase storage when component mounts
   useEffect(() => {
     const fetchCarImages = async () => {
       if (!car.id) return;
@@ -42,7 +40,6 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     fetchCarImages();
   }, [car.id]);
   
-  // Initialize the template when component mounts or when selectedTemplate changes
   useEffect(() => {
     const initialTemplate = selectedTemplate.template
       .replace(/\{\{make\}\}/g, car.make)
@@ -76,10 +73,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
       return;
     }
     
-    // Clean phone number of unwanted characters
     const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, "");
-    
-    // Make sure the number starts with 972 or add if needed
     const formattedNumber = cleanPhoneNumber.startsWith("972") 
       ? cleanPhoneNumber 
       : cleanPhoneNumber.startsWith("0") 
@@ -87,42 +81,20 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
         : "972" + cleanPhoneNumber;
     
     const encodedText = encodeURIComponent(customizedTemplate);
-    
-    // Create the WhatsApp message URL with the main text content
     const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
     window.open(whatsappUrl, '_blank');
     
-    // If there are images, download them to the user's device and let them manually attach
     if (carImages.length > 0) {
-      // Wait a bit to let the first message tab load
+      const maxImages = Math.min(carImages.length, 3);
+      const selectedImages = carImages.slice(0, maxImages);
+      
+      const imageUrls = selectedImages.join('\n');
+      const imageMessage = `תמונות ${car.make} ${car.model}:\n${imageUrls}`;
+      const encodedImageMessage = encodeURIComponent(imageMessage);
+      const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedImageMessage}`;
+      
       setTimeout(() => {
-        // Only send up to 3 images to avoid too many tabs
-        const imagesToSend = carImages.slice(0, 3);
-        
-        // Download each image to the user's device
-        imagesToSend.forEach((imageUrl, index) => {
-          // Create an anchor element
-          const link = document.createElement('a');
-          link.href = imageUrl;
-          link.download = `${car.make}-${car.model}-${index + 1}.jpg`;
-          
-          // Create a new WhatsApp message URL for each image
-          const imageMessage = `תמונה ${index + 1} של ${car.make} ${car.model}`;
-          const encodedImageMessage = encodeURIComponent(imageMessage);
-          const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedImageMessage}`;
-          
-          // Open a new tab with the WhatsApp message
-          window.open(imageWhatsappUrl, '_blank');
-        });
-        
-        // Display a toast with instructions
-        toast.info(
-          "התמונות נפתחו בחלוניות נפרדות",
-          {
-            description: "בכל חלונית יש להוסיף את התמונה באופן ידני מהטלפון",
-            duration: 7000,
-          }
-        );
+        window.open(imageWhatsappUrl, '_blank');
       }, 1000);
     }
     
