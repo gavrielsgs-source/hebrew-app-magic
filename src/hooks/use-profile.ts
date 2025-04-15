@@ -30,11 +30,29 @@ export function useProfile() {
     queryFn: async () => {
       if (!user) return null;
 
-      const { data, error } = await supabase
+      // First, try to get the existing profile
+      let { data, error } = await supabase
         .from("profiles")
         .select()
         .eq("id", user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single
+
+      // If no profile exists, create one
+      if (!data && !error) {
+        const { data: newProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert({ id: user.id })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+          toast.error("שגיאה ביצירת פרופיל");
+          throw insertError;
+        }
+
+        return newProfile as Profile;
+      }
 
       if (error) {
         console.error("Error fetching profile:", error);
@@ -45,7 +63,7 @@ export function useProfile() {
       return data as Profile;
     },
     enabled: !!user,
-    retry: 1,
+    retry: 2,
   });
 
   const updateProfile = useMutation({
