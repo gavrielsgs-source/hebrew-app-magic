@@ -1,31 +1,15 @@
 
 import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Calendar, Car, Clock, Filter, MoveDown, 
-  MoveUp, Phone, RefreshCcw, User, UserRound 
-} from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TaskForm } from "./TaskForm";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { TasksHeader } from "./task-list/TasksHeader";
+import { TaskFilters } from "./task-list/TaskFilters";
+import { TaskItem } from "./task-list/TaskItem";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RefreshCcw } from "lucide-react";
 
 type SortField = "due_date" | "priority" | "title" | "status" | "type";
 type SortDirection = "asc" | "desc";
@@ -60,41 +44,6 @@ export function TasksTable() {
     }
   };
 
-  const getTaskTypeLabel = (taskType: string | null | undefined) => {
-    if (!taskType) return 'משימה';
-    
-    switch(taskType.toLowerCase()) {
-      case 'call': return 'שיחת טלפון';
-      case 'meeting': return 'פגישה';
-      case 'follow_up': return 'מעקב';
-      case 'task': 
-      default: return 'משימה';
-    }
-  };
-
-  const getTaskTypeIcon = (taskType: string | null | undefined) => {
-    if (!taskType) return <UserRound className="h-4 w-4" />;
-    
-    switch(taskType.toLowerCase()) {
-      case 'call': return <Phone className="h-4 w-4" />;
-      case 'meeting': return <User className="h-4 w-4" />;
-      case 'follow_up': return <Calendar className="h-4 w-4" />;
-      case 'task': 
-      default: return <UserRound className="h-4 w-4" />;
-    }
-  };
-
-  const getTaskPriorityColor = (priority: string | null | undefined) => {
-    if (!priority) return "bg-gray-200 text-gray-800";
-    
-    switch(priority) {
-      case 'high': return "bg-red-100 text-red-800";
-      case 'medium': return "bg-yellow-100 text-yellow-800";
-      case 'low': return "bg-green-100 text-green-800";
-      default: return "bg-gray-200 text-gray-800";
-    }
-  };
-
   // Determine task types and statuses for filtering
   const allTypes = Array.from(new Set((tasks || []).map(task => task.type || 'task')));
   const allStatuses = Array.from(new Set((tasks || []).map(task => task.status || 'pending')));
@@ -102,21 +51,16 @@ export function TasksTable() {
   // Apply filters and sorting
   const filteredAndSortedTasks = [...(tasks || [])]
     .filter(task => {
-      // Filter by status if statusFilter has selections
       if (statusFilter.length > 0 && !statusFilter.includes(task.status || 'pending')) {
         return false;
       }
-      
-      // Filter by type if typeFilter has selections
       if (typeFilter.length > 0 && !typeFilter.includes(task.type || 'task')) {
         return false;
       }
-      
       return true;
     })
     .sort((a, b) => {
       if (sortField === "due_date") {
-        // Handle null or undefined due dates
         if (!a.due_date && !b.due_date) return 0;
         if (!a.due_date) return sortDirection === "asc" ? 1 : -1;
         if (!b.due_date) return sortDirection === "asc" ? -1 : 1;
@@ -133,26 +77,11 @@ export function TasksTable() {
         return sortDirection === "asc" ? priorityA - priorityB : priorityB - priorityA;
       }
       
-      // Default string comparison for other fields
       const valueA = (a[sortField] || "").toString().toLowerCase();
       const valueB = (b[sortField] || "").toString().toLowerCase();
       
-      if (sortDirection === "asc") {
-        return valueA.localeCompare(valueB);
-      } else {
-        return valueB.localeCompare(valueA);
-      }
+      return sortDirection === "asc" ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
     });
-
-  const renderSortIcon = (field: SortField) => {
-    if (sortField !== field) return null;
-    
-    return sortDirection === "asc" ? (
-      <MoveUp className="h-4 w-4 ml-1" />
-    ) : (
-      <MoveDown className="h-4 w-4 ml-1" />
-    );
-  };
 
   if (error) {
     return (
@@ -202,62 +131,14 @@ export function TasksTable() {
         <h2 className="text-xl font-bold">ניהול משימות</h2>
         
         <div className="flex space-x-2 rtl:space-x-reverse">
-          {/* Status Filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
-                <Filter className="h-4 w-4" />
-                סטטוס
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {allStatuses.map(status => (
-                <DropdownMenuCheckboxItem
-                  key={status}
-                  checked={statusFilter.includes(status)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setStatusFilter([...statusFilter, status]);
-                    } else {
-                      setStatusFilter(statusFilter.filter(s => s !== status));
-                    }
-                  }}
-                >
-                  {status === 'pending' ? 'ממתין' : 
-                   status === 'in_progress' ? 'בביצוע' : 
-                   status === 'completed' ? 'הושלם' : 
-                   status === 'cancelled' ? 'בוטל' : status}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {/* Type Filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
-                <Filter className="h-4 w-4" />
-                סוג
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {allTypes.map(type => (
-                <DropdownMenuCheckboxItem
-                  key={type}
-                  checked={typeFilter.includes(type)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setTypeFilter([...typeFilter, type]);
-                    } else {
-                      setTypeFilter(typeFilter.filter(t => t !== type));
-                    }
-                  }}
-                >
-                  {getTaskTypeLabel(type)}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <TaskFilters
+            statusFilter={statusFilter}
+            typeFilter={typeFilter}
+            allStatuses={allStatuses}
+            allTypes={allTypes}
+            onStatusFilterChange={setStatusFilter}
+            onTypeFilterChange={setTypeFilter}
+          />
           
           <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
             <DialogTrigger asChild>
@@ -280,132 +161,19 @@ export function TasksTable() {
       ) : (
         <div className="border rounded-lg overflow-hidden">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]"></TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleToggleSort("title")}
-                >
-                  <div className="flex items-center">
-                    כותרת {renderSortIcon("title")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleToggleSort("type")}
-                >
-                  <div className="flex items-center">
-                    סוג {renderSortIcon("type")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleToggleSort("priority")}
-                >
-                  <div className="flex items-center">
-                    עדיפות {renderSortIcon("priority")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleToggleSort("due_date")}
-                >
-                  <div className="flex items-center">
-                    תאריך {renderSortIcon("due_date")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer"
-                  onClick={() => handleToggleSort("status")}
-                >
-                  <div className="flex items-center">
-                    סטטוס {renderSortIcon("status")}
-                  </div>
-                </TableHead>
-                <TableHead>קשור ל</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
+            <TasksHeader
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleToggleSort}
+            />
             <TableBody>
               {filteredAndSortedTasks.map((task) => (
-                <TableRow key={task.id} className={task.status === 'completed' ? "bg-muted/50" : ""}>
-                  <TableCell>
-                    <Checkbox 
-                      checked={task.status === 'completed'} 
-                      onCheckedChange={(checked) => handleTaskStatusChange(task.id, checked as boolean)}
-                    />
-                  </TableCell>
-                  <TableCell className={task.status === 'completed' ? "line-through text-muted-foreground" : ""}>
-                    {task.title}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="flex items-center gap-1">
-                      {getTaskTypeIcon(task.type)}
-                      {getTaskTypeLabel(task.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getTaskPriorityColor(task.priority)}>
-                      {task.priority === 'high' ? 'גבוהה' : 
-                       task.priority === 'medium' ? 'בינונית' : 
-                       task.priority === 'low' ? 'נמוכה' : 
-                       task.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {task.due_date ? (
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs">
-                            {format(new Date(task.due_date), 'dd/MM/yyyy')}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs">
-                            {format(new Date(task.due_date), 'HH:mm')}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">ללא תאריך</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {task.status === 'pending' ? 'ממתין' : 
-                       task.status === 'in_progress' ? 'בביצוע' : 
-                       task.status === 'completed' ? 'הושלם' : 
-                       task.status === 'cancelled' ? 'בוטל' : task.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {task.car_id && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Car className="h-3 w-3" />
-                        {task.cars?.make} {task.cars?.model}
-                      </Badge>
-                    )}
-                    {task.lead_id && (
-                      <Badge variant="secondary" className="flex items-center gap-1 mt-1">
-                        <UserRound className="h-3 w-3" />
-                        {task.leads?.name}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => deleteTask.mutate(task.id)}
-                      disabled={deleteTask.isPending}
-                    >
-                      מחק
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onStatusChange={handleTaskStatusChange}
+                  onDelete={(id) => deleteTask.mutate(id)}
+                />
               ))}
             </TableBody>
           </Table>
