@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Car = Database["public"]["Tables"]["cars"]["Row"];
-type NewCar = Omit<Car, "id" | "created_at" | "updated_at" | "user_id">;
+type NewCar = Omit<Car, "id" | "created_at" | "updated_at" | "user_id" | "features">;
 
 export function useCars() {
   const queryClient = useQueryClient();

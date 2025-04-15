@@ -37,13 +37,13 @@ export function AddLeadForm({ carId }: { carId: string }) {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // Convert form values to NewLead type
     const leadData = {
       name: values.name,
       email: values.email || null,
       phone: values.phone,
       notes: values.notes || null,
-      car_id: values.car_id
+      car_id: values.car_id,
+      follow_up_notes: [] // Initialize empty array for follow up notes
     };
     
     await addLead.mutateAsync(leadData);

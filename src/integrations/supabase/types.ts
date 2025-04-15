@@ -13,12 +13,21 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          engine_size: string | null
+          exterior_color: string | null
+          features: string[] | null
+          fuel_type: string | null
           id: string
+          interior_color: string | null
           kilometers: number
+          last_test_date: string | null
           make: string
           model: string
+          ownership_history: string | null
           price: number
+          registration_year: number | null
           status: string | null
+          transmission: string | null
           updated_at: string | null
           user_id: string
           year: number
@@ -26,12 +35,21 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          engine_size?: string | null
+          exterior_color?: string | null
+          features?: string[] | null
+          fuel_type?: string | null
           id?: string
+          interior_color?: string | null
           kilometers: number
+          last_test_date?: string | null
           make: string
           model: string
+          ownership_history?: string | null
           price: number
+          registration_year?: number | null
           status?: string | null
+          transmission?: string | null
           updated_at?: string | null
           user_id: string
           year: number
@@ -39,12 +57,21 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          engine_size?: string | null
+          exterior_color?: string | null
+          features?: string[] | null
+          fuel_type?: string | null
           id?: string
+          interior_color?: string | null
           kilometers?: number
+          last_test_date?: string | null
           make?: string
           model?: string
+          ownership_history?: string | null
           price?: number
+          registration_year?: number | null
           status?: string | null
+          transmission?: string | null
           updated_at?: string | null
           user_id?: string
           year?: number
@@ -56,6 +83,7 @@ export type Database = {
           car_id: string | null
           created_at: string | null
           email: string | null
+          follow_up_notes: string[] | null
           id: string
           name: string
           notes: string | null
@@ -68,6 +96,7 @@ export type Database = {
           car_id?: string | null
           created_at?: string | null
           email?: string | null
+          follow_up_notes?: string[] | null
           id?: string
           name: string
           notes?: string | null
@@ -80,6 +109,7 @@ export type Database = {
           car_id?: string | null
           created_at?: string | null
           email?: string | null
+          follow_up_notes?: string[] | null
           id?: string
           name?: string
           notes?: string | null
