@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -7,7 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar"; // Updated import path
 import { Home, Car, CalendarCheck, Users, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
