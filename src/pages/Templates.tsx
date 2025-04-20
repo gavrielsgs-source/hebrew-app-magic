@@ -107,6 +107,19 @@ export default function Templates() {
     });
   };
 
+  // Template tag options
+  const templateTags = [
+    "{{make}}", 
+    "{{model}}", 
+    "{{year}}", 
+    "{{price}}", 
+    "{{kilometers}}", 
+    "{{color}}", 
+    "{{engine}}", 
+    "{{transmission}}", 
+    "{{fuel}}"
+  ];
+
   return (
     <div className="container py-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
@@ -157,17 +170,7 @@ export default function Templates() {
                 <div className="col-span-4">
                   <p className="text-sm text-muted-foreground mb-2">תגיות זמינות:</p>
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      "{{make}}", 
-                      "{{model}}", 
-                      "{{year}}", 
-                      "{{price}}", 
-                      "{{kilometers}}", 
-                      "{{color}}", 
-                      "{{engine}}", 
-                      "{{transmission}}", 
-                      "{{fuel}}"
-                    ].map((tag) => (
+                    {templateTags.map((tag) => (
                       <Button
                         key={tag}
                         variant="outline"

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -246,7 +245,3 @@ function getStatusText(status: string | null) {
       return "לא ידוע";
   }
 }
-
-// Need to import this component since it's used in the loading state
-import { Plus } from "lucide-react";
-import { AddLeadForm } from "./AddLeadForm";
