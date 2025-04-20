@@ -3,6 +3,7 @@ import React from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSubscription } from '@/contexts/subscription-context';
+import { Subscription } from '@/types/subscription'; // Import the Subscription type
 
 interface SubscriptionLimitAlertProps {
   featureKey: keyof Subscription;
