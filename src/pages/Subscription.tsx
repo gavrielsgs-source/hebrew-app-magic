@@ -2,8 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
-import { Crown, CreditCard, History } from "lucide-react";
+import { Crown, CreditCard, History, ArrowUpRight } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
+import { Link } from "react-router-dom";
 
 export default function Subscription() {
   const { subscription } = useSubscription();
@@ -44,6 +45,15 @@ export default function Subscription() {
             נהל פרטי תשלום
           </Button>
         </div>
+      </div>
+      
+      <div className="flex justify-end mb-4">
+        <Button asChild className="flex items-center gap-2">
+          <Link to="/subscription/upgrade">
+            <ArrowUpRight className="h-4 w-4" />
+            שדרוג מנוי
+          </Link>
+        </Button>
       </div>
       
       <Tabs defaultValue="plans">
@@ -100,7 +110,7 @@ function UsageCard({ title, limit = Infinity, used }: UsageCardProps) {
     <div className="bg-card border rounded-lg p-4">
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-medium">{title}</h3>
-        <Crown className={`h-4 w-4 ${isAtLimit ? 'text-destructive' : isNearLimit ? 'text-warning' : 'text-muted-foreground'}`} />
+        <Crown className={`h-4 w-4 ${isAtLimit ? 'text-destructive' : isNearLimit ? 'text-orange-500' : 'text-muted-foreground'}`} />
       </div>
       
       <div className="text-2xl font-bold mb-2">
@@ -109,7 +119,7 @@ function UsageCard({ title, limit = Infinity, used }: UsageCardProps) {
       
       <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div 
-          className={`h-full ${isAtLimit ? 'bg-destructive' : isNearLimit ? 'bg-warning' : 'bg-primary'}`}
+          className={`h-full ${isAtLimit ? 'bg-destructive' : isNearLimit ? 'bg-orange-500' : 'bg-primary'}`}
           style={{ width: `${percentage}%` }}
         />
       </div>

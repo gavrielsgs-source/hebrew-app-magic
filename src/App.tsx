@@ -15,6 +15,7 @@ import Cars from "./pages/Cars";
 import Leads from "./pages/Leads";
 import Templates from "./pages/Templates";
 import Subscription from "./pages/Subscription";
+import UpgradeSubscription from "./pages/UpgradeSubscription";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
@@ -47,6 +48,7 @@ const App = () => {
                             <Route path="/leads" element={<Leads />} />
                             <Route path="/templates" element={<Templates />} />
                             <Route path="/subscription" element={<Subscription />} />
+                            <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/contexts/subscription-context";
+import { Link } from "react-router-dom";
 
 export function PricingPlans() {
   const { subscription } = useSubscription();
@@ -81,8 +82,13 @@ export function PricingPlans() {
               className="w-full" 
               variant={subscription.tier === plan.tier ? "outline" : "default"}
               disabled={subscription.tier === plan.tier}
+              asChild
             >
-              {subscription.tier === plan.tier ? "החבילה הנוכחית שלך" : "שדרג עכשיו"}
+              {subscription.tier === plan.tier ? (
+                <span>החבילה הנוכחית שלך</span>
+              ) : (
+                <Link to="/subscription/upgrade">שדרג עכשיו</Link>
+              )}
             </Button>
           </CardFooter>
         </Card>

@@ -42,7 +42,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setSubscription(subscriptionFeatures[tier]);
     } catch (err) {
       console.error("Error fetching subscription:", err);
-      setError(err instanceof Error ? err : new Error('Unknown error fetching subscription'));
+      const errorObj = err instanceof Error ? err : new Error('Unknown error fetching subscription');
+      setError(errorObj);
       // Fallback to free tier on error
       setSubscription(subscriptionFeatures.free);
     } finally {

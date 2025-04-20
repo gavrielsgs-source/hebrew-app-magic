@@ -1,72 +1,52 @@
 
-import { AlertTriangle } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSubscription } from '@/contexts/subscription-context';
-import { SubscriptionTier } from '@/types/subscription';
 
 interface SubscriptionLimitAlertProps {
-  featureKey: 'carLimit' | 'leadLimit' | 'templateLimit' | 'userLimit';
+  featureKey: keyof Subscription;
   currentCount: number;
   entityName: string;
 }
 
-export function SubscriptionLimitAlert({ 
-  featureKey, 
-  currentCount, 
-  entityName 
-}: SubscriptionLimitAlertProps) {
+export function SubscriptionLimitAlert({ featureKey, currentCount, entityName }: SubscriptionLimitAlertProps) {
   const { subscription } = useSubscription();
-  const limit = subscription[featureKey];
   
-  if (!limit || typeof limit !== 'number' || limit === Infinity || currentCount < limit * 0.8) {
+  // Get the limit for this feature
+  const limit = subscription[featureKey] as number;
+  
+  if (!limit || limit === Infinity) {
+    // If there's no limit or it's infinite, don't show anything
     return null;
   }
   
-  const isAtLimit = currentCount >= limit;
-  const isNearLimit = currentCount >= limit * 0.8 && currentCount < limit;
+  // Calculate percentage used
+  const percentUsed = (currentCount / limit) * 100;
   
-  const getNextTier = (): SubscriptionTier => {
-    switch (subscription.tier) {
-      case 'free': return 'premium';
-      case 'premium': return 'business';
-      case 'business': return 'enterprise';
-      default: return 'enterprise';
-    }
-  };
-
-  const getTierLabel = (tier: SubscriptionTier): string => {
-    switch (tier) {
-      case 'free': return 'חינם';
-      case 'premium': return 'פרימיום';
-      case 'business': return 'ביזנס';
-      case 'enterprise': return 'אנטרפרייז';
-    }
-  };
+  // Only show an alert if we're at 80% or more of the limit
+  if (percentUsed < 80) {
+    return null;
+  }
+  
+  // If at limit or beyond, show destructive alert. Otherwise show warning
+  const isAtLimit = currentCount >= limit;
+  const variant = isAtLimit ? "destructive" : "default" as const;
   
   return (
-    <Alert variant={isAtLimit ? "destructive" : "default"} className="mb-4">
-      <AlertTriangle className="h-4 w-4" />
-      <AlertTitle className="mr-2">
-        {isAtLimit 
-          ? `הגעת למגבלת ${entityName} בחבילה שלך` 
-          : `מתקרב למגבלת ${entityName} בחבילה שלך`}
+    <Alert 
+      variant={variant}
+      className={`mb-6 ${isAtLimit ? 'border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/50' : 'border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/50'}`}
+    >
+      <AlertCircle className={`h-4 w-4 ${isAtLimit ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`} />
+      <AlertTitle className={`${isAtLimit ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+        {isAtLimit ? 'הגעת למגבלת המנוי' : 'מתקרב למגבלת המנוי'}
       </AlertTitle>
-      <AlertDescription className="flex flex-col md:flex-row md:items-center md:justify-between mt-2">
-        <div>
-          <span>
-            {isAtLimit 
-              ? `חבילת ${getTierLabel(subscription.tier)} שלך מוגבלת ל-${limit} ${entityName}.` 
-              : `חבילת ${getTierLabel(subscription.tier)} שלך מוגבלת ל-${limit} ${entityName}. כרגע יש לך ${currentCount}.`}
-          </span>
-        </div>
-        <Button 
-          className="mt-2 md:mt-0"
-          variant={isAtLimit ? "default" : "outline"}
-          size="sm"
-        >
-          שדרג לחבילת {getTierLabel(getNextTier())}
-        </Button>
+      <AlertDescription className="mt-2">
+        {isAtLimit ? 
+          `הגעת למספר ה${entityName} המקסימלי (${limit}) במנוי שלך. שדרג את המנוי כדי להוסיף יותר ${entityName}.` :
+          `אתה משתמש ב-${currentCount} מתוך ${limit} ${entityName} המותרים במנוי שלך (${Math.round(percentUsed)}%). שקול לשדרג את המנוי שלך.`
+        }
       </AlertDescription>
     </Alert>
   );

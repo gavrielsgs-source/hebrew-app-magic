@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useCars } from "@/hooks/use-cars";
 import { CarsTable } from "@/components/CarsTable";
+import { CarGrid } from "@/components/cars/CarGrid";
 import { Button } from "@/components/ui/button";
 import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -75,12 +76,7 @@ export default function Cars() {
       </div>
 
       {viewMode === "grid" ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {/* Grid view will be implemented later */}
-          <p className="col-span-full text-center py-8 text-muted-foreground">
-            תצוגת גריד תהיה זמינה בקרוב
-          </p>
-        </div>
+        <CarGrid cars={cars} isLoading={isLoading} />
       ) : (
         <CarsTable />
       )}

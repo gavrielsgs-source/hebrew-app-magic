@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "./use-auth";
 
@@ -30,37 +30,42 @@ export function useProfile() {
     queryFn: async () => {
       if (!user) return null;
 
-      // First, try to get the existing profile
-      let { data, error } = await supabase
-        .from("profiles")
-        .select()
-        .eq("id", user.id)
-        .maybeSingle(); // Use maybeSingle instead of single
-
-      // If no profile exists, create one
-      if (!data && !error) {
-        const { data: newProfile, error: insertError } = await supabase
+      try {
+        // First, try to get the existing profile
+        let { data, error } = await supabase
           .from("profiles")
-          .insert({ id: user.id })
           .select()
-          .single();
+          .eq("id", user.id)
+          .maybeSingle(); // Use maybeSingle instead of single
 
-        if (insertError) {
-          console.error("Error creating profile:", insertError);
-          toast.error("שגיאה ביצירת פרופיל");
-          throw insertError;
+        // If no profile exists, create one
+        if (!data && !error) {
+          const { data: newProfile, error: insertError } = await supabase
+            .from("profiles")
+            .insert({ id: user.id })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error("Error creating profile:", insertError);
+            toast.error("שגיאה ביצירת פרופיל");
+            throw insertError;
+          }
+
+          return newProfile as Profile;
         }
 
-        return newProfile as Profile;
-      }
+        if (error) {
+          console.error("Error fetching profile:", error);
+          toast.error("שגיאה בטעינת פרופיל");
+          throw error;
+        }
 
-      if (error) {
-        console.error("Error fetching profile:", error);
-        toast.error("שגיאה בטעינת פרופיל");
+        return data as Profile;
+      } catch (error) {
+        console.error("Error in profile function:", error);
         throw error;
       }
-
-      return data as Profile;
     },
     enabled: !!user,
     retry: 2,
