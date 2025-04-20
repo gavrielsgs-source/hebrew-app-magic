@@ -157,7 +157,17 @@ export default function Templates() {
                 <div className="col-span-4">
                   <p className="text-sm text-muted-foreground mb-2">תגיות זמינות:</p>
                   <div className="flex flex-wrap gap-2">
-                    {["{{make}}", "{{model}}", "{{year}}", "{{price}}", "{{kilometers}}", "{{color}}", "{{engine}}", "{{transmission}}", "{{fuel}}"].map((tag) => (
+                    {[
+                      "{{make}}", 
+                      "{{model}}", 
+                      "{{year}}", 
+                      "{{price}}", 
+                      "{{kilometers}}", 
+                      "{{color}}", 
+                      "{{engine}}", 
+                      "{{transmission}}", 
+                      "{{fuel}}"
+                    ].map((tag) => (
                       <Button
                         key={tag}
                         variant="outline"

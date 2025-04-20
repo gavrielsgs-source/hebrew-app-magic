@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -30,12 +29,14 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const { profile } = useProfile();
   
   const handleLogout = async () => {
     try {

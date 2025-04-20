@@ -4,13 +4,14 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Phone, Mail, Send, Edit, MessageSquare, Calendar } from "lucide-react";
+import { Phone, Mail, Send, Edit, MessageSquare, Calendar, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { EditLeadForm } from "@/components/leads/EditLeadForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
+import { AddLeadForm } from "./AddLeadForm";
 import type { Car } from "@/types/car";
 
 interface LeadsGridProps {
@@ -101,7 +102,7 @@ export function LeadsGrid({ leads, isLoading }: LeadsGridProps) {
                   {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
                 </p>
               </div>
-              <Badge className={getStatusBadgeColor(lead.status)} className="mr-auto">
+              <Badge className={getStatusBadgeColor(lead.status)}>
                 {getStatusText(lead.status)}
               </Badge>
             </div>
