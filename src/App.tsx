@@ -11,6 +11,8 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Tasks from "./pages/Tasks";
 import Cars from "./pages/Cars";
+import Leads from "./pages/Leads";
+import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
@@ -39,6 +41,8 @@ const App = () => {
                           <Route path="/profile" element={<Profile />} />
                           <Route path="/tasks" element={<Tasks />} />
                           <Route path="/cars" element={<Cars />} />
+                          <Route path="/leads" element={<Leads />} />
+                          <Route path="/templates" element={<Templates />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </main>

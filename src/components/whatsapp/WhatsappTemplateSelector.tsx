@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,13 @@ import { getCarImages } from "@/lib/image-utils";
 interface WhatsappTemplateSelectorProps {
   car: Car;
   onClose: () => void;
+  initialPhoneNumber?: string;
 }
 
-export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelectorProps) {
+export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = "" }: WhatsappTemplateSelectorProps) {
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
   const [customizedTemplate, setCustomizedTemplate] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
   const [carImages, setCarImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   

@@ -9,20 +9,35 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, MessageSquare, User, Plus, Edit } from "lucide-react";
+import { Phone, MessageSquare, Send, Plus, Edit, Calendar } from "lucide-react";
 import { useLeads } from "@/hooks/use-leads";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AddLeadForm } from "./leads/AddLeadForm";
 import { useState } from "react";
 import { EditLeadForm } from "./leads/EditLeadForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 
-export function LeadsTable() {
+interface LeadsTableProps {
+  searchTerm?: string;
+}
+
+export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
   const { leads, isLoading } = useLeads();
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   
   const selectedLead = selectedLeadId 
     ? leads.find(lead => lead.id === selectedLeadId) 
     : null;
+  
+  const filteredLeads = searchTerm
+    ? leads.filter(lead => 
+        lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (lead.phone && lead.phone.includes(searchTerm)) ||
+        (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : leads;
   
   return (
     <div>
@@ -30,12 +45,12 @@ export function LeadsTable() {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> הוסף ליד חדש
+              <Plus className="mr-2 h-4 w-4" /> הוסף לקוח חדש
             </Button>
           </SheetTrigger>
           <SheetContent className="w-[400px]">
             <SheetHeader>
-              <SheetTitle>הוסף ליד חדש</SheetTitle>
+              <SheetTitle>הוסף לקוח חדש</SheetTitle>
             </SheetHeader>
             <AddLeadForm />
           </SheetContent>
@@ -62,14 +77,14 @@ export function LeadsTable() {
                   טוען...
                 </TableCell>
               </TableRow>
-            ) : leads.length === 0 ? (
+            ) : filteredLeads.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center">
-                  אין לידים להצגה
+                  אין לקוחות להצגה
                 </TableCell>
               </TableRow>
             ) : (
-              leads.map((lead) => (
+              filteredLeads.map((lead) => (
                 <TableRow key={lead.id}>
                   <TableCell className="font-medium">{lead.name}</TableCell>
                   <TableCell>{lead.phone}</TableCell>
@@ -83,12 +98,47 @@ export function LeadsTable() {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2 rtl:space-x-reverse">
-                      <Button variant="ghost" size="icon">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          if (lead.phone) {
+                            window.open(`tel:${lead.phone}`, '_blank');
+                          }
+                        }}
+                        disabled={!lead.phone}
+                      >
                         <Phone className="h-4 w-4" />
                       </Button>
+                      
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            disabled={!lead.cars}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                          <DialogHeader>
+                            <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
+                          </DialogHeader>
+                          {lead.cars && (
+                            <WhatsappTemplateSelector 
+                              car={lead.cars} 
+                              onClose={() => setIsWhatsappOpen(false)}
+                              initialPhoneNumber={lead.phone || ""}
+                            />
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                      
                       <Button variant="ghost" size="icon">
-                        <MessageSquare className="h-4 w-4" />
+                        <Calendar className="h-4 w-4" />
                       </Button>
+                      
                       <Sheet>
                         <SheetTrigger asChild>
                           <Button 
@@ -101,7 +151,7 @@ export function LeadsTable() {
                         </SheetTrigger>
                         <SheetContent className="w-[400px]">
                           <SheetHeader>
-                            <SheetTitle>עריכת ליד</SheetTitle>
+                            <SheetTitle>עריכת לקוח</SheetTitle>
                           </SheetHeader>
                           {selectedLead && <EditLeadForm lead={selectedLead} />}
                         </SheetContent>
