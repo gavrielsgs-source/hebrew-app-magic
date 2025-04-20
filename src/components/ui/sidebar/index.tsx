@@ -8,5 +8,6 @@ export {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuSeparator,
   sidebarMenuButtonVariants
 } from "./sidebar-menu"

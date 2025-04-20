@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard as HomeIcon,
   Users as UsersIcon,
@@ -13,15 +14,16 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMain,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuSeparator,
+  SidebarMenuButton,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context"
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar()
+  const { state } = useSidebar()
+  const isCollapsed = state === "collapsed"
 
   return (
     <Sidebar>
@@ -29,20 +31,67 @@ export function AppSidebar() {
         <SidebarHeader>
           CarsLead
         </SidebarHeader>
-        <SidebarMain>
-          <SidebarMenu>
-            <SidebarMenuItem href="/" icon={HomeIcon}>דף הבית</SidebarMenuItem>
-            <SidebarMenuItem href="/leads" icon={UsersIcon}>לקוחות</SidebarMenuItem>
-            <SidebarMenuItem href="/cars" icon={CarIcon}>רכבים</SidebarMenuItem>
-            <SidebarMenuItem href="/tasks" icon={CheckSquareIcon}>משימות</SidebarMenuItem>
-            <SidebarMenuItem href="/templates" icon={MessageSquareIcon}>תבניות</SidebarMenuItem>
-            <SidebarMenuSeparator />
-            <SidebarMenuItem href="/subscription" icon={CrownIcon}>מנוי</SidebarMenuItem>
-            <SidebarMenuItem href="/profile" icon={UserIcon}>פרופיל</SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarMain>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="דף הבית">
+              <a href="/">
+                <HomeIcon />
+                <span>דף הבית</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="לקוחות">
+              <a href="/leads">
+                <UsersIcon />
+                <span>לקוחות</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="רכבים">
+              <a href="/cars">
+                <CarIcon />
+                <span>רכבים</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="משימות">
+              <a href="/tasks">
+                <CheckSquareIcon />
+                <span>משימות</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="תבניות">
+              <a href="/templates">
+                <MessageSquareIcon />
+                <span>תבניות</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarSeparator />
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="מנוי">
+              <a href="/subscription">
+                <CrownIcon />
+                <span>מנוי</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="פרופיל">
+              <a href="/profile">
+                <UserIcon />
+                <span>פרופיל</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <SidebarFooter>
-          {collapsed ? (
+          {isCollapsed ? (
             <a
               href="https://carslead.co.il"
               target="_blank"

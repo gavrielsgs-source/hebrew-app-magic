@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { LeadsGrid } from "@/components/leads/LeadsGrid";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
@@ -11,17 +12,17 @@ import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLi
 
 export default function Leads() {
   const { toast } = useToast();
-  const { addLead } = useLeads();
+  const { leads = [], isLoading, addLead } = useLeads();
   const [isAddingLead, setIsAddingLead] = useState(false);
+  const { checkEntitlement } = useSubscription();
+  const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
+
   const onLeadAdded = () => {
     toast({
       title: "ליד נוסף",
       description: "הליד נוסף בהצלחה!",
     });
   };
-  const { data: leads = [], isLoading } = useLeads();
-  const { checkEntitlement } = useSubscription();
-  const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
 
   return (
     <div className="p-6">
@@ -54,7 +55,7 @@ export default function Leads() {
               <SheetHeader>
                 <SheetTitle>הוסף לקוח חדש</SheetTitle>
               </SheetHeader>
-              <AddLeadForm onSuccess={onLeadAdded} />
+              <AddLeadForm />
             </SheetContent>
           </Sheet>
         </div>

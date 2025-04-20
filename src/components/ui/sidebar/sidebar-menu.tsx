@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
@@ -248,5 +249,20 @@ export const SidebarMenuSubButton = React.forwardRef<
   )
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
+
+export const SidebarMenuSeparator = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<"li">
+>(({ className, ...props }, ref) => (
+  <li
+    ref={ref}
+    data-sidebar="menu-separator"
+    className={cn("my-1", className)}
+    aria-hidden="true"
+  >
+    <div className="h-px bg-sidebar-border" />
+  </li>
+))
+SidebarMenuSeparator.displayName = "SidebarMenuSeparator"
 
 import { Skeleton } from "@/components/ui/skeleton"

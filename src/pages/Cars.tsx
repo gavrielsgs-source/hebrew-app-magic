@@ -1,7 +1,6 @@
+
 import { useState } from "react";
 import { useCars } from "@/hooks/use-cars";
-import { LeadsGrid } from "@/components/leads/LeadsGrid";
-import { CarsGrid } from "@/components/cars/CarsGrid";
 import { CarsTable } from "@/components/CarsTable";
 import { Button } from "@/components/ui/button";
 import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon } from "lucide-react";
@@ -12,9 +11,13 @@ import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLi
 
 export default function Cars() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
-  const { data: cars = [], isLoading, mutate: onCarAdded } = useCars();
+  const { cars = [], isLoading, addCar } = useCars();
   const { checkEntitlement } = useSubscription();
   const canAddCar = checkEntitlement('carLimit', cars.length + 1);
+
+  const onCarAdded = () => {
+    // Handled by the hook's internal logic
+  };
 
   return (
     <div className="p-6">
@@ -72,7 +75,12 @@ export default function Cars() {
       </div>
 
       {viewMode === "grid" ? (
-        <CarsGrid cars={cars} isLoading={isLoading} />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {/* Grid view will be implemented later */}
+          <p className="col-span-full text-center py-8 text-muted-foreground">
+            תצוגת גריד תהיה זמינה בקרוב
+          </p>
+        </div>
       ) : (
         <CarsTable />
       )}

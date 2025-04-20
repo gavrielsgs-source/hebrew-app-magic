@@ -45,7 +45,7 @@ export function SubscriptionLimitAlert({
   };
   
   return (
-    <Alert variant={isAtLimit ? "destructive" : "warning"} className="mb-4">
+    <Alert variant={isAtLimit ? "destructive" : "default"} className="mb-4">
       <AlertTriangle className="h-4 w-4" />
       <AlertTitle className="mr-2">
         {isAtLimit 
