@@ -138,7 +138,7 @@ export default function Templates() {
               <DialogHeader>
                 <DialogTitle>{isNew ? 'תבנית חדשה' : 'עריכת תבנית'}</DialogTitle>
                 <DialogDescription>
-                  צור תבנית מותאמת אישית לשליחת הודעות. השתמש ב-{{make}}, {{model}}, וכו' כדי לכלול פרטים מהרכב.
+                  צור תבנית מותאמת אישית לשליחת הודעות. השתמש ב-{"{"}make{"}"}, {"{"}model{"}"}, וכו' כדי לכלול פרטים מהרכב.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
