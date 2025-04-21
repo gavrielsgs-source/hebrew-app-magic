@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,7 +10,7 @@ export function useCars() {
   const { agencies } = useAuthContext();
   const defaultAgencyId = agencies && agencies.length > 0 ? agencies[0]?.id : null;
 
-  const { data: cars = [], isLoading, error } = useQuery({
+  const getCars = useQuery({
     queryKey: ["cars"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -218,9 +219,10 @@ export function useCars() {
   });
 
   return {
-    cars,
-    isLoading,
-    error,
+    cars: getCars.data || [],
+    isLoading: getCars.isLoading,
+    error: getCars.error,
+    getCars, // Export the getCars query itself
     addCar,
     updateCar
   };
