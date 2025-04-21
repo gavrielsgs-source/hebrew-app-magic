@@ -21,7 +21,24 @@ serve(async (req) => {
   }
 
   try {
-    const { action, payload } = await req.json();
+    // Parse request body
+    let payload;
+    let action;
+
+    try {
+      const body = await req.json();
+      action = body.action;
+      payload = body.payload;
+    } catch (e) {
+      console.error("Error parsing JSON:", e);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid JSON', 
+          details: e.message 
+        }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     // Validate required fields for all requests
     if (!payload) {
@@ -131,8 +148,49 @@ serve(async (req) => {
       body: JSON.stringify(growPayload),
     });
 
+    // Check for non-2xx status code
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('GROW API non-2xx response:', response.status, errorText);
+      return new Response(
+        JSON.stringify({ 
+          error: 'GROW API error',
+          status: response.status,
+          details: errorText
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Parse and return the response from GROW
-    const responseData = await response.json();
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (e) {
+      // Handle case where response is not valid JSON
+      const responseText = await response.text();
+      console.error('Failed to parse GROW API response as JSON:', e, 'Response text:', responseText);
+      
+      // If we can't parse as JSON but have HTML, it might be the payment form directly
+      if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
+        return new Response(
+          JSON.stringify({
+            htmlResponse: true,
+            html: responseText
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid response from GROW API', 
+          details: e.message,
+          responseText: responseText.substring(0, 500) // Include first 500 chars of response for debugging
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     console.log('GROW API response:', responseData);
     
