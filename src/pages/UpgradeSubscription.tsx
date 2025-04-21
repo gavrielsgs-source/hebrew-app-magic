@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { supabase } from "@/lib/supabase";
 
-// Form schema for payment form
 const paymentFormSchema = z.object({
   fullName: z.string()
     .min(3, "יש להזין שם מלא")
@@ -92,7 +90,7 @@ export default function UpgradeSubscription() {
         "רכבים ולקוחות ללא הגבלה",
         "10 משתמשים במערכת",
         "תבניות הודעה מותאמות אישית",
-        "אוטומציה של תזכורות ומעקב",
+        "אוטומציה של תזכ��רות ומעקב",
         "דוחות מתקדמים וניתוח ביצועים",
         "ייצוא נתונים"
       ],
@@ -126,9 +124,8 @@ export default function UpgradeSubscription() {
             description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
             successUrl: `${window.location.origin}/subscription/payment-success?plan=${selectedPlan}`,
             errorUrl: `${window.location.origin}/subscription/payment-error`,
-            extraParams: {
-              DoRedirect: "false",  // We'll handle the redirect manually
-            }
+            maxPayments: "1",
+            language: "HE",
           }
         }
       });
@@ -137,15 +134,23 @@ export default function UpgradeSubscription() {
         throw new Error(error.message);
       }
 
-      if (paymentData.Error) {
-        throw new Error(paymentData.ErrorText || 'שגיאה ביצירת התשלום');
+      if (paymentData.error) {
+        throw new Error(paymentData.details || paymentData.error);
       }
 
-      // Show iframe with payment form or redirect to payment URL
-      if (paymentData.Url) {
-        setPaymentUrl(paymentData.Url);
+      // בדיקה אם קיבלנו טופס HTML או כתובת URL להפניה
+      if (paymentData.success) {
+        if (paymentData.type === 'form' && paymentData.html) {
+          // הצגת טופס תשלום ב-iframe
+          setPaymentUrl(paymentData.url);
+        } else if (paymentData.type === 'redirect' && paymentData.url) {
+          // הפניה ישירה לעמוד התשלום
+          window.location.href = paymentData.url;
+        } else {
+          throw new Error('תשובה לא צפויה משרת התשלומים');
+        }
       } else {
-        throw new Error('לא התקבלה כתובת לביצוע התשלום');
+        throw new Error('לא התקבלה תשובה תקינה משרת התשלומים');
       }
       
     } catch (error) {
@@ -163,7 +168,6 @@ export default function UpgradeSubscription() {
     setPaymentDrawerOpen(true);
   };
 
-  // For demonstration purposes - mock success flow
   const handleMockSuccess = (planId: string) => {
     setLoading(true);
     setTimeout(() => {
@@ -171,7 +175,7 @@ export default function UpgradeSubscription() {
         description: "המערכת תתעדכן בקרוב עם הפרמטרים החדשים."
       });
       setLoading(false);
-      refreshSubscription();  // Refresh subscription data
+      refreshSubscription();
       navigate("/subscription");
     }, 1500);
   };
@@ -269,7 +273,6 @@ export default function UpgradeSubscription() {
         </ul>
       </div>
 
-      {/* Payment drawer */}
       <Drawer open={paymentDrawerOpen} onOpenChange={setPaymentDrawerOpen}>
         <DrawerContent className="max-h-[96%]">
           <DrawerHeader>
@@ -373,7 +376,6 @@ export default function UpgradeSubscription() {
                     </Button>
                   </div>
                   
-                  {/* For testing only */}
                   <div className="border-t pt-4 mt-4">
                     <p className="text-sm text-muted-foreground mb-2">למטרות פיתוח בלבד:</p>
                     <Button 
