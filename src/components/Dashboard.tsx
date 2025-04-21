@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -41,7 +42,8 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold font-rubik text-gray-900">18</div>
+            {/* Numbers slightly smaller as per previous request */}
+            <div className="text-xl font-extrabold font-rubik text-gray-900">18</div>
             <p className="text-sm text-blue-600 font-rubik leading-tight">
               +12% מהשבוע שעבר
             </p>
@@ -55,7 +57,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold font-rubik text-gray-900">24</div>
+            <div className="text-xl font-extrabold font-rubik text-gray-900">24</div>
             <p className="text-sm text-indigo-600 font-rubik leading-tight">
               +2 רכבים מהחודש שעבר
             </p>
@@ -69,7 +71,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold font-rubik text-gray-900">3</div>
+            <div className="text-xl font-extrabold font-rubik text-gray-900">3</div>
             <p className="text-sm text-amber-600 font-rubik leading-tight">
               2 פגישות חדשות
             </p>
@@ -83,7 +85,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold font-rubik text-gray-900">7</div>
+            <div className="text-xl font-extrabold font-rubik text-gray-900">7</div>
             <p className="text-sm text-rose-600 font-rubik leading-tight">
               5 משימות דחופות
             </p>
@@ -115,13 +117,7 @@ export default function Dashboard() {
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-3 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
-              <CardHeader>
-                <CardTitle className="font-rubik text-gray-900">משימות להיום</CardTitle>
-                <CardDescription className="font-rubik">סה"כ 7 משימות מתוכננות</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TaskList />
-              </CardContent>
+              {/* Removed the duplicate TaskList card as per the request */}
             </Card>
           </div>
         </TabsContent>
@@ -162,3 +158,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
