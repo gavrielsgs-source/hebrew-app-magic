@@ -31,7 +31,7 @@ export const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[--sidebar-width] bg-gradient-to-b from-carslead-purple to-carslead-purple/90 text-white p-0 [&>button]:hidden"
             style={
               {
                 "--sidebar-width": "18rem",
@@ -66,7 +66,7 @@ export const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar border-l"
+            className="flex h-full w-full flex-col"
           >
             {children}
           </div>

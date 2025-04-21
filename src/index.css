@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -103,7 +104,7 @@
   }
   
   .input-focus {
-    @apply focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200;
+    @apply focus:border-carslead-purple focus:ring-2 focus:ring-carslead-lightpurple/20 transition-all duration-200;
   }
   
   .hover-scale {
@@ -111,11 +112,23 @@
   }
   
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-carslead-purple to-carslead-lightpurple;
   }
   
   .card-layout {
     @apply rounded-xl p-6 border border-slate-200/50 dark:border-slate-800/50 shadow-lg;
+  }
+
+  .carslead-btn {
+    @apply bg-carslead-purple hover:bg-carslead-lightpurple text-white font-medium rounded-lg px-4 py-2 transition-all;
+  }
+
+  .carslead-btn-secondary {
+    @apply bg-carslead-blue hover:bg-carslead-lightblue text-white font-medium rounded-lg px-4 py-2 transition-all;
+  }
+
+  .carslead-card {
+    @apply bg-white rounded-xl shadow-md border border-gray-100 p-4 hover:shadow-lg transition-shadow;
   }
 }
 

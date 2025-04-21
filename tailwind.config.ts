@@ -65,6 +65,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				carslead: {
+					purple: '#6051A0',
+					lightpurple: '#9986E5',
+					blue: '#33C3F0',
+					lightblue: '#6AD9FF',
+					gray: '#F7F7F7',
+					darkgray: '#333333'
 				}
 			},
 			borderRadius: {
@@ -112,6 +120,8 @@ export default {
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+				'carslead-gradient': 'linear-gradient(135deg, #6051A0 0%, #9986E5 100%)',
+				'carslead-blue-gradient': 'linear-gradient(135deg, #33C3F0 0%, #6AD9FF 100%)',
 			}
 		}
 	},

@@ -23,7 +23,7 @@ export const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true, // Changed to true by default
+      defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
       className,
