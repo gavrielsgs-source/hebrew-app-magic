@@ -45,7 +45,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-extrabold font-rubik text-gray-900">18</div>
+            <div className="text-2xl font-extrabold font-rubik text-gray-900">18</div>
             <p className="text-sm text-blue-600 font-rubik leading-tight">
               +12% מהשבוע שעבר
             </p>
@@ -59,7 +59,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-extrabold font-rubik text-gray-900">24</div>
+            <div className="text-2xl font-extrabold font-rubik text-gray-900">24</div>
             <p className="text-sm text-indigo-600 font-rubik leading-tight">
               +2 רכבים מהחודש שעבר
             </p>
@@ -73,7 +73,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-extrabold font-rubik text-gray-900">3</div>
+            <div className="text-2xl font-extrabold font-rubik text-gray-900">3</div>
             <p className="text-sm text-amber-600 font-rubik leading-tight">
               2 פגישות חדשות
             </p>
@@ -87,7 +87,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-extrabold font-rubik text-gray-900">7</div>
+            <div className="text-2xl font-extrabold font-rubik text-gray-900">7</div>
             <p className="text-sm text-rose-600 font-rubik leading-tight">
               5 משימות דחופות
             </p>
@@ -106,15 +106,7 @@ export default function Dashboard() {
           {/* כאן שמים את שני הגרפים זה לצד זה ברספונסיביות */}
           <div className="grid gap-8 md:grid-cols-2">
             <SalesAnalytics />
-            <Card className="col-span-1 glass-card premium-card shadow-xl border-0">
-              <CardHeader>
-                <CardTitle className="font-rubik text-gray-900 text-xl">פעילות השבוע</CardTitle>
-                <CardDescription className="font-rubik">לידים מול מכירות</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ActivityChart />
-              </CardContent>
-            </Card>
+            {/* היחיד שהוסר הוא ActivityChart */}
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-3 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
@@ -165,3 +157,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
