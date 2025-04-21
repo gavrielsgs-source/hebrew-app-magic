@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { SubscriptionProvider } from "@/contexts/subscription-context";
+import { AuthProvider } from "@/contexts/auth-context";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -19,6 +20,7 @@ import UpgradeSubscription from "./pages/UpgradeSubscription";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -37,22 +39,25 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <SubscriptionProvider>
-                      <div className="flex min-h-screen w-full">
-                        <AppSidebar />
-                        <main className="flex-1 mx-auto max-w-6xl overflow-auto p-4 transition-all duration-300">
-                          <Routes>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/tasks" element={<Tasks />} />
-                            <Route path="/cars" element={<Cars />} />
-                            <Route path="/leads" element={<Leads />} />
-                            <Route path="/templates" element={<Templates />} />
-                            <Route path="/subscription" element={<Subscription />} />
-                            <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </main>
-                      </div>
+                      <AuthProvider>
+                        <div className="flex min-h-screen w-full">
+                          <AppSidebar />
+                          <main className="flex-1 mx-auto max-w-6xl overflow-auto p-4 transition-all duration-300">
+                            <Routes>
+                              <Route path="/" element={<Index />} />
+                              <Route path="/profile" element={<Profile />} />
+                              <Route path="/tasks" element={<Tasks />} />
+                              <Route path="/cars" element={<Cars />} />
+                              <Route path="/leads" element={<Leads />} />
+                              <Route path="/templates" element={<Templates />} />
+                              <Route path="/subscription" element={<Subscription />} />
+                              <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
+                              <Route path="/admin" element={<Admin />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
+                          </main>
+                        </div>
+                      </AuthProvider>
                     </SubscriptionProvider>
                   </ProtectedRoute>
                 }

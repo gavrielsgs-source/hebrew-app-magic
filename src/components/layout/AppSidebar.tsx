@@ -7,6 +7,7 @@ import {
   MessageSquare as MessageSquareIcon,
   User as UserIcon,
   Crown as CrownIcon,
+  ShieldAlert
 } from "lucide-react"
 import {
   Sidebar,
@@ -19,6 +20,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context"
+import { useRoles } from "@/hooks/use-roles";
 
 // Inline SVG logo for guaranteed display
 const CarSleadLogoSVG = () => (
@@ -34,6 +36,7 @@ const CarSleadLogoSVG = () => (
 export function AppSidebar() {
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
+  const { isAdmin } = useRoles();
 
   return (
     <Sidebar>
@@ -86,6 +89,16 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarSeparator className="bg-white/20" />
+          {isAdmin() && (
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="ניהול מערכת" className="text-white hover:bg-white/10 data-[active=true]:bg-white/20">
+                <a href="/admin">
+                  <ShieldAlert className="text-white" />
+                  <span>ניהול מערכת</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="מנוי" className="text-white hover:bg-white/10 data-[active=true]:bg-white/20">
               <a href="/subscription">

@@ -9,8 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agencies: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id: string
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cars: {
         Row: {
+          agency_id: string | null
           created_at: string | null
           description: string | null
           engine_size: string | null
@@ -33,6 +91,7 @@ export type Database = {
           year: number
         }
         Insert: {
+          agency_id?: string | null
           created_at?: string | null
           description?: string | null
           engine_size?: string | null
@@ -55,6 +114,7 @@ export type Database = {
           year: number
         }
         Update: {
+          agency_id?: string | null
           created_at?: string | null
           description?: string | null
           engine_size?: string | null
@@ -76,10 +136,20 @@ export type Database = {
           user_id?: string
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cars_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leads: {
         Row: {
+          agency_id: string | null
+          assigned_to: string | null
           car_id: string | null
           created_at: string | null
           email: string | null
@@ -94,6 +164,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          agency_id?: string | null
+          assigned_to?: string | null
           car_id?: string | null
           created_at?: string | null
           email?: string | null
@@ -108,6 +180,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          agency_id?: string | null
+          assigned_to?: string | null
           car_id?: string | null
           created_at?: string | null
           email?: string | null
@@ -122,6 +196,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_car_id_fkey"
             columns: ["car_id"]
@@ -166,6 +247,8 @@ export type Database = {
       }
       tasks: {
         Row: {
+          agency_id: string | null
+          assigned_to: string | null
           car_id: string | null
           created_at: string | null
           description: string | null
@@ -180,6 +263,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          agency_id?: string | null
+          assigned_to?: string | null
           car_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -194,6 +279,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          agency_id?: string | null
+          assigned_to?: string | null
           car_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -208,6 +295,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_car_id_fkey"
             columns: ["car_id"]
@@ -224,15 +318,60 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          agency_id: string | null
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agency_id?: string | null
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agency_id?: string | null
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      gdpr_delete_user: {
+        Args: { user_id_param: string }
+        Returns: undefined
+      }
+      get_user_agencies: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      has_role: {
+        Args: {
+          role_name: Database["public"]["Enums"]["user_role"]
+          agency_id_param?: string
+        }
+        Returns: boolean
+      }
+      is_agency_manager_or_admin: {
+        Args: { agency_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "agency_manager" | "sales_agent" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -347,6 +486,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["admin", "agency_manager", "sales_agent", "viewer"],
+    },
   },
 } as const
