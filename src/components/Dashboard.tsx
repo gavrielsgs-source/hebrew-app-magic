@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -7,9 +6,7 @@ import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
 import { UserNav } from "@/components/auth/UserNav";
 import { SalesAnalytics } from "@/components/analytics/SalesAnalytics";
-import { ActivityChart } from "@/components/ActivityChart";
 
-// Inline SVG logo for guaranteed display
 const CarSleadLogoSVG = () => (
   <svg width="48" height="48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="80" height="80" rx="10" fill="#1A1F2C"/>
@@ -35,7 +32,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* כרטיסי מידע חכמים */}
       <div className="grid gap-6 md:gap-8 lg:grid-cols-2 xl:grid-cols-4">
         <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -103,10 +99,19 @@ export default function Dashboard() {
           <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">משימות</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-8">
-          {/* כאן שמים את שני הגרפים זה לצד זה ברספונסיביות */}
           <div className="grid gap-8 md:grid-cols-2">
-            <SalesAnalytics />
-            {/* היחיד שהוסר הוא ActivityChart */}
+            <div className="min-h-[360px] flex flex-col">
+              <SalesAnalytics />
+            </div>
+            <Card className="col-span-1 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[360px] flex flex-col">
+              <CardHeader>
+                <CardTitle className="font-rubik text-gray-900">משימות להיום</CardTitle>
+                <CardDescription className="font-rubik">סה"כ 7 משימות מתוכננות</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-between">
+                <TaskList />
+              </CardContent>
+            </Card>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-3 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
@@ -157,4 +162,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
