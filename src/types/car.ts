@@ -14,4 +14,5 @@ export type NewCar = Omit<Car, "id" | "created_at" | "updated_at" | "user_id" | 
   last_test_date?: string | null;
   ownership_history?: string | null;
   status?: string | null;
+  agency_id?: string | null;
 };

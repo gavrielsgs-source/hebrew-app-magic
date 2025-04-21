@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ import { carFormSchema, type CarFormValues } from "./car-form-schema";
 import { Car } from "@/types/car";
 import { useCars } from "@/hooks/use-cars";
 import { useState } from "react";
+import { useAuthContext } from "@/contexts/auth-context";
 
 interface EditCarFormProps {
   car: Car;
@@ -27,6 +27,8 @@ interface EditCarFormProps {
 export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   const { updateCar } = useCars();
   const [images, setImages] = useState<File[]>([]);
+  const { agencies, isAdmin, hasRole } = useAuthContext();
+  const canSelectAgency = isAdmin || hasRole('agency_manager');
 
   const form = useForm<CarFormValues>({
     resolver: zodResolver(carFormSchema),
@@ -45,6 +47,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
       registration_year: car.registration_year?.toString() || "",
       last_test_date: car.last_test_date || "",
       ownership_history: car.ownership_history || "",
+      agency_id: car.agency_id || (agencies && agencies.length > 0 ? agencies[0]?.id : undefined),
     },
   });
 
@@ -67,6 +70,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         last_test_date: values.last_test_date || null,
         ownership_history: values.ownership_history || null,
         status: car.status,
+        agency_id: values.agency_id,
         images
       });
       onCancel();
@@ -78,6 +82,36 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {canSelectAgency && agencies && agencies.length > 0 && (
+          <FormField
+            control={form.control}
+            name="agency_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>סוכנות</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר סוכנות" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {agencies.map((agency) => (
+                      <SelectItem key={agency.id} value={agency.id}>
+                        {agency.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <div className="space-y-4">
           <FormItem>
             <FormLabel>תמונות הרכב</FormLabel>

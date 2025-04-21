@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +18,7 @@ import { useCars } from "@/hooks/use-cars";
 import { ImageUploadInput } from "./ImageUploadInput";
 import { carFormSchema, type CarFormValues } from "./car-form-schema";
 import { toast } from "sonner";
+import { useAuthContext } from "@/contexts/auth-context";
 
 interface AddCarFormProps {
   onSuccess?: () => void;
@@ -27,6 +27,8 @@ interface AddCarFormProps {
 export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   const { addCar } = useCars();
   const [images, setImages] = useState<File[]>([]);
+  const { agencies, isAdmin, hasRole } = useAuthContext();
+  const canSelectAgency = isAdmin || hasRole('agency_manager');
   
   const form = useForm<CarFormValues>({
     resolver: zodResolver(carFormSchema),
@@ -45,6 +47,7 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
       registration_year: "",
       last_test_date: "",
       ownership_history: "",
+      agency_id: agencies && agencies.length > 0 ? agencies[0]?.id : undefined,
     },
   });
 
@@ -71,6 +74,7 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
         last_test_date: values.last_test_date || null,
         ownership_history: values.ownership_history || null,
         status: "available",
+        agency_id: values.agency_id,
         images
       });
       
@@ -92,6 +96,36 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+        {canSelectAgency && agencies && agencies.length > 0 && (
+          <FormField
+            control={form.control}
+            name="agency_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>סוכנות</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר סוכנות" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {agencies.map((agency) => (
+                      <SelectItem key={agency.id} value={agency.id}>
+                        {agency.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <div className="space-y-4">
           <FormItem>
             <FormLabel>תמונות הרכב</FormLabel>

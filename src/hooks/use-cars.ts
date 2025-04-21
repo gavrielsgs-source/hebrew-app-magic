@@ -2,9 +2,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Car, NewCar } from "@/types/car";
+import { useAuthContext } from "@/contexts/auth-context";
 
 export function useCars() {
   const queryClient = useQueryClient();
+  const { agencies } = useAuthContext();
+  const defaultAgencyId = agencies && agencies.length > 0 ? agencies[0]?.id : null;
 
   const { data: cars = [], isLoading, error } = useQuery({
     queryKey: ["cars"],
@@ -56,6 +59,7 @@ export function useCars() {
             last_test_date: car.last_test_date || null,
             ownership_history: car.ownership_history || null,
             status: "available",
+            agency_id: car.agency_id || defaultAgencyId,
             user_id: userData.user.id
           })
           .select()
@@ -149,7 +153,8 @@ export function useCars() {
             registration_year: car.registration_year,
             last_test_date: car.last_test_date,
             ownership_history: car.ownership_history,
-            status: car.status || "available", // Use provided status or default to "available"
+            status: car.status || "available", 
+            agency_id: car.agency_id || defaultAgencyId,
           })
           .eq('id', id)
           .select()
