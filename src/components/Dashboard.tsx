@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -42,7 +41,6 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Numbers slightly smaller as per previous request */}
             <div className="text-xl font-extrabold font-rubik text-gray-900">18</div>
             <p className="text-sm text-blue-600 font-rubik leading-tight">
               +12% מהשבוע שעבר
@@ -101,11 +99,11 @@ export default function Dashboard() {
           <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">משימות</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-8">
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="min-h-[360px] flex flex-col">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-6">
+            <div className="min-h-[340px] flex flex-col mb-6 md:mb-0">
               <SalesAnalytics />
             </div>
-            <Card className="col-span-1 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[360px] flex flex-col">
+            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">
               <CardHeader>
                 <CardTitle className="font-rubik text-gray-900">משימות להיום</CardTitle>
                 <CardDescription className="font-rubik">סה"כ 7 משימות מתוכננות</CardDescription>
@@ -115,9 +113,9 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="hidden md:grid gap-4 grid-cols-2 lg:grid-cols-7 w-full">
             <Card className="col-span-3 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
-              {/* Removed the duplicate TaskList card as per the request */}
+              {/* אין תכנים פה – להשאיר כפי שביקשת */}
             </Card>
           </div>
         </TabsContent>
@@ -158,4 +156,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
