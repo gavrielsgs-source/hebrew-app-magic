@@ -6,10 +6,9 @@ import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useSidebar } from "../sidebar-context"
 
-// 🟣 עדכון עיצוב - מודגש, עבה, ריווח, אפקטים, פונט מרשים, אייקון
+// עיצוב רענן ומעט מוקטן, עדיין עבה/מרווח
 export const sidebarMenuButtonVariants = cva(
-  // עיצוב עבה עם גובה גדל, פונט גדול, ריווח מודגש בין כפתורים
-  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-3 mb-3 text-left text-lg font-bold font-rubik outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 shadow-sm group hover-scale group-hover:scale-[1.03]",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl p-2.5 mb-2 text-left text-base font-semibold font-rubik outline-none ring-sidebar-ring transition-all duration-200 focus-visible:ring-2 shadow group hover-scale group-hover:scale-[1.03]",
   {
     variants: {
       variant: {
@@ -18,9 +17,9 @@ export const sidebarMenuButtonVariants = cva(
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-gradient-to-r hover:from-carslead-purple hover:to-carslead-blue hover:text-white hover:shadow-lg",
       },
       size: {
-        default: "h-14 text-lg",
-        sm: "h-10 text-base",
-        lg: "h-16 text-xl",
+        default: "h-12 text-base",
+        sm: "h-9 text-sm",
+        lg: "h-14 text-lg",
       },
     },
     defaultVariants: {
@@ -61,9 +60,9 @@ export const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(
           sidebarMenuButtonVariants({ variant, size }),
-          // אייקון מופרד, גודל גדול, ריווח בין טקסט לאייקון
-          "transition-all duration-200 shadow-sm group relative min-h-[3.5rem] px-5 py-3 focus:ring-2 focus:ring-carslead-blue",
-          "[&>svg]:mr-2 [&>svg]:text-2xl [&>svg]:min-w-[28px] [&>svg]:min-h-[28px]",
+          // אייקון גדול, ריווח וטקסט מרווח ועדין יותר
+          "transition-all duration-200 shadow-sm group relative min-h-[3rem] px-4 py-2.5 focus:ring-2 focus:ring-carslead-blue",
+          "[&>svg]:mr-2 [&>svg]:text-xl [&>svg]:min-w-[24px] [&>svg]:min-h-[24px]",
           "hover:shadow-lg",
           "active:scale-[0.99]",
           className
@@ -90,3 +89,4 @@ export const SidebarMenuButton = React.forwardRef<
   }
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"
+

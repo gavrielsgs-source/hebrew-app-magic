@@ -7,6 +7,7 @@ import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
 import { UserNav } from "@/components/auth/UserNav";
 import { SalesAnalytics } from "@/components/analytics/SalesAnalytics";
+import { ActivityChart } from "@/components/ActivityChart";
 
 // Inline SVG logo for guaranteed display
 const CarSleadLogoSVG = () => (
@@ -22,10 +23,10 @@ const CarSleadLogoSVG = () => (
 export default function Dashboard() {
   return (
     <div className="flex min-h-screen flex-col space-y-6 p-4 md:p-8">
-      <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-gray-100">
+      <div className="flex items-center justify-between bg-white/90 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-gray-100">
         <div className="flex items-center gap-3">
           <CarSleadLogoSVG />
-          <h1 className="text-3xl font-extrabold tracking-tight font-rubik text-gray-900">
+          <h1 className="text-4xl font-extrabold tracking-tight font-rubik text-gray-900">
             CarsLead
           </h1>
         </div>
@@ -34,64 +35,66 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-4">
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium font-rubik">לידים חדשים</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <UserPlus className="h-4 w-4 text-blue-600" />
+      {/* כרטיסי מידע חכמים */}
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-2 xl:grid-cols-4">
+        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900">לידים חדשים</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shadow">
+              <UserPlus className="h-5 w-5 text-blue-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-rubik">18</div>
-            <p className="text-xs text-blue-600">
+            <div className="text-3xl font-extrabold font-rubik text-gray-900">18</div>
+            <p className="text-sm text-blue-600 font-rubik leading-tight">
               +12% מהשבוע שעבר
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium font-rubik">רכבים במלאי</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-              <Car className="h-4 w-4 text-indigo-600" />
+        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900">רכבים במלאי</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center shadow">
+              <Car className="h-5 w-5 text-indigo-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-rubik">24</div>
-            <p className="text-xs text-indigo-600">
+            <div className="text-3xl font-extrabold font-rubik text-gray-900">24</div>
+            <p className="text-sm text-indigo-600 font-rubik leading-tight">
               +2 רכבים מהחודש שעבר
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium font-rubik">פגישות היום</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-amber-600" />
+        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900">פגישות היום</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center shadow">
+              <Calendar className="h-5 w-5 text-amber-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-rubik">3</div>
-            <p className="text-xs text-amber-600">
+            <div className="text-3xl font-extrabold font-rubik text-gray-900">3</div>
+            <p className="text-sm text-amber-600 font-rubik leading-tight">
               2 פגישות חדשות
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium font-rubik">משימות לביצוע</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-rose-100 flex items-center justify-center">
-              <AlertCircle className="h-4 w-4 text-rose-600" />
+        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900">משימות לביצוע</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center shadow">
+              <AlertCircle className="h-5 w-5 text-rose-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-rubik">7</div>
-            <p className="text-xs text-rose-600">
+            <div className="text-3xl font-extrabold font-rubik text-gray-900">7</div>
+            <p className="text-sm text-rose-600 font-rubik leading-tight">
               5 משימות דחופות
             </p>
           </CardContent>
         </Card>
       </div>
+
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="font-rubik bg-white border border-gray-200 p-1 rounded-lg shadow-sm">
           <TabsTrigger value="overview" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">סיכום</TabsTrigger>
@@ -99,9 +102,21 @@ export default function Dashboard() {
           <TabsTrigger value="cars" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">רכבים</TabsTrigger>
           <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">משימות</TabsTrigger>
         </TabsList>
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <TabsContent value="overview" className="space-y-8">
+          {/* כאן שמים את שני הגרפים זה לצד זה ברספונסיביות */}
+          <div className="grid gap-8 md:grid-cols-2">
             <SalesAnalytics />
+            <Card className="col-span-1 glass-card premium-card shadow-xl border-0">
+              <CardHeader>
+                <CardTitle className="font-rubik text-gray-900 text-xl">פעילות השבוע</CardTitle>
+                <CardDescription className="font-rubik">לידים מול מכירות</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ActivityChart />
+              </CardContent>
+            </Card>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-3 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
               <CardHeader>
                 <CardTitle className="font-rubik text-gray-900">משימות להיום</CardTitle>
