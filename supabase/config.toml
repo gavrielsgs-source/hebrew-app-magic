@@ -1,1 +1,111 @@
+
+# This file controls the configuration for your Supabase project.
+# For more detailed information, refer to the docs at:
+# https://supabase.com/docs/guides/hosting/overview#project-configuration
 project_id = "zjmkdmmnajzevoupgfhg"
+
+[api]
+# Port to use for the API URL.
+port = 54321
+# Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
+# endpoints. public and storage are always included.
+schemas = ["public", "storage", "extended"]
+# Extra schemas to add to the search_path of every request. public is always included.
+extra_search_path = ["public", "extensions"]
+# Maximum rows returns from a view, table, or stored procedure. Limits payload size for accidental or
+# malicious requests.
+max_rows = 1000
+
+[api.rate_limits]
+# Apply a global rate limit to all API requests.
+enabled = false
+# Rate limit based on the client IP address.
+points = 1000
+# Rate limit duration, in seconds
+duration = 60
+# HTTP status code to return when the rate limit is exceeded.
+block_status = 429
+# HTML to render when returning a 429 status.
+block_message = 'Too many requests'
+
+[db]
+# For security, the database is accessed exclusively by the service role inside the API.
+# Set a strong password for the service role to prevent unauthorized access.
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = 'transaction'
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+# Port to use for Supabase Studio.
+port = 54323
+# External URL for Supabase Studio.
+api_url = "https://zjmkdmmnajzevoupgfhg.supabase.co"
+
+# Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
+# are monitored, and you can view the emails that would have been sent from the web interface.
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+# The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
+# in emails.
+site_url = "http://localhost:3000"
+# A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
+additional_redirect_urls = ["https://localhost:3000"]
+# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 seconds (one
+# week).
+jwt_expiry = 3600
+# Allow/disallow new user signups to your project.
+enable_signup = true
+
+[auth.email]
+# Allow/disallow new user signups via email to your project.
+enable_signup = true
+# If enabled, a user will be required to confirm any email change on both the old, and new email
+# addresses. If disabled, only the new email is required to confirm.
+double_confirm_changes = true
+# If enabled, users need to confirm their email address before signing in.
+enable_confirmations = false
+
+# Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
+# `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin`, `notion`, `twitch`,
+# `twitter`, `slack`, `spotify`, `workos`, `zoom`.
+[auth.external.apple]
+enabled = false
+client_id = ""
+secret = ""
+# Overrides the default auth redirectUrl.
+redirect_uri = ""
+# Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
+# or any other third-party OIDC providers.
+url = ""
+
+[functions]
+enabled = true
+port = 54328
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+
+[functions.grow-payment]
+verify_jwt = true
+

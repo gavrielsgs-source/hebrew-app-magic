@@ -17,6 +17,8 @@ import Leads from "./pages/Leads";
 import Templates from "./pages/Templates";
 import Subscription from "./pages/Subscription";
 import UpgradeSubscription from "./pages/UpgradeSubscription";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentError from "./pages/PaymentError";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,6 +54,8 @@ const App = () => {
                               <Route path="/templates" element={<Templates />} />
                               <Route path="/subscription" element={<Subscription />} />
                               <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
+                              <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
+                              <Route path="/subscription/payment-error" element={<PaymentError />} />
                               <Route path="/admin" element={<Admin />} />
                               <Route path="*" element={<NotFound />} />
                             </Routes>

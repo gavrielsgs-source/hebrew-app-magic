@@ -4,14 +4,36 @@ import { toast } from "sonner";
 import { CarFormValues } from "./car-form-schema";
 import { CarFormBase } from "./CarFormBase";
 import { useAuthContext } from "@/contexts/auth-context";
+import { useSubscription } from "@/contexts/subscription-context";
+import { SubscriptionLimitAlert } from "@/components/subscription/SubscriptionLimitAlert";
+import { useState, useEffect } from "react";
 
 interface AddCarFormProps {
   onSuccess?: () => void;
 }
 
 export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
-  const { addCar } = useCars();
+  const { addCar, getCars } = useCars();
   const { agencies } = useAuthContext();
+  const { subscription, checkEntitlement } = useSubscription();
+  const [carCount, setCarCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch current number of cars to check against limit
+  useEffect(() => {
+    const fetchCarsCount = async () => {
+      try {
+        const { data } = await getCars.refetch();
+        setCarCount(data?.length || 0);
+      } catch (error) {
+        console.error("Error fetching cars count:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCarsCount();
+  }, [getCars]);
 
   const defaultValues: CarFormValues = {
     make: "",
@@ -33,6 +55,18 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
 
   const onSubmit = async (values: CarFormValues, images: File[]) => {
     try {
+      // Check if user has reached car limit
+      if (!checkEntitlement('carLimit', carCount + 1)) {
+        toast.error("הגעת למגבלת הרכבים במנוי שלך", {
+          description: "עליך לשדרג את המנוי כדי להוסיף רכבים נוספים",
+          action: {
+            label: "שדרג מנוי",
+            onClick: () => window.location.href = "/subscription/upgrade"
+          }
+        });
+        return;
+      }
+
       if (images.length === 0) {
         const confirmed = window.confirm("לא נבחרו תמונות לרכב. האם ברצונך להמשיך בכל זאת?");
         if (!confirmed) return;
@@ -56,7 +90,23 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
         agency_id: values.agency_id,
         images
       });
+
+      // Update car count after successful addition
+      setCarCount(prevCount => prevCount + 1);
+      
       if (onSuccess) onSuccess();
+      
+      // Show success message with subscription info if near limit
+      const newCount = carCount + 1;
+      const limit = subscription.carLimit || Infinity;
+      if (limit !== Infinity && newCount >= limit * 0.8) {
+        const percentUsed = Math.round((newCount / limit) * 100);
+        toast.success("הרכב נוסף בהצלחה", {
+          description: `אתה משתמש ב-${newCount} מתוך ${limit} רכבים (${percentUsed}%)`,
+        });
+      } else {
+        toast.success("הרכב נוסף בהצלחה");
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("אירעה שגיאה בהוספת הרכב");
@@ -64,11 +114,20 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   };
 
   return (
-    <CarFormBase
-      defaultValues={defaultValues}
-      onSubmit={onSubmit}
-      isSubmitting={addCar.isPending}
-      submitLabel="הוסף רכב"
-    />
+    <>
+      {!isLoading && (
+        <SubscriptionLimitAlert 
+          featureKey="carLimit" 
+          currentCount={carCount} 
+          entityName="רכבים" 
+        />
+      )}
+      <CarFormBase
+        defaultValues={defaultValues}
+        onSubmit={onSubmit}
+        isSubmitting={addCar.isPending || isLoading}
+        submitLabel="הוסף רכב"
+      />
+    </>
   );
 }

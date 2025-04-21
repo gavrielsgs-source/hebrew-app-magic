@@ -57,6 +57,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         agency_id: values.agency_id,
         images
       });
+      toast.success("הרכב עודכן בהצלחה");
       onCancel();
     } catch (error) {
       console.error("Error updating car:", error);

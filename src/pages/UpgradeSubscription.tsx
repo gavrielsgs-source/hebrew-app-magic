@@ -3,15 +3,52 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Check, ArrowLeft, ShieldCheck, CreditCard } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
 import { toast } from "sonner";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { supabase } from "@/lib/supabase";
+
+// Form schema for payment form
+const paymentFormSchema = z.object({
+  fullName: z.string()
+    .min(3, "יש להזין שם מלא")
+    .refine(val => val.includes(' '), {
+      message: "יש להזין שם פרטי ושם משפחה",
+    }),
+  phone: z.string()
+    .min(10, "מספר טלפון חייב להכיל 10 ספרות")
+    .max(10, "מספר טלפון חייב להכיל 10 ספרות")
+    .regex(/^05\d{8}$/, "מספר טלפון חייב להתחיל ב-05 ולהכיל 10 ספרות"),
+  email: z.string().email("נא להזין כתובת אימייל תקינה").optional().or(z.literal("")),
+  notes: z.string().optional(),
+});
+
+type PaymentFormValues = z.infer<typeof paymentFormSchema>;
 
 export default function UpgradeSubscription() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const { subscription } = useSubscription();
+  const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const { subscription, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
+  
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema),
+    defaultValues: {
+      fullName: "",
+      phone: "",
+      email: "",
+      notes: "",
+    },
+  });
   
   const plans = [
     {
@@ -19,6 +56,7 @@ export default function UpgradeSubscription() {
       name: "פרימיום",
       description: "מתאים לסוחרים קטנים (1-2 אנשי צוות)",
       price: "199 ₪",
+      priceValue: 199,
       features: [
         "ניהול עד 20 רכבים במלאי",
         "ניהול עד 50 לקוחות",
@@ -33,6 +71,7 @@ export default function UpgradeSubscription() {
       name: "ביזנס",
       description: "מתאים לסוכנויות בינוניות (3-7 אנשי צוות)",
       price: "349 ₪",
+      priceValue: 349,
       features: [
         "ניהול עד 50 רכבים במלאי",
         "ניהול עד 200 לקוחות",
@@ -48,6 +87,7 @@ export default function UpgradeSubscription() {
       name: "אנטרפרייז",
       description: "מתאים למגרשים גדולים ורשתות סוכנויות",
       price: "599 ₪",
+      priceValue: 599,
       features: [
         "רכבים ולקוחות ללא הגבלה",
         "10 משתמשים במערכת",
@@ -60,24 +100,80 @@ export default function UpgradeSubscription() {
     }
   ];
 
-  const handleUpgrade = async (planId: string) => {
+  const onSubmit = async (data: PaymentFormValues) => {
+    if (!selectedPlan) {
+      toast.error("אנא בחר חבילה תחילה");
+      return;
+    }
+
     setLoading(true);
+    
     try {
-      // כאן בהמשך יהיה קוד שמבצע תשלום דרך Stripe
-      // לצורך הדמו, אנחנו רק מציגים הודעת הצלחה
-      setTimeout(() => {
-        toast.success(`שדרוג לחבילת ${planId} בוצע בהצלחה!`, {
-          description: "המערכת תתעדכן בקרוב עם הפרמטרים החדשים."
-        });
-        setLoading(false);
-        navigate("/subscription");
-      }, 1500);
-    } catch (error) {
-      toast.error("שגיאה בתהליך השדרוג", {
-        description: "אנא נסה שוב מאוחר יותר."
+      const selectedPlanObj = plans.find(plan => plan.id === selectedPlan);
+      if (!selectedPlanObj) {
+        throw new Error("חבילה לא נמצאה");
+      }
+
+      // Call the edge function to create a payment process
+      const { data: paymentData, error } = await supabase.functions.invoke('grow-payment', {
+        body: {
+          action: 'createPaymentProcess',
+          payload: {
+            customerName: data.fullName,
+            customerPhone: data.phone,
+            customerEmail: data.email || undefined,
+            amount: selectedPlanObj.priceValue,
+            description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
+            successUrl: `${window.location.origin}/subscription/payment-success?plan=${selectedPlan}`,
+            errorUrl: `${window.location.origin}/subscription/payment-error`,
+            extraParams: {
+              DoRedirect: "false",  // We'll handle the redirect manually
+            }
+          }
+        }
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (paymentData.Error) {
+        throw new Error(paymentData.ErrorText || 'שגיאה ביצירת התשלום');
+      }
+
+      // Show iframe with payment form or redirect to payment URL
+      if (paymentData.Url) {
+        setPaymentUrl(paymentData.Url);
+      } else {
+        throw new Error('לא התקבלה כתובת לביצוע התשלום');
+      }
+      
+    } catch (error) {
+      console.error("Error initiating payment:", error);
+      toast.error("שגיאה בתהליך התשלום", {
+        description: error.message || "אנא נסה שוב מאוחר יותר"
+      });
+    } finally {
       setLoading(false);
     }
+  };
+
+  const handleUpgrade = async (planId: string) => {
+    setSelectedPlan(planId);
+    setPaymentDrawerOpen(true);
+  };
+
+  // For demonstration purposes - mock success flow
+  const handleMockSuccess = (planId: string) => {
+    setLoading(true);
+    setTimeout(() => {
+      toast.success(`שדרוג לחבילת ${planId} בוצע בהצלחה!`, {
+        description: "המערכת תתעדכן בקרוב עם הפרמטרים החדשים."
+      });
+      setLoading(false);
+      refreshSubscription();  // Refresh subscription data
+      navigate("/subscription");
+    }, 1500);
   };
 
   return (
@@ -140,7 +236,10 @@ export default function UpgradeSubscription() {
                     החבילה הנוכחית
                   </span>
                 ) : (
-                  "שדרג עכשיו"
+                  <span className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    שדרג עכשיו
+                  </span>
                 )}
               </Button>
             </CardFooter>
@@ -169,6 +268,138 @@ export default function UpgradeSubscription() {
           </li>
         </ul>
       </div>
+
+      {/* Payment drawer */}
+      <Drawer open={paymentDrawerOpen} onOpenChange={setPaymentDrawerOpen}>
+        <DrawerContent className="max-h-[96%]">
+          <DrawerHeader>
+            <DrawerTitle className="text-center text-lg">
+              {selectedPlan && (
+                <>פרטי תשלום - מנוי {plans.find(p => p.id === selectedPlan)?.name}</>
+              )}
+            </DrawerTitle>
+          </DrawerHeader>
+          
+          <div className="px-4">
+            {paymentUrl ? (
+              <div className="flex flex-col items-center">
+                <p className="mb-4 text-center">אנא השלימו את התשלום בטופס המאובטח:</p>
+                <iframe 
+                  src={paymentUrl}
+                  className="w-full border rounded-lg"
+                  style={{ height: '500px' }}
+                  title="טופס תשלום"
+                />
+              </div>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>שם מלא</FormLabel>
+                        <FormControl>
+                          <Input placeholder="ישראל ישראלי" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>טלפון נייד</FormLabel>
+                        <FormControl>
+                          <Input placeholder="0501234567" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>אימייל (אופציונלי)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="your@email.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>הערות (אופציונלי)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="הערות נוספות לתשלום" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="flex justify-between pt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setPaymentDrawerOpen(false)}
+                      disabled={loading}
+                    >
+                      ביטול
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                          מעבד...
+                        </span>
+                      ) : (
+                        <>המשך לתשלום</>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {/* For testing only */}
+                  <div className="border-t pt-4 mt-4">
+                    <p className="text-sm text-muted-foreground mb-2">למטרות פיתוח בלבד:</p>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setPaymentDrawerOpen(false);
+                        handleMockSuccess(selectedPlan || 'premium');
+                      }}
+                    >
+                      סימולציית תשלום מוצלח
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            )}
+          </div>
+          
+          <DrawerFooter className="pt-2">
+            <p className="text-sm text-center text-muted-foreground">
+              התשלום מאובטח ומוצפן בתקן PCI DSS
+            </p>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
