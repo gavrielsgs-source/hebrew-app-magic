@@ -20,8 +20,16 @@ import {
 } from "@/components/ui/sidebar"
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context"
 
-// יצירת גלוף של תמונת הלוגו בתוך Base64 במידה והלוגו מהנתיב לא ייטען
-const fallbackLogoBase64 = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iMTAiIGZpbGw9IiM2MDUxQTAiLz4KPHBhdGggZD0iTTIwIDQwQzIwIDI4Ljk1NDMgMjguOTU0MyAyMCA0MCAyMEM1MS4wNDU3IDIwIDYwIDI4Ljk1NDMgNjAgNDBDNjAgNTEuMDQ1NyA1MS4wNDU3IDYwIDQwIDYwQzI4Ljk1NDMgNjAgMjAgNTEuMDQ1NyAyMCA0MFoiIGZpbGw9IiMzM0MzRjAiLz4KPHBhdGggZD0iTTI1IDQwSDU1IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8cGF0aCBkPSJNMzUgMzBMNDAgMzVMNDUgMzAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0zNSA1MEw0MCA0NUw0NSA1MCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==`;
+// Inline SVG logo for guaranteed display
+const CarSleadLogoSVG = () => (
+  <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="80" height="80" rx="10" fill="#1A1F2C"/>
+    <path d="M20 40C20 28.9543 28.9543 20 40 20C51.0457 20 60 28.9543 60 40C60 51.0457 51.0457 60 40 60C28.9543 60 20 51.0457 20 40Z" fill="#33C3F0"/>
+    <path d="M25 40H55" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+    <path d="M35 30L40 35L45 30" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M35 50L40 45L45 50" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 export function AppSidebar() {
   const { state } = useSidebar()
@@ -29,19 +37,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent className="bg-gradient-to-b from-carslead-purple to-carslead-purple/90 text-white border-l border-carslead-purple/20">
+      <SidebarContent className="border-l border-gray-700/20">
         <SidebarHeader>
-          <div className="flex items-center gap-2 p-2">
-            <img
-              src="/logo-carslead.svg"
-              alt="CarsLead Logo"
-              className="w-10 h-10 object-contain"
-              onError={(e) => {
-                // אם הלוגו לא נטען, נשתמש בגלוף שיצרנו
-                const img = e.target as HTMLImageElement;
-                img.src = fallbackLogoBase64;
-              }}
-            />
+          <div className="flex items-center gap-2 p-3">
+            <CarSleadLogoSVG />
             <span className="font-bold font-rubik text-lg tracking-tight text-white">CarsLead</span>
           </div>
         </SidebarHeader>
