@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase"; // שימוש בקליינט סופאבייס מהנתיב הנכון
 import { toast } from "sonner";
 import { useAuth } from "./use-auth";
 
@@ -26,39 +26,44 @@ export function useProfile() {
   const queryClient = useQueryClient();
 
   const { data: profile, isLoading, isError, error } = useQuery({
-    queryKey: ["profile"],
+    queryKey: ["profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
 
       try {
-        // First, try to get the existing profile
-        let { data, error } = await supabase
+        console.log("Fetching profile for user:", user.id);
+        
+        // Get the existing profile
+        const { data, error } = await supabase
           .from("profiles")
           .select()
           .eq("id", user.id)
-          .maybeSingle(); // Use maybeSingle instead of single
-
-        // If no profile exists, create one
-        if (!data && !error) {
-          const { data: newProfile, error: insertError } = await supabase
-            .from("profiles")
-            .insert({ id: user.id })
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error("Error creating profile:", insertError);
-            toast.error("שגיאה ביצירת פרופיל");
-            throw insertError;
-          }
-
-          return newProfile as Profile;
-        }
+          .single();
 
         if (error) {
-          console.error("Error fetching profile:", error);
-          toast.error("שגיאה בטעינת פרופיל");
-          throw error;
+          // אם יש שגיאה עם שליפת המידע (למשל, פרופיל לא קיים)
+          if (error.code === "PGRST116") {
+            console.log("Profile not found, creating a new one");
+            
+            // נסה ליצור פרופיל חדש
+            const { data: newProfile, error: insertError } = await supabase
+              .from("profiles")
+              .insert({ id: user.id })
+              .select()
+              .single();
+
+            if (insertError) {
+              console.error("Error creating profile:", insertError);
+              toast.error("שגיאה ביצירת פרופיל");
+              throw insertError;
+            }
+
+            return newProfile as Profile;
+          } else {
+            console.error("Error fetching profile:", error);
+            toast.error("שגיאה בטעינת פרופיל");
+            throw error;
+          }
         }
 
         return data as Profile;
@@ -69,6 +74,7 @@ export function useProfile() {
     },
     enabled: !!user,
     retry: 2,
+    staleTime: 300000, // 5 דקות
   });
 
   const updateProfile = useMutation({
@@ -87,7 +93,7 @@ export function useProfile() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
       toast.success("הפרופיל עודכן בהצלחה");
     },
   });
