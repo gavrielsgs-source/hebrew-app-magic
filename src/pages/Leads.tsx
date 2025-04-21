@@ -4,11 +4,13 @@ import { LeadsGrid } from "@/components/leads/LeadsGrid";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Plus } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { useLeads } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegration";
 
 export default function Leads() {
   const { toast } = useToast();
@@ -16,6 +18,7 @@ export default function Leads() {
   const [isAddingLead, setIsAddingLead] = useState(false);
   const { checkEntitlement } = useSubscription();
   const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
+  const [activeTab, setActiveTab] = useState<string>("leads");
 
   const onLeadAdded = () => {
     toast({
@@ -40,6 +43,15 @@ export default function Leads() {
           </p>
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={() => setActiveTab("settings")}
+          >
+            <Settings className="h-4 w-4" />
+            הגדרות
+          </Button>
           <Sheet>
             <SheetTrigger asChild>
               <Button 
@@ -61,7 +73,20 @@ export default function Leads() {
         </div>
       </div>
 
-      <LeadsGrid leads={leads} isLoading={isLoading} />
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="leads">לידים</TabsTrigger>
+          <TabsTrigger value="settings">אינטגרציות</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="leads">
+          <LeadsGrid leads={leads} isLoading={isLoading} />
+        </TabsContent>
+        
+        <TabsContent value="settings">
+          <FacebookLeadIntegration />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
