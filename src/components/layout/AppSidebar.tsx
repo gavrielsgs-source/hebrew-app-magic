@@ -8,7 +8,6 @@ import {
   User as UserIcon,
   Crown as CrownIcon,
 } from "lucide-react"
-
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +19,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context"
+import LogoCarslead from "@/assets/logo-carslead.svg" // נניח שהקובץ קיים בתיקיית assets
 
 export function AppSidebar() {
   const { state } = useSidebar()
@@ -29,7 +29,14 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent className="bg-background border-l border-border">
         <SidebarHeader>
-          CarsLead
+          <div className="flex items-center gap-2">
+            <img
+              src={LogoCarslead}
+              alt="CarsLead Logo"
+              className="w-8 h-8 object-contain"
+            />
+            <span className="font-bold font-rubik text-lg tracking-tight">CarsLead</span>
+          </div>
         </SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
