@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Table, TableBody } from "@/components/ui/table";
@@ -8,13 +7,16 @@ import { TaskForm } from "./TaskForm";
 import { TasksHeader } from "./task-list/TasksHeader";
 import { TaskFilters } from "./task-list/TaskFilters";
 import { TaskItem } from "./task-list/TaskItem";
+import { TaskCard } from "./TaskCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCcw } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type SortField = "due_date" | "priority" | "title" | "status" | "type";
 type SortDirection = "asc" | "desc";
 
 export function TasksTable() {
+  const isMobile = useIsMobile();
   const { tasks = [], isLoading, error, refetch, updateTask, deleteTask } = useTasks();
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>("due_date");
@@ -44,11 +46,9 @@ export function TasksTable() {
     }
   };
 
-  // Determine task types and statuses for filtering
   const allTypes = Array.from(new Set((tasks || []).map(task => task.type || 'task')));
   const allStatuses = Array.from(new Set((tasks || []).map(task => task.status || 'pending')));
 
-  // Apply filters and sorting
   const filteredAndSortedTasks = [...(tasks || [])]
     .filter(task => {
       if (statusFilter.length > 0 && !statusFilter.includes(task.status || 'pending')) {
@@ -157,6 +157,17 @@ export function TasksTable() {
       {filteredAndSortedTasks.length === 0 ? (
         <div className="text-center p-4 text-muted-foreground border rounded-lg">
           אין משימות להצגה
+        </div>
+      ) : isMobile ? (
+        <div className="grid gap-4">
+          {filteredAndSortedTasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onStatusChange={handleTaskStatusChange}
+              onDelete={(id) => deleteTask.mutate(id)}
+            />
+          ))}
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">

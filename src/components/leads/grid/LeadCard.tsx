@@ -1,138 +1,75 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Phone, Mail, Send, Edit, Calendar } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
-import { EditLeadForm } from "../EditLeadForm";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { formatPrice } from "@/lib/utils";
+import { Phone, MessageSquare, Car, Calendar } from "lucide-react";
 
 interface LeadCardProps {
   lead: any;
+  onContactClick?: () => void;
+  onScheduleClick?: () => void;
 }
 
-export function LeadCard({ lead }: LeadCardProps) {
-  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
-
+export function LeadCard({ lead, onContactClick, onScheduleClick }: LeadCardProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 border">
-            <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary/30 text-white">
-              {lead.name.substring(0, 2)}
-            </AvatarFallback>
-          </Avatar>
+    <Card className="hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90">
+      <CardHeader className="space-y-1">
+        <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-medium leading-none">{lead.name}</h3>
-            <p className="text-sm text-muted-foreground">
-              {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
-            </p>
+            <h3 className="text-lg font-semibold">{lead.name}</h3>
+            <p className="text-sm text-muted-foreground">{lead.email}</p>
           </div>
           <Badge className={getStatusBadgeColor(lead.status)}>
             {getStatusText(lead.status)}
           </Badge>
         </div>
       </CardHeader>
-      
-      <CardContent className="pb-2 space-y-2">
+      <CardContent className="space-y-4">
         {lead.phone && (
-          <div className="flex items-center gap-2 text-sm">
-            <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-            <span dir="ltr">{lead.phone}</span>
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{lead.phone}</span>
           </div>
         )}
-        
-        {lead.email && (
-          <div className="flex items-center gap-2 text-sm">
-            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-            <span dir="ltr">{lead.email}</span>
+        {lead.source && (
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">מקור: {lead.source}</span>
           </div>
         )}
-        
-        <div className="flex items-center gap-2 text-sm">
-          <Badge variant="outline" className="bg-orange-500/10 hover:bg-orange-500/20">
-            מקור: {lead.source || "ידני"}
-          </Badge>
-          
-          {lead.cars && (
-            <Badge variant="outline" className="bg-blue-500/10 hover:bg-blue-500/20">
-              התעניין ב: {lead.cars.make} {lead.cars.model}
-            </Badge>
-          )}
+        {lead.cars && (
+          <div className="flex items-center gap-2">
+            <Car className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">
+              {lead.cars.make} {lead.cars.model} {lead.cars.year}
+            </span>
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm">
+            {new Date(lead.created_at).toLocaleDateString("he-IL")}
+          </span>
         </div>
-        
-        {lead.notes && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {lead.notes}
-          </p>
-        )}
       </CardContent>
-      
-      <CardFooter>
-        <div className="flex gap-2 w-full justify-between">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => {
-              window.open(`tel:${lead.phone}`, '_blank');
-            }}
-            disabled={!lead.phone}
-          >
-            <Phone className="h-4 w-4" />
-          </Button>
-          
-          <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => {
-                  if (lead.cars) {
-                    setIsWhatsappOpen(true);
-                  }
-                }}
-                disabled={!lead.cars}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
-              </DialogHeader>
-              {lead.cars && (
-                <WhatsappTemplateSelector 
-                  car={lead.cars} 
-                  onClose={() => setIsWhatsappOpen(false)}
-                  initialPhoneNumber={lead.phone || ""}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-          
-          <Button variant="ghost" size="icon">
-            <Calendar className="h-4 w-4" />
-          </Button>
-          
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Edit className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-[400px]">
-              <SheetHeader>
-                <SheetTitle>עריכת פרטי לקוח</SheetTitle>
-              </SheetHeader>
-              <EditLeadForm lead={lead} />
-            </SheetContent>
-          </Sheet>
-        </div>
+      <CardFooter className="flex gap-2 pt-4">
+        <Button 
+          variant="outline" 
+          className="flex-1 h-10" 
+          onClick={onContactClick}
+        >
+          <Phone className="h-4 w-4 mr-2" />
+          צור קשר
+        </Button>
+        <Button 
+          variant="outline" 
+          className="flex-1 h-10"
+          onClick={onScheduleClick}
+        >
+          <Calendar className="h-4 w-4 mr-2" />
+          קבע פגישה
+        </Button>
       </CardFooter>
     </Card>
   );
