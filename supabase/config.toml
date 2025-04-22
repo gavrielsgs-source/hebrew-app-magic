@@ -1,4 +1,3 @@
-
 # A string used as a project reference and to name resources based on the project.
 project_id = "zjmkdmmnajzevoupgfhg"
 
@@ -49,10 +48,11 @@ port = 9999
 host = "localhost"
 port = 54324
 
+[functions.grow-webhook]
+verify_jwt = false
+
 [functions.grow-payment]
-# Set to true to verify JWT tokens
 verify_jwt = true
 
 [functions.facebook-leads]
-# ביטול אימות JWT כי פייסבוק מתחבר ישירות ללא JWT
-verify_jwt = false
+verify_jwt = true
