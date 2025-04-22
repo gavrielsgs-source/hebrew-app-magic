@@ -57,11 +57,14 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           onCheckedChange={(checked) => onStatusChange(task.id, checked as boolean)}
         />
       </TableCell>
-      <TableCell className={task.status === 'completed' ? "line-through text-muted-foreground" : ""}>
+      <TableCell className={cn(
+        "text-right",
+        task.status === 'completed' && "line-through text-muted-foreground"
+      )}>
         {task.title}
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 flex-row-reverse">
           {getTaskTypeIcon(task.type)}
           {getTaskTypeLabel(task.type)}
         </Badge>
@@ -76,14 +79,14 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
       </TableCell>
       <TableCell>
         {task.due_date ? (
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-1 flex-row-reverse">
               <Calendar className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs">
                 {format(new Date(task.due_date), 'dd/MM/yyyy')}
               </span>
             </div>
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1 mt-1 flex-row-reverse">
               <Clock className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs">
                 {format(new Date(task.due_date), 'HH:mm')}
@@ -91,7 +94,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
             </div>
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs">ללא תאריך</span>
+          <span className="text-muted-foreground text-xs text-right block">ללא תאריך</span>
         )}
       </TableCell>
       <TableCell>
@@ -104,13 +107,13 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
       </TableCell>
       <TableCell>
         {task.car_id && (
-          <Badge variant="secondary" className="flex items-center gap-1">
+          <Badge variant="secondary" className="flex items-center gap-1 flex-row-reverse">
             <Car className="h-3 w-3" />
             {task.cars?.make} {task.cars?.model}
           </Badge>
         )}
         {task.lead_id && (
-          <Badge variant="secondary" className="flex items-center gap-1 mt-1">
+          <Badge variant="secondary" className="flex items-center gap-1 mt-1 flex-row-reverse">
             <UserRound className="h-3 w-3" />
             {task.leads?.name}
           </Badge>

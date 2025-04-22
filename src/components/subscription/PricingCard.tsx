@@ -23,7 +23,7 @@ export function PricingCard({
 }: PricingCardProps) {
   return (
     <Card className={cn(
-      "relative flex flex-col justify-between",
+      "relative flex flex-col justify-between text-right",
       "transition-all duration-300 hover:shadow-lg",
       "border border-gray-200 backdrop-blur-sm",
       isPopular && "border-blue-500 shadow-lg scale-[1.02]",
@@ -37,19 +37,19 @@ export function PricingCard({
         </div>
       )}
       
-      <CardHeader className="text-center pt-8">
+      <CardHeader className="text-right pt-8">
         <h3 className="text-2xl font-bold mb-2">{title}</h3>
         <p className="text-gray-500 mb-4">{description}</p>
-        <div className="flex justify-center items-baseline gap-1">
-          <span className="text-4xl font-bold">₪{price}</span>
+        <div className="flex justify-end items-baseline gap-1">
           <span className="text-gray-500">/חודש</span>
+          <span className="text-4xl font-bold">₪{price}</span>
         </div>
       </CardHeader>
       
       <CardContent className="flex-grow">
         <ul className="space-y-3">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-center gap-2">
+            <li key={index} className="flex items-center gap-2 flex-row-reverse">
               <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
               <span className="text-gray-600">{feature}</span>
             </li>
