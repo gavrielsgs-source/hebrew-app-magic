@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -90,8 +91,8 @@ export default function UpgradeSubscription() {
         "רכבים ולקוחות ללא הגבלה",
         "10 משתמשים במערכת",
         "תבניות הודעה מותאמות אישית",
-        "אוטומציה של תזכ��רות ומעקב",
-        "��וחות מתקדמים וניתוח ביצועים",
+        "אוטומציה של תזכורות ומעקב",
+        "דוחות מתקדמים וניתוח ביצועים",
         "ייצוא נתונים"
       ],
       tier: "enterprise"
@@ -112,6 +113,7 @@ export default function UpgradeSubscription() {
         throw new Error("חבילה לא נמצאה");
       }
 
+      // הגדרת URLs מלאים עם origin מדויק
       const origin = window.location.origin;
       console.log(`Origin URL: ${origin}`);
 
@@ -121,6 +123,7 @@ export default function UpgradeSubscription() {
       console.log(`Success URL: ${successUrl}`);
       console.log(`Error URL: ${errorUrl}`);
 
+      // שליחת הבקשה ליצירת תשלום
       const { data: paymentData, error } = await supabase.functions.invoke('grow-payment', {
         body: {
           action: 'createPaymentProcess',
@@ -145,18 +148,23 @@ export default function UpgradeSubscription() {
 
       console.log("Payment response:", paymentData);
 
+      // בדיקת שגיאות בתשובה
       if (paymentData.error) {
         console.error("Payment API error:", paymentData);
         throw new Error(paymentData.details || paymentData.error);
       }
 
+      // טיפול בתשובה מוצלחת
       if (paymentData.success) {
-        if ((paymentData.type === 'form' || paymentData.type === 'redirect') && paymentData.url) {
-          console.log("Redirecting to payment URL:", paymentData.url);
-          window.location.href = paymentData.url;
+        // אם התקבל URL להפניה, מפנים את המשתמש ישירות
+        if (paymentData.url || paymentData.redirectUrl) {
+          const redirectUrl = paymentData.url || paymentData.redirectUrl;
+          console.log("Redirecting to payment URL:", redirectUrl);
+          // הפניה ישירה לדף התשלום
+          window.location.href = redirectUrl;
         } else {
-          console.error("Unexpected response format:", paymentData);
-          throw new Error('תשובה לא צפויה משרת התשלומים');
+          console.error("Missing redirect URL in response:", paymentData);
+          throw new Error('לא התקבלה כתובת הפניה לתשלום');
         }
       } else {
         throw new Error('לא התקבלה תשובה תקינה משרת התשלומים');
@@ -292,115 +300,103 @@ export default function UpgradeSubscription() {
           </DrawerHeader>
           
           <div className="px-4">
-            {paymentUrl ? (
-              <div className="flex flex-col items-center">
-                <p className="mb-4 text-center">אנא השלימו את התשלום בטופס המאובטח:</p>
-                <iframe 
-                  src={paymentUrl}
-                  className="w-full border rounded-lg"
-                  style={{ height: '500px' }}
-                  title="טופס תשלום"
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>שם מלא</FormLabel>
+                      <FormControl>
+                        <Input placeholder="ישראל ישראלי" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            ) : (
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
-                  <FormField
-                    control={form.control}
-                    name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>שם מלא</FormLabel>
-                        <FormControl>
-                          <Input placeholder="ישראל ישראלי" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>טלפון נייד</FormLabel>
+                      <FormControl>
+                        <Input placeholder="0501234567" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>אימייל (אופציונלי)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="your@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>הערות (אופציונלי)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="הערות נוספות לתשלום" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-between pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setPaymentDrawerOpen(false)}
+                    disabled={loading}
+                  >
+                    ביטול
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                        מעבד...
+                      </span>
+                    ) : (
+                      <>המשך לתשלום</>
                     )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>טלפון נייד</FormLabel>
-                        <FormControl>
-                          <Input placeholder="0501234567" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>אימייל (אופציונלי)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="your@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>הערות (אופציונלי)</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="הערות נוספות לתשלום" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex justify-between pt-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setPaymentDrawerOpen(false)}
-                      disabled={loading}
-                    >
-                      ביטול
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <span className="flex items-center gap-2">
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                          מעבד...
-                        </span>
-                      ) : (
-                        <>המשך לתשלום</>
-                      )}
-                    </Button>
-                  </div>
-                  
-                  <div className="border-t pt-4 mt-4">
-                    <p className="text-sm text-muted-foreground mb-2">למטרות פיתוח בלבד:</p>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        setPaymentDrawerOpen(false);
-                        handleMockSuccess(selectedPlan || 'premium');
-                      }}
-                    >
-                      סימולציית תשלום מוצלח
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            )}
+                  </Button>
+                </div>
+                
+                <div className="border-t pt-4 mt-4">
+                  <p className="text-sm text-muted-foreground mb-2">למטרות פיתוח בלבד:</p>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setPaymentDrawerOpen(false);
+                      handleMockSuccess(selectedPlan || 'premium');
+                    }}
+                  >
+                    סימולציית תשלום מוצלח
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </div>
           
           <DrawerFooter className="pt-2">

@@ -92,6 +92,26 @@ serve(async (req) => {
           );
         }
 
+        // הבטחה שכתובות ההצלחה והשגיאה תקינות
+        const successUrl = payload.successUrl || '';
+        const errorUrl = payload.errorUrl || '';
+
+        // חשוב לוודא שה-URL מתחיל ב-https:// או http://
+        const isValidUrl = (url) => {
+          if (!url) return true; // אם ריק, לא בודקים
+          return url.startsWith('http://') || url.startsWith('https://');
+        };
+
+        if (!isValidUrl(successUrl) || !isValidUrl(errorUrl)) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'Invalid URL format', 
+              details: 'Success and error URLs must start with http:// or https://' 
+            }), 
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         // ההתאמה לפורמט הנדרש ע"י GROW
         growPayload = {
           user: GROW_USER_ID,
@@ -101,8 +121,8 @@ serve(async (req) => {
           customerPhone: payload.customerPhone,
           description: payload.description || 'מנוי שירות',
           customerEmail: payload.customerEmail || '',
-          successUrl: payload.successUrl || '',
-          errorUrl: payload.errorUrl || '',
+          successUrl: successUrl,
+          errorUrl: errorUrl,
           maxPayments: payload.maxPayments || '1',
           language: payload.language || 'HE',
           ...payload.extraParams
@@ -134,16 +154,22 @@ serve(async (req) => {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
     
     try {
+      // שינוי: שליחת הבקשה עם אופציה שתמיד תעקוב אחרי הפניות
       const response = await fetch(fullUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json, text/html',
           'User-Agent': 'Supabase Edge Function',
         },
+        redirect: 'follow',
         signal: controller.signal
       });
       
       clearTimeout(timeoutId);
+
+      // נקבל את ה-URL הסופי (במקרה של הפניות)
+      const finalUrl = response.url;
+      console.log("Final URL after redirects:", finalUrl);
 
       // בדיקת תשובה
       if (!response.ok) {
@@ -154,9 +180,9 @@ serve(async (req) => {
             error: 'GROW API error',
             status: response.status,
             details: errorText.substring(0, 500), // הגבלה לאורך סביר
-            url: fullUrl // שליחת ה-URL שנקרא לצורכי דיבוג
+            url: finalUrl // שליחת ה-URL שנקרא לצורכי דיבוג
           }),
-          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -164,51 +190,16 @@ serve(async (req) => {
       const contentType = response.headers.get('content-type') || '';
       console.log("Response content type:", contentType);
       
-      if (contentType.includes('text/html')) {
-        // אם התשובה היא HTML, נחזיר את הטופס להצגה
-        const htmlContent = await response.text();
-        console.log("Got HTML response, length:", htmlContent.length);
-        return new Response(
-          JSON.stringify({
-            success: true,
-            type: 'redirect',  // Changed to 'redirect' as the iframe approach doesn't work well
-            html: htmlContent.substring(0, 1000), // Only sending preview for logs
-            url: response.url  // מחזיר את הכתובת המלאה שיצרה GROW
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } else {
-        // אם התשובה היא JSON, ננסה לפרסר אותה
-        let responseData;
-        try {
-          responseData = await response.json();
-          console.log("Got JSON response:", responseData);
-        } catch (e) {
-          // אם לא הצלחנו לפרסר כ-JSON, נחזיר את הטקסט
-          const responseText = await response.text();
-          console.log("Got non-JSON response:", responseText.substring(0, 500));
-          
-          // התגובה היא טקסט או גם עם HTML בנוי - נפנה ישירות אל הדף
-          return new Response(
-            JSON.stringify({
-              success: true,
-              type: 'redirect',
-              url: response.url,
-              data: responseText.substring(0, 500) // רק תצוגה מקדימה לצורכי לוגים
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        
-        return new Response(
-          JSON.stringify({
-            success: true,
-            type: 'json',
-            data: responseData
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      // שינוי מהותי: בכל מקרה, נעביר את המשתמש ישירות ל-URL הסופי
+      return new Response(
+        JSON.stringify({
+          success: true,
+          type: 'redirect',
+          url: finalUrl, // שליחת ה-URL הסופי אליו צריך להפנות את המשתמש
+          redirectUrl: finalUrl // שדה נוסף לתאימות עם קוד קיים
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
       
     } catch (fetchError) {
       clearTimeout(timeoutId);
@@ -221,7 +212,7 @@ serve(async (req) => {
             error: 'Request timeout', 
             details: 'The payment gateway did not respond in time. Please try again later.' 
           }),
-          { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
@@ -231,7 +222,7 @@ serve(async (req) => {
           details: fetchError.message,
           url: fullUrl // שליחת ה-URL שנקרא לצורכי דיבוג
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
@@ -243,7 +234,7 @@ serve(async (req) => {
         error: 'Internal server error', 
         details: error.message 
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
