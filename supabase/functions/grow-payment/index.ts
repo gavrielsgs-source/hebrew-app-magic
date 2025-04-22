@@ -4,6 +4,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // GROW API credentials
 const GROW_USER_ID = Deno.env.get('GROW_USER_ID') || '3bdaec1d6c7e9ef7'; // Testing user ID
 const GROW_PAGE_CODE = Deno.env.get('GROW_PAGE_CODE') || 'f8dc02a4a03d'; // Default page code for recurring payment
+const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || ''; // Client ID for authentication
+const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || ''; // Password for authentication
 
 // עדכון כתובת ה-API - שימו לב שבמסמכים הרשמיים של GROW יש לוודא את הכתובת המדויקת
 const GROW_API_BASE = 'https://secure.e-c.co.il/easycard/createform.asp';
@@ -39,7 +41,7 @@ serve(async (req) => {
           error: 'Invalid JSON', 
           details: e.message 
         }), 
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
@@ -47,7 +49,22 @@ serve(async (req) => {
     if (!payload) {
       return new Response(
         JSON.stringify({ error: 'Missing payload' }), 
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // בדיקת פרמטרים החובה מבחינת הגרואו
+    if (!GROW_CLIENT_ID || !GROW_EC_PWD) {
+      console.error("Missing required GROW credentials", { 
+        hasClientId: !!GROW_CLIENT_ID, 
+        hasECPwd: !!GROW_EC_PWD 
+      });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing Grow API credentials', 
+          details: 'Must provide clientid and password in environment variables' 
+        }), 
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -66,7 +83,7 @@ serve(async (req) => {
               error: 'Missing required fields', 
               details: 'Customer name and phone are required' 
             }), 
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
         
@@ -77,7 +94,7 @@ serve(async (req) => {
               error: 'Invalid phone format', 
               details: 'Phone must be an Israeli mobile number starting with 05 and containing 10 digits' 
             }), 
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
         
@@ -88,7 +105,7 @@ serve(async (req) => {
               error: 'Invalid name format', 
               details: 'Name must include first and last name separated by space' 
             }), 
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -108,7 +125,7 @@ serve(async (req) => {
               error: 'Invalid URL format', 
               details: 'Success and error URLs must start with http:// or https://' 
             }), 
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -125,6 +142,8 @@ serve(async (req) => {
           errorUrl: errorUrl,
           maxPayments: payload.maxPayments || '1',
           language: payload.language || 'HE',
+          clientid: GROW_CLIENT_ID,   // הוספת פרמטר החדש
+          ECPwd: GROW_EC_PWD,         // הוספת פרמטר החדש
           ...payload.extraParams
         };
         break;
@@ -132,7 +151,7 @@ serve(async (req) => {
       default:
         return new Response(
           JSON.stringify({ error: 'Invalid action' }), 
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
 
@@ -171,21 +190,39 @@ serve(async (req) => {
       const finalUrl = response.url;
       console.log("Final URL after redirects:", finalUrl);
 
+      // בדיקת התשובה וקריאת הגוף שלה
+      const responseText = await response.text();
+      console.log("Response status:", response.status);
+      console.log("Response content type:", response.headers.get('content-type'));
+      console.log("Response text (first 500 chars):", responseText.substring(0, 500));
+
       // בדיקת תשובה
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('GROW API non-2xx response:', response.status, errorText);
+        console.error('GROW API non-2xx response:', response.status, responseText);
         return new Response(
           JSON.stringify({ 
             error: 'GROW API error',
             status: response.status,
-            details: errorText.substring(0, 500), // הגבלה לאורך סביר
+            details: responseText.substring(0, 500), // הגבלה לאורך סביר
             url: finalUrl // שליחת ה-URL שנקרא לצורכי דיבוג
           }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
+      // בדיקה אם התשובה מכילה שגיאה (לפעמים גם עם קוד 200 יכולה להיות שגיאה)
+      if (responseText.includes('error') || responseText.includes('Error') || responseText.includes('שגיאה')) {
+        console.error('GROW API returned error in body:', responseText);
+        return new Response(
+          JSON.stringify({ 
+            error: 'GROW API error in response body',
+            details: responseText.substring(0, 500),
+            url: finalUrl
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       // בדיקה אם התשובה היא HTML (טופס תשלום) או JSON
       const contentType = response.headers.get('content-type') || '';
       console.log("Response content type:", contentType);
