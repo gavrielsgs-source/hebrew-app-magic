@@ -91,7 +91,7 @@ export default function UpgradeSubscription() {
         "10 משתמשים במערכת",
         "תבניות הודעה מותאמות אישית",
         "אוטומציה של תזכ��רות ומעקב",
-        "דוחות מתקדמים וניתוח ביצועים",
+        "��וחות מתקדמים וניתוח ביצועים",
         "ייצוא נתונים"
       ],
       tier: "enterprise"
@@ -112,7 +112,15 @@ export default function UpgradeSubscription() {
         throw new Error("חבילה לא נמצאה");
       }
 
-      // Call the edge function to create a payment process
+      const origin = window.location.origin;
+      console.log(`Origin URL: ${origin}`);
+
+      const successUrl = `${origin}/subscription/payment-success?plan=${selectedPlan}`;
+      const errorUrl = `${origin}/subscription/payment-error`;
+      
+      console.log(`Success URL: ${successUrl}`);
+      console.log(`Error URL: ${errorUrl}`);
+
       const { data: paymentData, error } = await supabase.functions.invoke('grow-payment', {
         body: {
           action: 'createPaymentProcess',
@@ -122,8 +130,8 @@ export default function UpgradeSubscription() {
             customerEmail: data.email || undefined,
             amount: selectedPlanObj.priceValue,
             description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
-            successUrl: `${window.location.origin}/subscription/payment-success?plan=${selectedPlan}`,
-            errorUrl: `${window.location.origin}/subscription/payment-error`,
+            successUrl: successUrl,
+            errorUrl: errorUrl,
             maxPayments: "1",
             language: "HE",
           }
@@ -131,22 +139,23 @@ export default function UpgradeSubscription() {
       });
 
       if (error) {
+        console.error("Supabase function error:", error);
         throw new Error(error.message);
       }
 
+      console.log("Payment response:", paymentData);
+
       if (paymentData.error) {
+        console.error("Payment API error:", paymentData);
         throw new Error(paymentData.details || paymentData.error);
       }
 
-      // בדיקה אם קיבלנו טופס HTML או כתובת URL להפניה
       if (paymentData.success) {
-        if (paymentData.type === 'form' && paymentData.html) {
-          // הצגת טופס תשלום ב-iframe
-          setPaymentUrl(paymentData.url);
-        } else if (paymentData.type === 'redirect' && paymentData.url) {
-          // הפניה ישירה לעמוד התשלום
+        if ((paymentData.type === 'form' || paymentData.type === 'redirect') && paymentData.url) {
+          console.log("Redirecting to payment URL:", paymentData.url);
           window.location.href = paymentData.url;
         } else {
+          console.error("Unexpected response format:", paymentData);
           throw new Error('תשובה לא צפויה משרת התשלומים');
         }
       } else {
@@ -158,7 +167,6 @@ export default function UpgradeSubscription() {
       toast.error("שגיאה בתהליך התשלום", {
         description: error.message || "אנא נסה שוב מאוחר יותר"
       });
-    } finally {
       setLoading(false);
     }
   };

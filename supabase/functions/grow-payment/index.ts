@@ -29,6 +29,9 @@ serve(async (req) => {
       const body = await req.json();
       action = body.action;
       payload = body.payload;
+      
+      // Log incoming request for debugging
+      console.log("Received payment request:", { action, payload });
     } catch (e) {
       console.error("Error parsing JSON:", e);
       return new Response(
@@ -118,73 +121,117 @@ serve(async (req) => {
     // בניית שאילתה כפרמטרים ב-URL במקום כ-JSON בגוף הבקשה
     const queryParams = new URLSearchParams();
     for (const [key, value] of Object.entries(growPayload)) {
-      queryParams.append(key, value as string);
+      if (value !== undefined && value !== null) {
+        queryParams.append(key, value as string);
+      }
     }
-
-    // Make the request to GROW API
-    const response = await fetch(`${endpoint}?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json, text/html',
-      },
-    });
-
-    // בדיקת תשובה
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('GROW API non-2xx response:', response.status, errorText);
-      return new Response(
-        JSON.stringify({ 
-          error: 'GROW API error',
-          status: response.status,
-          details: errorText.substring(0, 500) // הגבלה לאורך סביר
-        }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // בדיקה אם התשובה היא HTML (טופס תשלום) או JSON
-    const contentType = response.headers.get('content-type') || '';
     
-    if (contentType.includes('text/html')) {
-      // אם התשובה היא HTML, נחזיר את הטופס להצגה
-      const htmlContent = await response.text();
-      return new Response(
-        JSON.stringify({
-          success: true,
-          type: 'form',
-          html: htmlContent,
-          url: response.url  // מחזיר את הכתובת המלאה שיצרה GROW
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } else {
-      // אם התשובה היא JSON, ננסה לפרסר אותה
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch (e) {
-        // אם לא הצלחנו לפרסר כ-JSON, נחזיר את הטקסט
-        const responseText = await response.text();
+    const fullUrl = `${endpoint}?${queryParams.toString()}`;
+    console.log("Full URL being requested:", fullUrl);
+
+    // Make the request to GROW API with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+    
+    try {
+      const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json, text/html',
+          'User-Agent': 'Supabase Edge Function',
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      // בדיקת תשובה
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('GROW API non-2xx response:', response.status, errorText);
+        return new Response(
+          JSON.stringify({ 
+            error: 'GROW API error',
+            status: response.status,
+            details: errorText.substring(0, 500), // הגבלה לאורך סביר
+            url: fullUrl // שליחת ה-URL שנקרא לצורכי דיבוג
+          }),
+          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // בדיקה אם התשובה היא HTML (טופס תשלום) או JSON
+      const contentType = response.headers.get('content-type') || '';
+      console.log("Response content type:", contentType);
+      
+      if (contentType.includes('text/html')) {
+        // אם התשובה היא HTML, נחזיר את הטופס להצגה
+        const htmlContent = await response.text();
+        console.log("Got HTML response, length:", htmlContent.length);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            type: 'redirect',  // Changed to 'redirect' as the iframe approach doesn't work well
+            html: htmlContent.substring(0, 1000), // Only sending preview for logs
+            url: response.url  // מחזיר את הכתובת המלאה שיצרה GROW
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        // אם התשובה היא JSON, ננסה לפרסר אותה
+        let responseData;
+        try {
+          responseData = await response.json();
+          console.log("Got JSON response:", responseData);
+        } catch (e) {
+          // אם לא הצלחנו לפרסר כ-JSON, נחזיר את הטקסט
+          const responseText = await response.text();
+          console.log("Got non-JSON response:", responseText.substring(0, 500));
+          
+          // התגובה היא טקסט או גם עם HTML בנוי - נפנה ישירות אל הדף
+          return new Response(
+            JSON.stringify({
+              success: true,
+              type: 'redirect',
+              url: response.url,
+              data: responseText.substring(0, 500) // רק תצוגה מקדימה לצורכי לוגים
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         
         return new Response(
           JSON.stringify({
             success: true,
-            type: 'redirect',
-            url: response.url,
-            data: responseText
+            type: 'json',
+            data: responseData
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      console.error("Fetch error:", fetchError);
+      
+      // Check if it's a timeout error
+      if (fetchError.name === 'AbortError') {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Request timeout', 
+            details: 'The payment gateway did not respond in time. Please try again later.' 
+          }),
+          { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({
-          success: true,
-          type: 'json',
-          data: responseData
+        JSON.stringify({ 
+          error: 'Network error', 
+          details: fetchError.message,
+          url: fullUrl // שליחת ה-URL שנקרא לצורכי דיבוג
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
