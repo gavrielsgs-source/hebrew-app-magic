@@ -6,6 +6,7 @@ import { Calendar, Car, Clock, UserRound } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { type Task } from "@/types/task";
+import { cn } from "@/lib/utils";
 
 interface TaskItemProps {
   task: Task;
