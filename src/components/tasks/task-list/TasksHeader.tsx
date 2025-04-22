@@ -16,9 +16,9 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
     if (sortField !== field) return null;
     
     return sortDirection === "asc" ? (
-      <MoveUp className="h-4 w-4 ml-1" />
+      <MoveUp className="h-4 w-4 mr-1" />
     ) : (
-      <MoveDown className="h-4 w-4 ml-1" />
+      <MoveDown className="h-4 w-4 mr-1" />
     );
   };
 
@@ -27,47 +27,47 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
       <TableRow>
         <TableHead className="w-[50px]"></TableHead>
         <TableHead 
-          className="cursor-pointer"
+          className="cursor-pointer text-right"
           onClick={() => onSort("title")}
         >
-          <div className="flex items-center">
-            כותרת {renderSortIcon("title")}
+          <div className="flex items-center justify-end">
+            {renderSortIcon("title")} כותרת
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer"
+          className="cursor-pointer text-right"
           onClick={() => onSort("type")}
         >
-          <div className="flex items-center">
-            סוג {renderSortIcon("type")}
+          <div className="flex items-center justify-end">
+            {renderSortIcon("type")} סוג
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer"
+          className="cursor-pointer text-right"
           onClick={() => onSort("priority")}
         >
-          <div className="flex items-center">
-            עדיפות {renderSortIcon("priority")}
+          <div className="flex items-center justify-end">
+            {renderSortIcon("priority")} עדיפות
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer"
+          className="cursor-pointer text-right"
           onClick={() => onSort("due_date")}
         >
-          <div className="flex items-center">
-            תאריך {renderSortIcon("due_date")}
+          <div className="flex items-center justify-end">
+            {renderSortIcon("due_date")} תאריך
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer"
+          className="cursor-pointer text-right"
           onClick={() => onSort("status")}
         >
-          <div className="flex items-center">
-            סטטוס {renderSortIcon("status")}
+          <div className="flex items-center justify-end">
+            {renderSortIcon("status")} סטטוס
           </div>
         </TableHead>
-        <TableHead>קשור ל</TableHead>
-        <TableHead></TableHead>
+        <TableHead className="text-right">קשור ל</TableHead>
+        <TableHead className="text-left"></TableHead>
       </TableRow>
     </TableHeader>
   );

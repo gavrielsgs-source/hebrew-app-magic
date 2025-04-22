@@ -29,7 +29,7 @@ export default function Cars() {
       />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <div>
+        <div className="text-right">
           <h1 className="text-2xl font-bold tracking-tight">מלאי רכבים</h1>
           <p className="text-muted-foreground mt-1">
             ניהול רכבים זמינים למכירה
@@ -44,12 +44,12 @@ export default function Cars() {
           >
             {viewMode === 'grid' ? (
               <>
-                <TableIcon className="h-4 w-4" />
+                <TableIcon className="h-4 w-4 ml-1" />
                 תצוגת טבלה
               </>
             ) : (
               <>
-                <LayoutGridIcon className="h-4 w-4" />
+                <LayoutGridIcon className="h-4 w-4 ml-1" />
                 תצוגת גריד
               </>
             )}
@@ -61,7 +61,7 @@ export default function Cars() {
                 className="flex items-center gap-2"
                 disabled={!canAddCar}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4 ml-1" />
                 הוסף רכב
               </Button>
             </SheetTrigger>

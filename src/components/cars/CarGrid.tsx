@@ -84,7 +84,7 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
           
           <CardHeader>
             <div className="flex justify-between">
-              <CardTitle className="text-lg">
+              <CardTitle className="text-lg text-right">
                 {car.make} {car.model}
               </CardTitle>
               <Badge>
@@ -93,29 +93,29 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
                  car.status === 'reserved' ? 'שמור' : car.status}
               </Badge>
             </div>
-            <CardDescription>{car.year}</CardDescription>
+            <CardDescription className="text-right">{car.year}</CardDescription>
           </CardHeader>
           
           <CardContent>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="flex items-center gap-1 text-sm">
-                <Gauge className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1 text-sm justify-end">
                 {car.kilometers} ק"מ
+                <Gauge className="h-4 w-4 text-muted-foreground mr-1" />
               </div>
               
-              <div className="flex items-center gap-1 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1 text-sm justify-end">
                 שנת {car.year}
+                <Calendar className="h-4 w-4 text-muted-foreground mr-1" />
               </div>
               
-              <div className="flex items-center gap-1 text-sm">
-                <Fuel className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1 text-sm justify-end">
                 {car.fuel_type || 'לא צוין'}
+                <Fuel className="h-4 w-4 text-muted-foreground mr-1" />
               </div>
               
-              <div className="flex items-center gap-1 text-sm">
-                <CarIcon className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1 text-sm justify-end">
                 {car.engine_size || 'לא צוין'}
+                <CarIcon className="h-4 w-4 text-muted-foreground mr-1" />
               </div>
             </div>
             
@@ -134,7 +134,7 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
                 setIsWhatsappOpen(true);
               }}
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 ml-1" />
               שלח בוואטסאפ
             </Button>
             

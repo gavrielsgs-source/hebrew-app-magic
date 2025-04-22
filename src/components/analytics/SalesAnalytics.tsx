@@ -11,7 +11,7 @@ export function SalesAnalytics() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>טוען נתוני מכירות...</CardTitle>
+          <CardTitle className="text-right">טוען נתוני מכירות...</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[300px] w-full" />
@@ -24,7 +24,7 @@ export function SalesAnalytics() {
     return (
       <Card className="col-span-4">
         <CardHeader>
-          <CardTitle>ניתוח מכירות</CardTitle>
+          <CardTitle className="text-right">ניתוח מכירות</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
@@ -38,7 +38,7 @@ export function SalesAnalytics() {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>ניתוח מכירות</CardTitle>
+        <CardTitle className="text-right">ניתוח מכירות</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">

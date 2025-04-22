@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -105,8 +106,8 @@ export default function Dashboard() {
             </div>
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">
               <CardHeader>
-                <CardTitle className="font-rubik text-gray-900">משימות להיום</CardTitle>
-                <CardDescription className="font-rubik">סה"כ 7 משימות מתוכננות</CardDescription>
+                <CardTitle className="font-rubik text-gray-900 text-right">משימות להיום</CardTitle>
+                <CardDescription className="font-rubik text-right">סה"כ 7 משימות מתוכננות</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between">
                 <TaskList />
@@ -122,8 +123,8 @@ export default function Dashboard() {
         <TabsContent value="leads" className="space-y-4">
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
             <CardHeader>
-              <CardTitle className="font-rubik text-gray-900">לידים</CardTitle>
-              <CardDescription className="font-rubik">רשימת כל הלידים במערכת</CardDescription>
+              <CardTitle className="font-rubik text-gray-900 text-right">לידים</CardTitle>
+              <CardDescription className="font-rubik text-right">רשימת כל הלידים במערכת</CardDescription>
             </CardHeader>
             <CardContent>
               <LeadsTable />
@@ -133,8 +134,8 @@ export default function Dashboard() {
         <TabsContent value="cars" className="space-y-4">
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
             <CardHeader>
-              <CardTitle className="font-rubik text-gray-900">רכבים במלאי</CardTitle>
-              <CardDescription className="font-rubik">רשימת הרכבים הזמינים למכירה</CardDescription>
+              <CardTitle className="font-rubik text-gray-900 text-right">רכבים במלאי</CardTitle>
+              <CardDescription className="font-rubik text-right">רשימת הרכבים הזמינים למכירה</CardDescription>
             </CardHeader>
             <CardContent>
               <CarsTable />
@@ -144,8 +145,8 @@ export default function Dashboard() {
         <TabsContent value="tasks" className="space-y-4">
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
             <CardHeader>
-              <CardTitle className="font-rubik text-gray-900">משימות</CardTitle>
-              <CardDescription className="font-rubik">רשימת המשימות והתזכורות שלך</CardDescription>
+              <CardTitle className="font-rubik text-gray-900 text-right">משימות</CardTitle>
+              <CardDescription className="font-rubik text-right">רשימת המשימות והתזכורות שלך</CardDescription>
             </CardHeader>
             <CardContent>
               <TaskList extended={true} />

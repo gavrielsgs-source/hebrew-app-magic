@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -55,18 +56,18 @@ export function LeadCard({ lead, onContactClick, onScheduleClick }: LeadCardProp
       <CardFooter className="flex gap-2 pt-4">
         <Button 
           variant="outline" 
-          className="flex-1 h-10 flex-row-reverse" 
+          className="flex-1 h-10 flex gap-2 items-center justify-center" 
           onClick={onContactClick}
         >
-          <Phone className="h-4 w-4 mr-2" />
+          <Phone className="h-4 w-4" />
           צור קשר
         </Button>
         <Button 
           variant="outline" 
-          className="flex-1 h-10 flex-row-reverse"
+          className="flex-1 h-10 flex gap-2 items-center justify-center"
           onClick={onScheduleClick}
         >
-          <Calendar className="h-4 w-4 mr-2" />
+          <Calendar className="h-4 w-4" />
           קבע פגישה
         </Button>
       </CardFooter>

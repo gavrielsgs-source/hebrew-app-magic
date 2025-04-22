@@ -30,8 +30,8 @@ export function CarsTable() {
       <div className="flex justify-between items-center mb-4">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> הוסף רכב חדש
+            <Button variant="outline" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" /> הוסף רכב חדש
             </Button>
           </SheetTrigger>
           <SheetContent className="w-[400px]">
@@ -47,12 +47,12 @@ export function CarsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>דגם</TableHead>
-              <TableHead>שנה</TableHead>
-              <TableHead>ק"מ</TableHead>
-              <TableHead>מחיר</TableHead>
-              <TableHead>סטטוס</TableHead>
-              <TableHead>פעולות</TableHead>
+              <TableHead className="text-right">דגם</TableHead>
+              <TableHead className="text-right">שנה</TableHead>
+              <TableHead className="text-right">ק"מ</TableHead>
+              <TableHead className="text-right">מחיר</TableHead>
+              <TableHead className="text-right">סטטוס</TableHead>
+              <TableHead className="text-left">פעולות</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -71,11 +71,11 @@ export function CarsTable() {
             ) : (
               cars.map((car) => (
                 <TableRow key={car.id}>
-                  <TableCell className="font-medium">{car.make} {car.model}</TableCell>
-                  <TableCell>{car.year}</TableCell>
-                  <TableCell>{car.kilometers.toLocaleString()}</TableCell>
-                  <TableCell>{car.price.toLocaleString()} ₪</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium text-right">{car.make} {car.model}</TableCell>
+                  <TableCell className="text-right">{car.year}</TableCell>
+                  <TableCell className="text-right">{car.kilometers.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{car.price.toLocaleString()} ₪</TableCell>
+                  <TableCell className="text-right">
                     <Badge className={getStatusBadgeColor(car.status)}>
                       {getStatusText(car.status)}
                     </Badge>
