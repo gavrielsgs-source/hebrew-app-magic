@@ -31,7 +31,7 @@ export const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-gradient-to-b from-gray-900 to-gray-800 text-white p-0 [&>button]:hidden"
+            className="w-full sm:w-[--sidebar-width] bg-gradient-to-b from-gray-900 to-gray-800 text-white p-0 [&>button]:hidden"
             style={
               {
                 "--sidebar-width": "18rem",
@@ -39,7 +39,7 @@ export const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <div className="flex h-full w-full flex-col overflow-y-auto">{children}</div>
           </SheetContent>
         </Sheet>
       )

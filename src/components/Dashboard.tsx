@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -20,11 +19,11 @@ const CarSleadLogoSVG = () => (
 
 export default function Dashboard() {
   return (
-    <div className="flex min-h-screen flex-col space-y-6 p-4 md:p-8">
-      <div className="flex items-center justify-between bg-white/90 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-gray-100">
+    <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8">
+      <div className="flex items-center justify-between bg-white/90 backdrop-blur-xl rounded-2xl p-3 md:p-5 shadow-lg border border-gray-100">
         <div className="flex items-center gap-3">
           <CarSleadLogoSVG />
-          <h1 className="text-4xl font-extrabold tracking-tight font-rubik text-gray-900">
+          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight font-rubik text-gray-900">
             CarsLead
           </h1>
         </div>
@@ -33,17 +32,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:gap-8 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
         <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900">לידים חדשים</CardTitle>
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">לידים חדשים</CardTitle>
             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shadow">
               <UserPlus className="h-5 w-5 text-blue-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900">18</div>
-            <p className="text-sm text-blue-600 font-rubik leading-tight">
+            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">18</div>
+            <p className="text-sm text-blue-600 font-rubik leading-tight text-right">
               +12% מהשבוע שעבר
             </p>
           </CardContent>
@@ -93,15 +92,15 @@ export default function Dashboard() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="font-rubik bg-white border border-gray-200 p-1 rounded-lg shadow-sm">
-          <TabsTrigger value="overview" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">סיכום</TabsTrigger>
-          <TabsTrigger value="leads" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">לידים</TabsTrigger>
-          <TabsTrigger value="cars" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">רכבים</TabsTrigger>
-          <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white">משימות</TabsTrigger>
+        <TabsList className="font-rubik bg-white border border-gray-200 p-1 rounded-lg shadow-sm w-full flex flex-nowrap overflow-x-auto">
+          <TabsTrigger value="overview" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">סיכום</TabsTrigger>
+          <TabsTrigger value="leads" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">לידים</TabsTrigger>
+          <TabsTrigger value="cars" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">רכבים</TabsTrigger>
+          <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">משימות</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-8">
-          <div className="flex flex-col md:grid md:grid-cols-2 gap-6">
-            <div className="min-h-[340px] flex flex-col mb-6 md:mb-0">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+            <div className="min-h-[340px] flex flex-col">
               <SalesAnalytics />
             </div>
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">
@@ -112,11 +111,6 @@ export default function Dashboard() {
               <CardContent className="flex-1 flex flex-col justify-between">
                 <TaskList />
               </CardContent>
-            </Card>
-          </div>
-          <div className="hidden md:grid gap-4 grid-cols-2 lg:grid-cols-7 w-full">
-            <Card className="col-span-3 bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
-              {/* אין תכנים פה – להשאיר כפי שביקשת */}
             </Card>
           </div>
         </TabsContent>
