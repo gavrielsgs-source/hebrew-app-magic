@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard as HomeIcon,
   Users as UsersIcon,
@@ -45,10 +46,10 @@ export function AppSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 right-4 z-50 md:hidden"
+          className="fixed top-4 right-4 z-50 md:hidden h-12 w-12" // הגדלת האייקון
           onClick={toggleSidebar}
         >
-          <MenuIcon className="h-6 w-6" />
+          <MenuIcon className="h-7 w-7" /> {/* הגדלת האייקון */}
         </Button>
       )}
       <Sidebar>

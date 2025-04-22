@@ -4,13 +4,15 @@ import { Car } from "@/types/car";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
-import { Car as CarIcon, Calendar, Fuel, Gauge, Send } from "lucide-react";
+import { Car as CarIcon, Calendar, Fuel, Gauge, Send, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 import { getCarImages } from "@/lib/image-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CarDetails } from "./CarDetails";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { EditCarForm } from "./EditCarForm";
 
 interface CarGridProps {
   cars: Car[];
@@ -21,6 +23,7 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [carImages, setCarImages] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState(false);
   
@@ -80,6 +83,20 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
             ) : (
               <CarIcon className="h-24 w-24 text-muted-foreground" />
             )}
+            
+            {/* כפתור עריכה על התמונה */}
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="absolute top-2 right-2 opacity-80 hover:opacity-100"
+              onClick={() => {
+                setSelectedCar(car);
+                setIsEditOpen(true);
+              }}
+            >
+              <Edit className="h-4 w-4 ml-1" />
+              ערוך
+            </Button>
           </div>
           
           <CardHeader>
@@ -175,6 +192,18 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Car Edit Sheet */}
+      <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <SheetContent className="w-[90%] sm:max-w-[600px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>עריכת רכב</SheetTitle>
+          </SheetHeader>
+          {selectedCar && (
+            <EditCarForm car={selectedCar} onCancel={() => setIsEditOpen(false)} />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

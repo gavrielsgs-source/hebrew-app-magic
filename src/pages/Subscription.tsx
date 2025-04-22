@@ -20,7 +20,7 @@ export default function Subscription() {
   };
 
   return (
-    <div className="container py-8">
+    <div className="container py-8" dir="rtl">
       <h1 className="text-3xl font-bold mb-6">ניהול מנוי</h1>
       
       <div className="bg-muted/30 rounded-lg p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
@@ -56,7 +56,7 @@ export default function Subscription() {
         </Button>
       </div>
       
-      <Tabs defaultValue="plans">
+      <Tabs defaultValue="plans" dir="rtl">
         <TabsList className="mb-4">
           <TabsTrigger value="plans">חבילות</TabsTrigger>
           <TabsTrigger value="usage">שימוש</TabsTrigger>

@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { templates } from "./whatsapp-templates";
 import { toast } from "sonner";
 import { getCarImages } from "@/lib/image-utils";
+import { ArrowLeft } from "lucide-react";
 
 interface WhatsappTemplateSelectorProps {
   car: Car;
@@ -105,7 +106,20 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
   };
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-md mx-auto md:max-w-full">
+      {/* כפתור חזרה במובייל */}
+      <div className="md:hidden">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={onClose} 
+          className="flex items-center justify-center text-xs gap-2 mb-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          חזרה
+        </Button>
+      </div>
+
       <div>
         <h3 className="text-lg font-medium mb-2">רכב נבחר:</h3>
         <p className="text-muted-foreground">
@@ -161,7 +175,7 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
       </Tabs>
       
       <div className="flex justify-end space-x-2 rtl:space-x-reverse">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} className="hidden md:inline-flex">
           ביטול
         </Button>
         <Button 

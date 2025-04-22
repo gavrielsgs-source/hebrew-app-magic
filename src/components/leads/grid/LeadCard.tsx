@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { formatPrice } from "@/lib/utils";
 import { Phone, MessageSquare, Car, Calendar } from "lucide-react";
+import { toast } from "sonner";
 
 interface LeadCardProps {
   lead: any;
@@ -12,6 +13,52 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead, onContactClick, onScheduleClick }: LeadCardProps) {
+  const handleContactClick = () => {
+    if (lead.phone) {
+      window.open(`tel:${lead.phone}`, '_blank');
+    } else {
+      toast.error("אין מספר טלפון רשום ללקוח זה");
+    }
+    
+    if (onContactClick) {
+      onContactClick();
+    }
+  };
+
+  const handleScheduleClick = () => {
+    // אם יש פונקציית קביעת פגישה שהועברה, השתמש בה
+    if (onScheduleClick) {
+      onScheduleClick();
+      return;
+    }
+    
+    // אחרת השתמש בפתרון ברירת מחדל - פתיחת יומן
+    try {
+      const date = new Date();
+      date.setDate(date.getDate() + 1); // יום אחד קדימה
+      date.setHours(10, 0, 0, 0); // 10:00 בבוקר
+      
+      const endDate = new Date(date);
+      endDate.setHours(11, 0, 0, 0); // שעה אחרי
+      
+      const formattedStart = date.toISOString().replace(/-|:|\.\d+/g, "");
+      const formattedEnd = endDate.toISOString().replace(/-|:|\.\d+/g, "");
+      
+      const event = {
+        text: `פגישה עם ${lead.name}`,
+        dates: `${formattedStart}/${formattedEnd}`,
+        details: `פגישה בנושא רכב ${lead.cars ? lead.cars.make + ' ' + lead.cars.model : ''}`,
+      };
+      
+      const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.text)}&dates=${event.dates}&details=${encodeURIComponent(event.details)}`;
+      
+      window.open(googleCalendarUrl, '_blank');
+    } catch (error) {
+      toast.error("אירעה שגיאה בקביעת הפגישה");
+      console.error("Calendar error:", error);
+    }
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90">
       <CardHeader className="space-y-1">
@@ -57,7 +104,7 @@ export function LeadCard({ lead, onContactClick, onScheduleClick }: LeadCardProp
         <Button 
           variant="outline" 
           className="flex-1 h-10 flex gap-2 items-center justify-center" 
-          onClick={onContactClick}
+          onClick={handleContactClick}
         >
           <Phone className="h-4 w-4" />
           צור קשר
@@ -65,7 +112,7 @@ export function LeadCard({ lead, onContactClick, onScheduleClick }: LeadCardProp
         <Button 
           variant="outline" 
           className="flex-1 h-10 flex gap-2 items-center justify-center"
-          onClick={onScheduleClick}
+          onClick={handleScheduleClick}
         >
           <Calendar className="h-4 w-4" />
           קבע פגישה
