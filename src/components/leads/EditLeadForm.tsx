@@ -16,8 +16,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useRoles } from "@/hooks/use-roles";
+import { useUserManagement } from "@/hooks/use-user-management";
 
 const formSchema = z.object({
   name: z.string().min(2, "נדרשות לפחות 2 אותיות"),
@@ -26,7 +28,8 @@ const formSchema = z.object({
   notes: z.string().optional().or(z.literal("")),
   car_id: z.string().uuid("נא לבחור רכב").optional().or(z.literal("")),
   source: z.string().optional(),
-  status: z.string()
+  status: z.string(),
+  assigned_to: z.string().optional().or(z.literal(""))
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -38,6 +41,20 @@ interface EditLeadFormProps {
 export function EditLeadForm({ lead }: EditLeadFormProps) {
   const { updateLead } = useLeads();
   const { cars } = useCars();
+  const { isAdmin, isAgencyManager } = useRoles();
+  const { allUsers, isLoading: usersLoading } = useUserManagement();
+  const [salesAgents, setSalesAgents] = useState<any[]>([]);
+  
+  // Filter users to only show sales agents and admins
+  useEffect(() => {
+    if (allUsers && allUsers.length > 0) {
+      const agents = allUsers.filter(user => {
+        // You might want to filter by role here based on your implementation
+        return user.roles?.some(r => r.role === 'sales_agent' || r.role === 'admin');
+      });
+      setSalesAgents(agents);
+    }
+  }, [allUsers]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -48,11 +65,12 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
       notes: lead.notes || "",
       car_id: lead.car_id || "",
       source: lead.source || "ידני",
-      status: lead.status || "new"
+      status: lead.status || "new",
+      assigned_to: lead.assigned_to || ""
     },
   });
 
-  // עדכון ערכי טופס כאשר הליד משתנה
+  // Update form values when the lead changes
   useEffect(() => {
     if (lead) {
       form.reset({
@@ -62,7 +80,8 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
         notes: lead.notes || "",
         car_id: lead.car_id || "",
         source: lead.source || "ידני",
-        status: lead.status || "new"
+        status: lead.status || "new",
+        assigned_to: lead.assigned_to || ""
       });
     }
   }, [lead, form]);
@@ -80,7 +99,8 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
       notes: values.notes || null,
       car_id: values.car_id || null,
       source: values.source || "ידני",
-      status: values.status
+      status: values.status,
+      assigned_to: values.assigned_to || null
     };
     
     try {
@@ -91,6 +111,9 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
       toast.error("שגיאה בעדכון הליד");
     }
   };
+
+  // Only admins and managers can assign leads to other agents
+  const canAssignLeads = isAdmin() || isAgencyManager();
 
   return (
     <Form {...form}>
@@ -206,6 +229,35 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
             </FormItem>
           )}
         />
+
+        {canAssignLeads && (
+          <FormField
+            control={form.control}
+            name="assigned_to"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>איש מכירות מטפל</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר סוכן מכירות" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">לא משויך</SelectItem>
+                    {salesAgents.map((agent) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.email} {agent.full_name ? `(${agent.full_name})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="notes"

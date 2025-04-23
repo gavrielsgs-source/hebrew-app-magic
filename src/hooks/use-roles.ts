@@ -53,11 +53,30 @@ export function useRoles() {
   };
 
   const isAdmin = () => hasRole('admin');
+  
+  const isAgencyManager = (agencyId?: string) => hasRole('agency_manager', agencyId);
+  
+  const isSalesAgent = (agencyId?: string) => hasRole('sales_agent', agencyId);
+
+  const canManageLeads = (agencyId?: string) => {
+    // Admin, agency managers, and sales agents can manage leads
+    return isAdmin() || isAgencyManager(agencyId) || isSalesAgent(agencyId);
+  };
+
+  const canViewOnly = () => {
+    // If user only has viewer role and no other roles
+    if (!userRoles?.length) return true;
+    return userRoles.every(r => r.role === 'viewer');
+  };
 
   return {
     userRoles,
     isLoading,
     hasRole,
-    isAdmin
+    isAdmin,
+    isAgencyManager,
+    isSalesAgent,
+    canManageLeads,
+    canViewOnly
   };
 }

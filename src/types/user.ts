@@ -22,4 +22,5 @@ export interface User {
   id: string;
   email: string;
   roles: UserRoleAssignment[];
+  full_name?: string;
 }

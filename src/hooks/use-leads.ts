@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 import type { Database } from "@/integrations/supabase/types";
 
 // Define Lead type with explicit source property to avoid TypeScript errors
@@ -16,10 +17,12 @@ type NewLead = {
   notes?: string | null;
   status?: string;
   source?: string | null;
+  assigned_to?: string | null;
 };
 
 export function useLeads() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ["leads"],
@@ -27,7 +30,7 @@ export function useLeads() {
       try {
         const { data, error } = await supabase
           .from("leads")
-          .select("*, cars(*)")
+          .select("*, cars(*), profiles!assigned_to(*)")
           .order("created_at", { ascending: false });
 
         if (error) {
@@ -56,14 +59,15 @@ export function useLeads() {
         throw userError || new Error("User not authenticated");
       }
 
-      // car_id is now optional
+      // car_id is optional
       const { data, error } = await supabase
         .from("leads")
         .insert({
           ...lead,
           status: lead.status || "new", // Set default status if not provided
           source: lead.source || "ידני", // Set default source if not provided
-          user_id: userData.user.id
+          user_id: userData.user.id,     // Who created the lead
+          assigned_to: lead.assigned_to || userData.user.id // Default to creator if not assigned
         })
         .select()
         .single();
@@ -99,10 +103,32 @@ export function useLeads() {
     },
   });
 
+  const assignLead = useMutation({
+    mutationFn: async ({ leadId, agentId }: { leadId: string; agentId: string }) => {
+      const { error } = await supabase
+        .from("leads")
+        .update({ 
+          assigned_to: agentId,
+          status: "in_progress" // Auto update status when assigned
+        })
+        .eq("id", leadId);
+
+      if (error) {
+        toast.error("שגיאה בשיוך ליד");
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      toast.success("ליד שויך בהצלחה");
+    },
+  });
+
   return {
     leads,
     isLoading,
     addLead,
     updateLead,
+    assignLead
   };
 }

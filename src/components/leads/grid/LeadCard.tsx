@@ -1,153 +1,192 @@
 
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { formatPrice } from "@/lib/utils";
-import { Phone, MessageSquare, Car, Calendar } from "lucide-react";
-import { toast } from "sonner";
+import { Phone, MessageSquare, Calendar, Clock, Send, User, Edit } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { he } from "date-fns/locale";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { EditLeadForm } from "@/components/leads/EditLeadForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
+import { useState } from "react";
+import { useRoles } from "@/hooks/use-roles";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface LeadCardProps {
-  lead: any;
-  onContactClick?: () => void;
-  onScheduleClick?: () => void;
-}
+export function LeadCard({ lead }: { lead: any }) {
+  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
+  const { canManageLeads } = useRoles();
 
-export function LeadCard({ lead, onContactClick, onScheduleClick }: LeadCardProps) {
-  const handleContactClick = () => {
-    if (lead.phone) {
-      window.open(`tel:${lead.phone}`, '_blank');
-    } else {
-      toast.error("אין מספר טלפון רשום ללקוח זה");
-    }
-    
-    if (onContactClick) {
-      onContactClick();
+  // Format creation date
+  const formattedDate = formatDistanceToNow(new Date(lead.created_at), { 
+    addSuffix: true,
+    locale: he
+  });
+
+  // Get status information
+  const getStatusBadgeColor = (status: string | null) => {
+    switch (status) {
+      case "new": return "bg-blue-500 hover:bg-blue-600";
+      case "in_progress": return "bg-yellow-500 hover:bg-yellow-600";
+      case "waiting": return "bg-purple-500 hover:bg-purple-600";
+      case "closed": return "bg-green-500 hover:bg-green-600";
+      default: return "bg-gray-500 hover:bg-gray-600";
     }
   };
 
-  const handleScheduleClick = () => {
-    // אם יש פונקציית קביעת פגישה שהועברה, השתמש בה
-    if (onScheduleClick) {
-      onScheduleClick();
-      return;
-    }
-    
-    // אחרת השתמש בפתרון ברירת מחדל - פתיחת יומן
-    try {
-      const date = new Date();
-      date.setDate(date.getDate() + 1); // יום אחד קדימה
-      date.setHours(10, 0, 0, 0); // 10:00 בבוקר
-      
-      const endDate = new Date(date);
-      endDate.setHours(11, 0, 0, 0); // שעה אחרי
-      
-      const formattedStart = date.toISOString().replace(/-|:|\.\d+/g, "");
-      const formattedEnd = endDate.toISOString().replace(/-|:|\.\d+/g, "");
-      
-      const event = {
-        text: `פגישה עם ${lead.name}`,
-        dates: `${formattedStart}/${formattedEnd}`,
-        details: `פגישה בנושא רכב ${lead.cars ? lead.cars.make + ' ' + lead.cars.model : ''}`,
-      };
-      
-      const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.text)}&dates=${event.dates}&details=${encodeURIComponent(event.details)}`;
-      
-      window.open(googleCalendarUrl, '_blank');
-    } catch (error) {
-      toast.error("אירעה שגיאה בקביעת הפגישה");
-      console.error("Calendar error:", error);
+  const getStatusText = (status: string | null) => {
+    switch (status) {
+      case "new": return "חדש";
+      case "in_progress": return "בטיפול";
+      case "waiting": return "בהמתנה";
+      case "closed": return "סגור";
+      default: return "לא ידוע";
     }
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 backdrop-blur-sm bg-white/90">
-      <CardHeader className="space-y-1">
-        <div className="flex justify-between items-start">
-          <Badge className={getStatusBadgeColor(lead.status)}>
-            {getStatusText(lead.status)}
-          </Badge>
-          <div className="text-right">
-            <h3 className="text-lg font-semibold">{lead.name}</h3>
-            <p className="text-sm text-muted-foreground">{lead.email}</p>
+    <Card className="overflow-hidden border-slate-200 shadow-md transition-all hover:shadow-lg">
+      <CardHeader className="bg-slate-50 p-4 flex flex-row justify-between items-center">
+        <div>
+          <h3 className="font-semibold text-lg">{lead.name}</h3>
+          
+          <div className="flex items-center text-sm text-muted-foreground gap-1 mt-1">
+            <Clock className="h-3.5 w-3.5 ml-1" />
+            {formattedDate}
           </div>
         </div>
+        
+        <Badge className={`${getStatusBadgeColor(lead.status)}`}>
+          {getStatusText(lead.status)}
+        </Badge>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {lead.phone && (
-          <div className="flex items-center gap-2 flex-row-reverse">
-            <Phone className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{lead.phone}</span>
-          </div>
-        )}
-        {lead.source && (
-          <div className="flex items-center gap-2 flex-row-reverse">
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">מקור: {lead.source}</span>
-          </div>
-        )}
-        {lead.cars && (
-          <div className="flex items-center gap-2 flex-row-reverse">
-            <Car className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">
-              {lead.cars.make} {lead.cars.model} {lead.cars.year}
-            </span>
-          </div>
-        )}
-        <div className="flex items-center gap-2 flex-row-reverse">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm">
-            {new Date(lead.created_at).toLocaleDateString("he-IL")}
-          </span>
+      
+      <CardContent className="p-4">
+        <div className="space-y-3">
+          {lead.phone && (
+            <div className="flex items-center">
+              <Phone className="h-4 w-4 ml-2 text-muted-foreground" />
+              <span dir="ltr">{lead.phone}</span>
+            </div>
+          )}
+          
+          {lead.email && (
+            <div className="flex items-center">
+              <MessageSquare className="h-4 w-4 ml-2 text-muted-foreground" />
+              <span>{lead.email}</span>
+            </div>
+          )}
+          
+          {lead.source && (
+            <div className="flex items-center">
+              <span className="text-sm font-semibold ml-2">מקור:</span>
+              <span>{lead.source}</span>
+            </div>
+          )}
+          
+          {lead.assigned_to && (
+            <div className="flex items-center">
+              <User className="h-4 w-4 ml-2 text-muted-foreground" />
+              <span>מטפל: {lead.profiles?.full_name || "לא ידוע"}</span>
+            </div>
+          )}
+          
+          {lead.cars && (
+            <div className="flex items-center">
+              <span className="text-sm font-semibold ml-2">רכב:</span>
+              <span>{`${lead.cars.make} ${lead.cars.model} ${lead.cars.year}`}</span>
+            </div>
+          )}
+          
+          {lead.notes && (
+            <div className="pt-2 border-t border-slate-100">
+              <p className="text-sm">{lead.notes}</p>
+            </div>
+          )}
         </div>
       </CardContent>
-      <CardFooter className="flex gap-2 pt-4">
-        <Button 
-          variant="outline" 
-          className="flex-1 h-10 flex gap-2 items-center justify-center" 
-          onClick={handleContactClick}
-        >
-          <Phone className="h-4 w-4" />
-          צור קשר
-        </Button>
-        <Button 
-          variant="outline" 
-          className="flex-1 h-10 flex gap-2 items-center justify-center"
-          onClick={handleScheduleClick}
-        >
-          <Calendar className="h-4 w-4" />
-          קבע פגישה
-        </Button>
+      
+      <CardFooter className="bg-slate-50 p-3 flex justify-between gap-2">
+        <div className="flex space-x-2 rtl:space-x-reverse">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0"
+                  disabled={!lead.phone}
+                  onClick={() => {
+                    if (lead.phone) {
+                      window.open(`tel:${lead.phone}`, '_blank');
+                    }
+                  }}
+                >
+                  <Phone className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>התקשר</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          {lead.cars && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                        disabled={!lead.phone}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
+                      </DialogHeader>
+                      <WhatsappTemplateSelector 
+                        car={lead.cars} 
+                        onClose={() => setIsWhatsappOpen(false)}
+                        initialPhoneNumber={lead.phone || ""}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>שלח בוואטסאפ</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+        
+        {canManageLeads() && (
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-8 gap-1"
+              >
+                <Edit className="h-3.5 w-3.5" />
+                ערוך
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[400px]">
+              <SheetHeader>
+                <SheetTitle>עריכת לקוח</SheetTitle>
+              </SheetHeader>
+              <EditLeadForm lead={lead} />
+            </SheetContent>
+          </Sheet>
+        )}
       </CardFooter>
     </Card>
   );
-}
-
-function getStatusBadgeColor(status: string | null) {
-  switch (status) {
-    case "new":
-      return "bg-blue-500 hover:bg-blue-600";
-    case "in_progress":
-      return "bg-yellow-500 hover:bg-yellow-600";
-    case "waiting":
-      return "bg-purple-500 hover:bg-purple-600";
-    case "closed":
-      return "bg-green-500 hover:bg-green-600";
-    default:
-      return "bg-gray-500 hover:bg-gray-600";
-  }
-}
-
-function getStatusText(status: string | null) {
-  switch (status) {
-    case "new":
-      return "חדש";
-    case "in_progress":
-      return "בטיפול";
-    case "waiting":
-      return "בהמתנה";
-    case "closed":
-      return "סגור";
-    default:
-      return "לא ידוע";
-  }
 }
