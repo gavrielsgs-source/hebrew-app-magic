@@ -8,7 +8,8 @@ import { UserRole, UserRoleAssignment } from "@/types/user";
 interface UserWithEmail {
   id: string;
   email: string;
-  roles?: UserRoleAssignment[]; // Add the roles property as optional
+  full_name?: string;
+  roles?: UserRoleAssignment[]; // הוספנו את שדה הרולים כאופציונלי
 }
 
 export function useUserManagement() {
@@ -32,7 +33,7 @@ export function useUserManagement() {
       // קבלת המשתמשים מהשרת (צריך להיות אדמין)
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email:id');
+        .select('id, email:id, full_name');
 
       if (error) {
         console.error("Error fetching users:", error);
@@ -40,7 +41,26 @@ export function useUserManagement() {
         return [];
       }
 
-      return data as UserWithEmail[];
+      // קבלת רולים של כל המשתמשים
+      const usersWithRoles = await Promise.all(
+        data.map(async (userItem: UserWithEmail) => {
+          try {
+            const roles = await getUserRoles(userItem.id);
+            return {
+              ...userItem,
+              roles
+            };
+          } catch (error) {
+            console.error(`Error fetching roles for user ${userItem.id}:`, error);
+            return {
+              ...userItem,
+              roles: []
+            };
+          }
+        })
+      );
+
+      return usersWithRoles as UserWithEmail[];
     },
     enabled: !!user,
   });

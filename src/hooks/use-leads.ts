@@ -1,12 +1,28 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
-import type { Database } from "@/integrations/supabase/types";
 
 // Define Lead type with explicit source property to avoid TypeScript errors
-type Lead = Database["public"]["Tables"]["leads"]["Row"];
+type Lead = {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  status?: string;
+  source?: string | null;
+  car_id?: string | null;
+  assigned_to?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  user_id?: string;
+  agency_id?: string | null;
+  follow_up_notes?: string[] | null;
+  cars?: any;
+  profiles?: any;
+};
 
 // Define NewLead to match the form values structure with correct optional fields
 type NewLead = {
@@ -42,7 +58,7 @@ export function useLeads() {
         return data.map((lead) => ({
           ...lead,
           source: lead.source || "ידני" // Provide a default value if source is null
-        }));
+        })) as Lead[];
       } catch (error) {
         toast.error("שגיאה בטעינת לידים");
         throw error;
