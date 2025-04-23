@@ -14,7 +14,7 @@ export function EditLeadPhoneField({ control }: Props) {
         <FormItem>
           <FormLabel>טלפון</FormLabel>
           <FormControl>
-            <Input placeholder="050-0000000" {...field} />
+            <Input placeholder="050-0000000" {...field} value={field.value || ""} />
           </FormControl>
           <FormMessage />
         </FormItem>

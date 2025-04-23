@@ -28,7 +28,7 @@ export function TemplateHeader({
           className="flex items-center gap-2"
           onClick={onResetDefaults}
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4 ml-2" />
           אפס לברירת מחדל
         </Button>
         <Button
@@ -37,7 +37,7 @@ export function TemplateHeader({
           onClick={onNewTemplate}
           disabled={!canAddTemplate}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4 ml-2" />
           תבנית חדשה
         </Button>
       </div>

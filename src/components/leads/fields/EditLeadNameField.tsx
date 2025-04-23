@@ -14,7 +14,7 @@ export function EditLeadNameField({ control }: Props) {
         <FormItem>
           <FormLabel>שם</FormLabel>
           <FormControl>
-            <Input placeholder="ישראל ישראלי" {...field} />
+            <Input placeholder="ישראל ישראלי" {...field} value={field.value || ""} />
           </FormControl>
           <FormMessage />
         </FormItem>

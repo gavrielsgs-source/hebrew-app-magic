@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -207,8 +208,8 @@ export default function Templates() {
               <p className="text-muted-foreground max-w-md mx-auto mb-4">
                 היסטוריית התקשורת תוצג כאן לאחר שליחת הודעות ותיעוד שיחות
               </p>
-              <Button variant="outline">
-                <Save className="mr-2 h-4 w-4" /> תעד שיחה
+              <Button variant="outline" className="flex items-center gap-2 mx-auto">
+                <Save className="h-4 w-4" /> תעד שיחה
               </Button>
             </div>
           </Card>

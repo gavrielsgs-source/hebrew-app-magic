@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
 import { FileText, Edit, Trash2 } from "lucide-react";
@@ -36,7 +36,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           </div>
         </CardTitle>
         <CardDescription className="flex items-center gap-1">
-          <FileText className="h-3.5 w-3.5" /> תבנית וואטסאפ
+          <FileText className="h-3.5 w-3.5 ml-1" /> תבנית וואטסאפ
         </CardDescription>
       </CardHeader>
       <CardContent className="h-28 overflow-y-auto">
@@ -44,8 +44,11 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           {template.template}
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="justify-start">
         <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="sm">הצג תצוגה מקדימה</Button>
+          </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>תצוגה מקדימה - {template.name}</DialogTitle>
