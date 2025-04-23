@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useLeads } from "@/hooks/use-leads";
+import { useLeads, useUpdateLead } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
@@ -46,7 +47,8 @@ interface EditLeadFormProps {
 }
 
 export function EditLeadForm({ lead }: EditLeadFormProps) {
-  const { updateLead } = useLeads();
+  const { leads } = useLeads();
+  const updateLead = useUpdateLead();
   const { cars } = useCars();
   const { isAdmin, isAgencyManager } = useRoles();
   const { allUsers, isLoading: usersLoading } = useUserManagement();

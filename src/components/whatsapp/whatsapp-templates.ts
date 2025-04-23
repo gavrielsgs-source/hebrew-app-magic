@@ -147,3 +147,6 @@ export const templates: WhatsappTemplate[] = [
 `,
   }
 ];
+
+// מייצא את התבניות הדיפולטיביות
+export const defaultWhatsappTemplates = templates;

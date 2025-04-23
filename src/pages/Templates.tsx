@@ -1,3 +1,4 @@
+
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
@@ -41,7 +42,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   WhatsappTemplate,
-  defaultWhatsappTemplates,
+  templates as defaultWhatsappTemplates,
 } from "@/components/whatsapp/whatsapp-templates";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit, FileText, Trash2 } from "lucide-react";

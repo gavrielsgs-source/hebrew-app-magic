@@ -5,7 +5,7 @@ import { AddLeadForm } from "@/components/leads/AddLeadForm";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Plus, Settings } from "lucide-react";
-import { useLeads } from "@/hooks/use-leads";
+import { useLeads, useCreateLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
@@ -14,7 +14,8 @@ import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegrat
 
 export default function Leads() {
   const { toast } = useToast();
-  const { leads = [], isLoading, addLead } = useLeads();
+  const { leads, isLoading } = useLeads();
+  const addLead = useCreateLead();
   const [isAddingLead, setIsAddingLead] = useState(false);
   const { checkEntitlement } = useSubscription();
   const canAddLead = checkEntitlement('leadLimit', leads.length + 1);

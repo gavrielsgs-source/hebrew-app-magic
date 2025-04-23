@@ -7,7 +7,7 @@ import {
   Form,
   FormField,
 } from "@/components/ui/form";
-import { useLeads } from "@/hooks/use-leads";
+import { useLeads, useCreateLead } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useEffect, useState } from "react";
 import { useRoles } from "@/hooks/use-roles";
@@ -36,7 +36,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function AddLeadForm({ carId }: { carId?: string }) {
-  const { addLead } = useLeads();
+  const { leads } = useLeads();
+  const addLead = useCreateLead();
   const { cars } = useCars();
   const { user } = useAuth();
   const { isAdmin, isAgencyManager } = useRoles();
