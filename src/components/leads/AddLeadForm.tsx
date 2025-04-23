@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -45,8 +44,8 @@ export function AddLeadForm({ carId }: { carId?: string }) {
   useEffect(() => {
     if (allUsers && allUsers.length > 0) {
       const agents = allUsers.filter(user => {
-        // Filter by role
-        return user.roles?.some(r => r.role === 'sales_agent' || r.role === 'admin');
+        // Filter by role - safely check if roles exists first
+        return user.roles?.some(r => r.role === 'sales_agent' || r.role === 'admin') || false;
       });
       setSalesAgents(agents);
     }

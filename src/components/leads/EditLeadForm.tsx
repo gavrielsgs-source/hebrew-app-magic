@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -49,8 +48,8 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
   useEffect(() => {
     if (allUsers && allUsers.length > 0) {
       const agents = allUsers.filter(user => {
-        // You might want to filter by role here based on your implementation
-        return user.roles?.some(r => r.role === 'sales_agent' || r.role === 'admin');
+        // Safely check if roles exists first
+        return user.roles?.some(r => r.role === 'sales_agent' || r.role === 'admin') || false;
       });
       setSalesAgents(agents);
     }

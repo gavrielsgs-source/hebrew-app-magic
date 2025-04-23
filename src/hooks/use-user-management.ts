@@ -8,6 +8,7 @@ import { UserRole, UserRoleAssignment } from "@/types/user";
 interface UserWithEmail {
   id: string;
   email: string;
+  roles?: UserRoleAssignment[]; // Add the roles property as optional
 }
 
 export function useUserManagement() {
