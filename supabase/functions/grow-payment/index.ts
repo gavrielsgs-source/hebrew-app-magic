@@ -2,30 +2,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // GROW API credentials
-const GROW_USER_ID = Deno.env.get('GROW_USER_ID') || '3bdaec1d6c7e9ef7'; // Testing user ID
-const GROW_PAGE_CODE = Deno.env.get('GROW_PAGE_CODE') || 'f8dc02a4a03d'; // Default page code for recurring payment
-const GROW_CLIENT_ID =  '3bdaec1d6c7e9ef7'; // Client ID for authentication
-// const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || ''; // Client ID for authentication
-const GROW_EC_PWD = 'f8dc02a4a03d' ; // Password for authentication
-// const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || ''; // Password for authentication
+const GROW_USER_ID = Deno.env.get('GROW_USER_ID') || '3bdaec1d6c7e9ef7'; 
+const GROW_PAGE_CODE = Deno.env.get('GROW_PAGE_CODE') || 'f8dc02a4a03d';
+const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || '3bdaec1d6c7e9ef7';
+const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || 'f8dc02a4a03d';
 
-// עדכון כתובת ה-API - שימו לב שבמסמכים הרשמיים של GROW יש לוודא את הכתובת המדויקת
-const GROW_API_BASE = 'https://secure.e-c.co.il/easycard/createform.asp';
+// עדכון כתובת ה-API בהתאם למסמכי GROW
+const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0/createPaymentProcess';
 
-// CORS headers for browser requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse request body
     let payload;
     let action;
 
@@ -33,21 +28,15 @@ serve(async (req) => {
       const body = await req.json();
       action = body.action;
       payload = body.payload;
-      
-      // Log incoming request for debugging
       console.log("Received payment request:", { action, payload });
     } catch (e) {
       console.error("Error parsing JSON:", e);
       return new Response(
-        JSON.stringify({ 
-          error: 'Invalid JSON', 
-          details: e.message 
-        }), 
+        JSON.stringify({ error: 'Invalid JSON', details: e.message }), 
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    // Validate required fields for all requests
     if (!payload) {
       return new Response(
         JSON.stringify({ error: 'Missing payload' }), 
@@ -55,22 +44,16 @@ serve(async (req) => {
       );
     }
 
-    // בדיקת פרמטרים החובה מבחינת הגרואו
     if (!GROW_CLIENT_ID || !GROW_EC_PWD) {
-      console.error("Missing required GROW credentials", { 
-        hasClientId: !!GROW_CLIENT_ID, 
-        hasECPwd: !!GROW_EC_PWD 
-      });
+      console.error("Missing required GROW credentials");
       return new Response(
         JSON.stringify({ 
-          error: 'Missing Grow API credentials', 
-          details: 'Must provide clientid and password in environment variables' 
+          error: 'Missing GROW API credentials'
         }), 
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // GROW שינוי הגישה לשרת של
     let growPayload = {};
     let endpoint = '';
 
@@ -78,75 +61,56 @@ serve(async (req) => {
       case 'createPaymentProcess':
         endpoint = GROW_API_BASE;
         
-        // Validate required fields for payment creation
+        // בדיקת שדות חובה לפי המסמכים הרשמיים
         if (!payload.customerName || !payload.customerPhone) {
           return new Response(
             JSON.stringify({ 
-              error: 'Missing required fields', 
+              error: 'Missing required fields',
               details: 'Customer name and phone are required' 
             }), 
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
         
-        // Validate phone format (Israeli mobile number)
+        // וידוא פורמט מספר טלפון ישראלי
         if (!payload.customerPhone.match(/^05\d{8}$/)) {
           return new Response(
             JSON.stringify({ 
-              error: 'Invalid phone format', 
-              details: 'Phone must be an Israeli mobile number starting with 05 and containing 10 digits' 
+              error: 'Invalid phone format',
+              details: 'Phone must be an Israeli mobile number' 
             }), 
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
         
-        // Validate customer name format (first and last name)
+        // וידוא שם מלא
         if (!payload.customerName.includes(' ')) {
           return new Response(
             JSON.stringify({ 
-              error: 'Invalid name format', 
-              details: 'Name must include first and last name separated by space' 
+              error: 'Invalid name format',
+              details: 'Name must include first and last name' 
             }), 
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        // הבטחה שכתובות ההצלחה והשגיאה תקינות
-        const successUrl = payload.successUrl || '';
-        const errorUrl = payload.errorUrl || '';
-
-        // חשוב לוודא שה-URL מתחיל ב-https:// או http://
-        const isValidUrl = (url) => {
-          if (!url) return true; // אם ריק, לא בודקים
-          return url.startsWith('http://') || url.startsWith('https://');
-        };
-
-        if (!isValidUrl(successUrl) || !isValidUrl(errorUrl)) {
-          return new Response(
-            JSON.stringify({ 
-              error: 'Invalid URL format', 
-              details: 'Success and error URLs must start with http:// or https://' 
-            }), 
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // ההתאמה לפורמט הנדרש ע"י GROW
+        // עדכון הפרמטרים בהתאם למסמכי GROW
         growPayload = {
-          user: GROW_USER_ID,
-          pageCode: payload.pageCode || GROW_PAGE_CODE,
+          pageCode: GROW_PAGE_CODE,
+          userId: GROW_USER_ID,
           sum: payload.amount.toString(),
-          customerName: payload.customerName,
-          customerPhone: payload.customerPhone,
-          description: payload.description || 'מנוי שירות',
-          customerEmail: payload.customerEmail || '',
-          successUrl: successUrl,
-          errorUrl: errorUrl,
-          maxPayments: payload.maxPayments || '1',
-          language: payload.language || 'HE',
-          clientid: GROW_CLIENT_ID,   // הוספת פרמטר החדש
-          ECPwd: GROW_EC_PWD,         // הוספת פרמטר החדש
-          ...payload.extraParams
+          description: payload.description || 'תשלום חודשי',
+          successUrl: payload.successUrl || '',
+          cancelUrl: payload.errorUrl || '',
+          pageField: {
+            fullName: payload.customerName,
+            phone: payload.customerPhone,
+            email: payload.customerEmail || ''
+          },
+          chargeType: "1", // תשלום רגיל
+          paymentNum: payload.maxPayments || "1",
+          clientId: GROW_CLIENT_ID,
+          ECPwd: GROW_EC_PWD
         };
         break;
         
@@ -158,116 +122,55 @@ serve(async (req) => {
     }
 
     console.log(`Making request to GROW API: ${endpoint}`, growPayload);
-
-    // בניית שאילתה כפרמטרים ב-URL במקום כ-JSON בגוף הבקשה
-    const queryParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(growPayload)) {
-      if (value !== undefined && value !== null) {
-        queryParams.append(key, value as string);
-      }
-    }
     
-    const fullUrl = `${endpoint}?${queryParams.toString()}`;
-    console.log("Full URL being requested:", fullUrl);
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      body: new URLSearchParams(growPayload as Record<string, string>).toString()
+    });
 
-    // Make the request to GROW API with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
-    
-    try {
-      // שינוי: שליחת הבקשה עם אופציה שתמיד תעקוב אחרי הפניות
-      const response = await fetch(fullUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json, text/html',
-          'User-Agent': 'Supabase Edge Function',
-        },
-        redirect: 'follow',
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-
-      // נקבל את ה-URL הסופי (במקרה של הפניות)
-      const finalUrl = response.url;
-      console.log("Final URL after redirects:", finalUrl);
-
-      // בדיקת התשובה וקריאת הגוף שלה
-      const responseText = await response.text();
-      console.log("Response status:", response.status);
-      console.log("Response content type:", response.headers.get('content-type'));
-      console.log("Response text (first 500 chars):", responseText.substring(0, 500));
-
-      // בדיקת תשובה
-      if (!response.ok) {
-        console.error('GROW API non-2xx response:', response.status, responseText);
-        return new Response(
-          JSON.stringify({ 
-            error: 'GROW API error',
-            status: response.status,
-            details: responseText.substring(0, 500), // הגבלה לאורך סביר
-            url: finalUrl // שליחת ה-URL שנקרא לצורכי דיבוג
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // בדיקה אם התשובה מכילה שגיאה (לפעמים גם עם קוד 200 יכולה להיות שגיאה)
-      if (responseText.includes('error') || responseText.includes('Error') || responseText.includes('שגיאה')) {
-        console.error('GROW API returned error in body:', responseText);
-        return new Response(
-          JSON.stringify({ 
-            error: 'GROW API error in response body',
-            details: responseText.substring(0, 500),
-            url: finalUrl
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      // בדיקה אם התשובה היא HTML (טופס תשלום) או JSON
-      const contentType = response.headers.get('content-type') || '';
-      console.log("Response content type:", contentType);
-      
-      // שינוי מהותי: בכל מקרה, נעביר את המשתמש ישירות ל-URL הסופי
-      return new Response(
-        JSON.stringify({
-          success: true,
-          type: 'redirect',
-          url: finalUrl, // שליחת ה-URL הסופי אליו צריך להפנות את המשתמש
-          redirectUrl: finalUrl // שדה נוסף לתאימות עם קוד קיים
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-      
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      console.error("Fetch error:", fetchError);
-      
-      // Check if it's a timeout error
-      if (fetchError.name === 'AbortError') {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Request timeout', 
-            details: 'The payment gateway did not respond in time. Please try again later.' 
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('GROW API error:', response.status, errorText);
       return new Response(
         JSON.stringify({ 
-          error: 'Network error', 
-          details: fetchError.message,
-          url: fullUrl // שליחת ה-URL שנקרא לצורכי דיבוג
+          error: 'GROW API error',
+          status: response.status,
+          details: errorText
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const responseData = await response.json();
+    console.log("GROW API response:", responseData);
+
+    // בדיקה אם התקבלה שגיאה מה-API
+    if (responseData.err) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'GROW API error',
+          details: responseData.err
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // החזרת ה-URL לטופס התשלום
+    return new Response(
+      JSON.stringify({
+        success: true,
+        url: responseData.data.url,
+        processId: responseData.data.processId
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
     
   } catch (error) {
     console.error('Error processing GROW payment request:', error);
-    
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error', 
