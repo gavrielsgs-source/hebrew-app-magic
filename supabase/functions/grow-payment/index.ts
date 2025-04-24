@@ -4,8 +4,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // GROW API credentials
 const GROW_USER_ID = Deno.env.get('GROW_USER_ID') || '3bdaec1d6c7e9ef7'; // Testing user ID
 const GROW_PAGE_CODE = Deno.env.get('GROW_PAGE_CODE') || 'f8dc02a4a03d'; // Default page code for recurring payment
-const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || ''; // Client ID for authentication
-const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || ''; // Password for authentication
+const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || '3bdaec1d6c7e9ef7'; // Client ID for authentication
+// const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || ''; // Client ID for authentication
+const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || 'f8dc02a4a03d'; // Password for authentication
+// const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || ''; // Password for authentication
 
 // עדכון כתובת ה-API - שימו לב שבמסמכים הרשמיים של GROW יש לוודא את הכתובת המדויקת
 const GROW_API_BASE = 'https://secure.e-c.co.il/easycard/createform.asp';
