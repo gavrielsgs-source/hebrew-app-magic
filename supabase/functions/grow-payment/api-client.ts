@@ -15,7 +15,6 @@ export interface GrowPaymentRequest {
   };
   chargeType: string;
   paymentNum: string;
-  maxPayments?: string; // הוספנו את האופציה למספר תשלומים מקסימלי
   clientId: string;
   ECPwd: string;
 }

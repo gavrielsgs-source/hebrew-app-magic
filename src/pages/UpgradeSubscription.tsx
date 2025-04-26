@@ -35,7 +35,6 @@ export default function UpgradeSubscription() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const { subscription, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   

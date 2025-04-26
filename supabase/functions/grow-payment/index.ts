@@ -65,16 +65,11 @@ serve(async (req) => {
         phone: payload.customerPhone,
         email: payload.customerEmail || ''
       },
-      chargeType: "1",
-      paymentNum: "1",
+      chargeType: "1",  // קוד קבוע של GROW לתשלום רגיל
+      paymentNum: "1",  // תמיד תשלום אחד
       clientId: GROW_CLIENT_ID,
       ECPwd: GROW_EC_PWD
     };
-    
-    // אם יש מספר תשלומים מקסימלי, הוסף אותו
-    if (payload.maxPayments && parseInt(payload.maxPayments) > 1) {
-      growPayload.maxPayments = payload.maxPayments;
-    }
 
     console.log(`Making request to GROW API:`, growPayload);
     
