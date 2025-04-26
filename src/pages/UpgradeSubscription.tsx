@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -122,21 +123,25 @@ export default function UpgradeSubscription() {
       console.log(`Success URL: ${successUrl}`);
       console.log(`Error URL: ${errorUrl}`);
 
+      // הכנת פרמטרים לתשלום - מבלי להשתמש ב-maxPayments כלל
+      const paymentPayload = {
+        customerName: data.fullName,
+        customerPhone: data.phone,
+        customerEmail: data.email || undefined,
+        amount: selectedPlanObj.priceValue,
+        description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
+        successUrl: successUrl,
+        errorUrl: errorUrl,
+        language: "HE",
+      };
+
+      console.log("Sending payment payload:", paymentPayload);
+
       // שליחת הבקשה ליצירת תשלום
       const { data: paymentData, error } = await supabase.functions.invoke('grow-payment', {
         body: {
           action: 'createPaymentProcess',
-          payload: {
-            customerName: data.fullName,
-            customerPhone: data.phone,
-            customerEmail: data.email || undefined,
-            amount: selectedPlanObj.priceValue,
-            description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
-            successUrl: successUrl,
-            errorUrl: errorUrl,
-            maxPayments: "1",
-            language: "HE",
-          }
+          payload: paymentPayload
         }
       });
 

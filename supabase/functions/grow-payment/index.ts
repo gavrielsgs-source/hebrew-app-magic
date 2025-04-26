@@ -52,7 +52,7 @@ serve(async (req) => {
       );
     }
 
-    // הכנת הבקשה ל-GROW API
+    // הכנת הבקשה ל-GROW API עם תמיכה במספר תשלומים
     const growPayload: GrowPaymentRequest = {
       pageCode: GROW_PAGE_CODE,
       userId: GROW_USER_ID,
@@ -66,10 +66,15 @@ serve(async (req) => {
         email: payload.customerEmail || ''
       },
       chargeType: "1",
-      paymentNum: "1", // Fixed to 1 payment as required by GROW API
+      paymentNum: "1",
       clientId: GROW_CLIENT_ID,
       ECPwd: GROW_EC_PWD
     };
+    
+    // אם יש מספר תשלומים מקסימלי, הוסף אותו
+    if (payload.maxPayments && parseInt(payload.maxPayments) > 1) {
+      growPayload.maxPayments = payload.maxPayments;
+    }
 
     console.log(`Making request to GROW API:`, growPayload);
     

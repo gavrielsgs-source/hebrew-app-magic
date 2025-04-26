@@ -15,6 +15,7 @@ export interface GrowPaymentRequest {
   };
   chargeType: string;
   paymentNum: string;
+  maxPayments?: string; // הוספנו את האופציה למספר תשלומים מקסימלי
   clientId: string;
   ECPwd: string;
 }
@@ -32,13 +33,40 @@ export interface GrowPaymentResponse {
 }
 
 export async function createPaymentProcess(payload: GrowPaymentRequest): Promise<GrowPaymentResponse> {
+  // המרת האובייקט לפורמט נכון עבור המערכת של GROW
+  const formattedPayload = { ...payload };
+  
+  // ווידוא שיש לפחות תשלום אחד
+  if (!formattedPayload.paymentNum || formattedPayload.paymentNum === "0") {
+    formattedPayload.paymentNum = "1";
+  }
+  
+  // המרה לפורמט של x-www-form-urlencoded
+  const formBody = new URLSearchParams();
+  
+  // הוספת כל השדות בפורמט המתאים
+  Object.entries(formattedPayload).forEach(([key, value]) => {
+    // טיפול בשדות מקוננים כמו pageField
+    if (typeof value === 'object' && value !== null) {
+      Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+        if (nestedValue !== undefined) {
+          formBody.append(`${key}.${nestedKey}`, String(nestedValue));
+        }
+      });
+    } else if (value !== undefined) {
+      formBody.append(key, String(value));
+    }
+  });
+
+  console.log('Sending formatted payload to GROW:', Object.fromEntries(formBody));
+
   const response = await fetch(GROW_API_BASE, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Accept': 'application/json'
     },
-    body: new URLSearchParams(payload as unknown as Record<string, string>).toString()
+    body: formBody.toString()
   });
 
   if (!response.ok) {
@@ -48,4 +76,3 @@ export async function createPaymentProcess(payload: GrowPaymentRequest): Promise
 
   return await response.json();
 }
-

@@ -29,7 +29,16 @@ export function validatePayload(payload: PaymentPayload): string | null {
   if (!payload.customerName.includes(' ')) {
     return 'Name must include first and last name';
   }
+  
+  // וידוא שסכום העסקה הוא חיובי
+  if (payload.amount <= 0) {
+    return 'Amount must be positive';
+  }
+  
+  // וידוא מספר תשלומים תקף אם הוגדר
+  if (payload.maxPayments && (isNaN(parseInt(payload.maxPayments)) || parseInt(payload.maxPayments) < 1)) {
+    return 'Maximum payments must be at least 1';
+  }
 
   return null;
 }
-
