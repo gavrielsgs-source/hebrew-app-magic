@@ -17,6 +17,7 @@ export default function PaymentError() {
   const [detailedError, setDetailedError] = useState<string | null>(null);
   const [troubleshootingTips, setTroubleshootingTips] = useState<string[]>([]);
   
+  // Extract error information from query parameters
   const errorMessage = searchParams.get('error') || 'חלה שגיאה בתהליך התשלום';
   const errorCode = searchParams.get('code');
   const errorDetails = searchParams.get('details');
@@ -38,6 +39,13 @@ export default function PaymentError() {
           setTroubleshootingTips([
             'השתמש בכרטיס אשראי שטרם פג תוקפו',
             'אם הכרטיס חודש לאחרונה, בדוק עם חברת האשראי שהכרטיס מופעל'
+          ]);
+          break;
+        case '705':
+          setDetailedError('מספר תשלומים או מספר תשלומים מקסימלי אינו תקין.');
+          setTroubleshootingTips([
+            'מספר התשלומים חייב להיות לפחות 1',
+            'אם התקלה נמשכת, נסה להסיר את בחירת מספר תשלומים'
           ]);
           break;
         case 'api_error':

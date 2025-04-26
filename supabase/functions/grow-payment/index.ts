@@ -66,7 +66,7 @@ serve(async (req) => {
         email: payload.customerEmail || ''
       },
       chargeType: "1",
-      paymentNum: payload.maxPayments || "1",
+      paymentNum: "1", // Fixed to 1 payment as required by GROW API
       clientId: GROW_CLIENT_ID,
       ECPwd: GROW_EC_PWD
     };
@@ -79,9 +79,16 @@ serve(async (req) => {
 
     // בדיקה אם התקבלה שגיאה מה-API
     if (responseData.err) {
+      // Extract error message properly
+      let errorMessage = 'GROW API error';
+      if (responseData.err.message) {
+        errorMessage = responseData.err.message;
+      }
+      
       return new Response(
         JSON.stringify({ 
-          error: 'GROW API error',
+          error: errorMessage,
+          code: responseData.err.id || 'unknown',
           details: responseData.err
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -99,14 +106,26 @@ serve(async (req) => {
     );
     
   } catch (error) {
+    // Improved error handling
     console.error('Error processing GROW payment request:', error);
+    
+    let errorMessage = 'Internal server error';
+    let errorDetails = {};
+    
+    // Extract message from error object properly
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'object' && error !== null) {
+      // Try to extract information from unknown error object
+      errorDetails = error;
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: 'Internal server error', 
-        details: error.message 
+        error: errorMessage,
+        details: errorDetails
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
-

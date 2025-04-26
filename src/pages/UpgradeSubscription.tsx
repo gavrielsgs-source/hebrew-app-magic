@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -92,7 +91,7 @@ export default function UpgradeSubscription() {
         "10 משתמשים במערכת",
         "תבניות הודעה מותאמות אישית",
         "אוטומציה של תזכורות ומעקב",
-        "דוחות מתקדמים וניתוח ביצועים",
+        "ד��חות מתקדמים וניתוח ביצועים",
         "ייצוא נתונים"
       ],
       tier: "enterprise"
@@ -151,7 +150,11 @@ export default function UpgradeSubscription() {
       // בדיקת שגיאות בתשובה
       if (paymentData.error) {
         console.error("Payment API error:", paymentData);
-        throw new Error(paymentData.details || paymentData.error);
+        // Improved error message handling
+        const errorMessage = typeof paymentData.error === 'string' 
+          ? paymentData.error 
+          : (paymentData.details?.message || 'שגיאה לא ידועה');
+        throw new Error(errorMessage);
       }
 
       // טיפול בתשובה מוצלחת
@@ -173,7 +176,7 @@ export default function UpgradeSubscription() {
     } catch (error) {
       console.error("Error initiating payment:", error);
       toast.error("שגיאה בתהליך התשלום", {
-        description: error.message || "אנא נסה שוב מאוחר יותר"
+        description: error instanceof Error ? error.message : String(error)
       });
       setLoading(false);
     }
