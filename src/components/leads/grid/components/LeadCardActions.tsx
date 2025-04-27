@@ -10,6 +10,7 @@ import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplate
 import { useState } from "react";
 import { useDeleteLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
+import { LeadReminders } from "../LeadReminders";
 
 interface LeadCardActionsProps {
   lead: any;
@@ -79,6 +80,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
                     <WhatsappTemplateSelector 
                       car={lead.cars} 
                       initialPhoneNumber={lead.phone || ""}
+                      onClose={() => {}}
                     />
                   </DialogContent>
                 </Dialog>
