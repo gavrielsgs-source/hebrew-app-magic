@@ -1,5 +1,5 @@
 
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Car, Clock, UserRound } from "lucide-react";
@@ -49,6 +49,19 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
       default: return "bg-gray-200 text-gray-800";
     }
   };
+  
+  // Safely format a date string
+  const safeFormatDate = (dateString: string | null | undefined, formatString: string): string => {
+    if (!dateString) return "ללא תאריך";
+    
+    try {
+      const date = new Date(dateString);
+      return isValid(date) ? format(date, formatString) : "תאריך לא תקין";
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "תאריך לא תקין";
+    }
+  };
 
   return (
     <TableRow key={task.id} className={task.status === 'completed' ? "bg-muted/50" : ""}>
@@ -84,13 +97,13 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
             <div className="flex items-center gap-1 flex-row-reverse">
               <Calendar className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs">
-                {format(new Date(task.due_date), 'dd/MM/yyyy')}
+                {safeFormatDate(task.due_date, 'dd/MM/yyyy')}
               </span>
             </div>
             <div className="flex items-center gap-1 mt-1 flex-row-reverse">
               <Clock className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs">
-                {format(new Date(task.due_date), 'HH:mm')}
+                {safeFormatDate(task.due_date, 'HH:mm')}
               </span>
             </div>
           </div>

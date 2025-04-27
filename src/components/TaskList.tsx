@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Clock } from "lucide-react";
 import { useTasks } from "@/hooks/use-tasks";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -20,10 +21,20 @@ export function TaskList({ extended = false }: TaskListProps) {
   
   const filteredTasks = tasks
     .filter(task => {
-      if (extended) return true;
-      
-      const taskDate = task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '';
-      return (taskDate <= today && task.status !== 'completed') || !task.due_date;
+      try {
+        if (extended) return true;
+        
+        if (!task.due_date) return true;
+        
+        const taskDate = new Date(task.due_date);
+        if (!isValid(taskDate)) return true;
+        
+        const taskDateStr = taskDate.toISOString().split('T')[0];
+        return (taskDateStr <= today && task.status !== 'completed');
+      } catch (error) {
+        console.error("Error filtering task:", error);
+        return true; // Include task if there's an error
+      }
     })
     .slice(0, extended ? tasks.length : 5);
   
@@ -45,6 +56,19 @@ export function TaskList({ extended = false }: TaskListProps) {
       case 'follow_up': return 'מעקב';
       case 'task': 
       default: return 'משימה';
+    }
+  };
+  
+  // Safely format a date
+  const safeFormatDate = (dateString: string | null | undefined, formatPattern: string): string => {
+    if (!dateString) return "ללא תאריך";
+    
+    try {
+      const date = new Date(dateString);
+      return isValid(date) ? format(date, formatPattern) : "תאריך לא תקין";
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "תאריך לא תקין";
     }
   };
   
@@ -80,12 +104,12 @@ export function TaskList({ extended = false }: TaskListProps) {
               <div className="flex items-center pt-2">
                 <Clock className="mr-1 h-3 w-3 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
-                  {task.due_date ? format(new Date(task.due_date), 'HH:mm') : 'ללא שעה'}
+                  {task.due_date ? safeFormatDate(task.due_date, 'HH:mm') : 'ללא שעה'}
                 </span>
                 <span className="mx-2 text-muted-foreground">•</span>
                 <Calendar className="mr-1 h-3 w-3 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
-                  {task.due_date ? format(new Date(task.due_date), 'dd/MM/yyyy') : 'ללא תאריך'}
+                  {task.due_date ? safeFormatDate(task.due_date, 'dd/MM/yyyy') : 'ללא תאריך'}
                 </span>
               </div>
             </div>
