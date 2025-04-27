@@ -1,26 +1,28 @@
-
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageSquare, Calendar, Clock, Send, User, Edit, AlertCircle } from "lucide-react";
+import { Phone, MessageSquare, Calendar, Clock, Send, User, Edit, AlertCircle, Trash2 } from "lucide-react";
 import { formatDistanceToNow, format, isAfter } from "date-fns";
 import { he } from "date-fns/locale";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { EditLeadForm } from "@/components/leads/EditLeadForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 import { useState, useEffect } from "react";
 import { useRoles } from "@/hooks/use-roles";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { LeadReminders } from "./LeadReminders";
+import { useDeleteLead } from "@/hooks/use-leads";
+import { toast } from "sonner";
 
 export function LeadCard({ lead }: { lead: any }) {
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { canManageLeads } = useRoles();
+  const deleteLead = useDeleteLead();
   const [hasActiveReminders, setHasActiveReminders] = useState(false);
 
-  // בדוק אם יש תזכורות פעילות
   useEffect(() => {
     if (lead.follow_up_notes && Array.isArray(lead.follow_up_notes) && lead.follow_up_notes.length > 0) {
       const activeReminders = lead.follow_up_notes.filter((reminder: any) => 
@@ -31,13 +33,11 @@ export function LeadCard({ lead }: { lead: any }) {
     }
   }, [lead.follow_up_notes]);
 
-  // Format creation date
   const formattedDate = formatDistanceToNow(new Date(lead.created_at), { 
     addSuffix: true,
     locale: he
   });
 
-  // Get status information
   const getStatusBadgeColor = (status: string | null) => {
     switch (status) {
       case "new": return "bg-blue-500 hover:bg-blue-600";
@@ -55,6 +55,17 @@ export function LeadCard({ lead }: { lead: any }) {
       case "waiting": return "בהמתנה";
       case "closed": return "סגור";
       default: return "לא ידוע";
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteLead.mutateAsync(lead.id);
+      toast.success("הלקוח נמחק בהצלחה");
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("שגיאה במחיקת לקוח:", error);
+      toast.error("אירעה שגיאה במחיקת הלקוח");
     }
   };
 
@@ -229,24 +240,59 @@ export function LeadCard({ lead }: { lead: any }) {
         </div>
         
         {canManageLeads() && (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="h-8 gap-1"
-              >
-                <Edit className="h-3.5 w-3.5" />
-                ערוך
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-[400px]">
-              <SheetHeader>
-                <SheetTitle>עריכת לקוח</SheetTitle>
-              </SheetHeader>
-              <EditLeadForm lead={lead} />
-            </SheetContent>
-          </Sheet>
+          <div className="flex gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-8"
+                >
+                  <Edit className="h-3.5 w-3.5 ml-1" />
+                  ערוך
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-[400px]">
+                <SheetHeader>
+                  <SheetTitle>עריכת לקוח</SheetTitle>
+                </SheetHeader>
+                <EditLeadForm lead={lead} />
+              </SheetContent>
+            </Sheet>
+
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-8"
+                >
+                  <Trash2 className="h-3.5 w-3.5 ml-1" />
+                  מחק
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>מחיקת לקוח</DialogTitle>
+                  <DialogDescription>
+                    האם אתה בטוח שברצונך למחוק את הלקוח? פעולה זו לא ניתנת לביטול.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="mt-4">
+                  <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                    ביטול
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleDelete}
+                    disabled={deleteLead.isPending}
+                  >
+                    {deleteLead.isPending ? "מוחק..." : "מחק"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </CardFooter>
     </Card>
