@@ -12,7 +12,6 @@ import { AddLeadCarField } from "./AddLeadCarField";
 import { AddLeadSourceField } from "./AddLeadSourceField";
 import { AddLeadAssignedField } from "./AddLeadAssignedField";
 import { AddLeadNotesField } from "./AddLeadNotesField";
-import { ReactNode } from "react";
 
 export function AddLeadForm({ carId }: { carId?: string }) {
   const { user } = useAuth();
@@ -49,20 +48,20 @@ export function AddLeadForm({ carId }: { carId?: string }) {
       onSubmit={handleSubmit}
       isSubmitting={addLead.isPending}
     >
-      {({ form, salesAgents, canAssignLeads }) => (
+      {(context) => (
         <>
-          <AddLeadNameField control={form.control} />
-          <AddLeadPhoneField control={form.control} />
-          <AddLeadEmailField control={form.control} />
-          {!carId && <AddLeadCarField control={form.control} cars={cars || []} />}
-          <AddLeadSourceField control={form.control} />
-          {canAssignLeads && (
+          <AddLeadNameField control={context.form.control} />
+          <AddLeadPhoneField control={context.form.control} />
+          <AddLeadEmailField control={context.form.control} />
+          {!carId && <AddLeadCarField control={context.form.control} cars={cars || []} />}
+          <AddLeadSourceField control={context.form.control} />
+          {context.canAssignLeads && (
             <AddLeadAssignedField
-              control={form.control}
-              salesAgents={salesAgents}
+              control={context.form.control}
+              salesAgents={context.salesAgents}
             />
           )}
-          <AddLeadNotesField control={form.control} />
+          <AddLeadNotesField control={context.form.control} />
           <Button type="submit" className="w-full" disabled={addLead.isPending}>
             {addLead.isPending ? "מוסיף..." : "הוסף ליד"}
           </Button>

@@ -17,7 +17,7 @@ interface FormContextValue {
 interface LeadFormBaseProps {
   defaultValues: Partial<LeadFormValues>;
   onSubmit: (values: LeadFormValues) => Promise<void>;
-  children: ReactNode | ((context: FormContextValue) => ReactNode);
+  children: ReactNode | ((contextValue: FormContextValue) => ReactNode);
   isSubmitting?: boolean;
 }
 
@@ -56,7 +56,7 @@ export function LeadFormBase({ defaultValues, onSubmit, children, isSubmitting }
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
         {typeof children === 'function' 
-          ? children(contextValue) 
+          ? (children as (context: FormContextValue) => ReactNode)(contextValue)
           : children}
       </form>
     </Form>

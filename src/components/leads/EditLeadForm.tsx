@@ -14,7 +14,6 @@ import { EditLeadStatusField } from "./fields/EditLeadStatusField";
 import { EditLeadSourceField } from "./fields/EditLeadSourceField";
 import { EditLeadAssignedField } from "./fields/EditLeadAssignedField";
 import { EditLeadNotesField } from "./fields/EditLeadNotesField";
-import { ReactNode } from "react";
 
 interface EditLeadFormProps {
   lead: any;
@@ -67,18 +66,18 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
       onSubmit={handleSubmit}
       isSubmitting={updateLead.isPending}
     >
-      {({ form, salesAgents, canAssignLeads }) => (
+      {(context) => (
         <>
-          <EditLeadNameField control={form.control} />
-          <EditLeadPhoneField control={form.control} />
-          <EditLeadEmailField control={form.control} />
-          <EditLeadCarField control={form.control} cars={cars || []} />
-          <EditLeadStatusField control={form.control} />
-          <EditLeadSourceField control={form.control} />
-          {canAssignLeads && (
-            <EditLeadAssignedField control={form.control} salesAgents={salesAgents} />
+          <EditLeadNameField control={context.form.control} />
+          <EditLeadPhoneField control={context.form.control} />
+          <EditLeadEmailField control={context.form.control} />
+          <EditLeadCarField control={context.form.control} cars={cars || []} />
+          <EditLeadStatusField control={context.form.control} />
+          <EditLeadSourceField control={context.form.control} />
+          {context.canAssignLeads && (
+            <EditLeadAssignedField control={context.form.control} salesAgents={context.salesAgents} />
           )}
-          <EditLeadNotesField control={form.control} />
+          <EditLeadNotesField control={context.form.control} />
           <Button type="submit" className="w-full" disabled={updateLead.isPending}>
             {updateLead.isPending ? "מעדכן..." : "עדכן ליד"}
           </Button>
