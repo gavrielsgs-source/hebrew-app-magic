@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 const fetchLeads = async () => {
+  // שינינו את השאילתה כך שלא תנסה לקשר בין טבלאות שאין ביניהן קשר מוגדר
   const { data, error } = await supabase
     .from("leads")
     .select(`
@@ -10,10 +11,6 @@ const fetchLeads = async () => {
         make,
         model,
         year
-      ),
-      profiles (
-        full_name,
-        phone
       )
     `)
     .order('created_at', { ascending: false });

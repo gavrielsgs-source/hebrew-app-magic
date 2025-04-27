@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRoles } from "@/hooks/use-roles";
 import { useUserManagement } from "@/hooks/use-user-management";
 import { useState, useEffect, ReactNode } from "react";
+import { toast } from "sonner";
 
 export interface FormContextValue {
   form: ReturnType<typeof useForm<LeadFormValues>>;
@@ -47,6 +48,7 @@ export function LeadFormBase({ defaultValues, onSubmit, children, isSubmitting }
       form.reset();
     } catch (error) {
       console.error("שגיאה בשליחת טופס:", error);
+      toast.error("אירעה שגיאה בשליחת הטופס");
     }
   };
 

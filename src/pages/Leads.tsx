@@ -14,7 +14,7 @@ import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegrat
 
 export default function Leads() {
   const { toast } = useToast();
-  const { leads, isLoading } = useLeads();
+  const { leads, isLoading, error } = useLeads();
   const addLead = useCreateLead();
   const [isAddingLead, setIsAddingLead] = useState(false);
   const { checkEntitlement } = useSubscription();
@@ -81,7 +81,7 @@ export default function Leads() {
         </TabsList>
         
         <TabsContent value="leads">
-          <LeadsGrid leads={leads} isLoading={isLoading} />
+          <LeadsGrid leads={leads} isLoading={isLoading} error={error} />
         </TabsContent>
         
         <TabsContent value="settings">
