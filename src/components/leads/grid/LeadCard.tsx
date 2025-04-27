@@ -2,20 +2,34 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageSquare, Calendar, Clock, Send, User, Edit } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { Phone, MessageSquare, Calendar, Clock, Send, User, Edit, AlertCircle } from "lucide-react";
+import { formatDistanceToNow, format, isAfter } from "date-fns";
 import { he } from "date-fns/locale";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { EditLeadForm } from "@/components/leads/EditLeadForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoles } from "@/hooks/use-roles";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { LeadReminders } from "./LeadReminders";
 
 export function LeadCard({ lead }: { lead: any }) {
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const { canManageLeads } = useRoles();
+  const [hasActiveReminders, setHasActiveReminders] = useState(false);
+
+  // בדוק אם יש תזכורות פעילות
+  useEffect(() => {
+    if (lead.follow_up_notes && Array.isArray(lead.follow_up_notes) && lead.follow_up_notes.length > 0) {
+      const activeReminders = lead.follow_up_notes.filter((reminder: any) => 
+        !reminder.completed && 
+        isAfter(new Date(reminder.date), new Date())
+      );
+      setHasActiveReminders(activeReminders.length > 0);
+    }
+  }, [lead.follow_up_notes]);
 
   // Format creation date
   const formattedDate = formatDistanceToNow(new Date(lead.created_at), { 
@@ -56,9 +70,33 @@ export function LeadCard({ lead }: { lead: any }) {
           </div>
         </div>
         
-        <Badge className={`${getStatusBadgeColor(lead.status)}`}>
-          {getStatusText(lead.status)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {hasActiveReminders && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <div className="relative">
+                        <AlertCircle className="h-5 w-5 text-yellow-500 cursor-pointer" />
+                        <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-0">
+                      <LeadReminders lead={lead} />
+                    </PopoverContent>
+                  </Popover>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>יש תזכורות מתוזמנות</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <Badge className={`${getStatusBadgeColor(lead.status)}`}>
+            {getStatusText(lead.status)}
+          </Badge>
+        </div>
       </CardHeader>
       
       <CardContent className="p-4">
@@ -99,8 +137,9 @@ export function LeadCard({ lead }: { lead: any }) {
           )}
           
           {lead.notes && (
-            <div className="pt-2 border-t border-slate-100">
-              <p className="text-sm">{lead.notes}</p>
+            <div className="pt-2 border-t border-slate-100 mt-2">
+              <p className="text-sm font-medium text-slate-600 mb-1">הערות:</p>
+              <p className="text-sm whitespace-pre-line text-slate-700">{lead.notes}</p>
             </div>
           )}
         </div>
@@ -164,6 +203,29 @@ export function LeadCard({ lead }: { lead: any }) {
               </Tooltip>
             </TooltipProvider>
           )}
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>תזכורות לקוח</DialogTitle>
+                    </DialogHeader>
+                    <LeadReminders lead={lead} canAddReminder={true} />
+                  </DialogContent>
+                </Dialog>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>נהל תזכורות</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
         {canManageLeads() && (
