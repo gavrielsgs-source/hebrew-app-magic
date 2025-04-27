@@ -22,6 +22,7 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +43,6 @@ const formSchema = z.object({
 });
 
 export function LeadReminders({ lead, canAddReminder = false }: LeadRemindersProps) {
-  const [date, setDate] = useState<Date>();
   const createReminder = useCreateReminder();
   const updateReminder = useUpdateReminder();
 
@@ -106,7 +106,7 @@ export function LeadReminders({ lead, canAddReminder = false }: LeadRemindersPro
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
-                            variant="outline"
+                            variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-right font-normal",
                               !field.value && "text-muted-foreground"
@@ -128,9 +128,11 @@ export function LeadReminders({ lead, canAddReminder = false }: LeadRemindersPro
                           onSelect={field.onChange}
                           initialFocus
                           locale={he}
+                          className="pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -148,6 +150,7 @@ export function LeadReminders({ lead, canAddReminder = false }: LeadRemindersPro
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
