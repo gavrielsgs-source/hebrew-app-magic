@@ -17,9 +17,10 @@ import { EditLeadNotesField } from "./fields/EditLeadNotesField";
 
 interface EditLeadFormProps {
   lead: any;
+  onSuccess?: () => void;
 }
 
-export function EditLeadForm({ lead }: EditLeadFormProps) {
+export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
   const { user } = useAuth();
   const updateLead = useUpdateLead();
   const { cars } = useCars();
@@ -45,6 +46,7 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
     try {
       await updateLead.mutateAsync({ id: lead.id, data: leadData });
       toast.success("הליד עודכן בהצלחה");
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error("שגיאה בעדכון ליד:", error);
       toast.error("שגיאה בעדכון הליד");

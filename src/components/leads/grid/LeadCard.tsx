@@ -21,11 +21,13 @@ export function LeadCard({ lead }: { lead: any }) {
     }
   }, [lead.follow_up_notes]);
 
+  const canEdit = canManageLeads();
+
   return (
     <Card className="overflow-hidden border-slate-200 shadow-md transition-all hover:shadow-lg">
       <LeadCardHeader lead={lead} hasActiveReminders={hasActiveReminders} />
       <LeadCardContent lead={lead} />
-      <LeadCardActions lead={lead} canManageLeads={canManageLeads()} />
+      <LeadCardActions lead={lead} canManageLeads={canEdit} />
     </Card>
   );
 }

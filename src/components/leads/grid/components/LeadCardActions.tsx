@@ -19,6 +19,7 @@ interface LeadCardActionsProps {
 
 export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const deleteLead = useDeleteLead();
 
   const handleDelete = async () => {
@@ -118,7 +119,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
       
       {canManageLeads && (
         <div className="flex gap-2">
-          <Sheet>
+          <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
             <SheetTrigger asChild>
               <Button 
                 variant="outline" 
@@ -133,7 +134,10 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
               <SheetHeader>
                 <SheetTitle>עריכת לקוח</SheetTitle>
               </SheetHeader>
-              <EditLeadForm lead={lead} />
+              <EditLeadForm 
+                lead={lead} 
+                onSuccess={() => setIsEditSheetOpen(false)}
+              />
             </SheetContent>
           </Sheet>
 
