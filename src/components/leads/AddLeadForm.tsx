@@ -12,6 +12,7 @@ import { AddLeadCarField } from "./AddLeadCarField";
 import { AddLeadSourceField } from "./AddLeadSourceField";
 import { AddLeadAssignedField } from "./AddLeadAssignedField";
 import { AddLeadNotesField } from "./AddLeadNotesField";
+import { ReactNode } from "react";
 
 export function AddLeadForm({ carId }: { carId?: string }) {
   const { user } = useAuth();

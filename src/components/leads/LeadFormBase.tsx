@@ -6,12 +6,18 @@ import { leadFormSchema, LeadFormValues } from "./schemas/lead-form-schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useRoles } from "@/hooks/use-roles";
 import { useUserManagement } from "@/hooks/use-user-management";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
+
+interface FormContextValue {
+  form: ReturnType<typeof useForm<LeadFormValues>>;
+  salesAgents: any[];
+  canAssignLeads: boolean;
+}
 
 interface LeadFormBaseProps {
   defaultValues: Partial<LeadFormValues>;
   onSubmit: (values: LeadFormValues) => Promise<void>;
-  children: React.ReactNode;
+  children: ReactNode | ((context: FormContextValue) => ReactNode);
   isSubmitting?: boolean;
 }
 
@@ -40,10 +46,18 @@ export function LeadFormBase({ defaultValues, onSubmit, children, isSubmitting }
     form.reset();
   };
 
+  const contextValue: FormContextValue = {
+    form,
+    salesAgents,
+    canAssignLeads: isAdmin() || isAgencyManager()
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
-        {typeof children === 'function' ? children({ form, salesAgents, canAssignLeads: isAdmin() || isAgencyManager() }) : children}
+        {typeof children === 'function' 
+          ? children(contextValue) 
+          : children}
       </form>
     </Form>
   );
