@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WhatsappTemplateForm } from "./WhatsappTemplateForm";
 import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
@@ -11,6 +10,9 @@ import { templates } from "./whatsapp-templates";
 import { toast } from "sonner";
 import { getCarImages } from "@/lib/image-utils";
 import { ArrowLeft } from "lucide-react";
+import { WhatsappPhoneInput } from "./components/WhatsappPhoneInput";
+import { SelectedCarDetails } from "./components/SelectedCarDetails";
+import { ImageWarning } from "./components/ImageWarning";
 
 interface WhatsappTemplateSelectorProps {
   car: Car;
@@ -64,12 +66,7 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
       
     setCustomizedTemplate(initialTemplate);
   }, [car, selectedTemplate]);
-  
-  const handleTemplateChange = (templateId: string) => {
-    const newTemplate = templates.find(t => t.id === templateId) || templates[0];
-    setSelectedTemplate(newTemplate);
-  };
-  
+
   const handleSendWhatsApp = () => {
     if (!phoneNumber) {
       toast.error("יש להזין מספר טלפון");
@@ -120,34 +117,11 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
         </Button>
       </div>
 
-      <div>
-        <h3 className="text-lg font-medium mb-2">רכב נבחר:</h3>
-        <p className="text-muted-foreground">
-          {car.make} {car.model} {car.year} • {formatPrice(car.price)}
-        </p>
-      </div>
+      <SelectedCarDetails car={car} />
       
       <Separator />
       
-      <div>
-        <label htmlFor="phone" className="block text-sm font-medium mb-1">
-          מספר טלפון של הלקוח
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="phone"
-            type="tel"
-            placeholder="דוגמה: 0541234567"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            dir="rtl"
-          />
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          ניתן להזין עם או בלי קידומת (972)
-        </p>
-      </div>
+      <WhatsappPhoneInput phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} />
       
       <Tabs defaultValue="template" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -187,14 +161,7 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
         </Button>
       </div>
       
-      {carImages.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-amber-800 text-sm">
-          <p className="font-medium">שים לב:</p>
-          <p>
-            בגלל מגבלות של וואטסאפ, יש להוסיף את התמונות באופן ידני בכל חלונית שתיפתח
-          </p>
-        </div>
-      )}
+      <ImageWarning hasImages={carImages.length > 0} />
     </div>
   );
 }
