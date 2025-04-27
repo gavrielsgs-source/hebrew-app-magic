@@ -46,7 +46,7 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
       await updateLead.mutateAsync({ id: lead.id, data: leadData });
       toast.success("הליד עודכן בהצלחה");
     } catch (error) {
-      console.error("Error updating lead:", error);
+      console.error("שגיאה בעדכון ליד:", error);
       toast.error("שגיאה בעדכון הליד");
     }
   };

@@ -42,8 +42,12 @@ export function LeadFormBase({ defaultValues, onSubmit, children, isSubmitting }
   }, [allUsers]);
 
   const handleSubmit = async (values: LeadFormValues) => {
-    await onSubmit(values);
-    form.reset();
+    try {
+      await onSubmit(values);
+      form.reset();
+    } catch (error) {
+      console.error("שגיאה בשליחת טופס:", error);
+    }
   };
 
   const contextValue: FormContextValue = {

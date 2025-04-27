@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
@@ -20,9 +19,10 @@ const fetchLeads = async () => {
     .order('created_at', { ascending: false });
 
   if (error) {
+    console.error("שגיאה בטעינת לקוחות:", error);
     throw new Error(error.message);
   }
-  return data;
+  return data || [];
 };
 
 export const useLeads = () => {
@@ -43,8 +43,10 @@ export const useCreateLead = () => {
 
   const mutation = useMutation({
     mutationFn: async (newLead: any) => {
-      const { data, error } = await supabase.from("leads").insert([newLead]);
+      const { data, error } = await supabase.from("leads").insert([newLead]).select();
+      
       if (error) {
+        console.error("שגיאה ביצירת ליד:", error);
         throw new Error(error.message);
       }
       return data;
@@ -52,6 +54,9 @@ export const useCreateLead = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
     },
+    onError: (error) => {
+      console.error("שגיאה בהוספת לקוח:", error);
+    }
   });
 
   return mutation;

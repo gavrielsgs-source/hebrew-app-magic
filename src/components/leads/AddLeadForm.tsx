@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLeads, useCreateLead } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 import { LeadFormBase, FormContextValue } from "./LeadFormBase";
 import { LeadFormValues } from "./schemas/lead-form-schema";
 import { AddLeadNameField } from "./AddLeadNameField";
@@ -19,19 +20,25 @@ export function AddLeadForm({ carId }: { carId?: string }) {
   const { cars } = useCars();
 
   const handleSubmit = async (values: LeadFormValues) => {
-    const leadData = {
-      name: values.name,
-      email: values.email || null,
-      phone: values.phone,
-      notes: values.notes || null,
-      car_id: values.car_id || null,
-      source: values.source || "ידני",
-      status: "new",
-      assigned_to: values.assigned_to || null,
-      user_id: user?.id || null
-    };
+    try {
+      const leadData = {
+        name: values.name,
+        email: values.email || null,
+        phone: values.phone,
+        notes: values.notes || null,
+        car_id: values.car_id || null,
+        source: values.source || "ידני",
+        status: "new",
+        assigned_to: values.assigned_to || null,
+        user_id: user?.id || null
+      };
 
-    await addLead.mutateAsync(leadData);
+      await addLead.mutateAsync(leadData);
+      toast("הלקוח נוסף בהצלחה");
+    } catch (error) {
+      console.error("שגיאה בהוספת לקוח:", error);
+      toast.error("אירעה שגיאה בהוספת הלקוח");
+    }
   };
 
   return (
