@@ -28,6 +28,7 @@ import { EditLeadStatusField } from "./fields/EditLeadStatusField";
 import { EditLeadSourceField } from "./fields/EditLeadSourceField";
 import { EditLeadAssignedField } from "./fields/EditLeadAssignedField";
 import { EditLeadNotesField } from "./fields/EditLeadNotesField";
+import { useAuth } from "@/hooks/use-auth";
 
 const formSchema = z.object({
   name: z.string().min(2, "נדרשות לפחות 2 אותיות"),
@@ -50,6 +51,7 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
   const { leads } = useLeads();
   const updateLead = useUpdateLead();
   const { cars } = useCars();
+  const { user } = useAuth();
   const { isAdmin, isAgencyManager } = useRoles();
   const { allUsers, isLoading: usersLoading } = useUserManagement();
   const [salesAgents, setSalesAgents] = useState<any[]>([]);
@@ -106,7 +108,8 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
       car_id: values.car_id || null,
       source: values.source || "ידני",
       status: values.status,
-      assigned_to: values.assigned_to || null
+      assigned_to: values.assigned_to || null,
+      user_id: user?.id || lead.user_id  // Preserve or update user_id
     };
     
     try {

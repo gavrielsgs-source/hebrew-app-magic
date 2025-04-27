@@ -75,7 +75,8 @@ export function AddLeadForm({ carId }: { carId?: string }) {
       car_id: values.car_id || null,
       source: values.source || "ידני",
       status: "new",
-      assigned_to: values.assigned_to || null
+      assigned_to: values.assigned_to || null,
+      user_id: user?.id || null  // Explicitly set user_id for RLS
     };
 
     await addLead.mutateAsync(leadData);
