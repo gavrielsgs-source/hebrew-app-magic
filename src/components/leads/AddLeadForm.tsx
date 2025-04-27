@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLeads, useCreateLead } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useAuth } from "@/hooks/use-auth";
-import { LeadFormBase } from "./LeadFormBase";
+import { LeadFormBase, FormContextValue } from "./LeadFormBase";
 import { LeadFormValues } from "./schemas/lead-form-schema";
 import { AddLeadNameField } from "./AddLeadNameField";
 import { AddLeadPhoneField } from "./AddLeadPhoneField";
@@ -48,7 +48,7 @@ export function AddLeadForm({ carId }: { carId?: string }) {
       onSubmit={handleSubmit}
       isSubmitting={addLead.isPending}
     >
-      {(context) => (
+      {(context: FormContextValue) => (
         <>
           <AddLeadNameField control={context.form.control} />
           <AddLeadPhoneField control={context.form.control} />

@@ -8,7 +8,7 @@ import { useRoles } from "@/hooks/use-roles";
 import { useUserManagement } from "@/hooks/use-user-management";
 import { useState, useEffect, ReactNode } from "react";
 
-interface FormContextValue {
+export interface FormContextValue {
   form: ReturnType<typeof useForm<LeadFormValues>>;
   salesAgents: any[];
   canAssignLeads: boolean;

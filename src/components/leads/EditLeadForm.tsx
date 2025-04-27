@@ -4,7 +4,7 @@ import { useLeads, useUpdateLead } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { LeadFormBase } from "./LeadFormBase";
+import { LeadFormBase, FormContextValue } from "./LeadFormBase";
 import { LeadFormValues } from "./schemas/lead-form-schema";
 import { EditLeadNameField } from "./fields/EditLeadNameField";
 import { EditLeadPhoneField } from "./fields/EditLeadPhoneField";
@@ -66,7 +66,7 @@ export function EditLeadForm({ lead }: EditLeadFormProps) {
       onSubmit={handleSubmit}
       isSubmitting={updateLead.isPending}
     >
-      {(context) => (
+      {(context: FormContextValue) => (
         <>
           <EditLeadNameField control={context.form.control} />
           <EditLeadPhoneField control={context.form.control} />
