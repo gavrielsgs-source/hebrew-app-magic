@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import * as React from "react"; // Add this import to fix the TypeScript error
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
