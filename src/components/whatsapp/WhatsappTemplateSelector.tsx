@@ -13,6 +13,7 @@ import { ArrowLeft } from "lucide-react";
 import { WhatsappPhoneInput } from "./components/WhatsappPhoneInput";
 import { SelectedCarDetails } from "./components/SelectedCarDetails";
 import { ImageWarning } from "./components/ImageWarning";
+import { formatPrice } from "@/lib/utils";
 
 interface WhatsappTemplateSelectorProps {
   car: Car;
@@ -66,6 +67,11 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
       
     setCustomizedTemplate(initialTemplate);
   }, [car, selectedTemplate]);
+
+  const handleTemplateChange = (templateId: string) => {
+    const newTemplate = templates.find(t => t.id === templateId) || templates[0];
+    setSelectedTemplate(newTemplate);
+  };
 
   const handleSendWhatsApp = () => {
     if (!phoneNumber) {
