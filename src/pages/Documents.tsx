@@ -2,8 +2,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DocumentsManager } from "@/components/documents/DocumentsManager";
+import { useEffect } from "react";
 
 export default function Documents() {
+  // הגדרת כיוון ה-RTL לתמיכה בעברית
+  useEffect(() => {
+    document.documentElement.dir = "rtl";
+    document.documentElement.lang = "he";
+  }, []);
+  
   return (
     <div className="container py-6 text-right">
       <div className="flex flex-col space-y-4">

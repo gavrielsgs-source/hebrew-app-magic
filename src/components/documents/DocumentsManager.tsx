@@ -158,7 +158,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
               <SelectValue placeholder="סוג מסמך" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">הכל</SelectItem>
+              <SelectItem value="all">הכל</SelectItem>
               <SelectItem value="contract">חוזה</SelectItem>
               <SelectItem value="id">תעודת זהות</SelectItem>
               <SelectItem value="license">רישיון</SelectItem>

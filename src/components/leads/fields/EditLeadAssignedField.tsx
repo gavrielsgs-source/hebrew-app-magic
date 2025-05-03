@@ -23,7 +23,7 @@ export function EditLeadAssignedField({ control, salesAgents }: Props) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="">לא משויך</SelectItem>
+              <SelectItem value="unassigned">לא משויך</SelectItem>
               {salesAgents.map((agent: any) => (
                 <SelectItem key={agent.id} value={agent.id}>
                   {agent.email} {agent.full_name ? `(${agent.full_name})` : ''}

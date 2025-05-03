@@ -23,7 +23,7 @@ export function EditLeadCarField({ control, cars }: Props) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="">ללא רכב</SelectItem>
+              <SelectItem value="none">ללא רכב</SelectItem>
               {cars?.map((car: any) => (
                 <SelectItem key={car.id} value={car.id}>
                   {car.make} {car.model} ({car.year})
