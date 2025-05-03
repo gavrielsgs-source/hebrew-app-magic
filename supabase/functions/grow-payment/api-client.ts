@@ -6,22 +6,16 @@ export interface GrowPaymentRequest {
   transactionToken: string; // Required - Transaction identifier token
   transactionId: string;    // Required - Transaction identifier number
   asmachta: string;        // Required - Approval from credit card company
+  fullName?: string;       // Optional - Full name must consist of at least two names
+  phone?: string;          // Optional - A valid Israeli mobile phone number
+  email?: string;          // Optional - A valid email address
+  chargeDay?: string;      // Optional - 1-31
+  sum?: string;            // Optional - Total amount for payment
+  paymentNum?: string;     // Optional - 1-48
+  changeStatus?: string;   // Optional
+  updateCard?: string;     // Optional
   clientId: string;        // Authentication
   ECPwd: string;           // Authentication
-  pageField?: {            // Additional customer fields if needed
-    fullName?: string;
-    phone?: string;
-    email?: string;
-  };
-  // Additional fields that might be needed based on documentation
-  sum?: string;
-  description?: string;
-  paymentNum?: string;
-  maxPaymentNum?: string;
-  chargeType?: string;
-  pageCode?: string;
-  successUrl?: string;
-  cancelUrl?: string;
 }
 
 export interface GrowPaymentResponse {
@@ -39,46 +33,30 @@ export interface GrowPaymentResponse {
 }
 
 export async function updateDirectDebitPayment(payload: GrowPaymentRequest): Promise<GrowPaymentResponse> {
-  // Ensure all parameters are correctly formatted as strings
-  const formattedPayload = { ...payload };
-  
-  // Convert numbers to strings if they aren't already
-  if (formattedPayload.paymentNum && typeof formattedPayload.paymentNum !== 'string') {
-    formattedPayload.paymentNum = String(formattedPayload.paymentNum);
-  }
-  
-  if (formattedPayload.maxPaymentNum && typeof formattedPayload.maxPaymentNum !== 'string') {
-    formattedPayload.maxPaymentNum = String(formattedPayload.maxPaymentNum);
-  }
-  
-  if (formattedPayload.transactionId && typeof formattedPayload.transactionId !== 'string') {
-    formattedPayload.transactionId = String(formattedPayload.transactionId);
-  }
-  
-  if (formattedPayload.asmachta && typeof formattedPayload.asmachta !== 'string') {
-    formattedPayload.asmachta = String(formattedPayload.asmachta);
-  }
-  
-  // Use FormData for multipart/form-data format if required by the API
+  // Create a FormData object for multipart/form-data format
   const formData = new FormData();
   
-  // Add all fields to the form data
-  Object.entries(formattedPayload).forEach(([key, value]) => {
-    // Handle nested objects like pageField
-    if (typeof value === 'object' && value !== null) {
-      Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-        if (nestedValue !== undefined) {
-          formData.append(`${key}.${nestedKey}`, String(nestedValue));
-        }
-      });
-    } else if (value !== undefined) {
-      formData.append(key, String(value));
-    }
-  });
+  // Add all required fields to the form data
+  formData.append('userId', payload.userId);
+  formData.append('transactionToken', payload.transactionToken);
+  formData.append('transactionId', payload.transactionId);
+  formData.append('asmachta', payload.asmachta);
+  formData.append('clientId', payload.clientId);
+  formData.append('ECPwd', payload.ECPwd);
+  
+  // Add optional fields if they exist
+  if (payload.fullName) formData.append('fullName', payload.fullName);
+  if (payload.phone) formData.append('phone', payload.phone);
+  if (payload.email) formData.append('email', payload.email);
+  if (payload.chargeDay) formData.append('chargeDay', payload.chargeDay);
+  if (payload.sum) formData.append('sum', payload.sum);
+  if (payload.paymentNum) formData.append('paymentNum', payload.paymentNum);
+  if (payload.changeStatus) formData.append('changeStatus', payload.changeStatus);
+  if (payload.updateCard) formData.append('updateCard', payload.updateCard);
 
-  console.log('Sending formatted payload to GROW updateDirectDebit:', Object.fromEntries(formData.entries()));
+  console.log('Sending form data to GROW updateDirectDebit:', Object.fromEntries(formData.entries()));
 
-  // Send the request with the appropriate content type
+  // Send the request with the appropriate content type (multipart/form-data)
   const response = await fetch(GROW_API_BASE, {
     method: 'POST',
     body: formData
@@ -103,7 +81,7 @@ export async function createPaymentProcess(payload: GrowPaymentRequest): Promise
   
   // וידוא שיש maxPaymentNum תקין
   if (!formattedPayload.maxPaymentNum) {
-    formattedPayload.maxPaymentNum = "1"; // ברירת מחדל לתשלום אחד אם לא הוגדר
+    formattedPayload.maxPaymentNum = "1"; // ברירת מחדל לתשלום אחד אם לא הוג��ר
   }
   
   // המרה לפורמט של x-www-form-urlencoded

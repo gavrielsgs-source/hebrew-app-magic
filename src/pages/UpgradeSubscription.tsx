@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -91,7 +90,7 @@ export default function UpgradeSubscription() {
         "10 משתמשים במערכת",
         "תבניות הודעה מותאמות אישית",
         "אוטומציה של תזכורות ומעקב",
-        "ד��חות מתקדמים וניתוח ביצועים",
+        "דוחות מתקדמים וניתוח ביצועים",
         "ייצוא נתונים"
       ],
       tier: "enterprise"
@@ -107,13 +106,13 @@ export default function UpgradeSubscription() {
     setLoading(true);
     
     try {
-      console.log("Start upgrade planing!");
+      console.log("Start upgrade planning!");
       const selectedPlanObj = plans.find(plan => plan.id === selectedPlan);
       if (!selectedPlanObj) {
         throw new Error("חבילה לא נמצאה");
       }
 
-      // הגדרת URLs מלאים עם origin מדויק
+      // Set full URLs with precise origin
       const origin = window.location.origin;
       console.log(`Origin URL: ${origin}`);
 
@@ -123,7 +122,7 @@ export default function UpgradeSubscription() {
       console.log(`Success URL: ${successUrl}`);
       console.log(`Error URL: ${errorUrl}`);
 
-      // הכנת פרמטרים לתשלום - הוספת maxPayments לטיפול בשגיאת קוד 705
+      // Prepare payment parameters with proper types
       const paymentPayload = {
         customerName: data.fullName,
         customerPhone: data.phone,
@@ -132,14 +131,13 @@ export default function UpgradeSubscription() {
         description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
         successUrl: successUrl,
         errorUrl: errorUrl,
-        maxPayments: 1, // הוספת מספר תשלומים מקסימלי כברירת מחדל
-        // maxPayments: "1", // הוספת מספר תשלומים מקסימלי כברירת מחדל
+        maxPayments: "1", // Explicitly as a string to fix error 705
         language: "HE",
       };
 
       console.log("Sending payment payload:", paymentPayload);
 
-      // שליחת הבקשה ליצירת תשלום
+      // Send request to create payment
       const { data: paymentData, error } = await supabase.functions.invoke('grow-payment', {
         body: {
           action: 'createPaymentProcess',
@@ -154,23 +152,21 @@ export default function UpgradeSubscription() {
 
       console.log("Payment response:", paymentData);
 
-      // בדיקת שגיאות בתשובה
+      // Check for errors in response
       if (paymentData.error) {
         console.error("Payment API error:", paymentData);
-        // Improved error message handling
         const errorMessage = typeof paymentData.error === 'string' 
           ? paymentData.error 
           : (paymentData.details?.message || 'שגיאה לא ידועה');
         throw new Error(errorMessage);
       }
 
-      // טיפול בתשובה מוצלחת
+      // Handle successful response
       if (paymentData.success) {
-        // אם התקבל URL להפניה, מפנים את המשתמש ישירות
+        // If redirect URL exists, redirect user
         if (paymentData.url || paymentData.redirectUrl) {
           const redirectUrl = paymentData.url || paymentData.redirectUrl;
           console.log("Redirecting to payment URL:", redirectUrl);
-          // הפניה ישירה לדף התשלום
           window.location.href = redirectUrl;
         } else {
           console.error("Missing redirect URL in response:", paymentData);
@@ -186,6 +182,60 @@ export default function UpgradeSubscription() {
         description: error instanceof Error ? error.message : String(error)
       });
       setLoading(false);
+    }
+  };
+
+  // Function to update recurring payment with required parameters
+  const updateRecurringPayment = async (params: {
+    userId: string;
+    transactionToken: string;
+    transactionId: string;
+    asmachta: string;
+    fullName?: string;
+    phone?: string;
+    email?: string;
+  }) => {
+    try {
+      console.log("Updating recurring payment:", params);
+      
+      const { data: updateResponse, error } = await supabase.functions.invoke('grow-payment', {
+        body: {
+          action: 'updateDirectDebit',
+          payload: {
+            userId: params.userId,
+            transactionToken: params.transactionToken,
+            transactionId: params.transactionId,
+            asmachta: params.asmachta,
+            customerName: params.fullName,
+            customerPhone: params.phone,
+            customerEmail: params.email,
+          }
+        }
+      });
+
+      if (error) {
+        console.error("Error updating recurring payment:", error);
+        return { success: false, error: error.message };
+      }
+
+      console.log("Update response:", updateResponse);
+      
+      if (updateResponse.error) {
+        return { 
+          success: false, 
+          error: typeof updateResponse.error === 'string' ? 
+            updateResponse.error : 
+            updateResponse.details?.message || 'Unknown error' 
+        };
+      }
+
+      return { success: true, data: updateResponse };
+    } catch (error) {
+      console.error("Exception updating recurring payment:", error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
     }
   };
 

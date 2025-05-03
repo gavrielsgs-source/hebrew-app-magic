@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, GROW_CLIENT_ID, GROW_EC_PWD, GROW_PAGE_CODE, GROW_USER_ID } from './config.ts';
 import { validatePayload, type PaymentPayload } from './validators.ts';
@@ -26,7 +27,7 @@ serve(async (req) => {
       );
     }
 
-    // בדיקת הרשאות API של GROW
+    // Check GROW API credentials
     if (!GROW_CLIENT_ID || !GROW_EC_PWD) {
       console.error("Missing required GROW credentials");
       return new Response(
@@ -35,7 +36,7 @@ serve(async (req) => {
       );
     }
 
-    // וידוא תקינות הנתונים בהתאם לסוג הפעולה
+    // Validate payload data based on action
     const validationError = validatePayload(payload, action);
     if (validationError) {
       return new Response(
@@ -60,9 +61,9 @@ serve(async (req) => {
           phone: payload.customerPhone || '',
           email: payload.customerEmail || ''
         },
-        chargeType: "1",  // קוד קבוע של GROW לתשלום רגיל
-        paymentNum: payload.maxPayments || "1",  // מספר תשלומים מבוקש
-        maxPaymentNum: payload.maxPayments || "1", // הגבלת מספר תשלומים מקסימלי
+        chargeType: "1",  // Fixed GROW code for regular payment
+        paymentNum: payload.maxPayments?.toString() || "1",
+        maxPaymentNum: payload.maxPayments?.toString() || "1",
         clientId: GROW_CLIENT_ID,
         ECPwd: GROW_EC_PWD
       } as any;
@@ -71,25 +72,36 @@ serve(async (req) => {
       responseData = await createPaymentProcess(growPayload);
     } 
     else if (action === 'updateDirectDebit') {
-      // New implementation for updating direct debit
+      // Implementation for updating direct debit with all required fields
+      if (!payload.userId || !payload.transactionToken || !payload.transactionId || !payload.asmachta) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Missing required fields for updateDirectDebit',
+            details: 'userId, transactionToken, transactionId, and asmachta are required'
+          }), 
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Create payload with all required fields as strings
       const directDebitPayload: GrowPaymentRequest = {
-        userId: payload.userId || GROW_USER_ID,
-        transactionToken: payload.transactionToken || '',
-        transactionId: payload.transactionId || '',
-        asmachta: payload.asmachta || '',
+        userId: payload.userId,
+        transactionToken: payload.transactionToken,
+        transactionId: payload.transactionId,
+        asmachta: payload.asmachta,
         clientId: GROW_CLIENT_ID,
-        ECPwd: GROW_EC_PWD,
-        // Include additional fields if provided
-        sum: payload.amount?.toString(),
-        description: payload.description,
-        paymentNum: payload.maxPayments,
-        maxPaymentNum: payload.maxPayments,
-        pageField: payload.customerEmail ? {
-          fullName: payload.customerName,
-          phone: payload.customerPhone,
-          email: payload.customerEmail
-        } : undefined
+        ECPwd: GROW_EC_PWD
       };
+
+      // Add optional fields if they exist
+      if (payload.customerName) directDebitPayload.fullName = payload.customerName;
+      if (payload.customerPhone) directDebitPayload.phone = payload.customerPhone;
+      if (payload.customerEmail) directDebitPayload.email = payload.customerEmail;
+      if (payload.chargeDay) directDebitPayload.chargeDay = payload.chargeDay;
+      if (payload.amount) directDebitPayload.sum = payload.amount.toString();
+      if (payload.maxPayments) directDebitPayload.paymentNum = payload.maxPayments.toString();
+      if (payload.changeStatus) directDebitPayload.changeStatus = payload.changeStatus;
+      if (payload.updateCard) directDebitPayload.updateCard = payload.updateCard;
 
       console.log(`Making request to GROW API for updating direct debit:`, directDebitPayload);
       responseData = await updateDirectDebitPayment(directDebitPayload);
@@ -103,9 +115,8 @@ serve(async (req) => {
 
     console.log(`GROW API response:`, responseData);
 
-    // בדיקה אם התקבלה שגיאה מה-API
+    // Check for errors in the API response
     if (responseData.err) {
-      // Extract error message properly
       let errorMessage = 'GROW API error';
       if (responseData.err.message) {
         errorMessage = responseData.err.message;
@@ -121,7 +132,7 @@ serve(async (req) => {
       );
     }
 
-    // Response structure may differ between create and update operations
+    // Success response
     const successResponse = {
       success: true,
       url: responseData.data?.url,
@@ -136,17 +147,14 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    // Improved error handling
     console.error('Error processing GROW payment request:', error);
     
     let errorMessage = 'Internal server error';
     let errorDetails = {};
     
-    // Extract message from error object properly
     if (error instanceof Error) {
       errorMessage = error.message;
     } else if (typeof error === 'object' && error !== null) {
-      // Try to extract information from unknown error object
       errorDetails = error;
     }
     
