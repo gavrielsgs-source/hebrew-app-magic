@@ -10,7 +10,7 @@ interface InsightProps {
   title: string;
   description: string;
   type: "info" | "success" | "warning" | "danger";
-  improvement?: string; // Made optional for all types
+  improvement?: string; // Optional for all types
   icon?: React.ReactNode;
 }
 
@@ -79,11 +79,11 @@ export function SmartInsights({ data }: { data?: any }) {
   }
   
   // חישוב תובנות מנתוני האנליטיקה
-  const insights = [
+  const insights: InsightProps[] = [
     {
       title: "זמן תגובה גבוה מהממוצע",
       description: `זמן התגובה הממוצע ללידים הוא ${data.avgResponseTime} דקות, גבוה מהיעד של 60 דקות`,
-      type: "warning" as const,
+      type: "warning",
       improvement: "הגדר התראות מיידיות על לידים חדשים"
     },
     {
@@ -91,12 +91,12 @@ export function SmartInsights({ data }: { data?: any }) {
       description: data.leadsBySource && data.leadsBySource[0] ? 
         `"${data.leadsBySource[0].source}" הוא מקור הלידים המוביל עם ${data.leadsBySource[0].count} לידים` : 
         "אין מספיק נתונים",
-      type: "info" as const
+      type: "info"
     },
     {
       title: data.conversionRate > 15 ? "שיעור המרה טוב" : "שיעור המרה נמוך",
       description: `שיעור ההמרה הנוכחי הוא ${data.conversionRate.toFixed(1)}%`,
-      type: data.conversionRate > 15 ? "success" as const : "danger" as const,
+      type: data.conversionRate > 15 ? "success" : "danger",
       improvement: data.conversionRate <= 15 ? "שקול לשפר את תהליך המעקב אחרי לידים" : undefined
     }
   ];
@@ -108,7 +108,8 @@ export function SmartInsights({ data }: { data?: any }) {
       insights.push({
         title: "סוכן המכירות המוביל",
         description: `${topAgent.agent} עם ${topAgent.sales} מכירות בתקופה הנבחרת`,
-        type: "success" as const
+        type: "success"
+        // No improvement needed here
       });
     }
   }
@@ -117,7 +118,7 @@ export function SmartInsights({ data }: { data?: any }) {
   insights.push({
     title: "דגם הרכב המבוקש ביותר",
     description: "יונדאי טוסון עם 8 מכירות בתקופה הנבחרת",
-    type: "info" as const,
+    type: "info",
     improvement: "רכוש מלאי נוסף מדגם זה"
   });
 
