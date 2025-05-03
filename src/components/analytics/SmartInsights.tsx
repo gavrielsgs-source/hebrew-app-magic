@@ -77,34 +77,40 @@ export function SmartInsights({ data }: { data?: any }) {
   if (!data) {
     return null;
   }
+
+  // Set default values for potentially undefined data
+  const avgResponseTime = data.avgResponseTime || 0;
+  const conversionRate = data.conversionRate || 0;
+  const leadsBySource = data.leadsBySource || [];
+  const salesByAgent = data.salesByAgent || [];
   
   // חישוב תובנות מנתוני האנליטיקה
   const insights: InsightProps[] = [
     {
       title: "זמן תגובה גבוה מהממוצע",
-      description: `זמן התגובה הממוצע ללידים הוא ${data.avgResponseTime} דקות, גבוה מהיעד של 60 דקות`,
+      description: `זמן התגובה הממוצע ללידים הוא ${avgResponseTime} דקות, גבוה מהיעד של 60 דקות`,
       type: "warning",
       improvement: "הגדר התראות מיידיות על לידים חדשים"
     },
     {
       title: "מקור הלידים המוביל",
-      description: data.leadsBySource && data.leadsBySource[0] ? 
-        `"${data.leadsBySource[0].source}" הוא מקור הלידים המוביל עם ${data.leadsBySource[0].count} לידים` : 
+      description: leadsBySource && leadsBySource[0] ? 
+        `"${leadsBySource[0].source}" הוא מקור הלידים המוביל עם ${leadsBySource[0].count} לידים` : 
         "אין מספיק נתונים",
       type: "info"
     },
     {
-      title: data.conversionRate > 15 ? "שיעור המרה טוב" : "שיעור המרה נמוך",
-      description: `שיעור ההמרה הנוכחי הוא ${data.conversionRate.toFixed(1)}%`,
-      type: data.conversionRate > 15 ? "success" : "danger",
-      improvement: data.conversionRate <= 15 ? "שקול לשפר את תהליך המעקב אחרי לידים" : undefined
+      title: conversionRate > 15 ? "שיעור המרה טוב" : "שיעור המרה נמוך",
+      description: `שיעור ההמרה הנוכחי הוא ${conversionRate.toFixed(1)}%`,
+      type: conversionRate > 15 ? "success" : "danger",
+      improvement: conversionRate <= 15 ? "שקול לשפר את תהליך המעקב אחרי לידים" : undefined
     }
   ];
 
   // הוספת תובנות נוספות רק אם יש נתונים מספקים
-  if (data.salesByAgent && data.salesByAgent.length > 0) {
-    const topAgent = data.salesByAgent.reduce((a: any, b: any) => a.sales > b.sales ? a : b, {});
-    if (topAgent.sales > 0) {
+  if (salesByAgent && salesByAgent.length > 0) {
+    const topAgent = salesByAgent.reduce((a: any, b: any) => a.sales > b.sales ? a : b, {});
+    if (topAgent && topAgent.sales > 0) {
       insights.push({
         title: "סוכן המכירות המוביל",
         description: `${topAgent.agent} עם ${topAgent.sales} מכירות בתקופה הנבחרת`,
