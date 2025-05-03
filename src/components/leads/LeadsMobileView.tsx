@@ -15,6 +15,7 @@ import { LeadReminders } from "./grid/LeadReminders";
 export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isLoading: boolean; error?: Error | null }) {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"details" | "reminders">("details");
+  const [isWhatsappDialogOpen, setIsWhatsappDialogOpen] = useState(false);
   
   const selectedLead = selectedLeadId 
     ? leads.find(lead => lead.id === selectedLeadId) 
@@ -164,6 +165,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     variant="outline" 
                     size="sm"
                     disabled={!lead.cars}
+                    onClick={() => setIsWhatsappDialogOpen(true)}
                   >
                     <Send className="h-3.5 w-3.5 ml-1.5" />
                     שלח הצעה
@@ -177,6 +179,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     <WhatsappTemplateSelector 
                       car={lead.cars} 
                       initialPhoneNumber={lead.phone || ""}
+                      onClose={() => setIsWhatsappDialogOpen(false)}
                     />
                   )}
                 </DialogContent>
