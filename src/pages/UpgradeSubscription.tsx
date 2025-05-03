@@ -107,6 +107,7 @@ export default function UpgradeSubscription() {
     setLoading(true);
     
     try {
+      console.log("Start upgrade planing!")
       const selectedPlanObj = plans.find(plan => plan.id === selectedPlan);
       if (!selectedPlanObj) {
         throw new Error("חבילה לא נמצאה");
