@@ -1,8 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, GROW_CLIENT_ID, GROW_EC_PWD, GROW_PAGE_CODE, GROW_USER_ID } from './config.ts';
+import { corsHeaders, GROW_CLIENT_ID, GROW_EC_PWD } from './config.ts';
 import { validatePayload, type PaymentPayload } from './validators.ts';
-import { createPaymentProcess, updateDirectDebitPayment, type GrowPaymentRequest } from './api-client.ts';
+import { processDirectDebitPayment, type GrowPaymentRequest } from './api-client.ts';
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -47,65 +47,31 @@ serve(async (req) => {
 
     let responseData;
     
-    if (action === 'createPaymentProcess') {
-      // Implementation for creating payment process
-      const growPayload: GrowPaymentRequest = {
-        pageCode: GROW_PAGE_CODE,
-        userId: GROW_USER_ID,
-        sum: payload.amount?.toString() || "0",
-        description: payload.description || 'תשלום חודשי',
-        successUrl: payload.successUrl || '',
-        cancelUrl: payload.errorUrl || '',
-        pageField: {
-          fullName: payload.customerName || '',
-          phone: payload.customerPhone || '',
-          email: payload.customerEmail || ''
-        },
-        chargeType: "1",  // Fixed GROW code for regular payment
-        paymentNum: payload.maxPayments?.toString() || "1",
-        maxPaymentNum: payload.maxPayments?.toString() || "1",
-        clientId: GROW_CLIENT_ID,
-        ECPwd: GROW_EC_PWD
-      } as any;
-
-      console.log(`Making request to GROW API for payment process:`, growPayload);
-      responseData = await createPaymentProcess(growPayload);
-    } 
-    else if (action === 'updateDirectDebit') {
-      // Implementation for updating direct debit with all required fields per Postman
-      // Ensure we have ALL the required fields
-      if (!payload.userId || !payload.transactionToken || !payload.transactionId || !payload.asmachta) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Missing required fields for updateDirectDebit',
-            details: 'userId, transactionToken, transactionId, and asmachta are required'
-          }), 
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Create payload with all required fields as strings (as shown in Postman)
+    if (action === 'createPaymentProcess' || action === 'updateDirectDebit') {
+      // For both actions, we'll use the same direct debit endpoint with similar parameters
+      
+      // Create a standardized payload for the direct debit API
       const directDebitPayload: GrowPaymentRequest = {
-        userId: payload.userId,
-        transactionToken: payload.transactionToken,
-        transactionId: payload.transactionId,
-        asmachta: payload.asmachta,
+        userId: payload.userId || '',
+        transactionToken: payload.transactionToken || '',
+        transactionId: payload.transactionId || '',
+        asmachta: payload.asmachta || '',
         clientId: GROW_CLIENT_ID,
         ECPwd: GROW_EC_PWD
       };
-
+      
       // Add optional fields if they exist
       if (payload.customerName) directDebitPayload.fullName = payload.customerName;
       if (payload.customerPhone) directDebitPayload.phone = payload.customerPhone;
       if (payload.customerEmail) directDebitPayload.email = payload.customerEmail;
       if (payload.chargeDay) directDebitPayload.chargeDay = payload.chargeDay;
-      if (payload.amount) directDebitPayload.sum = payload.amount.toString();
-      if (payload.maxPayments) directDebitPayload.paymentNum = payload.maxPayments.toString();
+      if (payload.sum) directDebitPayload.sum = payload.sum?.toString();
+      if (payload.maxPayments) directDebitPayload.paymentNum = payload.maxPayments?.toString();
       if (payload.changeStatus) directDebitPayload.changeStatus = payload.changeStatus;
       if (payload.updateCard) directDebitPayload.updateCard = payload.updateCard;
 
-      console.log(`Making request to GROW API for updating direct debit:`, directDebitPayload);
-      responseData = await updateDirectDebitPayment(directDebitPayload);
+      console.log(`Making request to GROW API for ${action}:`, directDebitPayload);
+      responseData = await processDirectDebitPayment(directDebitPayload);
     } 
     else {
       return new Response(

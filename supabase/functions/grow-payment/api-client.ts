@@ -1,7 +1,7 @@
 
 import { GROW_API_BASE } from './config.ts';
 
-// Updated interface to match the exact parameters required by updateDirectDebit
+// Updated interface to match the exact parameters required by direct debit operations
 export interface GrowPaymentRequest {
   userId: string;          // Required - Unique identifier for the business
   transactionToken: string; // Required - Transaction identifier token
@@ -33,13 +33,14 @@ export interface GrowPaymentResponse {
   };
 }
 
-export async function updateDirectDebitPayment(payload: GrowPaymentRequest): Promise<GrowPaymentResponse> {
-  console.log('Using full payload for updateDirectDebit:', payload);
+// Single function for making direct debit requests - used for both initial payment and updates
+export async function processDirectDebitPayment(payload: GrowPaymentRequest): Promise<GrowPaymentResponse> {
+  console.log('Processing direct debit payment with payload:', payload);
   
-  // Create a FormData object for multipart/form-data format as shown in Postman
+  // Create a FormData object for multipart/form-data format
   const formData = new FormData();
   
-  // Add all required fields to the form data - EXACTLY as shown in the Postman image
+  // Add all required fields to the form data
   formData.append('userId', payload.userId);
   formData.append('transactionToken', payload.transactionToken);
   formData.append('transactionId', payload.transactionId);
@@ -57,9 +58,9 @@ export async function updateDirectDebitPayment(payload: GrowPaymentRequest): Pro
   if (payload.changeStatus) formData.append('changeStatus', payload.changeStatus);
   if (payload.updateCard) formData.append('updateCard', payload.updateCard);
 
-  console.log('Sending form data to GROW updateDirectDebit:', Object.fromEntries(formData.entries()));
+  console.log('Sending form data to GROW API:', Object.fromEntries(formData.entries()));
 
-  // Send the request with the appropriate content type (multipart/form-data)
+  // Send the request with the appropriate content type
   const response = await fetch(GROW_API_BASE, {
     method: 'POST',
     body: formData
@@ -73,52 +74,6 @@ export async function updateDirectDebitPayment(payload: GrowPaymentRequest): Pro
   return await response.json();
 }
 
-export async function createPaymentProcess(payload: GrowPaymentRequest): Promise<GrowPaymentResponse> {
-  // המרת האובייקט לפורמט נכון עבור המערכת של GROW
-  const formattedPayload = { ...payload };
-  
-  // ווידוא שיש לפחות תשלום אחד
-  if (!formattedPayload.paymentNum || formattedPayload.paymentNum === "0") {
-    formattedPayload.paymentNum = "1";
-  }
-  
-  // וידוא שיש maxPaymentNum תקין
-  if (!formattedPayload.maxPaymentNum) {
-    formattedPayload.maxPaymentNum = "1"; // ברירת מחדל לתשלום אחד אם לא הוגדר
-  }
-  
-  // המרה לפורמט של x-www-form-urlencoded
-  const formBody = new URLSearchParams();
-  
-  // הוספת כל השדות בפורמט המתאים
-  Object.entries(formattedPayload).forEach(([key, value]) => {
-    // טיפול בשדות מקוננים כמו pageField
-    if (typeof value === 'object' && value !== null) {
-      Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-        if (nestedValue !== undefined) {
-          formBody.append(`${key}.${nestedKey}`, String(nestedValue));
-        }
-      });
-    } else if (value !== undefined) {
-      formBody.append(key, String(value));
-    }
-  });
-
-  console.log('Sending formatted payload to GROW:', Object.fromEntries(formBody));
-
-  const response = await fetch(GROW_API_BASE, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
-    },
-    body: formBody.toString()
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`GROW API error: ${response.status} - ${errorText}`);
-  }
-
-  return await response.json();
-}
+// Alias for backward compatibility
+export const createPaymentProcess = processDirectDebitPayment;
+export const updateDirectDebitPayment = processDirectDebitPayment;

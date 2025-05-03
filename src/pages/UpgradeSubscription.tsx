@@ -26,6 +26,11 @@ const paymentFormSchema = z.object({
     .regex(/^05\d{8}$/, "מספר טלפון חייב להתחיל ב-05 ולהכיל 10 ספרות"),
   email: z.string().email("נא להזין כתובת אימייל תקינה").optional().or(z.literal("")),
   notes: z.string().optional(),
+  // Direct debit required fields
+  userId: z.string().min(1, "שדה חובה"),
+  transactionToken: z.string().min(1, "שדה חובה"),
+  transactionId: z.string().min(1, "שדה חובה"),
+  asmachta: z.string().min(1, "שדה חובה"),
 });
 
 type PaymentFormValues = z.infer<typeof paymentFormSchema>;
@@ -44,6 +49,10 @@ export default function UpgradeSubscription() {
       phone: "",
       email: "",
       notes: "",
+      userId: "", // Initialize empty direct debit fields
+      transactionToken: "",
+      transactionId: "",
+      asmachta: "",
     },
   });
   
@@ -112,16 +121,6 @@ export default function UpgradeSubscription() {
         throw new Error("חבילה לא נמצאה");
       }
 
-      // Set full URLs with precise origin
-      const origin = window.location.origin;
-      console.log(`Origin URL: ${origin}`);
-
-      const successUrl = `${origin}/subscription/payment-success?plan=${selectedPlan}`;
-      const errorUrl = `${origin}/subscription/payment-error`;
-      
-      console.log(`Success URL: ${successUrl}`);
-      console.log(`Error URL: ${errorUrl}`);
-
       // Prepare payment parameters with proper types
       const paymentPayload = {
         userId: data.userId,
@@ -129,23 +128,11 @@ export default function UpgradeSubscription() {
         transactionId: data.transactionId,
         asmachta: data.asmachta,
         sum: selectedPlanObj.priceValue,
-        // description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
-        // successUrl: successUrl,
-        // errorUrl: errorUrl,
-        // maxPayments: "1", // Explicitly as a string to fix error 705
-        // language: "HE",
+        // Add other fields for user identification
+        customerName: data.fullName,
+        customerPhone: data.phone,
+        customerEmail: data.email || undefined,
       };
-      // const paymentPayload = {
-      //   customerName: data.fullName,
-      //   customerPhone: data.phone,
-      //   customerEmail: data.email || undefined,
-      //   amount: selectedPlanObj.priceValue,
-      //   description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
-      //   successUrl: successUrl,
-      //   errorUrl: errorUrl,
-      //   maxPayments: "1", // Explicitly as a string to fix error 705
-      //   language: "HE",
-      // };
 
       console.log("Sending payment payload:", paymentPayload);
 
@@ -410,6 +397,63 @@ export default function UpgradeSubscription() {
                       <FormLabel>אימייל (אופציונלי)</FormLabel>
                       <FormControl>
                         <Input placeholder="your@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Direct Debit Fields */}
+                <FormField
+                  control={form.control}
+                  name="userId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>User ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="User ID" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="transactionToken"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transaction Token</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Transaction Token" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="transactionId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transaction ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Transaction ID" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="asmachta"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Asmachta</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Asmachta" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -1,21 +1,23 @@
 
 export interface PaymentPayload {
-  // Original fields
+  // Direct debit required fields
+  userId?: string;
+  transactionToken?: string;
+  transactionId?: string;
+  asmachta?: string;
+  sum?: number | string;
+  
+  // Optional user identity fields
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
-  amount?: number;
+  
+  // Optional payment configuration fields
   description?: string;
   successUrl?: string;
   errorUrl?: string;
   maxPayments?: string | number;
   language?: string;
-  
-  // Required fields for updateDirectDebit
-  userId?: string;
-  transactionToken?: string;
-  transactionId?: string;
-  asmachta?: string;
   
   // Additional optional fields for updateDirectDebit
   chargeDay?: string;
@@ -31,28 +33,44 @@ export function validatePayload(payload: PaymentPayload, action: string = 'creat
   }
 
   if (action === 'createPaymentProcess') {
-    // Validation for creating a new payment process
-    if (!payload.customerName || !payload.customerPhone) {
-      return 'Customer name and phone are required';
+    // For direct debit structure, validate required fields
+    if (!payload.userId) {
+      return 'userId is required for creating payment process';
     }
-
-    // Israeli phone number format validation
-    if (!payload.customerPhone.match(/^05\d{8}$/)) {
+    
+    if (!payload.transactionToken) {
+      return 'transactionToken is required for creating payment process';
+    }
+    
+    if (!payload.transactionId) {
+      return 'transactionId is required for creating payment process';
+    }
+    
+    if (!payload.asmachta) {
+      return 'asmachta is required for creating payment process';
+    }
+    
+    if (payload.sum === undefined) {
+      return 'sum is required for creating payment process';
+    }
+    
+    // Positive sum validation
+    const sumValue = typeof payload.sum === 'string' ? parseFloat(payload.sum) : payload.sum;
+    if (isNaN(sumValue) || sumValue <= 0) {
+      return 'Sum must be a positive number';
+    }
+    
+    // Additional identity validation if provided
+    if (payload.customerPhone && !payload.customerPhone.match(/^05\d{8}$/)) {
       return 'Phone must be an Israeli mobile number';
     }
 
-    // Full name validation
-    if (!payload.customerName.includes(' ')) {
+    if (payload.customerName && !payload.customerName.includes(' ')) {
       return 'Name must include first and last name';
-    }
-    
-    // Positive amount validation
-    if (payload.amount !== undefined && payload.amount <= 0) {
-      return 'Amount must be positive';
     }
   } 
   else if (action === 'updateDirectDebit') {
-    // Validation for updating direct debit - check for all required fields from Postman image
+    // Same validation as createPaymentProcess for direct debit fields
     if (!payload.userId) {
       return 'userId is required for updating direct debit';
     }
