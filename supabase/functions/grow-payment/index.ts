@@ -66,7 +66,8 @@ serve(async (req) => {
         email: payload.customerEmail || ''
       },
       chargeType: "1",  // קוד קבוע של GROW לתשלום רגיל
-      paymentNum: "1",  // תמיד תשלום אחד
+      paymentNum: payload.maxPayments || "1",  // מספר תשלומים מבוקש
+      maxPaymentNum: payload.maxPayments || "1", // הגבלת מספר תשלומים מקסימלי
       clientId: GROW_CLIENT_ID,
       ECPwd: GROW_EC_PWD
     };

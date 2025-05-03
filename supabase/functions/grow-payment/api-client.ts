@@ -15,6 +15,7 @@ export interface GrowPaymentRequest {
   };
   chargeType: string;
   paymentNum: string;
+  maxPaymentNum: string; // Adding the maxPaymentNum parameter
   clientId: string;
   ECPwd: string;
 }
@@ -38,6 +39,11 @@ export async function createPaymentProcess(payload: GrowPaymentRequest): Promise
   // ווידוא שיש לפחות תשלום אחד
   if (!formattedPayload.paymentNum || formattedPayload.paymentNum === "0") {
     formattedPayload.paymentNum = "1";
+  }
+  
+  // וידוא שיש maxPaymentNum תקין
+  if (!formattedPayload.maxPaymentNum) {
+    formattedPayload.maxPaymentNum = "1"; // ברירת מחדל לתשלום אחד אם לא הוגדר
   }
   
   // המרה לפורמט של x-www-form-urlencoded

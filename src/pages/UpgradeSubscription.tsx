@@ -107,7 +107,7 @@ export default function UpgradeSubscription() {
     setLoading(true);
     
     try {
-      console.log("Start upgrade planing!")
+      console.log("Start upgrade planing!");
       const selectedPlanObj = plans.find(plan => plan.id === selectedPlan);
       if (!selectedPlanObj) {
         throw new Error("חבילה לא נמצאה");
@@ -123,7 +123,7 @@ export default function UpgradeSubscription() {
       console.log(`Success URL: ${successUrl}`);
       console.log(`Error URL: ${errorUrl}`);
 
-      // הכנת פרמטרים לתשלום - מבלי להשתמש ב-maxPayments כלל
+      // הכנת פרמטרים לתשלום - הוספת maxPayments לטיפול בשגיאת קוד 705
       const paymentPayload = {
         customerName: data.fullName,
         customerPhone: data.phone,
@@ -132,6 +132,7 @@ export default function UpgradeSubscription() {
         description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
         successUrl: successUrl,
         errorUrl: errorUrl,
+        maxPayments: "1", // הוספת מספר תשלומים מקסימלי כברירת מחדל
         language: "HE",
       };
 
