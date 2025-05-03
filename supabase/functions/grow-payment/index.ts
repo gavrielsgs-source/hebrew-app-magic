@@ -1,8 +1,7 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, GROW_CLIENT_ID, GROW_EC_PWD, GROW_PAGE_CODE, GROW_USER_ID } from './config.ts';
 import { validatePayload, type PaymentPayload } from './validators.ts';
-import { createPaymentProcess, type GrowPaymentRequest } from './api-client.ts';
+import { createPaymentProcess, updateDirectDebitPayment, type GrowPaymentRequest } from './api-client.ts';
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -36,8 +35,8 @@ serve(async (req) => {
       );
     }
 
-    // וידוא תקינות הנתונים
-    const validationError = validatePayload(payload);
+    // וידוא תקינות הנתונים בהתאם לסוג הפעולה
+    const validationError = validatePayload(payload, action);
     if (validationError) {
       return new Response(
         JSON.stringify({ error: validationError }), 
@@ -45,38 +44,64 @@ serve(async (req) => {
       );
     }
 
-    if (action !== 'createPaymentProcess') {
+    let responseData;
+    
+    if (action === 'createPaymentProcess') {
+      // Existing implementation for creating payment process
+      const growPayload: GrowPaymentRequest = {
+        pageCode: GROW_PAGE_CODE,
+        userId: GROW_USER_ID,
+        sum: payload.amount?.toString() || "0",
+        description: payload.description || 'תשלום חודשי',
+        successUrl: payload.successUrl || '',
+        cancelUrl: payload.errorUrl || '',
+        pageField: {
+          fullName: payload.customerName || '',
+          phone: payload.customerPhone || '',
+          email: payload.customerEmail || ''
+        },
+        chargeType: "1",  // קוד קבוע של GROW לתשלום רגיל
+        paymentNum: payload.maxPayments || "1",  // מספר תשלומים מבוקש
+        maxPaymentNum: payload.maxPayments || "1", // הגבלת מספר תשלומים מקסימלי
+        clientId: GROW_CLIENT_ID,
+        ECPwd: GROW_EC_PWD
+      } as any;
+
+      console.log(`Making request to GROW API for payment process:`, growPayload);
+      responseData = await createPaymentProcess(growPayload);
+    } 
+    else if (action === 'updateDirectDebit') {
+      // New implementation for updating direct debit
+      const directDebitPayload: GrowPaymentRequest = {
+        userId: payload.userId || GROW_USER_ID,
+        transactionToken: payload.transactionToken || '',
+        transactionId: payload.transactionId || '',
+        asmachta: payload.asmachta || '',
+        clientId: GROW_CLIENT_ID,
+        ECPwd: GROW_EC_PWD,
+        // Include additional fields if provided
+        sum: payload.amount?.toString(),
+        description: payload.description,
+        paymentNum: payload.maxPayments,
+        maxPaymentNum: payload.maxPayments,
+        pageField: payload.customerEmail ? {
+          fullName: payload.customerName,
+          phone: payload.customerPhone,
+          email: payload.customerEmail
+        } : undefined
+      };
+
+      console.log(`Making request to GROW API for updating direct debit:`, directDebitPayload);
+      responseData = await updateDirectDebitPayment(directDebitPayload);
+    } 
+    else {
       return new Response(
-        JSON.stringify({ error: 'Invalid action' }), 
+        JSON.stringify({ error: 'Invalid action, must be createPaymentProcess or updateDirectDebit' }), 
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // הכנת הבקשה ל-GROW API עם תמיכה במספר תשלומים
-    const growPayload: GrowPaymentRequest = {
-      pageCode: GROW_PAGE_CODE,
-      userId: GROW_USER_ID,
-      sum: payload.amount.toString(),
-      description: payload.description || 'תשלום חודשי',
-      successUrl: payload.successUrl || '',
-      cancelUrl: payload.errorUrl || '',
-      pageField: {
-        fullName: payload.customerName,
-        phone: payload.customerPhone,
-        email: payload.customerEmail || ''
-      },
-      chargeType: "1",  // קוד קבוע של GROW לתשלום רגיל
-      paymentNum: payload.maxPayments || "1",  // מספר תשלומים מבוקש
-      maxPaymentNum: payload.maxPayments || "1", // הגבלת מספר תשלומים מקסימלי
-      clientId: GROW_CLIENT_ID,
-      ECPwd: GROW_EC_PWD
-    };
-
-    console.log(`Making request to GROW API:`, growPayload);
-    
-    // שליחת הבקשה ל-GROW
-    const responseData = await createPaymentProcess(growPayload);
-    console.log("GROW API response:", responseData);
+    console.log(`GROW API response:`, responseData);
 
     // בדיקה אם התקבלה שגיאה מה-API
     if (responseData.err) {
@@ -96,13 +121,17 @@ serve(async (req) => {
       );
     }
 
-    // החזרת ה-URL לטופס התשלום
+    // Response structure may differ between create and update operations
+    const successResponse = {
+      success: true,
+      url: responseData.data?.url,
+      processId: responseData.data?.processId,
+      transactionId: responseData.data?.transactionId,
+      asmachta: responseData.data?.asmachta
+    };
+
     return new Response(
-      JSON.stringify({
-        success: true,
-        url: responseData.data?.url,
-        processId: responseData.data?.processId
-      }),
+      JSON.stringify(successResponse),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
     
