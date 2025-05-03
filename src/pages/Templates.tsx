@@ -3,7 +3,6 @@ import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -45,13 +44,11 @@ import {
   templates as defaultWhatsappTemplates,
 } from "@/components/whatsapp/whatsapp-templates";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit, FileText, Trash2 } from "lucide-react";
+import { Edit, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { Save } from "lucide-react";
 
 const templateFormSchema = z.object({
   name: z.string().min(2, {
@@ -163,9 +160,9 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="p-4" dir="rtl"> {/* נוסיף dir=rtl לעמוד */}
+    <div className="p-4" dir="rtl">
       <Tabs defaultValue="templates">
-        <TabsList className="flex flex-row-reverse"> {/* נוסיף flex-row-reverse ליישור לימין */}
+        <TabsList className="flex justify-start mb-4">
           <TabsTrigger value="templates" className="text-right flex items-center gap-2">
             תבניות
           </TabsTrigger>
@@ -201,17 +198,9 @@ export default function TemplatesPage() {
           />
         </TabsContent>
         <TabsContent value="history" className="text-right">
-          {/* היסטוריה */}
+          {/* תוכן היסטוריה */}
         </TabsContent>
       </Tabs>
-      {/* ... המשך הקוד */}
-      <Card className="mt-4">
-        <div className="text-muted-foreground max-w-md mx-auto mb-4 text-right flex items-center justify-end gap-2">
-          <Button variant="outline" className="flex items-center gap-2 mx-auto">
-            <Save className="h-4 w-4" /> תעד שיחה
-          </Button>
-        </div>
-      </Card>
     </div>
   );
 }

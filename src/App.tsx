@@ -65,7 +65,7 @@ function AppLayout() {
   return (
     <div className="flex min-h-screen w-full">
       <AppSidebar />
-      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? 'p-3' : 'p-6 md:pr-8 md:pl-6'}`}>
+      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? 'p-3' : 'p-6 md:pr-[20rem] md:pl-6'}`}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/profile" element={<Profile />} />

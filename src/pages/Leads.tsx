@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { LeadsGrid } from "@/components/leads/LeadsGrid";
 import { LeadsMobileView } from "@/components/leads/LeadsMobileView";
+import { LeadsTable } from "@/components/LeadsTable";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Plus, Settings } from "lucide-react";
+import { Plus, Settings, Grid, Table as TableIcon } from "lucide-react";
 import { useLeads, useCreateLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/subscription-context';
@@ -14,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
+import { Input } from "@/components/ui/input";
 
 export default function Leads() {
   const { toast } = useToast();
@@ -23,6 +25,8 @@ export default function Leads() {
   const { checkEntitlement } = useSubscription();
   const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
   const [activeTab, setActiveTab] = useState<string>("leads");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [searchTerm, setSearchTerm] = useState("");
   const isMobile = useIsMobile();
 
   const onLeadAdded = () => {
@@ -88,10 +92,41 @@ export default function Leads() {
         </TabsList>
         
         <TabsContent value="leads" className="mt-0">
+          {activeTab === "leads" && (
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"} 
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={viewMode === "table" ? "default" : "outline"} 
+                  size="icon"
+                  onClick={() => setViewMode("table")}
+                >
+                  <TableIcon className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="w-full max-w-xs">
+                <Input 
+                  placeholder="חיפוש לקוחות..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          )}
+
           {isMobile ? (
             <LeadsMobileView leads={leads} isLoading={isLoading} error={error} />
-          ) : (
+          ) : viewMode === "grid" ? (
             <LeadsGrid leads={leads} isLoading={isLoading} error={error} />
+          ) : (
+            <LeadsTable searchTerm={searchTerm} />
           )}
         </TabsContent>
         

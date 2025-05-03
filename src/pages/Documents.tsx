@@ -15,8 +15,8 @@ export default function Documents() {
     <div className="container py-6 text-right">
       <div className="flex flex-col space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">ניהול מסמכים</h1>
-          <p className="text-muted-foreground">ניהול חוזים, מסמכים משפטיים ותיעוד עסקאות</p>
+          <h1 className="text-3xl font-bold text-right">ניהול מסמכים</h1>
+          <p className="text-muted-foreground text-right">ניהול חוזים, מסמכים משפטיים ותיעוד עסקאות</p>
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
@@ -28,9 +28,9 @@ export default function Documents() {
           
           <TabsContent value="all" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>כל המסמכים</CardTitle>
-                <CardDescription>צפייה בכל המסמכים שנשמרו במערכת</CardDescription>
+              <CardHeader className="text-right">
+                <CardTitle className="text-right">כל המסמכים</CardTitle>
+                <CardDescription className="text-right">צפייה בכל המסמכים שנשמרו במערכת</CardDescription>
               </CardHeader>
               <CardContent>
                 <DocumentsManager />
@@ -40,9 +40,9 @@ export default function Documents() {
           
           <TabsContent value="leads" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>מסמכים לפי לקוחות</CardTitle>
-                <CardDescription>מסמכים המקושרים ללקוחות</CardDescription>
+              <CardHeader className="text-right">
+                <CardTitle className="text-right">מסמכים לפי לקוחות</CardTitle>
+                <CardDescription className="text-right">מסמכים המקושרים ללקוחות</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center p-4 text-muted-foreground">
@@ -54,9 +54,9 @@ export default function Documents() {
           
           <TabsContent value="cars" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>מסמכים לפי רכבים</CardTitle>
-                <CardDescription>מסמכים המקושרים לרכבים</CardDescription>
+              <CardHeader className="text-right">
+                <CardTitle className="text-right">מסמכים לפי רכבים</CardTitle>
+                <CardDescription className="text-right">מסמכים המקושרים לרכבים</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center p-4 text-muted-foreground">

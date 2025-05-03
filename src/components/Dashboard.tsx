@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -45,42 +46,42 @@ export default function Dashboard() {
         </Card>
         <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900">רכבים במלאי</CardTitle>
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">רכבים במלאי</CardTitle>
             <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center shadow">
               <Car className="h-5 w-5 text-indigo-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900">24</div>
-            <p className="text-sm text-indigo-600 font-rubik leading-tight">
+            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">24</div>
+            <p className="text-sm text-indigo-600 font-rubik leading-tight text-right">
               +2 רכבים מהחודש שעבר
             </p>
           </CardContent>
         </Card>
         <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900">פגישות היום</CardTitle>
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">פגישות היום</CardTitle>
             <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center shadow">
               <Calendar className="h-5 w-5 text-amber-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900">3</div>
-            <p className="text-sm text-amber-600 font-rubik leading-tight">
+            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">3</div>
+            <p className="text-sm text-amber-600 font-rubik leading-tight text-right">
               2 פגישות חדשות
             </p>
           </CardContent>
         </Card>
         <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900">משימות לביצוע</CardTitle>
+            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">משימות לביצוע</CardTitle>
             <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center shadow">
               <AlertCircle className="h-5 w-5 text-rose-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900">7</div>
-            <p className="text-sm text-rose-600 font-rubik leading-tight">
+            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">7</div>
+            <p className="text-sm text-rose-600 font-rubik leading-tight text-right">
               5 משימות דחופות
             </p>
           </CardContent>
@@ -112,8 +113,10 @@ export default function Dashboard() {
             ) : null}
           </div>
           
-          {/* תובנות חכמות - נוספו כאן */}
-          <SmartInsights data={salesData} />
+          {/* תובנות חכמות - תיקון יישור */}
+          <div className="space-y-4">
+            <SmartInsights data={salesData} />
+          </div>
           
           {isMobile ? (
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">

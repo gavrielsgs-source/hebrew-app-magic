@@ -12,8 +12,8 @@ export default function Tasks() {
     <div className="p-6">
       {error ? (
         <Alert variant="destructive" className="mb-6">
-          <AlertTitle>שגיאה בטעינת משימות</AlertTitle>
-          <AlertDescription className="flex items-center justify-between">
+          <AlertTitle className="text-right">שגיאה בטעינת משימות</AlertTitle>
+          <AlertDescription className="flex items-center justify-between text-right">
             <span>לא הצלחנו לטעון את המשימות. ייתכן שחיבור המשתמש פג תוקף.</span>
             <Button 
               variant="outline" 
