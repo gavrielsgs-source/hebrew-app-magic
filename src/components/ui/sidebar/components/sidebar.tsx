@@ -57,8 +57,6 @@ export const Sidebar = React.forwardRef<
         <div
           className={cn(
             "fixed inset-y-0 z-10 flex h-svh transition-all duration-300 ease-in-out",
-            // הסרנו את האפקט של הרחבה במעבר עכבר
-            // "group-hover:w-[--sidebar-width]",
             side === "left" ? "left-0" : "right-0",
             state === "expanded" ? "w-[--sidebar-width]" : "w-[--sidebar-width-icon]",
             className
@@ -67,7 +65,7 @@ export const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-gradient-to-b from-gray-900 to-gray-800 shadow-xl border-r border-gray-700/30"
+            className="flex h-full w-full flex-col bg-gradient-to-b from-gray-900 to-gray-800 shadow-xl border-l border-gray-700/30"
           >
             {children}
           </div>

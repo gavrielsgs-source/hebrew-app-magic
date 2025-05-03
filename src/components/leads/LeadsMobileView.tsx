@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Phone, MessageSquare, Calendar, Edit, Send } from "lucide-react";
 import { EditLeadForm } from "./EditLeadForm";
@@ -23,7 +22,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" dir="rtl">
         {[1, 2, 3].map((i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="pb-2">
@@ -42,7 +41,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
+      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md" dir="rtl">
         <p className="font-semibold">שגיאה בטעינת הלקוחות</p>
         <p className="text-sm">{error.message}</p>
       </div>
@@ -51,7 +50,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   if (leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="flex flex-col items-center justify-center py-8 text-center" dir="rtl">
         <div className="bg-slate-100 rounded-full p-3 mb-3">
           <MessageSquare className="h-6 w-6 text-slate-400" />
         </div>
@@ -62,9 +61,9 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       {leads.map((lead) => (
-        <Card key={lead.id} className="overflow-hidden">
+        <Card key={lead.id} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2 flex flex-row items-start justify-between">
             <div>
               <div className="font-semibold text-lg">{lead.name}</div>
@@ -85,7 +84,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                   <Edit className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-md">
+              <SheetContent className="w-full sm:max-w-md" dir="rtl">
                 <SheetHeader>
                   <SheetTitle>
                     {selectedLead?.name || "פרטי לקוח"}
@@ -94,7 +93,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                 
                 {selectedLead && (
                   <div className="mt-6">
-                    <div className="flex space-x-1 space-x-reverse rtl:space-x-reverse mb-4">
+                    <div className="flex space-x-1 rtl:space-x-reverse mb-4">
                       <Button 
                         variant={activeTab === "details" ? "default" : "outline"}
                         size="sm"
@@ -159,13 +158,12 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
             </div>
             
             <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100 justify-end">
-              <Dialog>
+              <Dialog open={isWhatsappDialogOpen} onOpenChange={setIsWhatsappDialogOpen}>
                 <DialogTrigger asChild>
                   <Button 
                     variant="outline" 
                     size="sm"
                     disabled={!lead.cars}
-                    onClick={() => setIsWhatsappDialogOpen(true)}
                   >
                     <Send className="h-3.5 w-3.5 ml-1.5" />
                     שלח הצעה
@@ -199,7 +197,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     תזכורות
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="w-full sm:max-w-md">
+                <SheetContent className="w-full sm:max-w-md" dir="rtl">
                   <SheetHeader>
                     <SheetTitle>תזכורות עבור {lead.name}</SheetTitle>
                   </SheetHeader>

@@ -33,7 +33,7 @@ export default function Leads() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <SubscriptionLimitAlert 
         featureKey="leadLimit" 
         currentCount={leads.length} 
@@ -57,7 +57,7 @@ export default function Leads() {
             className="flex items-center gap-2"
             onClick={() => setActiveTab("settings")}
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="h-4 w-4 ml-1.5" />
             הגדרות
           </Button>
           <Sheet>
@@ -67,7 +67,7 @@ export default function Leads() {
                 className={`flex items-center gap-2 ${isMobile ? "flex-1" : ""}`}
                 disabled={!canAddLead}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4 ml-1.5" />
                 לקוח חדש
               </Button>
             </SheetTrigger>
@@ -81,13 +81,13 @@ export default function Leads() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl" className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="leads">לידים</TabsTrigger>
           <TabsTrigger value="settings">אינטגרציות</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="leads">
+        <TabsContent value="leads" className="mt-0">
           {isMobile ? (
             <LeadsMobileView leads={leads} isLoading={isLoading} error={error} />
           ) : (
@@ -95,7 +95,7 @@ export default function Leads() {
           )}
         </TabsContent>
         
-        <TabsContent value="settings">
+        <TabsContent value="settings" className="mt-0">
           <FacebookLeadIntegration />
         </TabsContent>
       </Tabs>

@@ -60,7 +60,7 @@ export function AppSidebar() {
                 data-active={pathname === "/"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <Home className="h-5 w-5" />
+                <Home className="h-5 w-5 ml-2" />
                 <span>לוח בקרה</span>
               </button>
             </SidebarMenuItem>
@@ -71,7 +71,7 @@ export function AppSidebar() {
                 data-active={pathname === "/leads"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <Users className="h-5 w-5" />
+                <Users className="h-5 w-5 ml-2" />
                 <span>לידים</span>
               </button>
             </SidebarMenuItem>
@@ -82,7 +82,7 @@ export function AppSidebar() {
                 data-active={pathname === "/cars"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <Car className="h-5 w-5" />
+                <Car className="h-5 w-5 ml-2" />
                 <span>רכבים</span>
               </button>
             </SidebarMenuItem>
@@ -93,7 +93,7 @@ export function AppSidebar() {
                 data-active={pathname === "/tasks"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <CalendarDays className="h-5 w-5" />
+                <CalendarDays className="h-5 w-5 ml-2" />
                 <span>משימות</span>
               </button>
             </SidebarMenuItem>
@@ -104,7 +104,7 @@ export function AppSidebar() {
                 data-active={pathname === "/templates"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <MessageSquare className="h-5 w-5" />
+                <MessageSquare className="h-5 w-5 ml-2" />
                 <span>תבניות</span>
               </button>
             </SidebarMenuItem>
@@ -115,7 +115,7 @@ export function AppSidebar() {
                 data-active={pathname === "/analytics"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <FileBarChart className="h-5 w-5" />
+                <FileBarChart className="h-5 w-5 ml-2" />
                 <span>אנליטיקה מתקדמת</span>
               </button>
             </SidebarMenuItem>
@@ -126,7 +126,7 @@ export function AppSidebar() {
                 data-active={pathname === "/documents"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <FileText className="h-5 w-5" />
+                <FileText className="h-5 w-5 ml-2" />
                 <span>מסמכים</span>
               </button>
             </SidebarMenuItem>
@@ -138,7 +138,7 @@ export function AppSidebar() {
                   data-active={pathname === "/admin"}
                   className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
                 >
-                  <Settings className="h-5 w-5" />
+                  <Settings className="h-5 w-5 ml-2" />
                   <span>ניהול מערכת</span>
                 </button>
               </SidebarMenuItem>
@@ -156,7 +156,7 @@ export function AppSidebar() {
                 data-active={pathname === "/profile"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <User className="h-5 w-5" />
+                <User className="h-5 w-5 ml-2" />
                 <span>פרופיל</span>
               </button>
             </SidebarMenuItem>
@@ -167,7 +167,7 @@ export function AppSidebar() {
                 data-active={pathname === "/subscription"}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <CreditCard className="h-5 w-5" />
+                <CreditCard className="h-5 w-5 ml-2" />
                 <span>מנוי</span>
               </button>
             </SidebarMenuItem>

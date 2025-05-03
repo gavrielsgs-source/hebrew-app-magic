@@ -41,7 +41,7 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
     : leads;
   
   return (
-    <div>
+    <div dir="rtl">
       <div className="flex justify-between items-center mb-4">
         <Sheet>
           <SheetTrigger asChild>
@@ -49,7 +49,7 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
               <Plus className="ml-2 h-4 w-4" /> הוסף לקוח חדש
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-[400px]">
+          <SheetContent className="w-[400px]" dir="rtl">
             <SheetHeader>
               <SheetTitle>הוסף לקוח חדש</SheetTitle>
             </SheetHeader>
@@ -98,7 +98,7 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-2 rtl:space-x-reverse justify-end">
+                    <div className="flex space-x-2 space-x-reverse justify-end">
                       <Button 
                         variant="ghost" 
                         size="icon"
@@ -112,7 +112,7 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
                         <Phone className="h-4 w-4" />
                       </Button>
                       
-                      <Dialog>
+                      <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
                         <DialogTrigger asChild>
                           <Button 
                             variant="ghost" 
@@ -150,7 +150,7 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
                             <Edit className="h-4 w-4" />
                           </Button>
                         </SheetTrigger>
-                        <SheetContent className="w-[400px]">
+                        <SheetContent className="w-[400px]" dir="rtl">
                           <SheetHeader>
                             <SheetTitle>עריכת לקוח</SheetTitle>
                           </SheetHeader>

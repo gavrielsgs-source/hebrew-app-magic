@@ -14,8 +14,8 @@ interface LeadsGridProps {
 export function LeadsGrid({ leads, isLoading, error }: LeadsGridProps) {
   if (error) {
     return (
-      <Alert variant="destructive" className="mb-6">
-        <AlertCircle className="h-4 w-4" />
+      <Alert variant="destructive" className="mb-6" dir="rtl">
+        <AlertCircle className="h-4 w-4 ml-2" />
         <AlertTitle>שגיאה בטעינת הלקוחות</AlertTitle>
         <AlertDescription>
           {error.message}
@@ -33,7 +33,7 @@ export function LeadsGrid({ leads, isLoading, error }: LeadsGridProps) {
   }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" dir="rtl">
       {leads.map((lead) => (
         <LeadCard key={lead.id} lead={lead} />
       ))}
