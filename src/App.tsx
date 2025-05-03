@@ -20,6 +20,8 @@ import UpgradeSubscription from "./pages/UpgradeSubscription";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentError from "./pages/PaymentError";
 import NotFound from "./pages/NotFound";
+import Analytics from "./pages/Analytics";
+import Documents from "./pages/Documents"; // הוספנו את הדף החדש
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
@@ -52,6 +54,8 @@ const App = () => {
                               <Route path="/cars" element={<Cars />} />
                               <Route path="/leads" element={<Leads />} />
                               <Route path="/templates" element={<Templates />} />
+                              <Route path="/analytics" element={<Analytics />} />
+                              <Route path="/documents" element={<Documents />} />  {/* הוספת הנתיב החדש */}
                               <Route path="/subscription" element={<Subscription />} />
                               <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                               <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
