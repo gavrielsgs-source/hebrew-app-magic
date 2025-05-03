@@ -124,16 +124,28 @@ export default function UpgradeSubscription() {
 
       // Prepare payment parameters with proper types
       const paymentPayload = {
-        customerName: data.fullName,
-        customerPhone: data.phone,
-        customerEmail: data.email || undefined,
-        amount: selectedPlanObj.priceValue,
-        description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
-        successUrl: successUrl,
-        errorUrl: errorUrl,
-        maxPayments: "1", // Explicitly as a string to fix error 705
-        language: "HE",
+        userId: data.userId,
+        transactionToken: data.transactionToken,
+        transactionId: data.transactionId,
+        asmachta: data.asmachta,
+        sum: selectedPlanObj.priceValue,
+        // description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
+        // successUrl: successUrl,
+        // errorUrl: errorUrl,
+        // maxPayments: "1", // Explicitly as a string to fix error 705
+        // language: "HE",
       };
+      // const paymentPayload = {
+      //   customerName: data.fullName,
+      //   customerPhone: data.phone,
+      //   customerEmail: data.email || undefined,
+      //   amount: selectedPlanObj.priceValue,
+      //   description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
+      //   successUrl: successUrl,
+      //   errorUrl: errorUrl,
+      //   maxPayments: "1", // Explicitly as a string to fix error 705
+      //   language: "HE",
+      // };
 
       console.log("Sending payment payload:", paymentPayload);
 
