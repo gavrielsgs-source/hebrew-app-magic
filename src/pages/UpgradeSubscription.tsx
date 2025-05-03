@@ -132,7 +132,8 @@ export default function UpgradeSubscription() {
         description: `מנוי ${selectedPlanObj.name} - חיוב חודשי`,
         successUrl: successUrl,
         errorUrl: errorUrl,
-        maxPayments: "1", // הוספת מספר תשלומים מקסימלי כברירת מחדל
+        maxPayments: 1, // הוספת מספר תשלומים מקסימלי כברירת מחדל
+        // maxPayments: "1", // הוספת מספר תשלומים מקסימלי כברירת מחדל
         language: "HE",
       };
 
