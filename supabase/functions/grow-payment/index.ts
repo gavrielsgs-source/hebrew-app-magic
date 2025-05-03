@@ -48,7 +48,7 @@ serve(async (req) => {
     let responseData;
     
     if (action === 'createPaymentProcess') {
-      // Existing implementation for creating payment process
+      // Implementation for creating payment process
       const growPayload: GrowPaymentRequest = {
         pageCode: GROW_PAGE_CODE,
         userId: GROW_USER_ID,
@@ -72,7 +72,8 @@ serve(async (req) => {
       responseData = await createPaymentProcess(growPayload);
     } 
     else if (action === 'updateDirectDebit') {
-      // Implementation for updating direct debit with all required fields
+      // Implementation for updating direct debit with all required fields per Postman
+      // Ensure we have ALL the required fields
       if (!payload.userId || !payload.transactionToken || !payload.transactionId || !payload.asmachta) {
         return new Response(
           JSON.stringify({ 
@@ -83,7 +84,7 @@ serve(async (req) => {
         );
       }
 
-      // Create payload with all required fields as strings
+      // Create payload with all required fields as strings (as shown in Postman)
       const directDebitPayload: GrowPaymentRequest = {
         userId: payload.userId,
         transactionToken: payload.transactionToken,

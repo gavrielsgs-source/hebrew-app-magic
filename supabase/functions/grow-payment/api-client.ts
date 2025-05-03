@@ -1,17 +1,18 @@
+
 import { GROW_API_BASE } from './config.ts';
 
-// Updated interface to match the updateDirectDebit endpoint requirements
+// Updated interface to match the exact parameters required by updateDirectDebit
 export interface GrowPaymentRequest {
   userId: string;          // Required - Unique identifier for the business
   transactionToken: string; // Required - Transaction identifier token
-  transactionId: string;    // Required - Transaction identifier number
-  asmachta: string;        // Required - Approval from credit card company
+  transactionId: string;    // Required - Transaction identifier number (must be a string)
+  asmachta: string;        // Required - Approval from credit card company (must be a string)
   fullName?: string;       // Optional - Full name must consist of at least two names
   phone?: string;          // Optional - A valid Israeli mobile phone number
   email?: string;          // Optional - A valid email address
   chargeDay?: string;      // Optional - 1-31
-  sum?: string;            // Optional - Total amount for payment
-  paymentNum?: string;     // Optional - 1-48
+  sum?: string;            // Optional - Total amount for payment (as string)
+  paymentNum?: string;     // Optional - 1-48 (as string)
   changeStatus?: string;   // Optional
   updateCard?: string;     // Optional
   clientId: string;        // Authentication
@@ -33,10 +34,12 @@ export interface GrowPaymentResponse {
 }
 
 export async function updateDirectDebitPayment(payload: GrowPaymentRequest): Promise<GrowPaymentResponse> {
-  // Create a FormData object for multipart/form-data format
+  console.log('Using full payload for updateDirectDebit:', payload);
+  
+  // Create a FormData object for multipart/form-data format as shown in Postman
   const formData = new FormData();
   
-  // Add all required fields to the form data
+  // Add all required fields to the form data - EXACTLY as shown in the Postman image
   formData.append('userId', payload.userId);
   formData.append('transactionToken', payload.transactionToken);
   formData.append('transactionId', payload.transactionId);
@@ -81,7 +84,7 @@ export async function createPaymentProcess(payload: GrowPaymentRequest): Promise
   
   // וידוא שיש maxPaymentNum תקין
   if (!formattedPayload.maxPaymentNum) {
-    formattedPayload.maxPaymentNum = "1"; // ברירת מחדל לתשלום אחד אם לא הוג��ר
+    formattedPayload.maxPaymentNum = "1"; // ברירת מחדל לתשלום אחד אם לא הוגדר
   }
   
   // המרה לפורמט של x-www-form-urlencoded

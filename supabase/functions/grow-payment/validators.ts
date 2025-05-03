@@ -30,7 +30,7 @@ export function validatePayload(payload: PaymentPayload, action: string = 'creat
     return 'Missing payload';
   }
 
-  if (action === 'create') {
+  if (action === 'createPaymentProcess') {
     // Validation for creating a new payment process
     if (!payload.customerName || !payload.customerPhone) {
       return 'Customer name and phone are required';
@@ -52,7 +52,7 @@ export function validatePayload(payload: PaymentPayload, action: string = 'creat
     }
   } 
   else if (action === 'updateDirectDebit') {
-    // Validation for updating direct debit
+    // Validation for updating direct debit - check for all required fields from Postman image
     if (!payload.userId) {
       return 'userId is required for updating direct debit';
     }
