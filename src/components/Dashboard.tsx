@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
@@ -6,6 +7,9 @@ import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
 import { UserNav } from "@/components/auth/UserNav";
 import { SalesAnalytics } from "@/components/analytics/SalesAnalytics";
+import { SmartInsights } from "@/components/analytics/SmartInsights";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
 
 const CarSleadLogoSVG = () => (
   <svg width="48" height="48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -18,12 +22,15 @@ const CarSleadLogoSVG = () => (
 );
 
 export default function Dashboard() {
+  const isMobile = useIsMobile();
+  const { data: salesData } = useSalesAnalytics();
+  
   return (
     <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8">
       <div className="flex items-center justify-between bg-white/90 backdrop-blur-xl rounded-2xl p-3 md:p-5 shadow-lg border border-gray-100">
         <div className="flex items-center gap-3">
           <CarSleadLogoSVG />
-          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight font-rubik text-gray-900">
+          <h1 className={`${isMobile ? 'text-xl' : 'text-2xl md:text-4xl'} font-extrabold tracking-tight font-rubik text-gray-900`}>
             CarsLead
           </h1>
         </div>
@@ -32,7 +39,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+      <div className={`grid gap-4 md:gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2 xl:grid-cols-4'}`}>
         <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">לידים חדשים</CardTitle>
@@ -92,17 +99,34 @@ export default function Dashboard() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="font-rubik bg-white border border-gray-200 p-1 rounded-lg shadow-sm w-full flex flex-nowrap overflow-x-auto">
+        <TabsList className={`font-rubik bg-white border border-gray-200 p-1 rounded-lg shadow-sm w-full ${isMobile ? 'flex flex-wrap grid-cols-2' : 'flex flex-nowrap'} overflow-x-auto`}>
           <TabsTrigger value="overview" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">סיכום</TabsTrigger>
           <TabsTrigger value="leads" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">לידים</TabsTrigger>
           <TabsTrigger value="cars" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">רכבים</TabsTrigger>
           <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">משימות</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-8">
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+          <div className={`grid gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'}`}>
             <div className="min-h-[340px] flex flex-col">
               <SalesAnalytics />
             </div>
+            {!isMobile ? (
+              <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">
+                <CardHeader>
+                  <CardTitle className="font-rubik text-gray-900 text-right">משימות להיום</CardTitle>
+                  <CardDescription className="font-rubik text-right">סה"כ 7 משימות מתוכננות</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <TaskList />
+                </CardContent>
+              </Card>
+            ) : null}
+          </div>
+          
+          {/* תובנות חכמות - נוספו כאן */}
+          <SmartInsights data={salesData} />
+          
+          {isMobile ? (
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">
               <CardHeader>
                 <CardTitle className="font-rubik text-gray-900 text-right">משימות להיום</CardTitle>
@@ -112,7 +136,7 @@ export default function Dashboard() {
                 <TaskList />
               </CardContent>
             </Card>
-          </div>
+          ) : null}
         </TabsContent>
         <TabsContent value="leads" className="space-y-4">
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">

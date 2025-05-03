@@ -8,6 +8,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { SmartInsights } from "./SmartInsights";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6385'];
 
@@ -15,6 +17,7 @@ export function AnalyticsDashboard() {
   const { data: dateRanges, isLoading: isDateRangesLoading } = useDateRangeAnalytics();
   const [selectedRange, setSelectedRange] = useState<string>("thisMonth");
   const [activeTab, setActiveTab] = useState<string>("overview");
+  const isMobile = useIsMobile();
   
   const dateRange = dateRanges && selectedRange ? dateRanges[selectedRange as keyof typeof dateRanges] : { from: new Date(), to: new Date() };
   
@@ -68,8 +71,11 @@ export function AnalyticsDashboard() {
         </div>
       </div>
       
+      {/* תובנות חכמות - נוספו בראש הדף */}
+      {isMobile && <SmartInsights data={data} />}
+      
       {/* מדדים עיקריים */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-4'}`}>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">סה"כ לידים</CardTitle>
@@ -121,9 +127,12 @@ export function AnalyticsDashboard() {
         </Card>
       </div>
       
+      {/* תובנות חכמות למסך גדול */}
+      {!isMobile && <SmartInsights data={data} />}
+      
       {/* טאבים לתצוגות שונות */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid md:grid-cols-4 grid-cols-2">
+        <TabsList className={`grid ${isMobile ? 'grid-cols-2' : 'md:grid-cols-4'} gap-1`}>
           <TabsTrigger value="overview">סקירה כללית</TabsTrigger>
           <TabsTrigger value="leads">ניתוח לידים</TabsTrigger>
           <TabsTrigger value="sales">ביצועי מכירות</TabsTrigger>
@@ -131,13 +140,13 @@ export function AnalyticsDashboard() {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
             <Card className="md:col-span-1">
               <CardHeader>
                 <CardTitle>לידים לפי מקור</CardTitle>
                 <CardDescription>התפלגות מקורות הלידים בטווח הזמן שנבחר</CardDescription>
               </CardHeader>
-              <CardContent className="h-80">
+              <CardContent className={isMobile ? "h-64" : "h-80"}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -145,8 +154,11 @@ export function AnalyticsDashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={80}
-                      label={({ source, count, percent }: any) => `${source}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={isMobile ? 60 : 80}
+                      label={({ source, count, percent }: any) => 
+                        isMobile ? `${(percent * 100).toFixed(0)}%` : 
+                        `${source}: ${(percent * 100).toFixed(0)}%`
+                      }
                       dataKey="count"
                       nameKey="source"
                     >
@@ -157,7 +169,12 @@ export function AnalyticsDashboard() {
                     <Tooltip 
                       formatter={(value: any, name: string, props: any) => [`${value} לידים`, props.payload.source]} 
                     />
-                    <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                    <Legend 
+                      layout={isMobile ? "horizontal" : "vertical"}
+                      verticalAlign={isMobile ? "bottom" : "middle"}
+                      align={isMobile ? "center" : "right"}
+                      wrapperStyle={isMobile ? {} : { right: 0 }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -168,12 +185,25 @@ export function AnalyticsDashboard() {
                 <CardTitle>שיעורי המרה לפי מקור</CardTitle>
                 <CardDescription>אחוז הלידים שהבשילו לעסקאות לפי מקור</CardDescription>
               </CardHeader>
-              <CardContent className="h-80">
+              <CardContent className={isMobile ? "h-64" : "h-80"}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.conversionBySource}>
+                  <BarChart 
+                    data={data.conversionBySource}
+                    layout={isMobile ? "vertical" : "horizontal"}
+                    margin={isMobile ? { top: 5, right: 30, left: 20, bottom: 5 } : undefined}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="source" />
-                    <YAxis tickFormatter={(value: number) => `${value}%`} />
+                    {isMobile ? (
+                      <>
+                        <YAxis dataKey="source" type="category" width={70} tick={{ fontSize: 12 }} />
+                        <XAxis type="number" tickFormatter={(value: number) => `${value}%`} />
+                      </>
+                    ) : (
+                      <>
+                        <XAxis dataKey="source" />
+                        <YAxis tickFormatter={(value: number) => `${value}%`} />
+                      </>
+                    )}
                     <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)}%`, 'שיעור המרה']} />
                     <Bar dataKey="rate" name="שיעור המרה" fill="#8884d8" />
                   </BarChart>
@@ -187,11 +217,20 @@ export function AnalyticsDashboard() {
               <CardTitle>מגמת לידים לאורך זמן</CardTitle>
               <CardDescription>כמות הלידים החדשים לפי תאריך</CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className={isMobile ? "h-64" : "h-80"}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.leadsOverTime}>
+                <BarChart 
+                  data={data.leadsOverTime} 
+                  margin={isMobile ? { top: 5, right: 10, left: 0, bottom: 20 } : undefined}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
+                  <XAxis 
+                    dataKey="date"
+                    angle={isMobile ? -45 : 0}
+                    textAnchor={isMobile ? "end" : "middle"}
+                    height={isMobile ? 60 : 30}
+                    tick={{ fontSize: isMobile ? 10 : 12 }}
+                  />
                   <YAxis />
                   <Tooltip formatter={(value: any) => [`${value} לידים`, 'כמות']} />
                   <Bar dataKey="count" name="לידים" fill="#33C3F0" />
@@ -210,7 +249,7 @@ export function AnalyticsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-3'} gap-4`}>
                   <div className="border rounded-lg p-4">
                     <div className="text-sm font-medium text-muted-foreground">תגובה בשעה הראשונה</div>
                     <div className="text-2xl font-bold mt-2">67%</div>
@@ -244,7 +283,7 @@ export function AnalyticsDashboard() {
               <CardTitle>ביצועי תבניות</CardTitle>
               <CardDescription>ניתוח אפקטיביות של תבניות ההודעות</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "overflow-x-auto" : ""}>
               <div className="relative overflow-x-auto">
                 <table className="w-full text-sm text-right">
                   <thead className="text-xs uppercase border-b">
@@ -286,11 +325,20 @@ export function AnalyticsDashboard() {
               <CardTitle>מכירות לאורך זמן</CardTitle>
               <CardDescription>כמות והיקף המכירות על פני זמן</CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className={isMobile ? "h-64" : "h-80"}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.salesOverTime}>
+                <BarChart 
+                  data={data.salesOverTime}
+                  margin={isMobile ? { top: 5, right: 10, left: 0, bottom: 20 } : undefined}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
+                  <XAxis 
+                    dataKey="date"
+                    angle={isMobile ? -45 : 0}
+                    textAnchor={isMobile ? "end" : "middle"}
+                    height={isMobile ? 60 : 30}
+                    tick={{ fontSize: isMobile ? 10 : 12 }}
+                  />
                   <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
                   <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                   <Tooltip formatter={(value, name) => {
@@ -305,7 +353,7 @@ export function AnalyticsDashboard() {
             </CardContent>
           </Card>
           
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
             <Card>
               <CardHeader>
                 <CardTitle>רכבים פופולריים</CardTitle>
@@ -313,7 +361,6 @@ export function AnalyticsDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {/* כאן צריך להוסיף נתונים אמיתיים מהמערכת */}
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="font-medium">יונדאי טוסון</div>
@@ -383,12 +430,21 @@ export function AnalyticsDashboard() {
               <CardTitle>ביצועי סוכנים</CardTitle>
               <CardDescription>השוואת ביצועי סוכני המכירות</CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className={isMobile ? "h-96" : "h-80"}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.salesByAgent} layout="vertical">
+                <BarChart 
+                  data={data.salesByAgent} 
+                  layout="vertical"
+                  margin={isMobile ? { top: 5, right: 0, left: 0, bottom: 5 } : undefined}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" />
-                  <YAxis type="category" dataKey="agent" width={150} />
+                  <YAxis 
+                    type="category" 
+                    dataKey="agent" 
+                    width={isMobile ? 100 : 150}
+                    tick={{ fontSize: isMobile ? 10 : 12 }}
+                  />
                   <Tooltip formatter={(value) => [value, 'מכירות']} />
                   <Legend />
                   <Bar dataKey="sales" name="מכירות" fill="#8884d8" />
@@ -397,7 +453,7 @@ export function AnalyticsDashboard() {
             </CardContent>
           </Card>
           
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">זמן תגובה מהיר ביותר</CardTitle>
