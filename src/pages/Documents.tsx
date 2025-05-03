@@ -5,7 +5,7 @@ import { DocumentsManager } from "@/components/documents/DocumentsManager";
 
 export default function Documents() {
   return (
-    <div className="container py-6">
+    <div className="container py-6 text-right">
       <div className="flex flex-col space-y-4">
         <div>
           <h1 className="text-3xl font-bold">ניהול מסמכים</h1>
@@ -13,7 +13,7 @@ export default function Documents() {
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList>
+          <TabsList className="flex justify-start">
             <TabsTrigger value="all">כל המסמכים</TabsTrigger>
             <TabsTrigger value="leads">לפי לקוחות</TabsTrigger>
             <TabsTrigger value="cars">לפי רכבים</TabsTrigger>

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// הוספת rtl לתמיכה בעברית - שימו לב שזה מופיע גם בקוד של ה-Index.tsx
+// הגדרת RTL לתמיכה בעברית
 document.documentElement.dir = 'rtl';
 document.documentElement.lang = 'he';
 

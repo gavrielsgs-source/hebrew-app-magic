@@ -47,7 +47,7 @@ export function AnalyticsDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-right">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold">אנליטיקה ומדדי ביצוע</h2>
@@ -87,8 +87,8 @@ export function AnalyticsDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{formatNumber(data.totalSales)}</div>
             <div className="flex items-center text-xs">
-              <Badge variant={data.conversionRate > 15 ? "default" : "destructive"} className="mr-1">
-                {data.conversionRate > 15 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
+              <Badge variant={data.conversionRate > 15 ? "default" : "destructive"} className="ml-1">
+                {data.conversionRate > 15 ? <TrendingUp className="w-3 h-3 ml-1" /> : <TrendingDown className="w-3 h-3 ml-1" />}
                 {formatPercent(data.conversionRate)}
               </Badge>
               <span className="text-muted-foreground">שיעור המרה</span>
@@ -249,19 +249,19 @@ export function AnalyticsDashboard() {
                 <table className="w-full text-sm text-right">
                   <thead className="text-xs uppercase border-b">
                     <tr>
-                      <th scope="col" className="px-6 py-3">שם התבנית</th>
-                      <th scope="col" className="px-6 py-3">נשלחו</th>
-                      <th scope="col" className="px-6 py-3">שיעור תגובה</th>
-                      <th scope="col" className="px-6 py-3">שיעור המרה</th>
+                      <th scope="col" className="px-6 py-3 text-right">שם התבנית</th>
+                      <th scope="col" className="px-6 py-3 text-right">נשלחו</th>
+                      <th scope="col" className="px-6 py-3 text-right">שיעור תגובה</th>
+                      <th scope="col" className="px-6 py-3 text-right">שיעור המרה</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.templatePerformance.map((template, index) => (
                       <tr key={index} className="border-b">
-                        <td className="px-6 py-4 font-medium">{template.template}</td>
-                        <td className="px-6 py-4">{template.sent}</td>
-                        <td className="px-6 py-4">{template.responseRate}%</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 font-medium text-right">{template.template}</td>
+                        <td className="px-6 py-4 text-right">{template.sent}</td>
+                        <td className="px-6 py-4 text-right">{template.responseRate}%</td>
+                        <td className="px-6 py-4 text-right">
                           {template.responseRate > 60 ? (
                             <Badge className="bg-green-500">גבוה</Badge>
                           ) : template.responseRate > 40 ? (

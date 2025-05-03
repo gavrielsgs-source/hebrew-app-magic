@@ -143,12 +143,12 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input 
             placeholder="חפש מסמכים..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pr-9"
           />
         </div>
         
@@ -175,7 +175,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                 העלאת מסמך
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent dir="rtl">
               <DialogHeader>
                 <DialogTitle>העלאת מסמך חדש</DialogTitle>
                 <DialogDescription>
@@ -248,14 +248,14 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                 </div>
               </div>
               
-              <DialogFooter>
-                <Button variant="outline" onClick={resetForm}>איפוס</Button>
+              <DialogFooter className="flex-row-reverse sm:justify-end">
                 <Button 
                   onClick={handleUpload} 
                   disabled={!file || !documentName || isUploading}
                 >
                   {isUploading ? "מעלה..." : "העלאה"}
                 </Button>
+                <Button variant="outline" onClick={resetForm}>איפוס</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

@@ -46,7 +46,7 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> הוסף לקוח חדש
+              <Plus className="ml-2 h-4 w-4" /> הוסף לקוח חדש
             </Button>
           </SheetTrigger>
           <SheetContent className="w-[400px]">
@@ -62,13 +62,13 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>שם</TableHead>
-              <TableHead>טלפון</TableHead>
-              <TableHead>אימייל</TableHead>
-              <TableHead>מקור</TableHead>
-              <TableHead>תאריך</TableHead>
-              <TableHead>סטטוס</TableHead>
-              <TableHead>פעולות</TableHead>
+              <TableHead className="text-right">שם</TableHead>
+              <TableHead className="text-right">טלפון</TableHead>
+              <TableHead className="text-right">אימייל</TableHead>
+              <TableHead className="text-right">מקור</TableHead>
+              <TableHead className="text-right">תאריך</TableHead>
+              <TableHead className="text-right">סטטוס</TableHead>
+              <TableHead className="text-right">פעולות</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -87,18 +87,18 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
             ) : (
               filteredLeads.map((lead) => (
                 <TableRow key={lead.id}>
-                  <TableCell className="font-medium">{lead.name}</TableCell>
-                  <TableCell>{lead.phone}</TableCell>
-                  <TableCell>{lead.email}</TableCell>
-                  <TableCell>{lead.source || "ידני"}</TableCell>
-                  <TableCell>{new Date(lead.created_at).toLocaleDateString('he-IL')}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium text-right">{lead.name}</TableCell>
+                  <TableCell className="text-right">{lead.phone}</TableCell>
+                  <TableCell className="text-right">{lead.email}</TableCell>
+                  <TableCell className="text-right">{lead.source || "ידני"}</TableCell>
+                  <TableCell className="text-right">{new Date(lead.created_at).toLocaleDateString('he-IL')}</TableCell>
+                  <TableCell className="text-right">
                     <Badge className={getStatusBadgeColor(lead.status)}>
                       {getStatusText(lead.status)}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-2 rtl:space-x-reverse">
+                    <div className="flex space-x-2 rtl:space-x-reverse justify-end">
                       <Button 
                         variant="ghost" 
                         size="icon"
@@ -122,7 +122,7 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
                             <Send className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
+                        <DialogContent className="sm:max-w-[600px]" dir="rtl">
                           <DialogHeader>
                             <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
                           </DialogHeader>
