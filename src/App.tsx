@@ -21,10 +21,11 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentError from "./pages/PaymentError";
 import NotFound from "./pages/NotFound";
 import Analytics from "./pages/Analytics";
-import Documents from "./pages/Documents"; // הוספנו את הדף החדש
+import Documents from "./pages/Documents";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +36,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <SidebarProvider defaultOpen={true}>
+          <SidebarProvider defaultOpen={false}>
             <Routes>
               <Route path="/auth" element={<AuthRoute />} />
               <Route
@@ -44,27 +45,7 @@ const App = () => {
                   <ProtectedRoute>
                     <SubscriptionProvider>
                       <AuthProvider>
-                        <div className="flex min-h-screen w-full">
-                          <AppSidebar />
-                          <main className="flex-1 mx-auto max-w-6xl overflow-auto p-4 transition-all duration-300">
-                            <Routes>
-                              <Route path="/" element={<Index />} />
-                              <Route path="/profile" element={<Profile />} />
-                              <Route path="/tasks" element={<Tasks />} />
-                              <Route path="/cars" element={<Cars />} />
-                              <Route path="/leads" element={<Leads />} />
-                              <Route path="/templates" element={<Templates />} />
-                              <Route path="/analytics" element={<Analytics />} />
-                              <Route path="/documents" element={<Documents />} />  {/* הוספת הנתיב החדש */}
-                              <Route path="/subscription" element={<Subscription />} />
-                              <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
-                              <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
-                              <Route path="/subscription/payment-error" element={<PaymentError />} />
-                              <Route path="/admin" element={<Admin />} />
-                              <Route path="*" element={<NotFound />} />
-                            </Routes>
-                          </main>
-                        </div>
+                        <AppLayout />
                       </AuthProvider>
                     </SubscriptionProvider>
                   </ProtectedRoute>
@@ -77,6 +58,34 @@ const App = () => {
     </QueryClientProvider>
   );
 };
+
+function AppLayout() {
+  const isMobile = useIsMobile();
+  
+  return (
+    <div className="flex min-h-screen w-full">
+      <AppSidebar />
+      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? 'p-2' : 'p-4 mx-auto max-w-6xl'}`}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/cars" element={<Cars />} />
+          <Route path="/leads" element={<Leads />} />
+          <Route path="/templates" element={<Templates />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/documents" element={<Documents />} />
+          <Route path="/subscription" element={<Subscription />} />
+          <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
+          <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
+          <Route path="/subscription/payment-error" element={<PaymentError />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
 
 function AuthRoute() {
   const { user, loading } = useAuth();

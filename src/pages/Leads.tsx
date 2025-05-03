@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { LeadsGrid } from "@/components/leads/LeadsGrid";
+import { LeadsMobileView } from "@/components/leads/LeadsMobileView";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -11,6 +12,8 @@ import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegration";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
 
 export default function Leads() {
   const { toast } = useToast();
@@ -20,6 +23,7 @@ export default function Leads() {
   const { checkEntitlement } = useSubscription();
   const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
   const [activeTab, setActiveTab] = useState<string>("leads");
+  const isMobile = useIsMobile();
 
   const onLeadAdded = () => {
     toast({
@@ -43,7 +47,10 @@ export default function Leads() {
             ניהול ומעקב אחר לידים פוטנציאליים
           </p>
         </div>
-        <div className="flex gap-2 mt-4 sm:mt-0">
+        <div className="flex gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
+          {isMobile && (
+            <NotificationsPopover />
+          )}
           <Button 
             variant="outline" 
             size="sm"
@@ -57,14 +64,14 @@ export default function Leads() {
             <SheetTrigger asChild>
               <Button 
                 size="sm" 
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${isMobile ? "flex-1" : ""}`}
                 disabled={!canAddLead}
               >
                 <Plus className="h-4 w-4" />
                 לקוח חדש
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-[400px]">
+            <SheetContent className="w-full sm:w-[400px]">
               <SheetHeader>
                 <SheetTitle>הוסף לקוח חדש</SheetTitle>
               </SheetHeader>
@@ -81,7 +88,11 @@ export default function Leads() {
         </TabsList>
         
         <TabsContent value="leads">
-          <LeadsGrid leads={leads} isLoading={isLoading} error={error} />
+          {isMobile ? (
+            <LeadsMobileView leads={leads} isLoading={isLoading} error={error} />
+          ) : (
+            <LeadsGrid leads={leads} isLoading={isLoading} error={error} />
+          )}
         </TabsContent>
         
         <TabsContent value="settings">

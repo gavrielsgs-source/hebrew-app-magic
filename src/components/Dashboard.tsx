@@ -1,15 +1,14 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
 import { LeadsTable } from "@/components/LeadsTable";
 import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
-import { UserNav } from "@/components/auth/UserNav";
 import { SalesAnalytics } from "@/components/analytics/SalesAnalytics";
 import { SmartInsights } from "@/components/analytics/SmartInsights";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
+import { AppHeader } from "@/components/layout/AppHeader";
 
 const CarSleadLogoSVG = () => (
   <svg width="48" height="48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,17 +26,7 @@ export default function Dashboard() {
   
   return (
     <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8">
-      <div className="flex items-center justify-between bg-white/90 backdrop-blur-xl rounded-2xl p-3 md:p-5 shadow-lg border border-gray-100">
-        <div className="flex items-center gap-3">
-          <CarSleadLogoSVG />
-          <h1 className={`${isMobile ? 'text-xl' : 'text-2xl md:text-4xl'} font-extrabold tracking-tight font-rubik text-gray-900`}>
-            CarsLead
-          </h1>
-        </div>
-        <div className="flex items-center space-x-4 rtl:space-x-reverse">
-          <UserNav />
-        </div>
-      </div>
+      <AppHeader />
 
       <div className={`grid gap-4 md:gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2 xl:grid-cols-4'}`}>
         <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
