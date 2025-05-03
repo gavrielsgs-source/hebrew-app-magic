@@ -26,6 +26,7 @@ export function TaskRelations() {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
+                <SelectItem value="none">ללא רכב</SelectItem>
                 {cars?.map((car) => (
                   <SelectItem key={car.id} value={car.id}>
                     {car.make} {car.model} ({car.year})
@@ -51,6 +52,7 @@ export function TaskRelations() {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
+                <SelectItem value="none">ללא ליד</SelectItem>
                 {leads?.map((lead) => (
                   <SelectItem key={lead.id} value={lead.id}>
                     {lead.name} - {lead.phone}

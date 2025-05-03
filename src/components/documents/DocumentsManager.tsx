@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +37,7 @@ interface DocumentsManagerProps {
 export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [documentTypeFilter, setDocumentTypeFilter] = useState<string>("");
+  const [documentTypeFilter, setDocumentTypeFilter] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [documentName, setDocumentName] = useState("");
   const [documentType, setDocumentType] = useState<string>("contract");
@@ -152,12 +153,12 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
         </div>
         
         <div className="flex gap-2">
-          <Select value={documentTypeFilter} onValueChange={setDocumentTypeFilter}>
+          <Select value={documentTypeFilter || "all"} onValueChange={(value) => setDocumentTypeFilter(value === "all" ? null : value)}>
             <SelectTrigger className="w-[150px] text-right">
               <SelectValue placeholder="סוג מסמך" />
             </SelectTrigger>
             <SelectContent align="end">
-              <SelectItem value="">הכל</SelectItem>
+              <SelectItem value="all">הכל</SelectItem>
               <SelectItem value="contract">חוזה</SelectItem>
               <SelectItem value="id">תעודת זהות</SelectItem>
               <SelectItem value="license">רישיון</SelectItem>
@@ -217,17 +218,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                     <Input
                       id="file"
                       type="file"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const selectedFile = e.target.files[0];
-                          setFile(selectedFile);
-                          
-                          // אם שם המסמך ריק, השתמש בשם הקובץ
-                          if (!documentName) {
-                            setDocumentName(selectedFile.name.split('.')[0]);
-                          }
-                        }
-                      }}
+                      onChange={handleFileChange}
                       className="hidden"
                     />
                     
@@ -259,43 +250,9 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
               </div>
               
               <DialogFooter className="flex-row sm:justify-start">
-                <Button variant="outline" onClick={() => {
-                  setFile(null);
-                  setDocumentName("");
-                  setDocumentType("contract");
-                }}>איפוס</Button>
+                <Button variant="outline" onClick={resetForm}>איפוס</Button>
                 <Button 
-                  onClick={async () => {
-                    if (!file) {
-                      toast.error("יש לבחור קובץ");
-                      return;
-                    }
-                    
-                    if (!documentName) {
-                      toast.error("יש להזין שם למסמך");
-                      return;
-                    }
-                    
-                    try {
-                      const params: UploadDocumentParams = {
-                        file,
-                        name: documentName,
-                        type: documentType,
-                        entityId,
-                        entityType,
-                      };
-                      
-                      await uploadDocument(params);
-                      toast.success("המסמך הועלה בהצלחה");
-                      setIsDialogOpen(false);
-                      setFile(null);
-                      setDocumentName("");
-                      setDocumentType("contract");
-                    } catch (error) {
-                      toast.error("שגיאה בהעלאת המסמך");
-                      console.error(error);
-                    }
-                  }}
+                  onClick={handleUpload}
                   disabled={!file || !documentName || isUploading}
                 >
                   {isUploading ? "מעלה..." : "העלאה"}
@@ -332,15 +289,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                         צפייה
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={async () => {
-                          try {
-                            await deleteDocument(document.id);
-                            toast.success("המסמך נמחק בהצלחה");
-                          } catch (error) {
-                            toast.error("שגיאה במחיקת המסמך");
-                            console.error(error);
-                          }
-                        }}
+                        onClick={() => handleDelete(document.id)}
                         disabled={isDeleting}
                       >
                         מחיקה
