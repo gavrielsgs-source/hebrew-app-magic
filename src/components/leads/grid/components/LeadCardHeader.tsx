@@ -1,17 +1,18 @@
 
 import { LeadStatusBadge } from "../utils/lead-status";
-import { LeadScoreIndicator } from "./LeadScoreIndicator";  // הוספנו את הקומפוננטה החדשה
+import { LeadScoreIndicator } from "./LeadScoreIndicator";
 
-interface LeadCardHeaderProps {
+export interface LeadCardHeaderProps {
   lead: any;
+  hasActiveReminders?: boolean;
 }
 
-export function LeadCardHeader({ lead }: LeadCardHeaderProps) {
+export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <h3 className="text-lg font-semibold">{lead.name}</h3>
       <div className="flex items-center space-x-2 rtl:space-x-reverse">
-        <LeadScoreIndicator leadId={lead.id} />  {/* הוספת מחוון הדירוג */}
+        <LeadScoreIndicator leadId={lead.id} />
         <LeadStatusBadge status={lead.status} />
       </div>
     </div>

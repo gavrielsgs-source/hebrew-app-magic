@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { FileIcon, FileTextIcon, Image, MoreHorizontal, Search, Upload, X } from "lucide-react";
-import { useDocuments } from "@/hooks/use-documents";
+import { useDocuments, type UploadDocumentParams } from "@/hooks/use-documents";
 
 interface DocumentsManagerProps {
   entityId?: string;
@@ -42,7 +42,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   const [documentName, setDocumentName] = useState("");
   const [documentType, setDocumentType] = useState<string>("contract");
   
-  const { documents, isLoading, error, uploadDocument, deleteDocument } = useDocuments(entityId, entityType);
+  const { documents, isLoading, error, uploadDocument, deleteDocument, isUploading, isDeleting } = useDocuments(entityId, entityType);
   
   // סינון מסמכים לפי החיפוש והסוג
   const filteredDocuments = documents?.filter(doc => {
@@ -75,14 +75,15 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
     }
     
     try {
-      await uploadDocument({
+      const params: UploadDocumentParams = {
         file,
         name: documentName,
         type: documentType,
         entityId,
         entityType,
-      });
+      };
       
+      await uploadDocument(params);
       toast.success("המסמך הועלה בהצלחה");
       setIsDialogOpen(false);
       resetForm();
@@ -121,7 +122,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   };
   
   const getDocumentIcon = (fileType: string) => {
-    if (fileType.startsWith('image/')) {
+    if (fileType?.startsWith('image/')) {
       return <Image className="h-6 w-6 text-blue-500" />;
     } else if (fileType === 'application/pdf') {
       return <FileTextIcon className="h-6 w-6 text-red-500" />;
@@ -249,8 +250,11 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
               
               <DialogFooter>
                 <Button variant="outline" onClick={resetForm}>איפוס</Button>
-                <Button onClick={handleUpload} disabled={!file || !documentName}>
-                  העלאה
+                <Button 
+                  onClick={handleUpload} 
+                  disabled={!file || !documentName || isUploading}
+                >
+                  {isUploading ? "מעלה..." : "העלאה"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -295,7 +299,10 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                       <DropdownMenuItem onClick={() => window.open(document.url, '_blank')}>
                         צפייה
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(document.id)}>
+                      <DropdownMenuItem 
+                        onClick={() => handleDelete(document.id)}
+                        disabled={isDeleting}
+                      >
                         מחיקה
                       </DropdownMenuItem>
                     </DropdownMenuContent>

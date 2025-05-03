@@ -100,12 +100,12 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
         
         // חישוב מכירות לפי סוכן
         const salesByAgent = profiles
-          .map(profile => {
+          .map((profile: any) => {
             const agentLeads = leads.filter(l => l.assigned_to === profile.id);
             const sales = agentLeads.filter(l => l.status === "closed").length;
             const amount = agentLeads
               .filter(l => l.status === "closed" && l.cars && l.cars.price)
-              .reduce((sum, l) => sum + (l.cars?.price || 0), 0);
+              .reduce((sum: number, l: any) => sum + (l.cars?.price || 0), 0);
             
             return {
               agent: profile.full_name || profile.id,
@@ -113,12 +113,12 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
               amount,
             };
           })
-          .filter(agent => agent.sales > 0);
+          .filter((agent: any) => agent.sales > 0);
         
         // חישוב מכירות לאורך זמן
         const salesByDate = leads
           .filter(l => l.status === "closed")
-          .reduce((acc: Record<string, { sales: number; amount: number }>, lead) => {
+          .reduce((acc: Record<string, { sales: number; amount: number }>, lead: any) => {
             const date = lead.created_at.split("T")[0];
             if (!acc[date]) acc[date] = { sales: 0, amount: 0 };
             acc[date].sales += 1;

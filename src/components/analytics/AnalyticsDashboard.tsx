@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ArrowTrendingUp, ArrowTrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6385'];
 
@@ -87,8 +87,8 @@ export function AnalyticsDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{formatNumber(data.totalSales)}</div>
             <div className="flex items-center text-xs">
-              <Badge variant={data.conversionRate > 15 ? "success" : "destructive"} className="mr-1">
-                {data.conversionRate > 15 ? <ArrowTrendingUp className="w-3 h-3 mr-1" /> : <ArrowTrendingDown className="w-3 h-3 mr-1" />}
+              <Badge variant={data.conversionRate > 15 ? "default" : "destructive"} className="mr-1">
+                {data.conversionRate > 15 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                 {formatPercent(data.conversionRate)}
               </Badge>
               <span className="text-muted-foreground">שיעור המרה</span>
@@ -146,16 +146,16 @@ export function AnalyticsDashboard() {
                       cy="50%"
                       labelLine={false}
                       outerRadius={80}
-                      label={({ source, count, percent }) => `${source}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ source, count, percent }: any) => `${source}: ${(percent * 100).toFixed(0)}%`}
                       dataKey="count"
                       nameKey="source"
                     >
-                      {data.leadsBySource.map((entry, index) => (
+                      {data.leadsBySource.map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value, name, props) => [`${value} לידים`, props.payload.source]} 
+                      formatter={(value: any, name: string, props: any) => [`${value} לידים`, props.payload.source]} 
                     />
                     <Legend layout="horizontal" verticalAlign="bottom" align="center" />
                   </PieChart>
@@ -173,8 +173,8 @@ export function AnalyticsDashboard() {
                   <BarChart data={data.conversionBySource}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="source" />
-                    <YAxis tickFormatter={(value) => `${value}%`} />
-                    <Tooltip formatter={(value) => [`${value.toFixed(1)}%`, 'שיעור המרה']} />
+                    <YAxis tickFormatter={(value: number) => `${value}%`} />
+                    <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)}%`, 'שיעור המרה']} />
                     <Bar dataKey="rate" name="שיעור המרה" fill="#8884d8" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -193,7 +193,7 @@ export function AnalyticsDashboard() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`${value} לידים`, 'כמות']} />
+                  <Tooltip formatter={(value: any) => [`${value} לידים`, 'כמות']} />
                   <Bar dataKey="count" name="לידים" fill="#33C3F0" />
                 </BarChart>
               </ResponsiveContainer>

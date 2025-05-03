@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,8 +8,8 @@ import {
   SidebarContent,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuItem as MenuItem,
-  SidebarHeaderTitle,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { 
   BarChart3, 
@@ -18,7 +19,7 @@ import {
   Home, 
   List, 
   MessageSquare, 
-  SettingsIcon, 
+  Settings, 
   User, 
   Users,
   FileBarChart,
@@ -46,70 +47,95 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-l">
       <SidebarHeader>
-        <CarSleadLogoSVG />
-        <SidebarHeaderTitle>CarsLead</SidebarHeaderTitle>
+        <div className="flex items-center gap-2 px-2">
+          <CarSleadLogoSVG />
+          <h1 className="text-lg font-bold">CarsLead</h1>
+        </div>
       </SidebarHeader>
 
       <SidebarContent className="overflow-hidden">
         <div className="flex flex-col gap-2">
           <SidebarMenu key="main">
-            <MenuItem
-              onClick={() => navigate("/")}
-              active={pathname === "/"}
-              icon={<Home className="h-5 w-5" />}
-              label="לוח בקרה"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/")} 
+                data-active={pathname === "/"} 
+                icon={<Home className="h-5 w-5" />}
+              >
+                לוח בקרה
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
-            <MenuItem
-              onClick={() => navigate("/leads")}
-              active={pathname === "/leads"}
-              icon={<Users className="h-5 w-5" />}
-              label="לידים"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/leads")} 
+                data-active={pathname === "/leads"} 
+                icon={<Users className="h-5 w-5" />}
+              >
+                לידים
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
-            <MenuItem
-              onClick={() => navigate("/cars")}
-              active={pathname === "/cars"}
-              icon={<Car className="h-5 w-5" />}
-              label="רכבים"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/cars")} 
+                data-active={pathname === "/cars"} 
+                icon={<Car className="h-5 w-5" />}
+              >
+                רכבים
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
-            <MenuItem
-              onClick={() => navigate("/tasks")}
-              active={pathname === "/tasks"}
-              icon={<CalendarDays className="h-5 w-5" />}
-              label="משימות"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/tasks")} 
+                data-active={pathname === "/tasks"} 
+                icon={<CalendarDays className="h-5 w-5" />}
+              >
+                משימות
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
-            <MenuItem
-              onClick={() => navigate("/templates")}
-              active={pathname === "/templates"}
-              icon={<MessageSquare className="h-5 w-5" />}
-              label="תבניות"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/templates")} 
+                data-active={pathname === "/templates"} 
+                icon={<MessageSquare className="h-5 w-5" />}
+              >
+                תבניות
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             
-            <MenuItem
-              onClick={() => navigate("/analytics")}
-              active={pathname === "/analytics"}
-              icon={<FileBarChart className="h-5 w-5" />}
-              label="אנליטיקה מתקדמת"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/analytics")} 
+                data-active={pathname === "/analytics"} 
+                icon={<FileBarChart className="h-5 w-5" />}
+              >
+                אנליטיקה מתקדמת
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             
-            {/* הוספת הקישור החדש */}
-            <MenuItem
-              onClick={() => navigate("/documents")}
-              active={pathname === "/documents"}
-              icon={<FileText className="h-5 w-5" />}
-              label="מסמכים"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/documents")} 
+                data-active={pathname === "/documents"} 
+                icon={<FileText className="h-5 w-5" />}
+              >
+                מסמכים
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
             {isAdmin && (
-              <MenuItem
-                onClick={() => navigate("/admin")}
-                active={pathname === "/admin"}
-                icon={<SettingsIcon className="h-5 w-5" />}
-                label="ניהול מערכת"
-              />
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={() => navigate("/admin")} 
+                  data-active={pathname === "/admin"} 
+                  icon={<Settings className="h-5 w-5" />}
+                >
+                  ניהול מערכת
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             )}
           </SidebarMenu>
         </div>
@@ -118,19 +144,25 @@ export function AppSidebar() {
       <SidebarContent className="border-t">
         <div className="flex flex-col gap-2">
           <SidebarMenu key="user">
-            <MenuItem
-              onClick={() => navigate("/profile")}
-              active={pathname === "/profile"}
-              icon={<User className="h-5 w-5" />}
-              label="פרופיל"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/profile")} 
+                data-active={pathname === "/profile"} 
+                icon={<User className="h-5 w-5" />}
+              >
+                פרופיל
+              </SidebarMenuButton>
+            </SidebarMenuItem>
 
-            <MenuItem
-              onClick={() => navigate("/subscription")}
-              active={pathname === "/subscription"}
-              icon={<CreditCard className="h-5 w-5" />}
-              label="מנוי"
-            />
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={() => navigate("/subscription")} 
+                data-active={pathname === "/subscription"} 
+                icon={<CreditCard className="h-5 w-5" />}
+              >
+                מנוי
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </div>
       </SidebarContent>

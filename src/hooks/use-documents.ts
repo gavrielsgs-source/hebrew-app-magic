@@ -1,161 +1,169 @@
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
+import { useAuth } from "./use-auth";
 
 export interface Document {
   id: string;
   name: string;
   type: string;
   url: string;
-  file_path: string;
   file_type?: string;
-  file_size?: number;
-  entity_id?: string;
-  entity_type?: string;
   created_at: string;
-  updated_at: string;
+  entity_id?: string;
+  entity_type?: 'lead' | 'car' | 'agency';
   user_id: string;
 }
 
-interface UploadDocumentParams {
+export interface UploadDocumentParams {
   file: File;
   name: string;
   type: string;
   entityId?: string;
-  entityType?: string;
+  entityType?: 'lead' | 'car' | 'agency';
 }
 
-export function useDocuments(entityId?: string, entityType?: string) {
+export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'agency') {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const fetchDocuments = async () => {
-    try {
+  // Fetch documents
+  const {
+    data: documents,
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ["documents", entityId, entityType, user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
       let query = supabase
         .from("documents")
-        .select("*");
-      
+        .select("*")
+        .eq("user_id", user.id);
+
       if (entityId && entityType) {
         query = query
           .eq("entity_id", entityId)
           .eq("entity_type", entityType);
       }
-      
-      const { data, error } = await query.order("created_at", { ascending: false });
-      
-      if (error) throw error;
-      
-      return data as Document[];
-    } catch (error) {
-      console.error("שגיאה בטעינת מסמכים:", error);
-      throw error;
-    }
-  };
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["documents", entityId, entityType],
-    queryFn: fetchDocuments,
+      const { data, error } = await query.order("created_at", { ascending: false });
+
+      if (error) {
+        throw new Error(`Error fetching documents: ${error.message}`);
+      }
+
+      return data as Document[];
+    },
+    enabled: !!user?.id
   });
 
-  const uploadDocument = useMutation({
-    mutationFn: async ({ file, name, type, entityId, entityType }: UploadDocumentParams) => {
-      try {
-        // העלאת הקובץ לstorage
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `documents/${fileName}`;
-        
-        const { data: fileData, error: uploadError } = await supabase.storage
-          .from("documents")
-          .upload(filePath, file);
-          
-        if (uploadError) throw uploadError;
-        
-        // יצירת ה-URL הציבורי של הקובץ
-        const { data: urlData } = supabase.storage
-          .from("documents")
-          .getPublicUrl(filePath);
-          
-        // שמירת המידע על המסמך בדאטאבייס
-        const { data, error } = await supabase
-          .from("documents")
-          .insert({
-            name,
-            type,
-            url: urlData.publicUrl,
-            file_path: filePath,
-            file_type: file.type,
-            file_size: file.size,
-            entity_id: entityId || null,
-            entity_type: entityType || null,
-          })
-          .select()
-          .single();
-          
-        if (error) throw error;
-        
-        return data;
-      } catch (error) {
-        console.error("שגיאה בהעלאת מסמך:", error);
-        throw error;
+  // Upload document
+  const uploadDocumentMutation = useMutation({
+    mutationFn: async (params: UploadDocumentParams) => {
+      if (!user?.id) {
+        throw new Error("User not authenticated");
       }
+
+      // 1. Upload file to storage
+      const fileExt = params.file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${user.id}/documents/${fileName}`;
+
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from("documents")
+        .upload(filePath, params.file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // 2. Get the public URL
+      const { data: publicUrlData } = supabase.storage
+        .from("documents")
+        .getPublicUrl(filePath);
+
+      // 3. Save document metadata to database
+      const { data: documentData, error: documentError } = await supabase
+        .from("documents")
+        .insert({
+          name: params.name,
+          type: params.type,
+          file_path: filePath,
+          file_type: params.file.type,
+          url: publicUrlData.publicUrl,
+          entity_id: params.entityId || null,
+          entity_type: params.entityType || null,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (documentError) {
+        throw documentError;
+      }
+
+      return documentData;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["documents", entityId, entityType] });
-    },
-    onError: (error) => {
-      console.error("שגיאה בהעלאת מסמך:", error);
-      toast.error("שגיאה בהעלאת המסמך");
-    },
+      queryClient.invalidateQueries({ queryKey: ["documents", entityId, entityType, user?.id] });
+    }
   });
 
-  const deleteDocument = useMutation({
+  // Delete document
+  const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: string) => {
-      try {
-        // קבלת נתוני המסמך לפני מחיקה
-        const { data: document, error: fetchError } = await supabase
-          .from("documents")
-          .select("file_path")
-          .eq("id", documentId)
-          .single();
-          
-        if (fetchError) throw fetchError;
-        
-        // מחיקת הקובץ מהstorage
+      // 1. Get document data to find file path
+      const { data: document, error: getDocError } = await supabase
+        .from("documents")
+        .select("file_path")
+        .eq("id", documentId)
+        .single();
+
+      if (getDocError) {
+        throw getDocError;
+      }
+
+      // 2. Delete from storage if file_path exists
+      if (document?.file_path) {
         const { error: storageError } = await supabase.storage
           .from("documents")
           .remove([document.file_path]);
-          
-        if (storageError) throw storageError;
-        
-        // מחיקת הרשומה מהדאטאבייס
-        const { error } = await supabase
-          .from("documents")
-          .delete()
-          .eq("id", documentId);
-          
-        if (error) throw error;
-        
-        return { success: true };
-      } catch (error) {
-        console.error("שגיאה במחיקת מסמך:", error);
-        throw error;
+
+        if (storageError) {
+          console.error("Error removing file from storage:", storageError);
+          // Continue with DB deletion even if storage deletion fails
+        }
       }
+
+      // 3. Delete from database
+      const { error: dbError } = await supabase
+        .from("documents")
+        .delete()
+        .eq("id", documentId);
+
+      if (dbError) {
+        throw dbError;
+      }
+
+      return { success: true };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["documents", entityId, entityType] });
-    },
-    onError: (error) => {
-      console.error("שגיאה במחיקת מסמך:", error);
-      toast.error("שגיאה במחיקת המסמך");
-    },
+      queryClient.invalidateQueries({ queryKey: ["documents", entityId, entityType, user?.id] });
+    }
   });
 
   return {
-    documents: data,
+    documents,
     isLoading,
     error,
-    uploadDocument,
-    deleteDocument
+    refetch,
+    uploadDocument: (params: UploadDocumentParams) => uploadDocumentMutation.mutateAsync(params),
+    deleteDocument: (documentId: string) => deleteDocumentMutation.mutateAsync(documentId),
+    isUploading: uploadDocumentMutation.isPending,
+    isDeleting: deleteDocumentMutation.isPending
   };
 }
