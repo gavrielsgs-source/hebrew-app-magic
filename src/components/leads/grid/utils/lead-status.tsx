@@ -1,5 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export const getStatusBadgeColor = (status: string | null) => {
   switch (status) {
@@ -21,13 +22,17 @@ export const getStatusText = (status: string | null) => {
   }
 };
 
-export function LeadStatusBadge({ status }: { status: string | null }) {
-  const colorClass = getStatusBadgeColor(status);
-  const statusText = getStatusText(status);
-  
+export interface LeadStatusBadgeProps {
+  status: string | null;
+  className?: string;
+}
+
+export const LeadStatusBadge = ({ status, className }: LeadStatusBadgeProps) => {
   return (
-    <Badge className={colorClass}>
-      {statusText}
+    <Badge 
+      className={cn(getStatusBadgeColor(status), className)}
+    >
+      {getStatusText(status)}
     </Badge>
   );
-}
+};

@@ -9,7 +9,6 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { 
   BarChart3, 
@@ -17,7 +16,6 @@ import {
   Car, 
   CreditCard, 
   Home, 
-  List, 
   MessageSquare, 
   Settings, 
   User, 
@@ -57,84 +55,92 @@ export function AppSidebar() {
         <div className="flex flex-col gap-2">
           <SidebarMenu key="main">
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/")} 
-                data-active={pathname === "/"} 
-                icon={<Home className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/")}
+                data-active={pathname === "/"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                לוח בקרה
-              </SidebarMenuButton>
+                <Home className="h-5 w-5" />
+                <span>לוח בקרה</span>
+              </button>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/leads")} 
-                data-active={pathname === "/leads"} 
-                icon={<Users className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/leads")}
+                data-active={pathname === "/leads"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                לידים
-              </SidebarMenuButton>
+                <Users className="h-5 w-5" />
+                <span>לידים</span>
+              </button>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/cars")} 
-                data-active={pathname === "/cars"} 
-                icon={<Car className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/cars")}
+                data-active={pathname === "/cars"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                רכבים
-              </SidebarMenuButton>
+                <Car className="h-5 w-5" />
+                <span>רכבים</span>
+              </button>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/tasks")} 
-                data-active={pathname === "/tasks"} 
-                icon={<CalendarDays className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/tasks")}
+                data-active={pathname === "/tasks"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                משימות
-              </SidebarMenuButton>
+                <CalendarDays className="h-5 w-5" />
+                <span>משימות</span>
+              </button>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/templates")} 
-                data-active={pathname === "/templates"} 
-                icon={<MessageSquare className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/templates")}
+                data-active={pathname === "/templates"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                תבניות
-              </SidebarMenuButton>
+                <MessageSquare className="h-5 w-5" />
+                <span>תבניות</span>
+              </button>
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/analytics")} 
-                data-active={pathname === "/analytics"} 
-                icon={<FileBarChart className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/analytics")}
+                data-active={pathname === "/analytics"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                אנליטיקה מתקדמת
-              </SidebarMenuButton>
+                <FileBarChart className="h-5 w-5" />
+                <span>אנליטיקה מתקדמת</span>
+              </button>
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/documents")} 
-                data-active={pathname === "/documents"} 
-                icon={<FileText className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/documents")}
+                data-active={pathname === "/documents"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                מסמכים
-              </SidebarMenuButton>
+                <FileText className="h-5 w-5" />
+                <span>מסמכים</span>
+              </button>
             </SidebarMenuItem>
 
             {isAdmin && (
               <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={() => navigate("/admin")} 
-                  data-active={pathname === "/admin"} 
-                  icon={<Settings className="h-5 w-5" />}
+                <button
+                  onClick={() => navigate("/admin")}
+                  data-active={pathname === "/admin"}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
                 >
-                  ניהול מערכת
-                </SidebarMenuButton>
+                  <Settings className="h-5 w-5" />
+                  <span>ניהול מערכת</span>
+                </button>
               </SidebarMenuItem>
             )}
           </SidebarMenu>
@@ -145,23 +151,25 @@ export function AppSidebar() {
         <div className="flex flex-col gap-2">
           <SidebarMenu key="user">
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/profile")} 
-                data-active={pathname === "/profile"} 
-                icon={<User className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/profile")}
+                data-active={pathname === "/profile"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                פרופיל
-              </SidebarMenuButton>
+                <User className="h-5 w-5" />
+                <span>פרופיל</span>
+              </button>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={() => navigate("/subscription")} 
-                data-active={pathname === "/subscription"} 
-                icon={<CreditCard className="h-5 w-5" />}
+              <button
+                onClick={() => navigate("/subscription")}
+                data-active={pathname === "/subscription"}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                מנוי
-              </SidebarMenuButton>
+                <CreditCard className="h-5 w-5" />
+                <span>מנוי</span>
+              </button>
             </SidebarMenuItem>
           </SidebarMenu>
         </div>

@@ -116,15 +116,16 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
           .filter((agent: any) => agent.sales > 0);
         
         // חישוב מכירות לאורך זמן
-        const salesByDate = leads
-          .filter(l => l.status === "closed")
-          .reduce((acc: Record<string, { sales: number; amount: number }>, lead: any) => {
-            const date = lead.created_at.split("T")[0];
-            if (!acc[date]) acc[date] = { sales: 0, amount: 0 };
-            acc[date].sales += 1;
-            acc[date].amount += (lead.cars?.price || 0);
-            return acc;
-          }, {});
+        const salesByDate: Record<string, { sales: number; amount: number }> = {};
+        
+        leads.filter(l => l.status === "closed").forEach((lead: any) => {
+          const date = lead.created_at.split("T")[0];
+          if (!salesByDate[date]) {
+            salesByDate[date] = { sales: 0, amount: 0 };
+          }
+          salesByDate[date].sales += 1;
+          salesByDate[date].amount += (lead.cars?.price || 0);
+        });
 
         const salesOverTime = Object.entries(salesByDate)
           .map(([date, data]) => ({
