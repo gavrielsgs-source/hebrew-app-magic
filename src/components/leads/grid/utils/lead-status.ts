@@ -1,6 +1,4 @@
 
-import { Badge } from "@/components/ui/badge";
-
 export const getStatusBadgeColor = (status: string | null) => {
   switch (status) {
     case "new": return "bg-blue-500 hover:bg-blue-600";
@@ -20,15 +18,3 @@ export const getStatusText = (status: string | null) => {
     default: return "לא ידוע";
   }
 };
-
-export interface LeadStatusBadgeProps {
-  status: string | null;
-}
-
-export function LeadStatusBadge({ status }: LeadStatusBadgeProps) {
-  return (
-    <Badge className={getStatusBadgeColor(status)}>
-      {getStatusText(status)}
-    </Badge>
-  );
-}
