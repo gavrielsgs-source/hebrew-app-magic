@@ -9,12 +9,11 @@ export default function Tasks() {
   const { isLoading, error, refetch } = useTasks();
 
   return (
-    <div className="p-6">
+    <div className="p-6 rtl-fix">
       {error ? (
         <Alert variant="destructive" className="mb-6">
           <AlertTitle className="text-right">שגיאה בטעינת משימות</AlertTitle>
           <AlertDescription className="flex items-center justify-between text-right">
-            <span>לא הצלחנו לטעון את המשימות. ייתכן שחיבור המשתמש פג תוקף.</span>
             <Button 
               variant="outline" 
               size="sm" 
@@ -24,6 +23,7 @@ export default function Tasks() {
               <RefreshCcw className="h-4 w-4" />
               נסה שנית
             </Button>
+            <span>לא הצלחנו לטעון את המשימות. ייתכן שחיבור המשתמש פג תוקף.</span>
           </AlertDescription>
         </Alert>
       ) : null}

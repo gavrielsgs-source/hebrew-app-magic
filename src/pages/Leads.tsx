@@ -37,7 +37,7 @@ export default function Leads() {
   };
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6 rtl-fix">
       <SubscriptionLimitAlert 
         featureKey="leadLimit" 
         currentCount={leads.length} 
@@ -45,7 +45,7 @@ export default function Leads() {
       />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <div>
+        <div className="text-right">
           <h1 className="text-2xl font-bold tracking-tight">לקוחות פוטנציאליים</h1>
           <p className="text-muted-foreground mt-1">
             ניהול ומעקב אחר לידים פוטנציאליים
@@ -77,7 +77,7 @@ export default function Leads() {
             </SheetTrigger>
             <SheetContent className="w-full sm:w-[400px]">
               <SheetHeader>
-                <SheetTitle>הוסף לקוח חדש</SheetTitle>
+                <SheetTitle className="text-right">הוסף לקוח חדש</SheetTitle>
               </SheetHeader>
               <AddLeadForm />
             </SheetContent>
@@ -115,7 +115,7 @@ export default function Leads() {
                   placeholder="חיפוש לקוחות..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
+                  className="w-full text-right"
                 />
               </div>
             </div>

@@ -55,12 +55,12 @@ function Insight({ title, description, type, improvement, icon }: InsightProps) 
   return (
     <Alert variant="default" className={`${styles.bgColor} border`}>
       <div className="flex gap-3 items-start">
-        <div className={`mt-0.5 ${styles.textColor}`}>{styles.icon}</div>
-        <div>
+        <div className={`mt-0.5 ${styles.textColor} order-last`}>{styles.icon}</div>
+        <div className="flex-1">
           <AlertTitle className="mb-1 text-right font-bold text-gray-900">{title}</AlertTitle>
           <AlertDescription className="text-right text-sm">{description}</AlertDescription>
           {improvement && (
-            <div className="mt-2 text-sm">
+            <div className="mt-2 text-sm text-right">
               <Badge variant="default" className="font-normal">המלצה</Badge>
               <span className="mr-2">{improvement}</span>
             </div>
@@ -129,7 +129,7 @@ export function SmartInsights({ data }: { data?: any }) {
   });
 
   return (
-    <Card className={`${isMobile ? 'my-4' : ''}`}>
+    <Card className={`${isMobile ? 'my-4' : ''} analytics-card`}>
       <CardHeader className="pb-3">
         <CardTitle className="text-right text-lg font-medium">תובנות חכמות</CardTitle>
       </CardHeader>

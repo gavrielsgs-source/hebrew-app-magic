@@ -8,6 +8,6 @@ document.documentElement.dir = 'rtl';
 document.documentElement.lang = 'he';
 
 // Add support classes for RTL layout
-document.body.classList.add('rtl-support');
+document.body.classList.add('rtl-support', 'rtl-fix');
 
 createRoot(document.getElementById("root")!).render(<App />);

@@ -16,8 +16,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   return (
     <Card key={template.id} className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between">
-          <span>{template.name}</span>
+        <CardTitle className="flex items-center justify-between text-right">
           <div className="flex gap-1">
             <Button 
               variant="ghost" 
@@ -34,24 +33,25 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
+          <span>{template.name}</span>
         </CardTitle>
-        <CardDescription className="flex items-center gap-1">
-          <FileText className="h-3.5 w-3.5 ml-1" /> תבנית וואטסאפ
+        <CardDescription className="flex items-center gap-1 justify-end">
+          תבנית וואטסאפ <FileText className="h-3.5 w-3.5 mr-1" />
         </CardDescription>
       </CardHeader>
       <CardContent className="h-28 overflow-y-auto">
-        <div className="text-sm text-muted-foreground whitespace-pre-line line-clamp-3">
+        <div className="text-sm text-muted-foreground whitespace-pre-line line-clamp-3 text-right">
           {template.template}
         </div>
       </CardContent>
-      <CardFooter className="justify-start">
+      <CardFooter className="justify-end">
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="ghost" size="sm">הצג תצוגה מקדימה</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>תצוגה מקדימה - {template.name}</DialogTitle>
+              <DialogTitle className="text-right">תצוגה מקדימה - {template.name}</DialogTitle>
             </DialogHeader>
             <WhatsappTemplatePreview template={template.template} />
           </DialogContent>

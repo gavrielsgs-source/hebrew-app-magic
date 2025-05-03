@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +43,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   
   const { documents, isLoading, error, uploadDocument, deleteDocument, isUploading, isDeleting } = useDocuments(entityId, entityType);
   
-  // סינון מסמכים לפי החיפוש והסוג
+  // סינון מסמכים לפי החיפוש והסו��
   const filteredDocuments = documents?.filter(doc => {
     const matchesSearch = !searchQuery || doc.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = !documentTypeFilter || doc.type === documentTypeFilter;
@@ -134,13 +133,13 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   if (error) {
     return (
       <div className="p-4 border rounded-lg">
-        <p className="text-red-500">שגיאה בטעינת מסמכים: {error.message}</p>
+        <p className="text-red-500 text-right">שגיאה בטעינת מסמכים: {error.message}</p>
       </div>
     );
   }
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -148,17 +147,17 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
             placeholder="חפש מסמכים..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pr-9"
+            className="pr-9 text-right"
           />
         </div>
         
         <div className="flex gap-2">
           <Select value={documentTypeFilter} onValueChange={setDocumentTypeFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[150px] text-right">
               <SelectValue placeholder="סוג מסמך" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">הכל</SelectItem>
+            <SelectContent align="end">
+              <SelectItem value="">הכל</SelectItem>
               <SelectItem value="contract">חוזה</SelectItem>
               <SelectItem value="id">תעודת זהות</SelectItem>
               <SelectItem value="license">רישיון</SelectItem>
@@ -171,36 +170,37 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-1">
-                <Upload className="h-4 w-4" />
+                <Upload className="h-4 w-4 ml-1" />
                 העלאת מסמך
               </Button>
             </DialogTrigger>
             <DialogContent dir="rtl">
               <DialogHeader>
-                <DialogTitle>העלאת מסמך חדש</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-right">העלאת מסמך חדש</DialogTitle>
+                <DialogDescription className="text-right">
                   העלה מסמכים כמו חוזים, רישיונות, חשבוניות ועוד.
                 </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="documentName">שם המסמך</Label>
+                  <Label htmlFor="documentName" className="block text-right">שם המסמך</Label>
                   <Input
                     id="documentName"
                     value={documentName}
                     onChange={(e) => setDocumentName(e.target.value)}
                     placeholder="לדוגמה: חוזה מכירה - יונדאי i10"
+                    className="text-right"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="documentType">סוג המסמך</Label>
+                  <Label htmlFor="documentType" className="block text-right">סוג המסמך</Label>
                   <Select value={documentType} onValueChange={setDocumentType}>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-right">
                       <SelectValue placeholder="בחר סוג מסמך" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent align="end">
                       <SelectItem value="contract">חוזה</SelectItem>
                       <SelectItem value="id">תעודת זהות</SelectItem>
                       <SelectItem value="license">רישיון</SelectItem>
@@ -212,24 +212,34 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="file">קובץ</Label>
+                  <Label htmlFor="file" className="block text-right">קובץ</Label>
                   <div className="border rounded-lg p-4">
                     <Input
                       id="file"
                       type="file"
-                      onChange={handleFileChange}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const selectedFile = e.target.files[0];
+                          setFile(selectedFile);
+                          
+                          // אם שם המסמך ריק, השתמש בשם הקובץ
+                          if (!documentName) {
+                            setDocumentName(selectedFile.name.split('.')[0]);
+                          }
+                        }
+                      }}
                       className="hidden"
                     />
                     
                     {file ? (
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          {getDocumentIcon(file.type)}
-                          <span className="truncate">{file.name}</span>
-                        </div>
                         <Button variant="ghost" size="sm" onClick={() => setFile(null)}>
                           <X className="h-4 w-4" />
                         </Button>
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <span className="truncate">{file.name}</span>
+                          {getDocumentIcon(file.type)}
+                        </div>
                       </div>
                     ) : (
                       <div className="text-center">
@@ -248,14 +258,48 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                 </div>
               </div>
               
-              <DialogFooter className="flex-row-reverse sm:justify-end">
+              <DialogFooter className="flex-row sm:justify-start">
+                <Button variant="outline" onClick={() => {
+                  setFile(null);
+                  setDocumentName("");
+                  setDocumentType("contract");
+                }}>איפוס</Button>
                 <Button 
-                  onClick={handleUpload} 
+                  onClick={async () => {
+                    if (!file) {
+                      toast.error("יש לבחור קובץ");
+                      return;
+                    }
+                    
+                    if (!documentName) {
+                      toast.error("יש להזין שם למסמך");
+                      return;
+                    }
+                    
+                    try {
+                      const params: UploadDocumentParams = {
+                        file,
+                        name: documentName,
+                        type: documentType,
+                        entityId,
+                        entityType,
+                      };
+                      
+                      await uploadDocument(params);
+                      toast.success("המסמך הועלה בהצלחה");
+                      setIsDialogOpen(false);
+                      setFile(null);
+                      setDocumentName("");
+                      setDocumentType("contract");
+                    } catch (error) {
+                      toast.error("שגיאה בהעלאת המסמך");
+                      console.error(error);
+                    }
+                  }}
                   disabled={!file || !documentName || isUploading}
                 >
                   {isUploading ? "מעלה..." : "העלאה"}
                 </Button>
-                <Button variant="outline" onClick={resetForm}>איפוס</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -277,8 +321,33 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
             {filteredDocuments?.map((document) => (
               <div key={document.id} className="border rounded-lg p-4 space-y-2">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    {getDocumentIcon(document.file_type || '')}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem onClick={() => window.open(document.url, '_blank')}>
+                        צפייה
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={async () => {
+                          try {
+                            await deleteDocument(document.id);
+                            toast.success("המסמך נמחק בהצלחה");
+                          } catch (error) {
+                            toast.error("שגיאה במחיקת המסמך");
+                            console.error(error);
+                          }
+                        }}
+                        disabled={isDeleting}
+                      >
+                        מחיקה
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <div className="flex items-center gap-2 text-right">
                     <div>
                       <h4 className="font-medium truncate" title={document.name}>
                         {document.name}
@@ -287,29 +356,11 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                         {getDocumentTypeLabel(document.type)}
                       </p>
                     </div>
+                    {getDocumentIcon(document.file_type || '')}
                   </div>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => window.open(document.url, '_blank')}>
-                        צפייה
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDelete(document.id)}
-                        disabled={isDeleting}
-                      >
-                        מחיקה
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
                 
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground text-right">
                   הועלה ב-{new Date(document.created_at).toLocaleDateString('he-IL')}
                 </div>
               </div>

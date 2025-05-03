@@ -1,4 +1,3 @@
-
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
@@ -48,7 +47,6 @@ import { Edit, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const templateFormSchema = z.object({
   name: z.string().min(2, {
@@ -161,46 +159,33 @@ export default function TemplatesPage() {
 
   return (
     <div className="p-4" dir="rtl">
-      <Tabs defaultValue="templates">
-        <TabsList className="flex justify-start mb-4">
-          <TabsTrigger value="templates" className="text-right flex items-center gap-2">
-            תבניות
-          </TabsTrigger>
-          <TabsTrigger value="history" className="text-right flex items-center gap-2">
-            היסטוריה
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="templates" className="text-right">
-          <TemplateHeader
-            onNewTemplate={onNewTemplate}
-            onResetDefaults={onResetDefaults}
-          />
+      <div className="text-right">
+        <TemplateHeader
+          onNewTemplate={onNewTemplate}
+          onResetDefaults={onResetDefaults}
+        />
 
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {templates.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onEdit={onEditTemplate}
-                onDelete={onDeleteTemplate}
-              />
-            ))}
-          </div>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {templates.map((template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onEdit={onEditTemplate}
+              onDelete={onDeleteTemplate}
+            />
+          ))}
+        </div>
 
-          <TemplateDialog
-            isOpen={isDialogOpen}
-            isNew={isNewTemplate}
-            newTemplate={selectedTemplate}
-            setIsOpen={setIsDialogOpen}
-            onSave={onSaveTemplate}
-            onTemplateChange={onTemplateChange}
-            templateTags={templateTags}
-          />
-        </TabsContent>
-        <TabsContent value="history" className="text-right">
-          {/* תוכן היסטוריה */}
-        </TabsContent>
-      </Tabs>
+        <TemplateDialog
+          isOpen={isDialogOpen}
+          isNew={isNewTemplate}
+          newTemplate={selectedTemplate}
+          setIsOpen={setIsDialogOpen}
+          onSave={onSaveTemplate}
+          onTemplateChange={onTemplateChange}
+          templateTags={templateTags}
+        />
+      </div>
     </div>
   );
 }
