@@ -116,9 +116,9 @@ export default function UpgradeSubscription() {
             transactionToken: params.transactionToken,
             transactionId: params.transactionId,
             asmachta: params.asmachta,
-            customerName: params.fullName,
-            customerPhone: params.phone,
-            customerEmail: params.email,
+            // customerName: params.fullName,
+            // customerPhone: params.phone,
+            // customerEmail: params.email,
           }
         }
       });
