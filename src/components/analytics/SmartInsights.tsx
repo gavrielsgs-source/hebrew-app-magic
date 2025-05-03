@@ -10,7 +10,7 @@ interface InsightProps {
   title: string;
   description: string;
   type: "info" | "success" | "warning" | "danger";
-  improvement?: string;
+  improvement?: string; // Made optional for all types
   icon?: React.ReactNode;
 }
 
@@ -53,7 +53,7 @@ function Insight({ title, description, type, improvement, icon }: InsightProps) 
   const styles = getTypeStyles();
 
   return (
-    <Alert variant="outline" className={`${styles.bgColor} border`}>
+    <Alert variant="default" className={`${styles.bgColor} border`}>
       <div className="flex gap-3 items-start">
         <div className={`mt-0.5 ${styles.textColor}`}>{styles.icon}</div>
         <div>
@@ -61,7 +61,7 @@ function Insight({ title, description, type, improvement, icon }: InsightProps) 
           <AlertDescription className="text-right text-sm">{description}</AlertDescription>
           {improvement && (
             <div className="mt-2 text-sm">
-              <Badge variant="outline" className="font-normal">המלצה</Badge>
+              <Badge variant="default" className="font-normal">המלצה</Badge>
               <span className="mr-2">{improvement}</span>
             </div>
           )}
