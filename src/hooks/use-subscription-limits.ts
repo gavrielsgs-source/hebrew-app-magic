@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSubscription } from '@/contexts/subscription-context';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { SubscriptionTier } from '@/types/subscription';
 
 export type ResourceType = 'car' | 'lead' | 'user' | 'template' | 'whatsappMessage' | 'task';
 
@@ -63,14 +64,20 @@ export function useSubscriptionLimits() {
     currentCount: number,
     onContinue?: () => void,
     onUpgrade?: () => void
-  ) => {
+  ): boolean => {
     const result = checkLimitBeforeAction(resourceType, 'create', currentCount);
 
     if (!result.allowed) {
       toast.error(result.message, {
         action: {
           label: 'שדרג מנוי',
-          onClick: () => onUpgrade?.() || navigate('/subscription/upgrade')
+          onClick: () => {
+            if (onUpgrade) {
+              onUpgrade();
+            } else {
+              navigate('/subscription/upgrade');
+            }
+          }
         }
       });
       return false;
@@ -98,7 +105,13 @@ export function useSubscriptionLimits() {
           {
             action: {
               label: 'שדרג מנוי',
-              onClick: () => onUpgrade?.() || navigate('/subscription/upgrade')
+              onClick: () => {
+                if (onUpgrade) {
+                  onUpgrade();
+                } else {
+                  navigate('/subscription/upgrade');
+                }
+              }
             }
           }
         );
