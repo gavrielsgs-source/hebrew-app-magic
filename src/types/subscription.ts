@@ -9,6 +9,9 @@ export interface Subscription {
   leadLimit?: number;
   userLimit?: number;
   templateLimit?: number;
+  whatsappMessageLimit?: number;
+  taskLimit?: number;
+  analyticsLevel?: 'basic' | 'full' | 'custom';
 }
 
 export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
@@ -18,7 +21,10 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     carLimit: 5,
     leadLimit: 10,
     userLimit: 1,
-    templateLimit: 1
+    templateLimit: 1,
+    whatsappMessageLimit: 50,
+    taskLimit: 10,
+    analyticsLevel: 'basic'
   },
   premium: {
     tier: 'premium',
@@ -26,7 +32,10 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     carLimit: 20,
     leadLimit: 50,
     userLimit: 2,
-    templateLimit: 3
+    templateLimit: 3,
+    whatsappMessageLimit: 100,
+    taskLimit: 20,
+    analyticsLevel: 'basic'
   },
   business: {
     tier: 'business',
@@ -34,7 +43,10 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     carLimit: 50,
     leadLimit: 200,
     userLimit: 5,
-    templateLimit: 5
+    templateLimit: 10,
+    whatsappMessageLimit: 500,
+    taskLimit: 100,
+    analyticsLevel: 'full'
   },
   enterprise: {
     tier: 'enterprise',
@@ -42,6 +54,9 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     carLimit: Infinity,
     leadLimit: Infinity,
     userLimit: 10,
-    templateLimit: Infinity
+    templateLimit: Infinity,
+    whatsappMessageLimit: 2000,
+    taskLimit: Infinity,
+    analyticsLevel: 'custom'
   }
 };

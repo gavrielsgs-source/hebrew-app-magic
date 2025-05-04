@@ -7,6 +7,8 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { useSubscription } from "@/contexts/subscription-context";
 import { SubscriptionLimitAlert } from "@/components/subscription/SubscriptionLimitAlert";
 import { useState, useEffect } from "react";
+import { useSubscriptionLimits } from "@/hooks/use-subscription-limits";
+import { useNavigate } from "react-router-dom";
 
 interface AddCarFormProps {
   onSuccess?: () => void;
@@ -15,7 +17,9 @@ interface AddCarFormProps {
 export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   const { addCar, getCars } = useCars();
   const { agencies } = useAuthContext();
-  const { subscription, checkEntitlement } = useSubscription();
+  const { subscription } = useSubscription();
+  const { checkAndNotifyLimit } = useSubscriptionLimits();
+  const navigate = useNavigate();
   const [carCount, setCarCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,15 +59,10 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
 
   const onSubmit = async (values: CarFormValues, images: File[]) => {
     try {
-      // Check if user has reached car limit
-      if (!checkEntitlement('carLimit', carCount + 1)) {
-        toast.error("הגעת למגבלת הרכבים במנוי שלך", {
-          description: "עליך לשדרג את המנוי כדי להוסיף רכבים נוספים",
-          action: {
-            label: "שדרג מנוי",
-            onClick: () => window.location.href = "/subscription/upgrade"
-          }
-        });
+      // בדיקת מגבלות מנוי לפני הוספת רכב חדש
+      const canProceed = checkAndNotifyLimit('car', carCount, undefined, () => navigate('/subscription/upgrade'));
+      
+      if (!canProceed) {
         return;
       }
 
@@ -96,17 +95,7 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
       
       if (onSuccess) onSuccess();
       
-      // Show success message with subscription info if near limit
-      const newCount = carCount + 1;
-      const limit = subscription.carLimit || Infinity;
-      if (limit !== Infinity && newCount >= limit * 0.8) {
-        const percentUsed = Math.round((newCount / limit) * 100);
-        toast.success("הרכב נוסף בהצלחה", {
-          description: `אתה משתמש ב-${newCount} מתוך ${limit} רכבים (${percentUsed}%)`,
-        });
-      } else {
-        toast.success("הרכב נוסף בהצלחה");
-      }
+      toast.success("הרכב נוסף בהצלחה");
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("אירעה שגיאה בהוספת הרכב");
