@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getCarImages } from "@/lib/image-utils";
 import { Separator } from "@/components/ui/separator";
 import { Edit } from "lucide-react";
-import { EditCarForm } from "./EditCarForm";
+import { EditCarForm } from "./forms/EditCarForm";
 import { CarImagesCarousel } from "./details/CarImagesCarousel";
 import { CarHeader } from "./details/CarHeader";
 import { CarSpecifications } from "./details/CarSpecifications";
