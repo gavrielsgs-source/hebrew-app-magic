@@ -146,6 +146,48 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          file_path: string | null
+          file_type: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          file_path?: string | null
+          file_type?: string | null
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          file_path?: string | null
+          file_type?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           agency_id: string | null
