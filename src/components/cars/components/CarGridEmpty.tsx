@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { FilePlus, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function CarGridEmpty() {
   return (
@@ -12,7 +13,17 @@ export function CarGridEmpty() {
       <p className="text-muted-foreground mb-4">
         התחל להוסיף רכבים למלאי שלך כדי לראות אותם כאן
       </p>
-      <Button>הוסף רכב חדש</Button>
+      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+        <Button asChild>
+          <Link to="/cars/add">הוסף רכב חדש</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/documents">
+            <FilePlus className="h-4 w-4 ml-2" />
+            ניהול מסמכים
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

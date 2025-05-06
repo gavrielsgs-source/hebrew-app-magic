@@ -26,8 +26,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { FileIcon, FileTextIcon, Image, MoreHorizontal, Search, Upload, X } from "lucide-react";
+import { FileIcon, FileTextIcon, Image, MoreHorizontal, Search, Upload, X, Link as LinkIcon } from "lucide-react";
 import { useDocuments, type UploadDocumentParams } from "@/hooks/use-documents";
+import { useLeads } from "@/hooks/use-leads";
+import { useCars } from "@/hooks/use-cars";
 
 interface DocumentsManagerProps {
   entityId?: string;
@@ -41,10 +43,19 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   const [file, setFile] = useState<File | null>(null);
   const [documentName, setDocumentName] = useState("");
   const [documentType, setDocumentType] = useState<string>("contract");
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(entityId || null);
+  const [selectedEntityType, setSelectedEntityType] = useState<'lead' | 'car' | 'agency' | null>(entityType || null);
   
-  const { documents, isLoading, error, uploadDocument, deleteDocument, isUploading, isDeleting } = useDocuments(entityId, entityType);
+  const { documents, isLoading, error, uploadDocument, deleteDocument, isUploading, isDeleting } = useDocuments(
+    selectedEntityId || entityId, 
+    selectedEntityType || entityType
+  );
   
-  // סינון מסמכים לפי החיפוש והסו��
+  // שליפת לידים ורכבים לצורך קישור מסמכים
+  const { leads, isLoading: isLeadsLoading } = useLeads();
+  const { cars, isLoading: isCarsLoading } = useCars();
+  
+  // סינון מסמכים לפי החיפוש והסוג
   const filteredDocuments = documents?.filter(doc => {
     const matchesSearch = !searchQuery || doc.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = !documentTypeFilter || doc.type === documentTypeFilter;
@@ -79,8 +90,8 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
         file,
         name: documentName,
         type: documentType,
-        entityId,
-        entityType,
+        entityId: selectedEntityId || entityId,
+        entityType: selectedEntityType || entityType,
       };
       
       await uploadDocument(params);
@@ -107,6 +118,10 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
     setFile(null);
     setDocumentName("");
     setDocumentType("contract");
+    if (!entityId && !entityType) {
+      setSelectedEntityId(null);
+      setSelectedEntityType(null);
+    }
   };
   
   const getDocumentTypeLabel = (type: string) => {
@@ -119,6 +134,22 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
       case 'other': return 'אחר';
       default: return type;
     }
+  };
+  
+  const getEntityLabel = (id: string | null, type: string | null) => {
+    if (!id || !type) return "לא משויך";
+    
+    if (type === 'lead') {
+      const lead = leads?.find(l => l.id === id);
+      return lead ? `לקוח: ${lead.name}` : "לקוח לא ידוע";
+    } else if (type === 'car') {
+      const car = cars?.find(c => c.id === id);
+      return car ? `רכב: ${car.make} ${car.model}` : "רכב לא ידוע";
+    } else if (type === 'agency') {
+      return "סוכנות";
+    }
+    
+    return "לא משויך";
   };
   
   const getDocumentIcon = (fileType: string) => {
@@ -212,6 +243,76 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                   </Select>
                 </div>
                 
+                {/* בחירת ישות לקישור מסמך (רק אם לא הועבר מראש) */}
+                {!entityId && !entityType && (
+                  <div className="space-y-2">
+                    <Label htmlFor="entityType" className="block text-right">שייך מסמך אל</Label>
+                    <Select 
+                      value={selectedEntityType || "none"} 
+                      onValueChange={(value) => {
+                        setSelectedEntityId(null);
+                        setSelectedEntityType(value === "none" ? null : value as 'lead' | 'car' | 'agency');
+                      }}
+                    >
+                      <SelectTrigger className="text-right">
+                        <SelectValue placeholder="בחר סוג ישות" />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        <SelectItem value="none">לא משויך</SelectItem>
+                        <SelectItem value="lead">לקוח</SelectItem>
+                        <SelectItem value="car">רכב</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {/* בחירת לקוח או רכב ספציפי לקישור */}
+                {selectedEntityType === 'lead' && !entityId && (
+                  <div className="space-y-2">
+                    <Label htmlFor="leadId" className="block text-right">בחר לקוח</Label>
+                    <Select 
+                      value={selectedEntityId || ""} 
+                      onValueChange={setSelectedEntityId}
+                      disabled={isLeadsLoading}
+                    >
+                      <SelectTrigger className="text-right">
+                        <SelectValue placeholder="בחר לקוח" />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        {leads?.map(lead => (
+                          <SelectItem key={lead.id} value={lead.id}>
+                            {lead.name} {lead.phone ? `(${lead.phone})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {isLeadsLoading && <p className="text-sm text-muted-foreground text-right">טוען לקוחות...</p>}
+                  </div>
+                )}
+                
+                {selectedEntityType === 'car' && !entityId && (
+                  <div className="space-y-2">
+                    <Label htmlFor="carId" className="block text-right">בחר רכב</Label>
+                    <Select 
+                      value={selectedEntityId || ""} 
+                      onValueChange={setSelectedEntityId}
+                      disabled={isCarsLoading}
+                    >
+                      <SelectTrigger className="text-right">
+                        <SelectValue placeholder="בחר רכב" />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        {cars?.map(car => (
+                          <SelectItem key={car.id} value={car.id}>
+                            {car.make} {car.model} {car.year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {isCarsLoading && <p className="text-sm text-muted-foreground text-right">טוען רכבים...</p>}
+                  </div>
+                )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="file" className="block text-right">קובץ</Label>
                   <div className="border rounded-lg p-4">
@@ -253,7 +354,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                 <Button variant="outline" onClick={resetForm}>איפוס</Button>
                 <Button 
                   onClick={handleUpload}
-                  disabled={!file || !documentName || isUploading}
+                  disabled={!file || !documentName || isUploading || (selectedEntityType && !selectedEntityId)}
                 >
                   {isUploading ? "מעלה..." : "העלאה"}
                 </Button>
@@ -308,6 +409,14 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                     {getDocumentIcon(document.file_type || '')}
                   </div>
                 </div>
+                
+                {/* שיוך המסמך ללקוח/רכב */}
+                {(document.entity_id && document.entity_type) && (
+                  <div className="flex items-center justify-end text-xs text-muted-foreground gap-1">
+                    <span className="truncate">{getEntityLabel(document.entity_id, document.entity_type)}</span>
+                    <LinkIcon className="h-3 w-3" />
+                  </div>
+                )}
                 
                 <div className="text-xs text-muted-foreground text-right">
                   הועלה ב-{new Date(document.created_at).toLocaleDateString('he-IL')}
