@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +11,7 @@ import { getCarImages } from "@/lib/image-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CarDetails } from "./CarDetails";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { EditCarForm } from "./EditCarForm";
+import { EditCarForm } from "./forms/EditCarForm";
 
 interface CarGridProps {
   cars: Car[];
