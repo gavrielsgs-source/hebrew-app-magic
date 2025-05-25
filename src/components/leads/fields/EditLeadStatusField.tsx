@@ -21,8 +21,9 @@ export function EditLeadStatusField({ control }: Props) {
             </FormControl>
             <SelectContent>
               <SelectItem value="new">חדש</SelectItem>
-              <SelectItem value="in_progress">בטיפול</SelectItem>
-              <SelectItem value="waiting">בהמתנה</SelectItem>
+              <SelectItem value="contacted">צורר</SelectItem>
+              <SelectItem value="qualified">מוכשר</SelectItem>
+              <SelectItem value="converted">הומר</SelectItem>
               <SelectItem value="closed">סגור</SelectItem>
             </SelectContent>
           </Select>
