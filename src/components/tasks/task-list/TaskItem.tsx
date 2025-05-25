@@ -81,86 +81,96 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         task.status === 'completed' && "bg-gray-50/80"
       )}
     >
-      <TableCell className="py-4 px-6">
-        <Checkbox 
-          checked={task.status === 'completed'} 
-          onCheckedChange={(checked) => onStatusChange(task.id, checked as boolean)}
-          className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
-        />
+      <TableCell className="py-4 px-6 text-right">
+        <div className="flex justify-end">
+          <Checkbox 
+            checked={task.status === 'completed'} 
+            onCheckedChange={(checked) => onStatusChange(task.id, checked as boolean)}
+            className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+          />
+        </div>
       </TableCell>
       <TableCell className={cn(
         "text-right py-4 px-6",
         task.status === 'completed' && "line-through text-muted-foreground"
       )}>
-        <div className="font-medium text-[#2F3C7E]">{task.title}</div>
+        <div className="font-medium text-[#2F3C7E] text-right">{task.title}</div>
       </TableCell>
-      <TableCell className="py-4 px-6">
-        <Badge variant="outline" className="flex items-center gap-1 flex-row-reverse bg-blue-50 text-blue-700 border-blue-200">
-          {getTaskTypeIcon(task.type)}
-          {getTaskTypeLabel(task.type)}
-        </Badge>
+      <TableCell className="py-4 px-6 text-right">
+        <div className="flex justify-end">
+          <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
+            {getTaskTypeIcon(task.type)}
+            {getTaskTypeLabel(task.type)}
+          </Badge>
+        </div>
       </TableCell>
-      <TableCell className="py-4 px-6">
-        <Badge className={`${getTaskPriorityColor(task.priority)} border font-medium`}>
-          {task.priority === 'high' ? 'גבוהה' : 
-           task.priority === 'medium' ? 'בינונית' : 
-           task.priority === 'low' ? 'נמוכה' : 
-           task.priority}
-        </Badge>
+      <TableCell className="py-4 px-6 text-right">
+        <div className="flex justify-end">
+          <Badge className={`${getTaskPriorityColor(task.priority)} border font-medium`}>
+            {task.priority === 'high' ? 'גבוהה' : 
+             task.priority === 'medium' ? 'בינונית' : 
+             task.priority === 'low' ? 'נמוכה' : 
+             task.priority}
+          </Badge>
+        </div>
       </TableCell>
-      <TableCell className="py-4 px-6">
+      <TableCell className="py-4 px-6 text-right">
         {task.due_date ? (
           <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-1 flex-row-reverse">
-              <Calendar className="h-3 w-3 text-gray-500" />
+            <div className="flex items-center gap-1">
               <span className="text-sm font-medium text-gray-700">
                 {safeFormatDate(task.due_date, 'dd/MM/yyyy')}
               </span>
+              <Calendar className="h-3 w-3 text-gray-500" />
             </div>
-            <div className="flex items-center gap-1 flex-row-reverse">
-              <Clock className="h-3 w-3 text-gray-500" />
+            <div className="flex items-center gap-1">
               <span className="text-xs text-gray-600">
                 {safeFormatDate(task.due_date, 'HH:mm')}
               </span>
+              <Clock className="h-3 w-3 text-gray-500" />
             </div>
           </div>
         ) : (
           <span className="text-muted-foreground text-sm text-right block">ללא תאריך</span>
         )}
       </TableCell>
-      <TableCell className="py-4 px-6">
-        <Badge className={`${getStatusColor(task.status)} border font-medium`}>
-          {task.status === 'pending' ? 'ממתין' : 
-           task.status === 'in_progress' ? 'בביצוע' : 
-           task.status === 'completed' ? 'הושלם' : 
-           task.status === 'cancelled' ? 'בוטל' : task.status}
-        </Badge>
+      <TableCell className="py-4 px-6 text-right">
+        <div className="flex justify-end">
+          <Badge className={`${getStatusColor(task.status)} border font-medium`}>
+            {task.status === 'pending' ? 'ממתין' : 
+             task.status === 'in_progress' ? 'בביצוע' : 
+             task.status === 'completed' ? 'הושלם' : 
+             task.status === 'cancelled' ? 'בוטל' : task.status}
+          </Badge>
+        </div>
       </TableCell>
-      <TableCell className="py-4 px-6">
-        <div className="flex flex-col gap-1">
+      <TableCell className="py-4 px-6 text-right">
+        <div className="flex flex-col gap-1 items-end">
           {task.car_id && (
-            <Badge variant="secondary" className="flex items-center gap-1 flex-row-reverse bg-purple-100 text-purple-700 border-purple-200">
-              <Car className="h-3 w-3" />
+            <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700 border-purple-200">
               <span className="text-xs">{task.cars?.make} {task.cars?.model}</span>
+              <Car className="h-3 w-3" />
             </Badge>
           )}
           {task.lead_id && (
-            <Badge variant="secondary" className="flex items-center gap-1 flex-row-reverse bg-blue-100 text-blue-700 border-blue-200">
-              <UserRound className="h-3 w-3" />
+            <Badge variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-700 border-blue-200">
               <span className="text-xs">{task.leads?.name}</span>
+              <UserRound className="h-3 w-3" />
             </Badge>
           )}
         </div>
       </TableCell>
-      <TableCell className="py-4 px-6">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="h-8 w-8 hover:bg-red-100 hover:text-red-600 transition-colors"
-          onClick={() => onDelete(task.id)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+      <TableCell className="py-4 px-6 text-right">
+        <div className="flex justify-end">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="h-8 w-8 hover:bg-red-100 hover:text-red-600 transition-colors"
+            onClick={() => onDelete(task.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );

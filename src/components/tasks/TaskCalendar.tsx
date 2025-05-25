@@ -43,9 +43,9 @@ export function TaskCalendar({ tasks, onTaskClick }: TaskCalendarProps) {
   const selectedDateTasks = getTasksForDate(selectedDate);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Calendar View */}
-      <div className="lg:col-span-2">
+    <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      {/* Calendar View - Now takes more space */}
+      <div className="xl:col-span-3">
         <Card className="shadow-sm border-gray-100">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
@@ -75,78 +75,112 @@ export function TaskCalendar({ tasks, onTaskClick }: TaskCalendarProps) {
           </CardHeader>
           <CardContent>
             {viewMode === "calendar" ? (
-              <div className="space-y-4">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  className="rounded-md border-0"
-                  modifiers={{
-                    hasTask: (date) => getTasksForDate(date).length > 0
-                  }}
-                  modifiersStyles={{
-                    hasTask: {
-                      backgroundColor: "#EBF8FF",
-                      color: "#2B6CB0",
-                      fontWeight: "bold"
-                    }
-                  }}
-                />
-                <div className="flex gap-4 text-xs text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded bg-yellow-200 border border-yellow-300"></div>
-                    היום
+              <div className="space-y-6">
+                {/* Larger calendar with better spacing */}
+                <div className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    className="rounded-md border-0 scale-110"
+                    modifiers={{
+                      hasTask: (date) => getTasksForDate(date).length > 0
+                    }}
+                    modifiersStyles={{
+                      hasTask: {
+                        backgroundColor: "#EBF8FF",
+                        color: "#2B6CB0",
+                        fontWeight: "bold",
+                        border: "2px solid #3182CE"
+                      }
+                    }}
+                  />
+                </div>
+                <div className="flex justify-center gap-6 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-yellow-200 border-2 border-yellow-300"></div>
+                    משימות להיום
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded bg-red-200 border border-red-300"></div>
-                    עבר
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-red-200 border-2 border-red-300"></div>
+                    משימות שעברו
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded bg-blue-200 border border-blue-300"></div>
-                    עתידי
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-blue-200 border-2 border-blue-300"></div>
+                    משימות עתידיות
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {tasks
-                  .filter(task => task.due_date)
-                  .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
-                  .map(task => (
-                    <div
-                      key={task.id}
-                      className={cn(
-                        "p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all",
-                        getTaskTypeColor(task)
-                      )}
-                      onClick={() => onTaskClick(task)}
-                    >
-                      <div className="flex justify-between items-start gap-2">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm">{task.title}</h4>
-                          <div className="flex items-center gap-2 mt-1 text-xs">
-                            <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(task.due_date!), "dd/MM/yyyy")}
-                            <Clock className="h-3 w-3 mr-1" />
-                            {format(new Date(task.due_date!), "HH:mm")}
+              // Enhanced agenda view - shows only today's tasks and reminders
+              <div className="space-y-4">
+                <div className="text-center py-4 border-b">
+                  <h3 className="text-xl font-bold text-[#2F3C7E]">
+                    סדר יום ליום {format(new Date(), "dd/MM/yyyy")}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    המשימות והתזכורות שלך להיום
+                  </p>
+                </div>
+                
+                <div className="max-h-96 overflow-y-auto space-y-3">
+                  {tasks
+                    .filter(task => {
+                      if (!task.due_date) return false;
+                      return isSameDay(new Date(task.due_date), new Date());
+                    })
+                    .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
+                    .map(task => (
+                      <div
+                        key={task.id}
+                        className={cn(
+                          "p-4 rounded-lg border cursor-pointer hover:shadow-md transition-all",
+                          getTaskTypeColor(task)
+                        )}
+                        onClick={() => onTaskClick(task)}
+                      >
+                        <div className="flex justify-between items-start gap-3">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-base mb-2">{task.title}</h4>
+                            {task.description && (
+                              <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                            )}
+                            <div className="flex items-center gap-3 text-sm">
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                {format(new Date(task.due_date!), "HH:mm")}
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {task.type === 'call' ? 'שיחה' : 
+                                 task.type === 'meeting' ? 'פגישה' : 
+                                 task.type === 'follow_up' ? 'מעקב' : 'משימה'}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {task.priority === 'high' ? 'עדיפות גבוהה' : 
+                                 task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          {task.type === 'call' ? 'שיחה' : 
-                           task.type === 'meeting' ? 'פגישה' : 
-                           task.type === 'follow_up' ? 'מעקב' : 'משימה'}
-                        </Badge>
                       </div>
+                    ))}
+                  
+                  {tasks.filter(task => task.due_date && isSameDay(new Date(task.due_date), new Date())).length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                      <p className="text-lg font-medium mb-1">אין משימות להיום</p>
+                      <p className="text-sm">תיהנה מיום פנוי! 🎉</p>
                     </div>
-                  ))}
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Selected Date Tasks */}
-      <div>
+      {/* Selected Date Tasks - Now takes less space */}
+      <div className="xl:col-span-1">
         <Card className="shadow-sm border-gray-100">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-bold text-[#2F3C7E]">
