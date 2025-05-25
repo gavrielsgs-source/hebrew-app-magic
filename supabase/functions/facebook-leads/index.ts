@@ -204,7 +204,7 @@ serve(async (req) => {
     }
     
     return new Response(
-      JSON.stringify({ success: true, ["hi"] }),
+      JSON.stringify({ success: true, results }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
