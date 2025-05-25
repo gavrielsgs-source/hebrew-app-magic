@@ -8,10 +8,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { DocumentFilters } from "./components/DocumentFilters";
 import { UploadDocumentDialog } from "./components/UploadDocumentDialog";
 import { DocumentCard } from "./components/DocumentCard";
+import { DocumentWhatsAppDialog } from "./components/DocumentWhatsAppDialog";
 import type { DocumentsManagerProps, DocumentFormData } from "./types";
+import type { Document } from "@/hooks/use-documents";
 
 export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [documentTypeFilter, setDocumentTypeFilter] = useState<string | null>(null);
   const [formData, setFormData] = useState<DocumentFormData>({
@@ -24,7 +28,17 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   
   const isMobile = useIsMobile();
   
-  const { documents, isLoading, error, uploadDocument, deleteDocument, isUploading, isDeleting } = useDocuments(
+  const { 
+    documents, 
+    isLoading, 
+    error, 
+    uploadDocument, 
+    deleteDocument, 
+    toggleTemplate,
+    isUploading, 
+    isDeleting,
+    isTogglingTemplate
+  } = useDocuments(
     formData.selectedEntityId || entityId, 
     formData.selectedEntityType || entityType
   );
@@ -47,6 +61,21 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
       toast.error("שגיאה במחיקת המסמך");
       console.error(error);
     }
+  };
+
+  const handleToggleTemplate = async (documentId: string, isTemplate: boolean) => {
+    try {
+      await toggleTemplate(documentId, isTemplate);
+      toast.success(isTemplate ? "המסמך נשמר כתבנית" : "המסמך הוסר מהתבניות");
+    } catch (error) {
+      toast.error("שגיאה בעדכון סטטוס התבנית");
+      console.error(error);
+    }
+  };
+
+  const handleSendWhatsApp = (document: Document) => {
+    setSelectedDocument(document);
+    setIsWhatsAppDialogOpen(true);
   };
   
   const resetForm = () => {
@@ -117,7 +146,9 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                 key={document.id}
                 document={document}
                 onDelete={handleDelete}
-                isDeleting={isDeleting}
+                onToggleTemplate={handleToggleTemplate}
+                onSendWhatsApp={handleSendWhatsApp}
+                isDeleting={isDeleting || isTogglingTemplate}
                 isMobile={isMobile}
                 leads={leads}
                 cars={cars}
@@ -126,6 +157,12 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
           </div>
         </div>
       )}
+
+      <DocumentWhatsAppDialog
+        isOpen={isWhatsAppDialogOpen}
+        onClose={() => setIsWhatsAppDialogOpen(false)}
+        document={selectedDocument}
+      />
     </div>
   );
 }

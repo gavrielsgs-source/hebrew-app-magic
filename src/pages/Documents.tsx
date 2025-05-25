@@ -36,6 +36,7 @@ export default function Documents() {
         <Tabs defaultValue="all" className="space-y-4">
           <TabsList className="flex justify-start">
             <TabsTrigger value="all">כל המסמכים</TabsTrigger>
+            <TabsTrigger value="templates">תבניות</TabsTrigger>
             <TabsTrigger value="leads">לפי לקוחות</TabsTrigger>
             <TabsTrigger value="cars">לפי רכבים</TabsTrigger>
           </TabsList>
@@ -45,6 +46,18 @@ export default function Documents() {
               <CardHeader>
                 <CardTitle className="text-right">כל המסמכים</CardTitle>
                 <CardDescription className="text-right">צפייה בכל המסמכים שנשמרו במערכת</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DocumentsManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="templates" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-right">תבניות מסמכים</CardTitle>
+                <CardDescription className="text-right">מסמכים שנשמרו כתבניות לשליחה אוטומטית</CardDescription>
               </CardHeader>
               <CardContent>
                 <DocumentsManager />

@@ -14,6 +14,7 @@ export interface Document {
   entity_id?: string;
   entity_type?: 'lead' | 'car' | 'agency';
   user_id: string;
+  is_template?: boolean;
 }
 
 export interface UploadDocumentParams {
@@ -22,6 +23,7 @@ export interface UploadDocumentParams {
   type: string;
   entityId?: string;
   entityType?: 'lead' | 'car' | 'agency';
+  isTemplate?: boolean;
 }
 
 export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'agency') {
@@ -97,6 +99,7 @@ export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'a
           url: publicUrlData.publicUrl,
           entity_id: params.entityId || null,
           entity_type: params.entityType || null,
+          is_template: params.isTemplate || false,
           user_id: user.id
         })
         .select()
@@ -107,6 +110,25 @@ export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'a
       }
 
       return documentData;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", entityId, entityType, user?.id] });
+    }
+  });
+
+  // Toggle template status
+  const toggleTemplateMutation = useMutation({
+    mutationFn: async ({ documentId, isTemplate }: { documentId: string; isTemplate: boolean }) => {
+      const { error } = await supabase
+        .from("documents")
+        .update({ is_template: isTemplate })
+        .eq("id", documentId);
+
+      if (error) {
+        throw error;
+      }
+
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents", entityId, entityType, user?.id] });
@@ -163,7 +185,10 @@ export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'a
     refetch,
     uploadDocument: (params: UploadDocumentParams) => uploadDocumentMutation.mutateAsync(params),
     deleteDocument: (documentId: string) => deleteDocumentMutation.mutateAsync(documentId),
+    toggleTemplate: (documentId: string, isTemplate: boolean) => 
+      toggleTemplateMutation.mutateAsync({ documentId, isTemplate }),
     isUploading: uploadDocumentMutation.isPending,
-    isDeleting: deleteDocumentMutation.isPending
+    isDeleting: deleteDocumentMutation.isPending,
+    isTogglingTemplate: toggleTemplateMutation.isPending
   };
 }
