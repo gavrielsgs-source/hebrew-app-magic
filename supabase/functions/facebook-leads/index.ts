@@ -24,7 +24,8 @@ const verifyToken = (token: string | null): boolean => {
   return true; // בשלב ראשוני נחזיר true, אבל זה לא בטוח לסביבת ייצור!
 };
 
-serve(async (req) => {
+
+const handler = async (req: Request): Promise<Response> => {
   console.log("serve..")
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -218,3 +219,5 @@ serve(async (req) => {
     );
   }
 });
+
+export default handler
