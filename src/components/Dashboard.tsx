@@ -33,38 +33,41 @@ export default function Dashboard() {
     {
       id: 1,
       type: "untreated_lead",
-      title: "ליד שלא טופל ב-24 שעות",
+      title: "לידים שלא טופלו",
       count: 3,
-      description: "3 לידים מחכים למענה",
+      description: "3 לידים מחכים למענה מעל 24 שעות",
       color: "bg-red-500",
       textColor: "text-white",
       icon: AlertTriangle,
-      action: "טפל בלידים",
-      route: "/leads"
+      action: "טפל עכשיו",
+      route: "/leads",
+      urgent: true
     },
     {
       id: 2,
       type: "pending_car",
-      title: "רכב שחייב לצאת לפרסום",
+      title: "רכבים לפרסום",
       count: 2,
-      description: "2 רכבים מוכנים לפרסום",
+      description: "2 רכבים מוכנים לפרסום ומחכים לפעולה",
       color: "bg-orange-500",
       textColor: "text-white",
       icon: TrendingUp,
       action: "פרסם רכבים",
-      route: "/cars"
+      route: "/cars",
+      urgent: false
     },
     {
       id: 3,
-      type: "tomorrow_meeting",
-      title: "פגישה מחר",
+      type: "today_meetings",
+      title: "פגישות היום",
       count: 1,
-      description: "פגישה אחת מתוכננת",
+      description: "פגישה אחת מתוכננת להיום",
       color: "bg-blue-500",
       textColor: "text-white",
       icon: Calendar,
-      action: "צפה בפגישה",
-      route: "/tasks"
+      action: "צפה בפגישות",
+      route: "/tasks",
+      urgent: false
     }
   ];
 
@@ -76,46 +79,91 @@ export default function Dashboard() {
     <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8" dir="rtl">
       <AppHeader />
 
-      {/* Hot Actions Section */}
+      {/* Hot Actions Section - Enhanced */}
       <div className="space-y-4">
         <div className="text-right">
-          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">פעולות חמות</h2>
-          <p className="text-gray-600">משימות דחופות שדורשות תשומת לב מיידית</p>
+          <h2 className="text-3xl font-bold text-[#2F3C7E] mb-2">מה צריך לטפל עכשיו?</h2>
+          <p className="text-gray-600 text-lg">משימות דחופות שדורשות תשומת לב מיידית</p>
         </div>
         
-        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
+        <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
           {hotActions.map((action) => (
-            <Card key={action.id} className={`${action.color} border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl`}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <Card 
+              key={action.id} 
+              className={`${action.color} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl transform hover:scale-105 cursor-pointer ${action.urgent ? 'ring-4 ring-red-200 animate-pulse' : ''}`}
+              onClick={() => handleActionClick(action.route)}
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div className="text-right flex-1">
-                  <CardTitle className={`text-lg font-bold ${action.textColor}`}>
+                  <CardTitle className={`text-xl font-bold ${action.textColor} mb-2`}>
                     {action.title}
                   </CardTitle>
-                  <CardDescription className={`${action.textColor} opacity-90 mt-1`}>
+                  <CardDescription className={`${action.textColor} opacity-90 text-base leading-relaxed`}>
                     {action.description}
                   </CardDescription>
                 </div>
-                <div className={`h-12 w-12 rounded-full bg-white/20 flex items-center justify-center`}>
-                  <action.icon className={`h-6 w-6 ${action.textColor}`} />
+                <div className={`h-16 w-16 rounded-full bg-white/20 flex items-center justify-center ml-4`}>
+                  <action.icon className={`h-8 w-8 ${action.textColor}`} />
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="flex justify-between items-center">
                   <Button 
                     variant="secondary" 
-                    size="sm"
-                    className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl"
-                    onClick={() => handleActionClick(action.route)}
+                    size="lg"
+                    className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl font-bold text-lg px-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleActionClick(action.route);
+                    }}
                   >
                     {action.action}
                   </Button>
-                  <div className={`text-3xl font-extrabold ${action.textColor}`}>
+                  <div className={`text-4xl font-extrabold ${action.textColor}`}>
                     {action.count}
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+
+      {/* Quick Insights Section */}
+      <div className="space-y-4">
+        <div className="text-right">
+          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">תובנות מהירות</h2>
+          <p className="text-gray-600">המלצות אוטומטיות לשיפור הביצועים</p>
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="bg-gradient-to-l from-blue-50 to-white border border-blue-200 rounded-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-right">
+                  <h3 className="font-bold text-lg text-[#2F3C7E] mb-1">זמן מענה ללידים</h3>
+                  <p className="text-gray-600 text-sm">ממוצע של 4.2 שעות - רצוי לשפר ל-2 שעות</p>
+                </div>
+                <div className="bg-blue-500 p-3 rounded-full">
+                  <Clock className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-l from-green-50 to-white border border-green-200 rounded-2xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-right">
+                  <h3 className="font-bold text-lg text-[#2F3C7E] mb-1">רכבים פעילים</h3>
+                  <p className="text-gray-600 text-sm">85% מהרכבים פורסמו השבוע - ביצועים מעולים!</p>
+                </div>
+                <div className="bg-green-500 p-3 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
