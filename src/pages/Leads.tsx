@@ -4,10 +4,12 @@ import { LeadsGrid } from "@/components/leads/LeadsGrid";
 import { LeadsMobileView } from "@/components/leads/LeadsMobileView";
 import { LeadsTable } from "@/components/LeadsTable";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
+import { LeadsFilters } from "@/components/leads/LeadsFilters";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Plus, Settings, Grid, Table as TableIcon } from "lucide-react";
 import { useLeads, useCreateLead } from "@/hooks/use-leads";
+import { useLeadsFilters } from "@/hooks/use-leads-filters";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
@@ -15,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
-import { Input } from "@/components/ui/input";
 
 export default function Leads() {
   const { toast } = useToast();
@@ -26,8 +27,19 @@ export default function Leads() {
   const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
   const [activeTab, setActiveTab] = useState<string>("leads");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
-  const [searchTerm, setSearchTerm] = useState("");
   const isMobile = useIsMobile();
+
+  // Use the new filters hook
+  const {
+    filters,
+    updateFilter,
+    clearFilters,
+    getActiveFiltersCount,
+    filterAndSortLeads
+  } = useLeadsFilters();
+
+  // Get filtered and sorted leads
+  const filteredLeads = filterAndSortLeads(leads);
 
   const onLeadAdded = () => {
     toast({
@@ -93,40 +105,53 @@ export default function Leads() {
         
         <TabsContent value="leads" className="mt-0">
           {activeTab === "leads" && (
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "outline"} 
-                  size="icon"
-                  onClick={() => setViewMode("grid")}
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant={viewMode === "table" ? "default" : "outline"} 
-                  size="icon"
-                  onClick={() => setViewMode("table")}
-                >
-                  <TableIcon className="h-4 w-4" />
-                </Button>
+            <>
+              {/* New Filters Component */}
+              <LeadsFilters
+                searchTerm={filters.searchTerm}
+                onSearchChange={(value) => updateFilter("searchTerm", value)}
+                statusFilter={filters.statusFilter}
+                onStatusFilterChange={(value) => updateFilter("statusFilter", value)}
+                sourceFilter={filters.sourceFilter}
+                onSourceFilterChange={(value) => updateFilter("sourceFilter", value)}
+                sortBy={filters.sortBy}
+                onSortByChange={(value) => updateFilter("sortBy", value)}
+                sortOrder={filters.sortOrder}
+                onSortOrderChange={(value) => updateFilter("sortOrder", value)}
+                onClearFilters={clearFilters}
+                activeFiltersCount={getActiveFiltersCount()}
+              />
+
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "outline"} 
+                    size="icon"
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === "table" ? "default" : "outline"} 
+                    size="icon"
+                    onClick={() => setViewMode("table")}
+                  >
+                    <TableIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {filteredLeads.length} מתוך {leads.length} לקוחות
+                </div>
               </div>
-              <div className="w-full max-w-xs">
-                <Input 
-                  placeholder="חיפוש לקוחות..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full text-right"
-                />
-              </div>
-            </div>
+            </>
           )}
 
           {isMobile ? (
-            <LeadsMobileView leads={leads} isLoading={isLoading} error={error} />
+            <LeadsMobileView leads={filteredLeads} isLoading={isLoading} error={error} />
           ) : viewMode === "grid" ? (
-            <LeadsGrid leads={leads} isLoading={isLoading} error={error} />
+            <LeadsGrid leads={filteredLeads} isLoading={isLoading} error={error} />
           ) : (
-            <LeadsTable searchTerm={searchTerm} />
+            <LeadsTable searchTerm={filters.searchTerm} />
           )}
         </TabsContent>
         

@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -21,9 +20,10 @@ import { getStatusBadgeColor, getStatusText } from "./leads/grid/utils/lead-stat
 
 interface LeadsTableProps {
   searchTerm?: string;
+  filteredLeads?: any[];
 }
 
-export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
+export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) {
   const { leads, isLoading } = useLeads();
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
@@ -32,13 +32,14 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
     ? leads.find(lead => lead.id === selectedLeadId) 
     : null;
   
-  const filteredLeads = searchTerm
+  // Use filtered leads if provided, otherwise use original logic
+  const displayLeads = filteredLeads || (searchTerm
     ? leads.filter(lead => 
         lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (lead.phone && lead.phone.includes(searchTerm)) ||
         (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()))
       )
-    : leads;
+    : leads);
   
   return (
     <div dir="rtl">
@@ -78,14 +79,14 @@ export function LeadsTable({ searchTerm = "" }: LeadsTableProps) {
                   טוען...
                 </TableCell>
               </TableRow>
-            ) : filteredLeads.length === 0 ? (
+            ) : displayLeads.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center">
                   אין לקוחות להצגה
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLeads.map((lead) => (
+              displayLeads.map((lead) => (
                 <TableRow key={lead.id}>
                   <TableCell className="font-medium text-right">{lead.name}</TableCell>
                   <TableCell className="text-right">{lead.phone}</TableCell>
