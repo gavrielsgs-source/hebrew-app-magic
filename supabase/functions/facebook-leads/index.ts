@@ -80,6 +80,8 @@ serve(async (req) => {
                 `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${fbAccessToken}`,
                 { method: 'GET' }
               );
+
+              console.log(leadDetailsResponse)
               
               if (!leadDetailsResponse.ok) {
                 throw new Error(`Failed to fetch lead details: ${leadDetailsResponse.statusText}`);
