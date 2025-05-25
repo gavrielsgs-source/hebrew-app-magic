@@ -24,10 +24,10 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
 
   return (
     <TableHeader>
-      <TableRow>
-        <TableHead className="w-[50px]"></TableHead>
+      <TableRow className="bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100 hover:bg-gradient-to-l hover:from-slate-50 hover:via-blue-50 hover:to-white">
+        <TableHead className="w-[50px] py-4 px-6"></TableHead>
         <TableHead 
-          className="cursor-pointer text-right"
+          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("title")}
         >
           <div className="flex items-center justify-end">
@@ -35,7 +35,7 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer text-right"
+          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("type")}
         >
           <div className="flex items-center justify-end">
@@ -43,7 +43,7 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer text-right"
+          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("priority")}
         >
           <div className="flex items-center justify-end">
@@ -51,7 +51,7 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer text-right"
+          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("due_date")}
         >
           <div className="flex items-center justify-end">
@@ -59,15 +59,15 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           </div>
         </TableHead>
         <TableHead 
-          className="cursor-pointer text-right"
+          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("status")}
         >
           <div className="flex items-center justify-end">
             {renderSortIcon("status")} סטטוס
           </div>
         </TableHead>
-        <TableHead className="text-right">קשור ל</TableHead>
-        <TableHead className="text-left"></TableHead>
+        <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">קשור ל</TableHead>
+        <TableHead className="text-left font-semibold text-[#2F3C7E] py-4 px-6"></TableHead>
       </TableRow>
     </TableHeader>
   );

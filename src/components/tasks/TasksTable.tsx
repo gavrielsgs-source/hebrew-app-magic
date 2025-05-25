@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Table, TableBody } from "@/components/ui/table";
@@ -9,7 +10,7 @@ import { TaskFilters } from "./task-list/TaskFilters";
 import { TaskItem } from "./task-list/TaskItem";
 import { TaskCard } from "./TaskCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, Plus, CheckSquare } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type SortField = "due_date" | "priority" | "title" | "status" | "type";
@@ -85,21 +86,28 @@ export function TasksTable() {
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">ניהול משימות</h2>
+          <h2 className="text-2xl font-bold text-[#2F3C7E]">ניהול משימות</h2>
           <Button 
             variant="outline" 
             onClick={() => refetch()}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 hover:bg-blue-50"
           >
             <RefreshCcw className="h-4 w-4" />
             נסה שנית
           </Button>
         </div>
-        <div className="border rounded-lg p-8 text-center">
-          <p className="text-muted-foreground mb-2">לא ניתן לטעון את המשימות</p>
-          <p className="text-sm text-muted-foreground">אנא ודא שהנך מחובר ונסה שנית</p>
+        <div className="bg-white border border-red-200 rounded-xl p-8 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <RefreshCcw className="h-6 w-6 text-red-600" />
+            </div>
+            <div>
+              <p className="text-lg font-medium text-red-800 mb-2">לא ניתן לטעון את המשימות</p>
+              <p className="text-sm text-red-600">אנא ודא שהנך מחובר ונסה שנית</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -107,17 +115,18 @@ export function TasksTable() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">ניהול משימות</h2>
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-10 w-36" />
         </div>
-        <div className="border rounded-lg overflow-hidden">
-          <div className="p-4">
-            <Skeleton className="h-8 w-32 mb-4" />
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
+        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+          <div className="p-6">
+            <Skeleton className="h-6 w-40 mb-4" />
+            <div className="space-y-3">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
             </div>
           </div>
         </div>
@@ -126,11 +135,11 @@ export function TasksTable() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">ניהול משימות</h2>
+        <h2 className="text-2xl font-bold text-[#2F3C7E]">ניהול משימות</h2>
         
-        <div className="flex space-x-2 rtl:space-x-reverse">
+        <div className="flex space-x-3 rtl:space-x-reverse">
           <TaskFilters
             statusFilter={statusFilter}
             typeFilter={typeFilter}
@@ -142,7 +151,10 @@ export function TasksTable() {
           
           <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
             <DialogTrigger asChild>
-              <Button>הוסף משימה חדשה</Button>
+              <Button className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] hover:from-[#1F2C5E] hover:to-[#3A4A7C] text-white shadow-lg">
+                <Plus className="ml-2 h-4 w-4" />
+                הוסף משימה חדשה
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
@@ -155,8 +167,16 @@ export function TasksTable() {
       </div>
 
       {filteredAndSortedTasks.length === 0 ? (
-        <div className="text-center p-4 text-muted-foreground border rounded-lg">
-          אין משימות להצגה
+        <div className="bg-white border border-gray-100 rounded-xl p-12 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+              <CheckSquare className="h-8 w-8 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-lg font-medium text-gray-700 mb-2">אין משימות להצגה</p>
+              <p className="text-sm text-gray-500">הוסף משימה חדשה כדי להתחיל</p>
+            </div>
+          </div>
         </div>
       ) : isMobile ? (
         <div className="grid gap-4">
@@ -170,7 +190,7 @@ export function TasksTable() {
           ))}
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <Table>
             <TasksHeader
               sortField={sortField}
@@ -178,13 +198,14 @@ export function TasksTable() {
               onSort={handleToggleSort}
             />
             <TableBody>
-              {filteredAndSortedTasks.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onStatusChange={handleTaskStatusChange}
-                  onDelete={(id) => deleteTask.mutate(id)}
-                />
+              {filteredAndSortedTasks.map((task, index) => (
+                <div key={task.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}>
+                  <TaskItem
+                    task={task}
+                    onStatusChange={handleTaskStatusChange}
+                    onDelete={(id) => deleteTask.mutate(id)}
+                  />
+                </div>
               ))}
             </TableBody>
           </Table>
