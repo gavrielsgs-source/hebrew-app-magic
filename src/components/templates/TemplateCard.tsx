@@ -16,18 +16,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 border-border">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-end w-full gap-4">
-          {/* כותרת ותיאור - צד ימין */}
-          <div className="text-right flex-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2 justify-end">
-              {template.name}
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardTitle>
-            <CardDescription className="mt-1 text-right">
-              תבנית הודעת וואטסאפ
-            </CardDescription>
-          </div>
-          
+        <div className="flex items-start w-full">
           {/* כפתורי פעולה - צד שמאל */}
           <div className="flex gap-1">
             <Button 
@@ -46,6 +35,20 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             >
               <Trash2 className="h-4 w-4" />
             </Button>
+          </div>
+          
+          {/* ספייסר למילוי החלל */}
+          <div className="flex-1"></div>
+          
+          {/* כותרת ותיאור - צד ימין */}
+          <div className="text-right">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 justify-end">
+              {template.name}
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardTitle>
+            <CardDescription className="mt-1 text-right">
+              תבנית הודעת וואטסאפ
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
