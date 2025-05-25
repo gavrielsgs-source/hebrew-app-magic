@@ -16,9 +16,9 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
     if (sortField !== field) return null;
     
     return sortDirection === "asc" ? (
-      <MoveUp className="h-4 w-4 ml-1" />
+      <MoveUp className="h-4 w-4 mr-1" />
     ) : (
-      <MoveDown className="h-4 w-4 ml-1" />
+      <MoveDown className="h-4 w-4 mr-1" />
     );
   };
 
@@ -31,7 +31,8 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           onClick={() => onSort("title")}
         >
           <div className="flex items-center justify-end">
-            כותרת {renderSortIcon("title")}
+            {renderSortIcon("title")}
+            כותרת
           </div>
         </TableHead>
         <TableHead 
@@ -39,7 +40,8 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           onClick={() => onSort("type")}
         >
           <div className="flex items-center justify-end">
-            סוג {renderSortIcon("type")}
+            {renderSortIcon("type")}
+            סוג
           </div>
         </TableHead>
         <TableHead 
@@ -47,7 +49,8 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           onClick={() => onSort("priority")}
         >
           <div className="flex items-center justify-end">
-            עדיפות {renderSortIcon("priority")}
+            {renderSortIcon("priority")}
+            עדיפות
           </div>
         </TableHead>
         <TableHead 
@@ -55,7 +58,8 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           onClick={() => onSort("due_date")}
         >
           <div className="flex items-center justify-end">
-            תאריך {renderSortIcon("due_date")}
+            {renderSortIcon("due_date")}
+            תאריך
           </div>
         </TableHead>
         <TableHead 
@@ -63,7 +67,8 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           onClick={() => onSort("status")}
         >
           <div className="flex items-center justify-end">
-            סטטוס {renderSortIcon("status")}
+            {renderSortIcon("status")}
+            סטטוס
           </div>
         </TableHead>
         <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">קשור ל</TableHead>
