@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Edit, Phone, MessageSquare, Calendar, Plus } from "lucide-react";
+import { Edit, Phone, MessageSquare, Calendar, Plus, MessageCircle } from "lucide-react";
 import { EditLeadForm } from "../../EditLeadForm";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 import { LeadReminders } from "../LeadReminders";
@@ -28,15 +28,15 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
   };
 
   return (
-    <div className="p-4 bg-slate-50 border-t">
-      <div className="grid grid-cols-2 gap-2">
+    <div className="p-6 bg-gradient-to-l from-gray-50 to-white border-t border-gray-100">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         {/* Phone Call Button */}
         <Button 
           variant="outline" 
           size="sm"
           onClick={handlePhoneCall}
           disabled={!lead.phone}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 h-11 bg-white hover:bg-blue-50 border-blue-200 text-[#2F3C7E] hover:border-blue-300 font-medium"
         >
           <Phone className="h-4 w-4" />
           התקשר
@@ -48,7 +48,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
             <Button 
               variant="outline" 
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-11 bg-white hover:bg-green-50 border-green-200 text-green-700 hover:border-green-300 font-medium"
             >
               <Calendar className="h-4 w-4" />
               פגישה
@@ -72,9 +72,9 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
               variant="outline" 
               size="sm"
               disabled={!lead.cars}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-11 bg-green-600 hover:bg-green-700 text-white border-0 disabled:bg-gray-300 disabled:text-gray-500 font-medium"
             >
-              <MessageSquare className="h-4 w-4" />
+              <MessageCircle className="h-4 w-4" />
               וואטסאפ
             </Button>
           </DialogTrigger>
@@ -98,7 +98,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
             <Button 
               variant="outline" 
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-11 bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:border-orange-300 font-medium"
             >
               <Plus className="h-4 w-4" />
               תזכורות
@@ -120,7 +120,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
             <Button 
               variant="ghost" 
               size="sm"
-              className="w-full mt-2 flex items-center gap-2"
+              className="w-full h-11 flex items-center gap-2 hover:bg-blue-50 text-[#2F3C7E] font-medium rounded-xl"
             >
               <Edit className="h-4 w-4" />
               ערוך פרטי לקוח
