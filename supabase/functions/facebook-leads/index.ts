@@ -57,7 +57,7 @@ serve(async (req) => {
     }
     
     // Facebook שולח לנו מערך של changes בתוך entry
-    const results = [];
+    let results = [];
     
     for (const entry of body.entry) {
       if (entry.changes && Array.isArray(entry.changes)) {
