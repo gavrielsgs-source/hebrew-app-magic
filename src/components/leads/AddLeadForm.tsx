@@ -102,7 +102,7 @@ export function AddLeadForm({ carId }: { carId?: string }) {
             <Checkbox 
               id="schedule-meeting" 
               checked={shouldScheduleMeeting}
-              onCheckedChange={setShouldScheduleMeeting}
+              onCheckedChange={(checked) => setShouldScheduleMeeting(checked === true)}
             />
             <label 
               htmlFor="schedule-meeting" 
