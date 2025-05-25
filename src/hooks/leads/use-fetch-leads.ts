@@ -8,6 +8,7 @@ const fetchLeads = async () => {
     .from('leads')
     .select('*')
     .order('created_at', { ascending: false }); 
+  
 
   if (error) {
     console.error("שגיאה בטעינת לקוחות:", error);
