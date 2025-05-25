@@ -27,7 +27,7 @@ export default function LoginForm() {
         password,
       });
 
-      if (error) throw error;
+      //if (error) throw error;
 
       toast({
         title: "התחברת בהצלחה",
