@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
@@ -9,7 +8,14 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { SmartInsights } from "./SmartInsights";
+import { EnhancedChart } from "./EnhancedChart";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  generateLeadsBySourceInsight,
+  generateConversionInsight,
+  generateResponseTimeInsight,
+  generateSalesOverTimeInsight
+} from "./AnalyticsInsights";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6385'];
 
@@ -53,7 +59,7 @@ export function AnalyticsDashboard() {
     <div className="space-y-6 text-right">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold">אנליטיקה ומדדי ביצוע</h2>
+          <h2 className="text-3xl font-bold">📈 אנליטיקה ומדדי ביצוע</h2>
           <p className="text-muted-foreground">ניתוח מעמיק של ביצועי המערכת ונתוני המכירות</p>
         </div>
         
@@ -71,8 +77,8 @@ export function AnalyticsDashboard() {
         </div>
       </div>
       
-      {/* תובנות חכמות - נוספו בראש הדף */}
-      {isMobile && <SmartInsights data={data} />}
+      {/* תובנות חכמות */}
+      <SmartInsights data={data} />
       
       {/* מדדים עיקריים */}
       <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-4'}`}>
@@ -127,9 +133,6 @@ export function AnalyticsDashboard() {
         </Card>
       </div>
       
-      {/* תובנות חכמות למסך גדול */}
-      {!isMobile && <SmartInsights data={data} />}
-      
       {/* טאבים לתצוגות שונות */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className={`grid ${isMobile ? 'grid-cols-2' : 'md:grid-cols-4'} gap-1`}>
@@ -141,12 +144,13 @@ export function AnalyticsDashboard() {
         
         <TabsContent value="overview" className="space-y-4">
           <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
-            <Card className="md:col-span-1">
-              <CardHeader>
-                <CardTitle>לידים לפי מקור</CardTitle>
-                <CardDescription>התפלגות מקורות הלידים בטווח הזמן שנבחר</CardDescription>
-              </CardHeader>
-              <CardContent className={isMobile ? "h-64" : "h-80"}>
+            <EnhancedChart
+              title="📊 לידים לפי מקור"
+              description="התפלגות מקורות הלידים בטווח הזמן שנבחר"
+              insight={generateLeadsBySourceInsight(data)}
+              className="md:col-span-1"
+            >
+              <div className={isMobile ? "h-64" : "h-80"}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -177,15 +181,16 @@ export function AnalyticsDashboard() {
                     />
                   </PieChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              </div>
+            </EnhancedChart>
             
-            <Card className="md:col-span-1">
-              <CardHeader>
-                <CardTitle>שיעורי המרה לפי מקור</CardTitle>
-                <CardDescription>אחוז הלידים שהבשילו לעסקאות לפי מקור</CardDescription>
-              </CardHeader>
-              <CardContent className={isMobile ? "h-64" : "h-80"}>
+            <EnhancedChart
+              title="📈 שיעורי המרה לפי מקור"
+              description="אחוז הלידים שהבשילו לעסקאות לפי מקור"
+              insight={generateConversionInsight(data)}
+              className="md:col-span-1"
+            >
+              <div className={isMobile ? "h-64" : "h-80"}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={data.conversionBySource}
@@ -208,16 +213,16 @@ export function AnalyticsDashboard() {
                     <Bar dataKey="rate" name="שיעור המרה" fill="#8884d8" />
                   </BarChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              </div>
+            </EnhancedChart>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>מגמת לידים לאורך זמן</CardTitle>
-              <CardDescription>כמות הלידים החדשים לפי תאריך</CardDescription>
-            </CardHeader>
-            <CardContent className={isMobile ? "h-64" : "h-80"}>
+          <EnhancedChart
+            title="📈 מגמת לידים לאורך זמן"
+            description="כמות הלידים החדשים לפי תאריך"
+            insight={generateSalesOverTimeInsight(data)}
+          >
+            <div className={isMobile ? "h-64" : "h-80"}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
                   data={data.leadsOverTime} 
@@ -236,15 +241,15 @@ export function AnalyticsDashboard() {
                   <Bar dataKey="count" name="לידים" fill="#33C3F0" />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            </div>
+          </EnhancedChart>
         </TabsContent>
 
         <TabsContent value="leads" className="space-y-4">
           {/* תכני ניתוח לידים */}
           <Card>
             <CardHeader>
-              <CardTitle>זמני תגובה ללידים</CardTitle>
+              <CardTitle>⏱️ זמני תגובה ללידים</CardTitle>
               <CardDescription>זמן ממוצע לתגובה ראשונה ללידים</CardDescription>
             </CardHeader>
             <CardContent>
@@ -267,7 +272,7 @@ export function AnalyticsDashboard() {
                 <Separator />
                 
                 <div className="text-sm">
-                  <h4 className="font-medium">טיפים לשיפור:</h4>
+                  <h4 className="font-medium">💡 טיפים לשיפור:</h4>
                   <ul className="list-disc list-inside space-y-1 mt-2 text-muted-foreground">
                     <li>שיעור התגובה בתוך שעה נמוך מהיעד (75%)</li>
                     <li>לידים ממקור "פייסבוק" מקבלים תגובה מהירה יותר</li>
@@ -280,7 +285,7 @@ export function AnalyticsDashboard() {
           
           <Card>
             <CardHeader>
-              <CardTitle>ביצועי תבניות</CardTitle>
+              <CardTitle>📝 ביצועי תבניות</CardTitle>
               <CardDescription>ניתוח אפקטיביות של תבניות ההודעות</CardDescription>
             </CardHeader>
             <CardContent className={isMobile ? "overflow-x-auto" : ""}>
@@ -322,7 +327,7 @@ export function AnalyticsDashboard() {
           {/* תכני ביצועי מכירות */}
           <Card>
             <CardHeader>
-              <CardTitle>מכירות לאורך זמן</CardTitle>
+              <CardTitle>💰 מכירות לאורך זמן</CardTitle>
               <CardDescription>כמות והיקף המכירות על פני זמן</CardDescription>
             </CardHeader>
             <CardContent className={isMobile ? "h-64" : "h-80"}>
@@ -356,7 +361,7 @@ export function AnalyticsDashboard() {
           <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
             <Card>
               <CardHeader>
-                <CardTitle>רכבים פופולריים</CardTitle>
+                <CardTitle>🚗 רכבים פופולריים</CardTitle>
                 <CardDescription>הרכבים הנמכרים ביותר</CardDescription>
               </CardHeader>
               <CardContent>
@@ -366,12 +371,12 @@ export function AnalyticsDashboard() {
                       <div className="font-medium">יונדאי טוסון</div>
                       <div className="text-sm text-muted-foreground">8 מכירות</div>
                     </div>
-                    <div className="text-green-600 font-medium">מבוקש ביותר</div>
+                    <div className="text-green-600 font-medium">🏆 מבוקש ביותר</div>
                   </div>
                   <Separator />
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <div className="font-medium">קיה ספורטאז'</div>
+                      <div className="font-medium">קיא ספורטאז'</div>
                       <div className="text-sm text-muted-foreground">6 מכירות</div>
                     </div>
                   </div>
@@ -388,7 +393,7 @@ export function AnalyticsDashboard() {
             
             <Card>
               <CardHeader>
-                <CardTitle>זמן מכירה ממוצע</CardTitle>
+                <CardTitle>⏰ זמן מכירה ממוצע</CardTitle>
                 <CardDescription>זמן ממוצע מיצירת ליד ועד סגירת העסקה</CardDescription>
               </CardHeader>
               <CardContent>
@@ -396,22 +401,22 @@ export function AnalyticsDashboard() {
                   <div className="grid grid-cols-1 gap-4">
                     <div className="border rounded-lg p-4">
                       <div className="text-sm font-medium text-muted-foreground">זמן ממוצע לסגירה</div>
-                      <div className="text-2xl font-bold mt-2">14 ימים</div>
+                      <div className="text-2xl font-bold mt-2">📅 14 ימים</div>
                     </div>
                     
                     <div>
                       <h4 className="font-medium text-sm">לפי סוג רכב:</h4>
                       <div className="mt-2 space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>רכב פרטי</span>
+                          <span>🚗 רכב פרטי</span>
                           <span className="font-medium">12 ימים</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span>רכבי שטח/SUV</span>
+                          <span>🚙 רכבי שטח/SUV</span>
                           <span className="font-medium">16 ימים</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span>רכב מסחרי</span>
+                          <span>🚐 רכב מסחרי</span>
                           <span className="font-medium">21 ימים</span>
                         </div>
                       </div>
@@ -427,7 +432,7 @@ export function AnalyticsDashboard() {
           {/* תכני ביצועי סוכנים */}
           <Card>
             <CardHeader>
-              <CardTitle>ביצועי סוכנים</CardTitle>
+              <CardTitle>👥 ביצועי סוכנים</CardTitle>
               <CardDescription>השוואת ביצועי סוכני המכירות</CardDescription>
             </CardHeader>
             <CardContent className={isMobile ? "h-96" : "h-80"}>
@@ -456,7 +461,7 @@ export function AnalyticsDashboard() {
           <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">זמן תגובה מהיר ביותר</CardTitle>
+                <CardTitle className="text-sm font-medium">⚡ זמן תגובה מהיר ביותר</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">אורית לוי</div>
@@ -466,7 +471,7 @@ export function AnalyticsDashboard() {
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">שיעור המרה גבוה ביותר</CardTitle>
+                <CardTitle className="text-sm font-medium">🎯 שיעור המרה גבוה ביותר</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">דוד כהן</div>
@@ -476,7 +481,7 @@ export function AnalyticsDashboard() {
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">סכום מכירות גבוה ביותר</CardTitle>
+                <CardTitle className="text-sm font-medium">💰 סכום מכירות גבוה ביותר</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">יוסי לוי</div>
