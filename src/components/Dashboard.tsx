@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, Car, Calendar, AlertCircle } from "lucide-react";
+import { AlertTriangle, Calendar, TrendingUp, Eye } from "lucide-react";
 import { LeadsTable } from "@/components/LeadsTable";
 import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
@@ -10,6 +10,7 @@ import { SmartInsights } from "@/components/analytics/SmartInsights";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { Button } from "@/components/ui/button";
 
 const CarSleadLogoSVG = () => (
   <svg width="48" height="48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,103 +26,104 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const { data: salesData } = useSalesAnalytics();
   
+  // Mock data for hot actions - in real implementation, this would come from hooks
+  const hotActions = [
+    {
+      id: 1,
+      type: "untreated_lead",
+      title: "ליד שלא טופל ב-24 שעות",
+      count: 3,
+      description: "3 לידים מחכים למענה",
+      color: "bg-red-500",
+      textColor: "text-white",
+      icon: AlertTriangle,
+      action: "טפל בלידים"
+    },
+    {
+      id: 2,
+      type: "pending_car",
+      title: "רכב שחייב לצאת לפרסום",
+      count: 2,
+      description: "2 רכבים מוכנים לפרסום",
+      color: "bg-orange-500",
+      textColor: "text-white",
+      icon: TrendingUp,
+      action: "פרסם רכבים"
+    },
+    {
+      id: 3,
+      type: "tomorrow_meeting",
+      title: "פגישה מחר",
+      count: 1,
+      description: "פגישה אחת מתוכננת",
+      color: "bg-blue-500",
+      textColor: "text-white",
+      icon: Calendar,
+      action: "צפה בפגישה"
+    }
+  ];
+  
   return (
-    <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8">
+    <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8" dir="rtl">
       <AppHeader />
 
-      <div className={`grid gap-4 md:gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2 xl:grid-cols-4'}`}>
-        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">לידים חדשים</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shadow">
-              <UserPlus className="h-5 w-5 text-blue-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">18</div>
-            <p className="text-sm text-blue-600 font-rubik leading-tight text-right">
-              +12% מהשבוע שעבר
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">רכבים במלאי</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center shadow">
-              <Car className="h-5 w-5 text-indigo-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">24</div>
-            <p className="text-sm text-indigo-600 font-rubik leading-tight text-right">
-              +2 רכבים מהחודש שעבר
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">פגישות היום</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center shadow">
-              <Calendar className="h-5 w-5 text-amber-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">3</div>
-            <p className="text-sm text-amber-600 font-rubik leading-tight text-right">
-              2 פגישות חדשות
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass-card premium-card shadow-2xl border-0 hover:shadow-xl transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-lg font-bold font-rubik text-gray-900 text-right w-full">משימות לביצוע</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center shadow">
-              <AlertCircle className="h-5 w-5 text-rose-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-extrabold font-rubik text-gray-900 text-right">7</div>
-            <p className="text-sm text-rose-600 font-rubik leading-tight text-right">
-              5 משימות דחופות
-            </p>
-          </CardContent>
-        </Card>
+      {/* Hot Actions Section */}
+      <div className="space-y-4">
+        <div className="text-right">
+          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">פעולות חמות</h2>
+          <p className="text-gray-600">משימות דחופות שדורשות תשומת לב מיידית</p>
+        </div>
+        
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
+          {hotActions.map((action) => (
+            <Card key={action.id} className={`${action.color} border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl`}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <div className="text-right flex-1">
+                  <CardTitle className={`text-lg font-bold ${action.textColor}`}>
+                    {action.title}
+                  </CardTitle>
+                  <CardDescription className={`${action.textColor} opacity-90 mt-1`}>
+                    {action.description}
+                  </CardDescription>
+                </div>
+                <div className={`h-12 w-12 rounded-full bg-white/20 flex items-center justify-center`}>
+                  <action.icon className={`h-6 w-6 ${action.textColor}`} />
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex justify-between items-center">
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl"
+                  >
+                    {action.action}
+                  </Button>
+                  <div className={`text-3xl font-extrabold ${action.textColor}`}>
+                    {action.count}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className={`font-rubik bg-white border border-gray-200 p-1 rounded-lg shadow-sm w-full ${isMobile ? 'flex flex-wrap grid-cols-2' : 'flex flex-nowrap'} overflow-x-auto`}>
-          <TabsTrigger value="overview" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">סיכום</TabsTrigger>
-          <TabsTrigger value="leads" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">לידים</TabsTrigger>
-          <TabsTrigger value="cars" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">רכבים</TabsTrigger>
-          <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-gray-900 data-[state=active]:text-white flex-1">משימות</TabsTrigger>
-        </TabsList>
-        <TabsContent value="overview" className="space-y-8">
-          <div className={`grid gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'}`}>
-            <div className="min-h-[340px] flex flex-col">
-              <SalesAnalytics />
-            </div>
-            {!isMobile ? (
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">
-                <CardHeader>
-                  <CardTitle className="font-rubik text-gray-900 text-right">משימות להיום</CardTitle>
-                  <CardDescription className="font-rubik text-right">סה"כ 7 משימות מתוכננות</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col justify-between">
-                  <TaskList />
-                </CardContent>
-              </Card>
-            ) : null}
+      {/* Analytics Section */}
+      <div className="space-y-4">
+        <div className="text-right">
+          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">נתונים ותובנות</h2>
+          <p className="text-gray-600">מעקב אחר ביצועים ומגמות בעסק</p>
+        </div>
+        
+        <div className={`grid gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'}`}>
+          <div className="min-h-[340px] flex flex-col">
+            <SalesAnalytics />
           </div>
-          
-          {/* תובנות חכמות - תיקון יישור */}
-          <div className="space-y-4">
-            <SmartInsights data={salesData} />
-          </div>
-          
-          {isMobile ? (
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col">
+          {!isMobile ? (
+            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col rounded-2xl">
               <CardHeader>
-                <CardTitle className="font-rubik text-gray-900 text-right">משימות להיום</CardTitle>
+                <CardTitle className="font-rubik text-[#2F3C7E] text-right">משימות להיום</CardTitle>
                 <CardDescription className="font-rubik text-right">סה"כ 7 משימות מתוכננות</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between">
@@ -129,11 +131,44 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           ) : null}
+        </div>
+        
+        {/* Smart Insights with RTL alignment */}
+        <div className="space-y-4">
+          <SmartInsights data={salesData} />
+        </div>
+        
+        {isMobile ? (
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col rounded-2xl">
+            <CardHeader>
+              <CardTitle className="font-rubik text-[#2F3C7E] text-right">משימות להיום</CardTitle>
+              <CardDescription className="font-rubik text-right">סה"כ 7 משימות מתוכננות</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col justify-between">
+              <TaskList />
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className={`font-rubik bg-white border border-gray-200 p-1 rounded-2xl shadow-sm w-full ${isMobile ? 'flex flex-wrap grid-cols-2' : 'flex flex-nowrap'} overflow-x-auto`}>
+          <TabsTrigger value="overview" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">סיכום</TabsTrigger>
+          <TabsTrigger value="leads" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">לידים</TabsTrigger>
+          <TabsTrigger value="cars" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">רכבים</TabsTrigger>
+          <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">משימות</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview" className="space-y-8">
+          <div className="text-center p-8">
+            <Eye className="h-12 w-12 text-[#2F3C7E] mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-[#2F3C7E] mb-2">תצוגה כללית</h3>
+            <p className="text-gray-600">השתמש בלשוניות למעלה כדי לראות פרטים נוספים</p>
+          </div>
         </TabsContent>
         <TabsContent value="leads" className="space-y-4">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 rounded-2xl">
             <CardHeader>
-              <CardTitle className="font-rubik text-gray-900 text-right">לידים</CardTitle>
+              <CardTitle className="font-rubik text-[#2F3C7E] text-right">לידים</CardTitle>
               <CardDescription className="font-rubik text-right">רשימת כל הלידים במערכת</CardDescription>
             </CardHeader>
             <CardContent>
@@ -142,9 +177,9 @@ export default function Dashboard() {
           </Card>
         </TabsContent>
         <TabsContent value="cars" className="space-y-4">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 rounded-2xl">
             <CardHeader>
-              <CardTitle className="font-rubik text-gray-900 text-right">רכבים במלאי</CardTitle>
+              <CardTitle className="font-rubik text-[#2F3C7E] text-right">רכבים במלאי</CardTitle>
               <CardDescription className="font-rubik text-right">רשימת הרכבים הזמינים למכירה</CardDescription>
             </CardHeader>
             <CardContent>
@@ -153,9 +188,9 @@ export default function Dashboard() {
           </Card>
         </TabsContent>
         <TabsContent value="tasks" className="space-y-4">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 rounded-2xl">
             <CardHeader>
-              <CardTitle className="font-rubik text-gray-900 text-right">משימות</CardTitle>
+              <CardTitle className="font-rubik text-[#2F3C7E] text-right">משימות</CardTitle>
               <CardDescription className="font-rubik text-right">רשימת המשימות והתזכורות שלך</CardDescription>
             </CardHeader>
             <CardContent>
