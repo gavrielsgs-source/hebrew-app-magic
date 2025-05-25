@@ -30,7 +30,7 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("title")}
         >
-          <div className="flex items-center justify-end pr-2">
+          <div className="flex items-center justify-end">
             {renderSortIcon("title")}
             כותרת
           </div>
@@ -39,7 +39,7 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("type")}
         >
-          <div className="flex items-center justify-end pr-8">
+          <div className="flex items-center justify-end">
             {renderSortIcon("type")}
             סוג
           </div>
@@ -48,7 +48,7 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("priority")}
         >
-          <div className="flex items-center justify-end pr-8">
+          <div className="flex items-center justify-end">
             {renderSortIcon("priority")}
             עדיפות
           </div>
@@ -57,7 +57,7 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("due_date")}
         >
-          <div className="flex items-center justify-end pr-16">
+          <div className="flex items-center justify-end">
             {renderSortIcon("due_date")}
             תאריך
           </div>
@@ -66,13 +66,13 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
           className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("status")}
         >
-          <div className="flex items-center justify-end pr-8">
+          <div className="flex items-center justify-end">
             {renderSortIcon("status")}
             סטטוס
           </div>
         </TableHead>
         <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">
-          <div className="pr-4">קשור ל</div>
+          קשור ל
         </TableHead>
         <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6"></TableHead>
       </TableRow>
