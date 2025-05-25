@@ -80,7 +80,7 @@ serve(async (req) => {
                 `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${fbAccessToken}`,
                 { method: 'GET' }
               );
-
+              console.log('leads:')
               console.log(leadDetailsResponse)
               
               if (!leadDetailsResponse.ok) {
