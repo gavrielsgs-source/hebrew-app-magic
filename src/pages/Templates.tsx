@@ -1,61 +1,18 @@
+
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import {
   WhatsappTemplate,
   templates as defaultWhatsappTemplates,
 } from "@/components/whatsapp/whatsapp-templates";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
 
-const templateFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "שם התבנית חייב להיות לפחות 2 תווים.",
-  }),
-  template: z.string().min(10, {
-    message: "התבנית חייבת להכיל לפחות 10 תווים.",
-  }),
-});
+const templateFormSchema = {
+  name: (value: string) => value.length >= 2 ? null : "שם התבנית חייב להיות לפחות 2 תווים.",
+  template: (value: string) => value.length >= 10 ? null : "התבנית חייבת להכיל לפחות 10 תווים.",
+};
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<WhatsappTemplate[]>([]);
@@ -72,6 +29,11 @@ export default function TemplatesPage() {
     "{{year}}",
     "{{price}}",
     "{{name}}",
+    "{{kilometers}}",
+    "{{color}}",
+    "{{engine}}",
+    "{{transmission}}",
+    "{{fuel}}",
   ];
 
   useEffect(() => {
@@ -158,23 +120,39 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="p-4" dir="rtl">
-      <div className="text-right">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" dir="rtl">
+      <div className="container mx-auto px-4 py-8">
         <TemplateHeader
           onNewTemplate={onNewTemplate}
           onResetDefaults={onResetDefaults}
         />
 
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {templates.map((template) => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              onEdit={onEditTemplate}
-              onDelete={onDeleteTemplate}
-            />
-          ))}
-        </div>
+        {templates.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md mx-auto">
+              <div className="text-muted-foreground mb-4">
+                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">אין תבניות</h3>
+              <p className="text-muted-foreground mb-4">
+                התחל בצרת התבנית הראשונה שלך לשליחת הודעות ללקוחות
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {templates.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onEdit={onEditTemplate}
+                onDelete={onDeleteTemplate}
+              />
+            ))}
+          </div>
+        )}
 
         <TemplateDialog
           isOpen={isDialogOpen}
