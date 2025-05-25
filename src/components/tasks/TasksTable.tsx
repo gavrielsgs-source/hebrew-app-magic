@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
-import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TaskForm } from "./TaskForm";
@@ -191,24 +190,22 @@ export function TasksTable() {
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <Table>
-            <TasksHeader
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSort={handleToggleSort}
-            />
-            <TableBody>
-              {filteredAndSortedTasks.map((task, index) => (
-                <div key={task.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}>
-                  <TaskItem
-                    task={task}
-                    onStatusChange={handleTaskStatusChange}
-                    onDelete={(id) => deleteTask.mutate(id)}
-                  />
-                </div>
-              ))}
-            </TableBody>
-          </Table>
+          <TasksHeader
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleToggleSort}
+          />
+          <div>
+            {filteredAndSortedTasks.map((task, index) => (
+              <div key={task.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}>
+                <TaskItem
+                  task={task}
+                  onStatusChange={handleTaskStatusChange}
+                  onDelete={(id) => deleteTask.mutate(id)}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

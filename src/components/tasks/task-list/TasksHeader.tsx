@@ -1,6 +1,5 @@
 
 import { MoveDown, MoveUp } from "lucide-react";
-import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type SortField = "due_date" | "priority" | "title" | "status" | "type";
 type SortDirection = "asc" | "desc";
@@ -16,91 +15,87 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
     if (sortField !== field) return null;
     
     return sortDirection === "asc" ? (
-      <MoveUp className="h-4 w-4 mr-1" />
+      <MoveUp className="h-4 w-4" />
     ) : (
-      <MoveDown className="h-4 w-4 mr-1" />
+      <MoveDown className="h-4 w-4" />
     );
   };
 
   return (
-    <TableHeader>
-      <TableRow className="bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100 hover:bg-gradient-to-l hover:from-slate-50 hover:via-blue-50 hover:to-white">
+    <div className="bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100 p-4">
+      <div className="grid grid-cols-8 gap-4 items-center text-right">
         {/* Checkbox Column */}
-        <TableHead className="w-[50px] text-center">
-          <div className="flex justify-center">
-            {/* Empty for checkbox alignment */}
-          </div>
-        </TableHead>
+        <div className="flex justify-center">
+          {/* Empty for checkbox alignment */}
+        </div>
         
         {/* Title Column */}
-        <TableHead 
-          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[200px]"
+        <div 
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("title")}
         >
           <div className="flex items-center justify-end gap-1">
             {renderSortIcon("title")}
             <span>כותרת</span>
           </div>
-        </TableHead>
+        </div>
         
         {/* Type Column */}
-        <TableHead 
-          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[120px]"
+        <div 
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("type")}
         >
           <div className="flex items-center justify-end gap-1">
             {renderSortIcon("type")}
             <span>סוג</span>
           </div>
-        </TableHead>
+        </div>
         
         {/* Priority Column */}
-        <TableHead 
-          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[100px]"
+        <div 
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("priority")}
         >
           <div className="flex items-center justify-end gap-1">
             {renderSortIcon("priority")}
             <span>עדיפות</span>
           </div>
-        </TableHead>
+        </div>
         
         {/* Date Column */}
-        <TableHead 
-          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[120px]"
+        <div 
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("due_date")}
         >
           <div className="flex items-center justify-end gap-1">
             {renderSortIcon("due_date")}
             <span>תאריך</span>
           </div>
-        </TableHead>
+        </div>
         
         {/* Status Column */}
-        <TableHead 
-          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[100px]"
+        <div 
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors"
           onClick={() => onSort("status")}
         >
           <div className="flex items-center justify-end gap-1">
             {renderSortIcon("status")}
             <span>סטטוס</span>
           </div>
-        </TableHead>
+        </div>
         
         {/* Related To Column */}
-        <TableHead className="font-semibold text-[#2F3C7E] w-[150px]">
+        <div className="font-semibold text-[#2F3C7E]">
           <div className="flex justify-end">
             <span>קשור ל</span>
           </div>
-        </TableHead>
+        </div>
         
         {/* Actions Column */}
-        <TableHead className="w-[60px]">
-          <div className="flex justify-center">
-            {/* Empty for actions */}
-          </div>
-        </TableHead>
-      </TableRow>
-    </TableHeader>
+        <div className="flex justify-center">
+          {/* Empty for actions */}
+        </div>
+      </div>
+    </div>
   );
 }

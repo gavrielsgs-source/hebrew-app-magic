@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Car, Clock, UserRound, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TableCell, TableRow } from "@/components/ui/table";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 
@@ -73,14 +72,14 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
   };
 
   return (
-    <TableRow 
+    <div 
       className={cn(
-        "hover:bg-blue-50/50 transition-colors border-b border-gray-50",
+        "hover:bg-blue-50/50 transition-colors border-b border-gray-50 p-4",
         task.status === 'completed' && "bg-gray-50/80"
       )}
     >
-      {/* Checkbox Cell - matches header width */}
-      <TableCell className="w-[50px]">
+      <div className="grid grid-cols-8 gap-4 items-center text-right">
+        {/* Checkbox Cell */}
         <div className="flex justify-center">
           <Checkbox 
             checked={task.status === 'completed'} 
@@ -88,28 +87,24 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
             className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
           />
         </div>
-      </TableCell>
-      
-      {/* Title Cell */}
-      <TableCell className={cn(
-        "w-[200px]",
-        task.status === 'completed' && "line-through text-muted-foreground"
-      )}>
-        <div className="text-right font-medium text-[#2F3C7E]">{task.title}</div>
-      </TableCell>
-      
-      {/* Type Cell */}
-      <TableCell className="w-[120px]">
+        
+        {/* Title Cell */}
+        <div className={cn(
+          "text-right font-medium text-[#2F3C7E]",
+          task.status === 'completed' && "line-through text-muted-foreground"
+        )}>
+          {task.title}
+        </div>
+        
+        {/* Type Cell */}
         <div className="flex justify-end">
           <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
             {getTaskTypeIcon(task.type)}
             {getTaskTypeLabel(task.type)}
           </Badge>
         </div>
-      </TableCell>
-      
-      {/* Priority Cell */}
-      <TableCell className="w-[100px]">
+        
+        {/* Priority Cell */}
         <div className="flex justify-end">
           <Badge className={`${getTaskPriorityColor(task.priority)} border font-medium`}>
             {task.priority === 'high' ? 'גבוהה' : 
@@ -118,34 +113,30 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
              task.priority}
           </Badge>
         </div>
-      </TableCell>
-      
-      {/* Date Cell */}
-      <TableCell className="w-[120px]">
-        {task.due_date ? (
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-1">
-              <span className="text-sm font-medium text-gray-700">
-                {safeFormatDate(task.due_date, 'dd/MM/yyyy')}
-              </span>
-              <Calendar className="h-3 w-3 text-gray-500" />
+        
+        {/* Date Cell */}
+        <div className="text-right">
+          {task.due_date ? (
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-700">
+                  {safeFormatDate(task.due_date, 'dd/MM/yyyy')}
+                </span>
+                <Calendar className="h-3 w-3 text-gray-500" />
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">
+                  {safeFormatDate(task.due_date, 'HH:mm')}
+                </span>
+                <Clock className="h-3 w-3 text-gray-500" />
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-gray-600">
-                {safeFormatDate(task.due_date, 'HH:mm')}
-              </span>
-              <Clock className="h-3 w-3 text-gray-500" />
-            </div>
-          </div>
-        ) : (
-          <div className="text-right">
+          ) : (
             <span className="text-muted-foreground text-sm">ללא תאריך</span>
-          </div>
-        )}
-      </TableCell>
-      
-      {/* Status Cell */}
-      <TableCell className="w-[100px]">
+          )}
+        </div>
+        
+        {/* Status Cell */}
         <div className="flex justify-end">
           <Badge className={`${getStatusColor(task.status)} border font-medium`}>
             {task.status === 'pending' ? 'ממתין' : 
@@ -154,10 +145,8 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
              task.status === 'cancelled' ? 'בוטל' : task.status}
           </Badge>
         </div>
-      </TableCell>
-      
-      {/* Related To Cell */}
-      <TableCell className="w-[150px]">
+        
+        {/* Related To Cell */}
         <div className="flex flex-col gap-1 items-end">
           {task.car_id && (
             <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700 border-purple-200">
@@ -172,10 +161,8 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
             </Badge>
           )}
         </div>
-      </TableCell>
-      
-      {/* Actions Cell */}
-      <TableCell className="w-[60px]">
+        
+        {/* Actions Cell */}
         <div className="flex justify-center">
           <Button 
             variant="ghost" 
@@ -186,7 +173,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-      </TableCell>
-    </TableRow>
+      </div>
+    </div>
   );
 }
