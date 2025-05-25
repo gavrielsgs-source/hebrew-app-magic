@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Calendar, TrendingUp, Eye, Clock, Users, Car, CheckSquare } from "lucide-react";
@@ -155,7 +156,7 @@ export default function Dashboard() {
           {hotActions.map((action) => (
             <Card 
               key={action.id} 
-              className={`${action.color} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl transform hover:scale-105 cursor-pointer ${action.urgent ? 'ring-4 ring-red-200 animate-pulse' : ''}`}
+              className={`${action.color} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl transform hover:scale-105 cursor-pointer ${action.urgent ? 'ring-4 ring-red-200' : ''}`}
               onClick={() => handleActionClick(action.route)}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -196,6 +197,18 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+
+      {/* Calendar Section */}
+      <div className="space-y-4">
+        <div className="text-right">
+          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">יומן משימות</h2>
+          <p className="text-gray-600">מבט חזותי על כל המשימות והפגישות שלך</p>
+        </div>
+        
+        <div className={`grid gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-1'}`}>
+          <MiniCalendar />
         </div>
       </div>
 
