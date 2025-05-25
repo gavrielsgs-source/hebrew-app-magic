@@ -1,6 +1,5 @@
 
-import { Badge } from "@/components/ui/badge"; 
-import { getStatusBadgeColor, getStatusText } from "../utils/lead-status";
+import { QuickStatusChange } from "../../QuickStatusChange";
 import { LeadScoreIndicator } from "./LeadScoreIndicator";
 
 export interface LeadCardHeaderProps {
@@ -14,9 +13,7 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
       <h3 className="text-lg font-semibold">{lead.name}</h3>
       <div className="flex items-center space-x-2 rtl:space-x-reverse">
         <LeadScoreIndicator leadId={lead.id} />
-        <Badge className={getStatusBadgeColor(lead.status)}>
-          {getStatusText(lead.status)}
-        </Badge>
+        <QuickStatusChange lead={lead} />
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import { TaskForm } from "@/components/tasks/TaskForm";
 import { useLeads, useDeleteLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { QuickStatusChange } from "./QuickStatusChange";
 
 // Helper function to get status colors according to new design
 const getLeadStatusColor = (status: string) => {
@@ -117,9 +117,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
             <div className="flex justify-between items-start">
               <div>
                 <div className="font-bold text-xl text-[#2F3C7E] mb-2">{lead.name}</div>
-                <Badge className={cn("font-medium text-sm", getLeadStatusColor(lead.status))}>
-                  {getStatusText(lead.status)}
-                </Badge>
+                <QuickStatusChange lead={lead} />
               </div>
               <Button 
                 variant="ghost" 

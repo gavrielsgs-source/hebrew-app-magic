@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLeads, useUpdateLead } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useAuth } from "@/hooks/use-auth";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { LeadFormBase, FormContextValue } from "./LeadFormBase";
 import { LeadFormValues } from "./schemas/lead-form-schema";
 import { EditLeadNameField } from "./fields/EditLeadNameField";
@@ -24,10 +24,15 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
   const { user } = useAuth();
   const updateLead = useUpdateLead();
   const { cars } = useCars();
+  const { toast } = useToast();
 
   const handleSubmit = async (values: LeadFormValues) => {
     if (!lead.id) {
-      toast.error("שגיאה בעדכון ליד: מזהה חסר");
+      toast({
+        title: "שגיאה בעדכון ליד",
+        description: "מזהה ליד חסר",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -40,16 +45,24 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
       source: values.source || "ידני",
       status: values.status,
       assigned_to: values.assigned_to || null,
-      user_id: user?.id || lead.user_id
+      user_id: user?.id || lead.user_id,
+      updated_at: new Date().toISOString()
     };
 
     try {
       await updateLead.mutateAsync({ id: lead.id, data: leadData });
-      toast.success("הליד עודכן בהצלחה");
+      toast({
+        title: "ליד עודכן",
+        description: "הליד עודכן בהצלחה",
+      });
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error("שגיאה בעדכון ליד:", error);
-      toast.error("שגיאה בעדכון הליד");
+      toast({
+        title: "שגיאה בעדכון הליד",
+        description: "נסה שנית",
+        variant: "destructive"
+      });
     }
   };
 

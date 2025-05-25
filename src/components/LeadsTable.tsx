@@ -1,3 +1,4 @@
+
 import { 
   Table, 
   TableBody, 
@@ -17,6 +18,7 @@ import { EditLeadForm } from "./leads/EditLeadForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 import { getStatusBadgeColor, getStatusText } from "./leads/grid/utils/lead-status";
+import { QuickStatusChange } from "./leads/QuickStatusChange";
 
 interface LeadsTableProps {
   searchTerm?: string;
@@ -94,9 +96,7 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                   <TableCell className="text-right">{lead.source || "ידני"}</TableCell>
                   <TableCell className="text-right">{new Date(lead.created_at).toLocaleDateString('he-IL')}</TableCell>
                   <TableCell className="text-right">
-                    <Badge className={getStatusBadgeColor(lead.status)}>
-                      {getStatusText(lead.status)}
-                    </Badge>
+                    <QuickStatusChange lead={lead} />
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2 space-x-reverse justify-end">
