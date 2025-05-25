@@ -15,8 +15,9 @@ export function TemplateHeader({
 }: TemplateHeaderProps) {
   return (
     <div className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple rounded-lg p-6 mb-8 text-white">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <div className="flex gap-3 order-2 sm:order-1 mt-6 sm:mt-0">
+      <div className="flex flex-col sm:flex-row justify-between items-center">
+        {/* כפתורי פעולה - צד שמאל */}
+        <div className="flex gap-3 order-2 sm:order-1">
           <Button
             variant="outline"
             size="default"
@@ -37,8 +38,9 @@ export function TemplateHeader({
           </Button>
         </div>
         
-        <div className="text-center flex-1 order-1 sm:order-2">
-          <div className="flex items-center justify-center gap-3 mb-2">
+        {/* כותרת ותיאור - צד ימין */}
+        <div className="text-right order-1 sm:order-2">
+          <div className="flex items-center justify-end gap-3 mb-2">
             <h1 className="text-3xl font-bold">תבניות הודעה</h1>
             <MessageSquare className="h-8 w-8" />
           </div>
