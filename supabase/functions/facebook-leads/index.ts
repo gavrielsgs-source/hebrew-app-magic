@@ -24,9 +24,7 @@ const verifyToken = (token: string | null): boolean => {
   return true; // בשלב ראשוני נחזיר true, אבל זה לא בטוח לסביבת ייצור!
 };
 
-
-const handler = async (req: Request): Promise<Response> => {
-  console.log("serve..")
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -59,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     // Facebook שולח לנו מערך של changes בתוך entry
-    const results = ["test"];
+    const results = [];
     
     for (const entry of body.entry) {
       if (entry.changes && Array.isArray(entry.changes)) {
@@ -82,7 +80,6 @@ const handler = async (req: Request): Promise<Response> => {
                 `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${fbAccessToken}`,
                 { method: 'GET' }
               );
-              console.log(leadDetailsResponse)
               
               if (!leadDetailsResponse.ok) {
                 throw new Error(`Failed to fetch lead details: ${leadDetailsResponse.statusText}`);
@@ -207,7 +204,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify({ success: true, ["hi"] }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
@@ -218,10 +215,4 @@ const handler = async (req: Request): Promise<Response> => {
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
-}
-
-export default handler
-
-if (import.meta.main) {
-  serve(handler);
-}
+});
