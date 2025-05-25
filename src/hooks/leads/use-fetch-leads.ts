@@ -15,7 +15,7 @@ const fetchLeads = async () => {
       )
     `)
     .order('created_at', { ascending: false });
-  console.log(data)
+  console.log(data, error)
 
   if (error) {
     console.error("שגיאה בטעינת לקוחות:", error);
