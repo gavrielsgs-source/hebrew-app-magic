@@ -52,11 +52,19 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
     try {
-      await addTask.mutateAsync({
-        ...data,
+      // Convert form data to match NewTask interface
+      const taskData = {
+        title: data.title,
+        description: data.description || null,
+        status: data.status,
+        priority: data.priority,
+        type: data.type,
+        due_date: data.due_date ? data.due_date.toISOString() : null,
         lead_id: data.lead_id || null,
         car_id: data.car_id || null,
-      });
+      };
+
+      await addTask.mutateAsync(taskData);
       
       toast({
         title: "משימה נוצרה",
