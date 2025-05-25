@@ -16,8 +16,22 @@ export function TemplateHeader({
   return (
     <div className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple rounded-lg p-6 mb-8 text-white">
       <div className="flex flex-col sm:flex-row justify-between items-center">
-        {/* כפתורי פעולה - צד שמאל */}
-        <div className="flex gap-3 order-2 sm:order-1">
+        {/* כותרת ותיאור - צד שמאל */}
+        <div className="text-right order-1 sm:order-1">
+          <div className="flex items-center justify-end gap-3 mb-2">
+            <h1 className="text-3xl font-bold">תבניות הודעה</h1>
+            <MessageSquare className="h-8 w-8" />
+          </div>
+          <p className="text-white/90 text-lg">
+            נהל והתאם אישית תבניות הודעות לשליחה ללקוחות
+          </p>
+          <p className="text-white/70 text-sm mt-1">
+            צור תבניות מותאמות אישית עם משתנים דינמיים לפרטי הרכב
+          </p>
+        </div>
+        
+        {/* כפתורי פעולה - צד ימין */}
+        <div className="flex gap-3 order-2 sm:order-2">
           <Button
             variant="outline"
             size="default"
@@ -36,20 +50,6 @@ export function TemplateHeader({
             <Plus className="h-4 w-4" />
             תבנית חדשה
           </Button>
-        </div>
-        
-        {/* כותרת ותיאור - צד ימין */}
-        <div className="text-right order-1 sm:order-2">
-          <div className="flex items-center justify-end gap-3 mb-2">
-            <h1 className="text-3xl font-bold">תבניות הודעה</h1>
-            <MessageSquare className="h-8 w-8" />
-          </div>
-          <p className="text-white/90 text-lg">
-            נהל והתאם אישית תבניות הודעות לשליחה ללקוחות
-          </p>
-          <p className="text-white/70 text-sm mt-1">
-            צור תבניות מותאמות אישית עם משתנים דינמיים לפרטי הרכב
-          </p>
         </div>
       </div>
     </div>
