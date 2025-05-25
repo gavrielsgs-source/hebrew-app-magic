@@ -35,7 +35,14 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
       )}
       
       <div className="flex items-start justify-between">
-        {/* צד שמאל - הקוביות אחת מעל השנייה ותאריך */}
+        {/* צד ימין - שם הליד */}
+        <div className="text-right flex-1 ml-4">
+          <h3 className="text-2xl font-bold text-[#2F3C7E] mb-6 leading-tight">
+            {lead.name}
+          </h3>
+        </div>
+        
+        {/* צד שמאל ויזואלי - הקוביות אחת מעל השנייה ותאריך */}
         <div className="flex flex-col items-start gap-3">
           <div className="flex items-center gap-2">
             <LeadScoreIndicator leadId={lead.id} />
@@ -58,13 +65,6 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
             <span className="font-medium">{timeAgo(lead.created_at)}</span>
             <Calendar className="h-4 w-4" />
           </div>
-        </div>
-        
-        {/* צד ימין - שם הליד */}
-        <div className="text-right flex-1 mr-4">
-          <h3 className="text-2xl font-bold text-[#2F3C7E] mb-6 leading-tight">
-            {lead.name}
-          </h3>
         </div>
       </div>
     </div>
