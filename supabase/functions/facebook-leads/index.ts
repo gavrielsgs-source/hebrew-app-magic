@@ -179,7 +179,7 @@ serve(async (req) => {
       }
     }
     
-    Facebook Webhook Verification - מטפל בבקשת האימות הראשונית של פייסבוק
+    //acebook Webhook Verification - מטפל בבקשת האימות הראשונית של פייסבוק
     if (req.method === 'GET') {
       const url = new URL(req.url);
       const mode = url.searchParams.get('hub.mode');
