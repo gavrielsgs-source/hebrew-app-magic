@@ -6,7 +6,7 @@ const fetchLeads = async () => {
   console.log('getting leads')
   const { data, error } = await supabase
     .from("leads")
-    .select(`
+    .get(`
       *,
       cars (
         make,
