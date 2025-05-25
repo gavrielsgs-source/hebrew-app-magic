@@ -40,7 +40,9 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
           <h3 className="text-2xl font-bold text-[#2F3C7E] mb-3 leading-tight">
             {lead.name}
           </h3>
-          <QuickStatusChange lead={lead} />
+          <div className="inline-block">
+            <QuickStatusChange lead={lead} />
+          </div>
         </div>
         
         {/* צד שמאל ויזואלי - ציון ליד, מקור ותאריך */}
