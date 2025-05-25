@@ -202,6 +202,8 @@ serve(async (req) => {
         });
       }
     }
+
+    results = ["hi"]
     
     return new Response(
       JSON.stringify({ success: true, results }),
