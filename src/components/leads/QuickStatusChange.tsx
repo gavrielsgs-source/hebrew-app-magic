@@ -60,10 +60,9 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
       </SelectTrigger>
       <SelectContent dir="rtl">
         <SelectItem value="new">חדש</SelectItem>
-        <SelectItem value="contacted">צורר</SelectItem>
-        <SelectItem value="qualified">מוכשר</SelectItem>
-        <SelectItem value="converted">הומר</SelectItem>
-        <SelectItem value="closed">סגור</SelectItem>
+        <SelectItem value="in_treatment">בטיפול</SelectItem>
+        <SelectItem value="waiting">ממתין</SelectItem>
+        <SelectItem value="meeting_scheduled">נקבעה פגישה</SelectItem>
       </SelectContent>
     </Select>
   );
