@@ -17,6 +17,15 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
     <Card className="hover:shadow-lg transition-all duration-200 border-border">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
+          <div className="flex-1 text-right">
+            <CardTitle className="text-lg font-semibold text-right flex items-center justify-end gap-2">
+              {template.name}
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardTitle>
+            <CardDescription className="text-right mt-1">
+              תבנית הודעת וואטסאפ
+            </CardDescription>
+          </div>
           <div className="flex gap-1">
             <Button 
               variant="ghost" 
@@ -34,15 +43,6 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             >
               <Trash2 className="h-4 w-4" />
             </Button>
-          </div>
-          <div className="flex-1 text-right">
-            <CardTitle className="text-lg font-semibold text-right flex items-center justify-end gap-2">
-              {template.name}
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardTitle>
-            <CardDescription className="text-right mt-1">
-              תבנית הודעת וואטסאפ
-            </CardDescription>
           </div>
         </div>
       </CardHeader>
