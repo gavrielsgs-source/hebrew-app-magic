@@ -1,6 +1,6 @@
 
 import { CardContent } from "@/components/ui/card";
-import { Phone, Mail, User, Car, MessageSquare2 } from "lucide-react";
+import { Phone, Mail, User, Car, MessageSquare } from "lucide-react";
 
 interface LeadCardContentProps {
   lead: any;
@@ -68,7 +68,7 @@ export function LeadCardContent({ lead }: LeadCardContentProps) {
         {lead.notes && (
           <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl">
             <div className="flex items-start gap-3">
-              <MessageSquare2 className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+              <MessageSquare className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
               <div className="text-right flex-1">
                 <div className="text-xs font-medium text-yellow-700 mb-1">הערות</div>
                 <p className="text-sm text-yellow-800 whitespace-pre-line leading-relaxed">
