@@ -32,7 +32,7 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
-  const { createTask } = useTasks();
+  const { addTask } = useTasks();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,7 +52,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
     try {
-      await createTask.mutateAsync({
+      await addTask.mutateAsync({
         ...data,
         lead_id: data.lead_id || null,
         car_id: data.car_id || null,
@@ -80,10 +80,10 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
     <div className="space-y-6" dir="rtl">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <TaskBasicDetails form={form} />
-          <TaskDateAndStatus form={form} />
-          <TaskTypeAndPriority form={form} />
-          <TaskRelations form={form} />
+          <TaskBasicDetails />
+          <TaskDateAndStatus />
+          <TaskTypeAndPriority />
+          <TaskRelations />
           
           <div className="flex gap-2 pt-4">
             <Button 
