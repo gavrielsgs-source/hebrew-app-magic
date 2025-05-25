@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { AddCarForm } from "@/components/cars/AddCarForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
+import { LimitAwareButton } from '@/components/subscription/LimitAwareButton';
 
 export default function Cars() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -56,14 +57,16 @@ export default function Cars() {
           </Button>
           <Sheet>
             <SheetTrigger asChild>
-              <Button 
-                size="sm" 
+              <LimitAwareButton
+                resourceType="car"
+                currentCount={cars.length}
+                size="sm"
                 className="flex items-center gap-2"
-                disabled={!canAddCar}
+                onAction={() => {}}
               >
                 <Plus className="h-4 w-4 ml-1" />
                 הוסף רכב
-              </Button>
+              </LimitAwareButton>
             </SheetTrigger>
             <SheetContent className="w-[90%] sm:w-[600px] overflow-y-auto">
               <SheetHeader>

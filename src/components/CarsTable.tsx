@@ -1,3 +1,4 @@
+
 import { 
   Table, 
   TableBody, 
@@ -13,27 +14,37 @@ import { useCars } from "@/hooks/use-cars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AddCarForm } from "./cars/AddCarForm";
 import { AddLeadForm } from "./leads/AddLeadForm";
+import { EditCarForm } from "./cars/forms/EditCarForm";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "./whatsapp/WhatsappTemplateSelector";
 import { CarDetails } from "./cars/CarDetails";
+import { useSubscription } from '@/contexts/subscription-context';
+import { Car as CarType } from "@/types/car";
 
 export function CarsTable() {
   const { cars, isLoading } = useCars();
-  const [selectedCar, setSelectedCar] = useState<any | null>(null);
+  const { checkEntitlement } = useSubscription();
+  const canAddCar = checkEntitlement('carLimit', cars.length + 1);
+  const [selectedCar, setSelectedCar] = useState<CarType | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              disabled={!canAddCar}
+            >
               <Plus className="h-4 w-4" /> הוסף רכב חדש
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-[400px]">
+          <SheetContent className="w-[90%] sm:w-[600px] overflow-y-auto">
             <SheetHeader>
               <SheetTitle>הוסף רכב חדש</SheetTitle>
             </SheetHeader>
@@ -117,7 +128,15 @@ export function CarsTable() {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" title="ערוך">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title="ערוך"
+                        onClick={() => {
+                          setSelectedCar(car);
+                          setIsEditOpen(true);
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                     </div>
@@ -152,6 +171,18 @@ export function CarsTable() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Car Edit Sheet */}
+      <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <SheetContent className="w-[90%] sm:max-w-[600px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>עריכת רכב</SheetTitle>
+          </SheetHeader>
+          {selectedCar && (
+            <EditCarForm car={selectedCar} onCancel={() => setIsEditOpen(false)} />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
