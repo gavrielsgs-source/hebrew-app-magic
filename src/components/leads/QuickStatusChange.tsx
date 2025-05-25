@@ -54,11 +54,9 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
       disabled={isChanging}
     >
       <SelectTrigger asChild>
-        <div className="cursor-pointer">
-          <Badge className={getStatusBadgeColor(lead.status)}>
-            {getStatusText(lead.status)}
-          </Badge>
-        </div>
+        <Badge className={`cursor-pointer ${getStatusBadgeColor(lead.status)}`}>
+          {getStatusText(lead.status)}
+        </Badge>
       </SelectTrigger>
       <SelectContent dir="rtl">
         <SelectItem value="new">חדש</SelectItem>
