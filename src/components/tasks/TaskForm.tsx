@@ -1,64 +1,101 @@
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useTasks } from "@/hooks/use-tasks";
+import { useToast } from "@/hooks/use-toast";
 import { TaskBasicDetails } from "./form/TaskBasicDetails";
-import { TaskTypeAndPriority } from "./form/TaskTypeAndPriority";
 import { TaskDateAndStatus } from "./form/TaskDateAndStatus";
+import { TaskTypeAndPriority } from "./form/TaskTypeAndPriority";
 import { TaskRelations } from "./form/TaskRelations";
-import { taskFormSchema, type TaskFormValues } from "@/types/task";
 
-export function TaskForm({ onSuccess }: { onSuccess?: () => void }) {
-  const { addTask } = useTasks();
-  
+const taskFormSchema = z.object({
+  title: z.string().min(1, "כותרת המשימה חובה"),
+  description: z.string().optional(),
+  due_date: z.date().optional(),
+  priority: z.enum(["low", "medium", "high"]).default("medium"),
+  type: z.enum(["call", "meeting", "follow_up", "task"]).default("task"),
+  status: z.enum(["pending", "in_progress", "completed"]).default("pending"),
+  lead_id: z.string().optional(),
+  car_id: z.string().optional(),
+});
+
+type TaskFormValues = z.infer<typeof taskFormSchema>;
+
+interface TaskFormProps {
+  onSuccess?: () => void;
+  initialLeadId?: string;
+  initialCarId?: string;
+}
+
+export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
+  const { createTask } = useTasks();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
       title: "",
       description: "",
       priority: "medium",
-      status: "pending",
       type: "task",
-      car_id: "",
-      lead_id: "",
+      status: "pending",
+      lead_id: initialLeadId || "",
+      car_id: initialCarId || "",
     },
   });
 
-  const onSubmit = async (values: TaskFormValues) => {
+  const onSubmit = async (data: TaskFormValues) => {
+    setIsSubmitting(true);
     try {
-      const formattedValues = {
-        title: values.title,
-        description: values.description || null,
-        priority: values.priority,
-        status: values.status,
-        type: values.type,
-        due_date: values.due_date ? values.due_date.toISOString() : null,
-        car_id: values.car_id || null,
-        lead_id: values.lead_id || null,
-      };
-
-      await addTask.mutateAsync(formattedValues);
+      await createTask.mutateAsync({
+        ...data,
+        lead_id: data.lead_id || null,
+        car_id: data.car_id || null,
+      });
+      
+      toast({
+        title: "משימה נוצרה",
+        description: "המשימה נוצרה בהצלחה",
+      });
+      
       form.reset();
-      if (onSuccess) onSuccess();
+      onSuccess?.();
     } catch (error) {
-      console.error("Error adding task:", error);
+      toast({
+        title: "שגיאה ביצירת משימה",
+        description: "לא ניתן ליצור את המשימה. נסה שנית.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-        <TaskBasicDetails />
-        <TaskTypeAndPriority />
-        <TaskDateAndStatus />
-        <TaskRelations />
-        
-        <Button type="submit" className="w-full" disabled={addTask.isPending}>
-          {addTask.isPending ? "מוסיף..." : "הוסף משימה"}
-        </Button>
-      </form>
-    </Form>
+    <div className="space-y-6" dir="rtl">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <TaskBasicDetails form={form} />
+          <TaskDateAndStatus form={form} />
+          <TaskTypeAndPriority form={form} />
+          <TaskRelations form={form} />
+          
+          <div className="flex gap-2 pt-4">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl"
+            >
+              {isSubmitting ? "יוצר..." : "צור משימה"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }
