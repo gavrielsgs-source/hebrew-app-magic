@@ -35,22 +35,20 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
       )}
       
       <div className="flex items-start justify-between">
-        {/* צד שמאל - ליד סקור, סטטוס ומקור */}
-        <div className="flex flex-col items-start gap-3">
+        {/* צד שמאל - הקוביות בשורה אופקית */}
+        <div className="flex items-center gap-3">
           <LeadScoreIndicator leadId={lead.id} />
           <QuickStatusChange lead={lead} />
-          <div className="flex justify-start">
-            {lead.source ? (
-              <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-[#2F3C7E] border-blue-200 font-medium px-3 py-1">
-                <Zap className="h-3 w-3 ml-1" />
-                {lead.source}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-gray-500 border-gray-300 font-medium">
-                ידני
-              </Badge>
-            )}
-          </div>
+          {lead.source ? (
+            <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-[#2F3C7E] border-blue-200 font-medium px-3 py-1">
+              <Zap className="h-3 w-3 ml-1" />
+              {lead.source}
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-gray-500 border-gray-300 font-medium">
+              ידני
+            </Badge>
+          )}
         </div>
         
         {/* צד ימין - שם הליד ותאריך */}
