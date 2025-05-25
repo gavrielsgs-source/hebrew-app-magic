@@ -19,6 +19,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
 
 export default function Leads() {
+  console.log('test')
   const { toast } = useToast();
   const { leads, isLoading, error } = useLeads();
   const addLead = useCreateLead();
