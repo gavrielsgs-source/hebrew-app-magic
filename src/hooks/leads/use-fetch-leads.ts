@@ -4,8 +4,10 @@ import { supabase } from "@/lib/supabase";
 
 const fetchLeads = async () => {
   console.log('getting leads')
- const { data, error } = await supabase.functions.invoke("facebook-leads");
-  console.log(data)
+ const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false }); 
 
   if (error) {
     console.error("שגיאה בטעינת לקוחות:", error);
