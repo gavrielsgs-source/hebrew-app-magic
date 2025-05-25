@@ -26,7 +26,6 @@ const verifyToken = (token: string | null): boolean => {
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  console.log(req)
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

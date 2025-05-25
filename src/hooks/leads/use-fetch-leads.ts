@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 const fetchLeads = async () => {
+  console.log('getting leads')
   const { data, error } = await supabase
     .from("leads")
     .select(`
