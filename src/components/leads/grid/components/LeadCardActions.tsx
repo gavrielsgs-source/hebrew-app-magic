@@ -28,7 +28,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
   };
 
   return (
-    <div className="p-6 bg-gradient-to-l from-gray-50 to-white border-t border-gray-100">
+    <div className="p-6 bg-gradient-to-l from-gray-50 to-white border-t border-gray-100" dir="rtl">
       <div className="grid grid-cols-2 gap-3 mb-4">
         {/* Phone Call Button */}
         <Button 
@@ -36,7 +36,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
           size="sm"
           onClick={handlePhoneCall}
           disabled={!lead.phone}
-          className="flex items-center gap-2 h-11 bg-white hover:bg-blue-50 border-blue-200 text-[#2F3C7E] hover:border-blue-300 font-medium"
+          className="flex items-center gap-2 h-12 bg-white hover:bg-blue-50 border-blue-200 text-[#2F3C7E] hover:border-blue-300 font-semibold shadow-sm transition-all duration-200"
         >
           <Phone className="h-4 w-4" />
           התקשר
@@ -48,7 +48,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
             <Button 
               variant="outline" 
               size="sm"
-              className="flex items-center gap-2 h-11 bg-white hover:bg-green-50 border-green-200 text-green-700 hover:border-green-300 font-medium"
+              className="flex items-center gap-2 h-12 bg-white hover:bg-green-50 border-green-200 text-green-700 hover:border-green-300 font-semibold shadow-sm transition-all duration-200"
             >
               <Calendar className="h-4 w-4" />
               פגישה
@@ -72,7 +72,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
               variant="outline" 
               size="sm"
               disabled={!lead.cars}
-              className="flex items-center gap-2 h-11 bg-green-600 hover:bg-green-700 text-white border-0 disabled:bg-gray-300 disabled:text-gray-500 font-medium"
+              className="flex items-center gap-2 h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 disabled:bg-gray-300 disabled:text-gray-500 font-semibold shadow-sm transition-all duration-200"
             >
               <MessageCircle className="h-4 w-4" />
               וואטסאפ
@@ -98,7 +98,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
             <Button 
               variant="outline" 
               size="sm"
-              className="flex items-center gap-2 h-11 bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:border-orange-300 font-medium"
+              className="flex items-center gap-2 h-12 bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:border-orange-300 font-semibold shadow-sm transition-all duration-200"
             >
               <Plus className="h-4 w-4" />
               תזכורות
@@ -120,7 +120,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
             <Button 
               variant="ghost" 
               size="sm"
-              className="w-full h-11 flex items-center gap-2 hover:bg-blue-50 text-[#2F3C7E] font-medium rounded-xl"
+              className="w-full h-12 flex items-center gap-2 hover:bg-blue-50 text-[#2F3C7E] font-semibold rounded-xl border border-blue-100 bg-white/50 transition-all duration-200"
             >
               <Edit className="h-4 w-4" />
               ערוך פרטי לקוח
