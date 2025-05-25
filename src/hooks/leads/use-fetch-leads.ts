@@ -4,17 +4,7 @@ import { supabase } from "@/lib/supabase";
 
 const fetchLeads = async () => {
   console.log('getting leads')
-  const { data, error } = await supabase
-    .from("leads")
-    .select(`
-      *,
-      cars (
-        make,
-        model,
-        year
-      )
-    `)
-    .order('created_at', { ascending: false });
+ const { data, error } = await supabase.functions.invoke("facebook-leads");
   console.log(data)
 
   if (error) {
