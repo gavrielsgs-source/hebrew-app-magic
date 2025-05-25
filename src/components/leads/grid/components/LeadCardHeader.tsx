@@ -35,19 +35,17 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
       )}
       
       <div className="flex items-start justify-between">
-        {/* צד ימין - שם הליד */}
+        {/* צד ימין - שם הליד וסטטוס */}
         <div className="text-right flex-1 ml-4">
-          <h3 className="text-2xl font-bold text-[#2F3C7E] mb-6 leading-tight">
+          <h3 className="text-2xl font-bold text-[#2F3C7E] mb-3 leading-tight">
             {lead.name}
           </h3>
+          <QuickStatusChange lead={lead} />
         </div>
         
-        {/* צד שמאל ויזואלי - הקוביות אחת מעל השנייה ותאריך */}
+        {/* צד שמאל ויזואלי - ציון ליד, מקור ותאריך */}
         <div className="flex flex-col items-start gap-3">
-          <div className="flex items-center gap-2">
-            <LeadScoreIndicator leadId={lead.id} />
-            <QuickStatusChange lead={lead} />
-          </div>
+          <LeadScoreIndicator leadId={lead.id} />
           <div className="flex items-center gap-2">
             {lead.source ? (
               <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-[#2F3C7E] border-blue-200 font-medium px-3 py-1">
