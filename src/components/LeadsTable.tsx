@@ -12,11 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, MessageSquare, Send, Plus, Edit, Calendar } from "lucide-react";
 import { useLeads } from "@/hooks/use-leads";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AddLeadForm } from "./leads/AddLeadForm";
 import { useState } from "react";
 import { EditLeadForm } from "./leads/EditLeadForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
+import { ScheduleMeetingForm } from "./leads/ScheduleMeetingForm";
 import { getStatusBadgeColor, getStatusText } from "./leads/grid/utils/lead-status";
 import { QuickStatusChange } from "./leads/QuickStatusChange";
 
@@ -29,6 +30,7 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
   const { leads, isLoading } = useLeads();
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   
   const selectedLead = selectedLeadId 
     ? leads.find(lead => lead.id === selectedLeadId) 
@@ -137,9 +139,29 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                         </DialogContent>
                       </Dialog>
                       
-                      <Button variant="ghost" size="icon">
-                        <Calendar className="h-4 w-4" />
-                      </Button>
+                      <Dialog open={isScheduleOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
+                        setIsScheduleOpen(open);
+                        if (open) setSelectedLeadId(lead.id);
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => setSelectedLeadId(lead.id)}
+                          >
+                            <Calendar className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[500px]" dir="rtl">
+                          <DialogHeader>
+                            <DialogTitle>קבע פגישה/תזכורת - {lead.name}</DialogTitle>
+                          </DialogHeader>
+                          <ScheduleMeetingForm 
+                            lead={lead} 
+                            onSuccess={() => setIsScheduleOpen(false)}
+                          />
+                        </DialogContent>
+                      </Dialog>
                       
                       <Sheet>
                         <SheetTrigger asChild>
