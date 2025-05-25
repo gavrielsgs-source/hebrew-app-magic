@@ -35,7 +35,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex-1 text-right">
+          <div className="text-right mr-auto">
             <CardTitle className="text-lg font-semibold flex items-center gap-2 justify-end">
               {template.name}
               <FileText className="h-4 w-4 text-muted-foreground" />
