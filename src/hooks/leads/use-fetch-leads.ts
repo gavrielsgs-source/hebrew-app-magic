@@ -4,9 +4,14 @@ import { supabase } from "@/lib/supabase";
 
 const fetchLeads = async () => {
   console.log('getting leads')
+  const {
+  data: { user },
+  error: userError,
+} = await supabase.auth.getUser();
  const { data, error } = await supabase
     .from('leads')
     .select('*')
+     .eq('user_id', user.id)
     .order('created_at', { ascending: false }); 
   
 
