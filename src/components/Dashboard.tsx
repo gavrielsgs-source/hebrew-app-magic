@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Calendar, TrendingUp, Eye, Clock, Users, Car, CheckSquare } from "lucide-react";
@@ -326,64 +325,64 @@ export default function Dashboard() {
         ) : null}
       </div>
 
-      {/* Enhanced Horizontal Navigation Tabs */}
+      {/* Enhanced Horizontal Navigation Tabs - Made larger and more professional */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <div className="bg-white border border-gray-200 rounded-3xl shadow-lg p-2">
+        <div className="bg-white border border-gray-200 rounded-3xl shadow-lg p-3">
           <TabsList className={`
-            bg-transparent border-0 p-0 rounded-none w-full h-auto gap-1
+            bg-transparent border-0 p-0 rounded-none w-full h-auto gap-2
             ${isMobile ? 'flex flex-wrap grid-cols-2' : 'flex flex-nowrap'} 
             overflow-x-auto
           `}>
             <TabsTrigger 
               value="overview" 
               className="
-                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                flex-1 min-h-[80px] px-8 py-4 rounded-3xl font-semibold text-lg
                 data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
-                data-[state=active]:text-white data-[state=active]:shadow-lg
+                data-[state=active]:text-white data-[state=active]:shadow-xl
                 hover:bg-gray-50 transition-all duration-300
-                flex flex-col items-center gap-1
+                flex flex-col items-center gap-2 shadow-sm border border-gray-100
               "
             >
-              <Eye className="h-5 w-5" />
+              <Eye className="h-6 w-6" />
               <span>סקירה כללית</span>
             </TabsTrigger>
             <TabsTrigger 
               value="leads" 
               className="
-                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                flex-1 min-h-[80px] px-8 py-4 rounded-3xl font-semibold text-lg
                 data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
-                data-[state=active]:text-white data-[state=active]:shadow-lg
+                data-[state=active]:text-white data-[state=active]:shadow-xl
                 hover:bg-gray-50 transition-all duration-300
-                flex flex-col items-center gap-1
+                flex flex-col items-center gap-2 shadow-sm border border-gray-100
               "
             >
-              <Users className="h-5 w-5" />
+              <Users className="h-6 w-6" />
               <span>לידים</span>
             </TabsTrigger>
             <TabsTrigger 
               value="cars" 
               className="
-                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                flex-1 min-h-[80px] px-8 py-4 rounded-3xl font-semibold text-lg
                 data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
-                data-[state=active]:text-white data-[state=active]:shadow-lg
+                data-[state=active]:text-white data-[state=active]:shadow-xl
                 hover:bg-gray-50 transition-all duration-300
-                flex flex-col items-center gap-1
+                flex flex-col items-center gap-2 shadow-sm border border-gray-100
               "
             >
-              <Car className="h-5 w-5" />
+              <Car className="h-6 w-6" />
               <span>רכבים</span>
             </TabsTrigger>
             <TabsTrigger 
               value="tasks" 
               className="
-                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                flex-1 min-h-[80px] px-8 py-4 rounded-3xl font-semibold text-lg
                 data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
-                data-[state=active]:text-white data-[state=active]:shadow-lg
+                data-[state=active]:text-white data-[state=active]:shadow-xl
                 hover:bg-gray-50 transition-all duration-300
-                flex flex-col items-center gap-1
+                flex flex-col items-center gap-2 shadow-sm border border-gray-100
               "
             >
-              <CheckSquare className="h-5 w-5" />
+              <CheckSquare className="h-6 w-6" />
               <span>משימות</span>
             </TabsTrigger>
           </TabsList>
