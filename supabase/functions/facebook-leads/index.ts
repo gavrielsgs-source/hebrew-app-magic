@@ -179,29 +179,29 @@ serve(async (req) => {
       }
     }
     
-    // Facebook Webhook Verification - מטפל בבקשת האימות הראשונית של פייסבוק
-    // if (req.method === 'GET') {
-    //   const url = new URL(req.url);
-    //   const mode = url.searchParams.get('hub.mode');
-    //   const token = url.searchParams.get('hub.verify_token');
-    //   const challenge = url.searchParams.get('hub.challenge');
+    Facebook Webhook Verification - מטפל בבקשת האימות הראשונית של פייסבוק
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      const mode = url.searchParams.get('hub.mode');
+      const token = url.searchParams.get('hub.verify_token');
+      const challenge = url.searchParams.get('hub.challenge');
       
-    //   // בשלב זה יש להגדיר טוקן אימות קבוע מראש בסביבת העבודה
-    //   const verifyToken = Deno.env.get('FB_VERIFY_TOKEN');
+      // בשלב זה יש להגדיר טוקן אימות קבוע מראש בסביבת העבודה
+      const verifyToken = Deno.env.get('FB_VERIFY_TOKEN');
       
-    //   if (mode === 'subscribe' && token === verifyToken) {
-    //     console.log("Webhook verified successfully");
-    //     return new Response(challenge, {
-    //       status: 200,
-    //       headers: { ...corsHeaders }
-    //     });
-    //   } else {
-    //     return new Response('Verification failed', {
-    //       status: 403,
-    //       headers: { ...corsHeaders }
-    //     });
-    //   }
-    // }
+      if (mode === 'subscribe' && token === verifyToken) {
+        console.log("Webhook verified successfully");
+        return new Response(challenge, {
+          status: 200,
+          headers: { ...corsHeaders }
+        });
+      } else {
+        return new Response('Verification failed', {
+          status: 403,
+          headers: { ...corsHeaders }
+        });
+      }
+    }
 
     results = ["hi"]
     
