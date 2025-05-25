@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Calendar, TrendingUp, Eye } from "lucide-react";
+import { AlertTriangle, Calendar, TrendingUp, Eye, Clock } from "lucide-react";
 import { LeadsTable } from "@/components/LeadsTable";
 import { CarsTable } from "@/components/CarsTable";
 import { TaskList } from "@/components/TaskList";
