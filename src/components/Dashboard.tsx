@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Calendar, TrendingUp, Eye, Clock } from "lucide-react";
@@ -89,7 +90,7 @@ export default function Dashboard() {
           {hotActions.map((action) => (
             <Card 
               key={action.id} 
-              className={`${action.color} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl transform hover:scale-105 cursor-pointer ${action.urgent ? 'ring-4 ring-red-200 animate-pulse' : ''}`}
+              className={`${action.color} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl transform hover:scale-105 cursor-pointer ${action.urgent ? 'ring-4 ring-red-200' : ''}`}
               onClick={() => handleActionClick(action.route)}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -190,11 +191,6 @@ export default function Dashboard() {
           ) : null}
         </div>
         
-        {/* Smart Insights with RTL alignment */}
-        <div className="space-y-4">
-          <SmartInsights data={salesData} />
-        </div>
-        
         {isMobile ? (
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 min-h-[340px] flex flex-col rounded-2xl">
             <CardHeader>
@@ -256,6 +252,11 @@ export default function Dashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Smart Insights moved to bottom */}
+      <div className="space-y-4">
+        <SmartInsights data={salesData} />
+      </div>
     </div>
   );
 }
