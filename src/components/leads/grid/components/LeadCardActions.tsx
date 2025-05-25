@@ -65,14 +65,14 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
           </DialogContent>
         </Dialog>
 
-        {/* WhatsApp Button */}
+        {/* WhatsApp Button - ללא רקע ירוק */}
         <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
           <DialogTrigger asChild>
             <Button 
               variant="outline" 
               size="sm"
               disabled={!lead.cars}
-              className="flex items-center gap-2 h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 disabled:bg-gray-300 disabled:text-gray-500 font-semibold shadow-sm transition-all duration-200"
+              className="flex items-center gap-2 h-12 bg-white hover:bg-green-50 border-green-200 text-green-700 hover:border-green-300 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-300 font-semibold shadow-sm transition-all duration-200"
             >
               <MessageCircle className="h-4 w-4" />
               וואטסאפ
