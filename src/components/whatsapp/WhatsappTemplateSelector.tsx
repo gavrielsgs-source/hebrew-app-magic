@@ -25,6 +25,8 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
   const [customizedTemplate, setCustomizedTemplate] = useState("");
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
+  const [selectedLeadId, setSelectedLeadId] = useState<string>("");
+  const [selectedLeadName, setSelectedLeadName] = useState<string>("");
   const [carImages, setCarImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   
@@ -73,9 +75,21 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
     setSelectedTemplate(newTemplate);
   };
 
+  const handleLeadSelect = (leadId: string, phone: string, name: string) => {
+    setSelectedLeadId(leadId);
+    setSelectedLeadName(name);
+    setPhoneNumber(phone);
+  };
+
+  const handleClearLead = () => {
+    setSelectedLeadId("");
+    setSelectedLeadName("");
+    setPhoneNumber("");
+  };
+
   const handleSendWhatsApp = () => {
     if (!phoneNumber) {
-      toast.error("יש להזין מספר טלפון");
+      toast.error("יש להזין מספר טלפון או לבחור לקוח");
       return;
     }
     
@@ -104,7 +118,12 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
       }, 1000);
     }
     
-    toast.success("הודעת וואטסאפ נשלחה");
+    if (selectedLeadId && selectedLeadName) {
+      toast.success(`הודעת וואטסאפ נשלחה ללקוח ${selectedLeadName}`);
+    } else {
+      toast.success("הודעת וואטסאפ נשלחה");
+    }
+    
     onClose();
   };
   
@@ -127,7 +146,14 @@ export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = ""
       
       <Separator />
       
-      <WhatsappPhoneInput phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber} />
+      <WhatsappPhoneInput 
+        phoneNumber={phoneNumber} 
+        setPhoneNumber={setPhoneNumber}
+        selectedLeadId={selectedLeadId}
+        selectedLeadName={selectedLeadName}
+        onLeadSelect={handleLeadSelect}
+        onClearLead={handleClearLead}
+      />
       
       <Tabs defaultValue="template" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
