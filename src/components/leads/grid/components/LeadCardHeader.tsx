@@ -35,34 +35,38 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
       )}
       
       <div className="flex items-start justify-between">
-        <div className="flex flex-col items-end gap-3">
+        {/* צד שמאל - ליד סקור וסטטוס */}
+        <div className="flex flex-col items-start gap-3">
           <LeadScoreIndicator leadId={lead.id} />
           <QuickStatusChange lead={lead} />
         </div>
         
-        <div className="text-right flex-1 ml-4">
-          <h3 className="text-2xl font-bold text-[#2F3C7E] mb-3 leading-tight">
-            {lead.name}
-          </h3>
-          
-          {/* תאריך יצירה */}
-          <div className="flex items-center justify-end gap-2 text-sm text-gray-600 mb-4">
-            <span className="font-medium">{timeAgo(lead.created_at)}</span>
-            <Calendar className="h-4 w-4" />
+        {/* צד ימין - שם הליד ומקור */}
+        <div className="text-right flex-1 mr-4">
+          {/* שם הליד ומקור באותו גובה */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex justify-end">
+              {lead.source ? (
+                <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-[#2F3C7E] border-blue-200 font-medium px-3 py-1">
+                  <Zap className="h-3 w-3 ml-1" />
+                  {lead.source}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-gray-500 border-gray-300 font-medium">
+                  ידני
+                </Badge>
+              )}
+            </div>
+            
+            <h3 className="text-2xl font-bold text-[#2F3C7E] leading-tight">
+              {lead.name}
+            </h3>
           </div>
           
-          {/* מקור הליד */}
-          <div className="flex justify-end">
-            {lead.source ? (
-              <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-[#2F3C7E] border-blue-200 font-medium px-3 py-1">
-                <Zap className="h-3 w-3 ml-1" />
-                {lead.source}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-gray-500 border-gray-300 font-medium">
-                ידני
-              </Badge>
-            )}
+          {/* תאריך יצירה */}
+          <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
+            <span className="font-medium">{timeAgo(lead.created_at)}</span>
+            <Calendar className="h-4 w-4" />
           </div>
         </div>
       </div>
