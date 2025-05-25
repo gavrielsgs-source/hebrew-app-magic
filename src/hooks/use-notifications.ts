@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { addMinutes, isBefore, isAfter } from "date-fns";
 
 type Notification = {
   id: string;
@@ -13,6 +14,7 @@ type Notification = {
   created_at: string;
   entityId?: string;
   entityType?: string;
+  scheduledFor?: string;
 };
 
 export function useNotifications() {
@@ -21,7 +23,87 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // מטען את ההתראות
+  // Check for upcoming tasks and create notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const checkUpcomingTasks = async () => {
+      const now = new Date();
+      const in30Minutes = addMinutes(now, 30);
+      const in1Hour = addMinutes(now, 60);
+
+      try {
+        const { data: upcomingTasks } = await supabase
+          .from("tasks")
+          .select("id, title, due_date, type")
+          .eq("user_id", user.id)
+          .neq("status", "completed")
+          .gte("due_date", now.toISOString())
+          .lte("due_date", in1Hour.toISOString());
+
+        if (upcomingTasks) {
+          upcomingTasks.forEach(task => {
+            const taskDate = new Date(task.due_date);
+            const timeDiff = Math.ceil((taskDate.getTime() - now.getTime()) / (1000 * 60));
+
+            if (timeDiff <= 30 && timeDiff > 0) {
+              const notification: Notification = {
+                id: `task-reminder-${task.id}`,
+                title: "תזכורת למשימה",
+                message: `יש לך ${task.type === "meeting" ? "פגישה" : "משימה"} בעוד ${timeDiff} דקות: ${task.title}`,
+                type: "reminder",
+                read: false,
+                created_at: new Date().toISOString(),
+                entityId: task.id,
+                entityType: "task",
+                scheduledFor: task.due_date
+              };
+
+              // Show browser notification if supported
+              if (Notification.permission === "granted") {
+                new Notification(notification.title, {
+                  body: notification.message,
+                  icon: "/favicon.ico"
+                });
+              }
+
+              // Show toast notification
+              toast(notification.title, {
+                description: notification.message,
+                action: {
+                  label: "צפה במשימה",
+                  onClick: () => window.location.href = "/tasks"
+                }
+              });
+
+              setNotifications(prev => {
+                const exists = prev.some(n => n.id === notification.id);
+                if (!exists) {
+                  return [notification, ...prev];
+                }
+                return prev;
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error checking upcoming tasks:", error);
+      }
+    };
+
+    // Request notification permission
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    // Check immediately and then every minute
+    checkUpcomingTasks();
+    const interval = setInterval(checkUpcomingTasks, 60000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Load initial notifications
   useEffect(() => {
     if (!user) return;
 
@@ -29,43 +111,30 @@ export function useNotifications() {
       setLoading(true);
       
       try {
-        // כאן נשלוף את ההתראות מהדאטאבייס
-        // במצב נוכחי נדמה נתונים
-        const demoNotifications: Notification[] = [
+        // Create some sample notifications for demonstration
+        const sampleNotifications: Notification[] = [
           {
             id: "1",
-            title: "תזכורת חדשה",
-            message: "יש לך פגישה עם לקוח בעוד שעה",
-            type: "reminder",
+            title: "לידים שלא טופלו",
+            message: "יש לך 3 לידים שלא טופלו מעל 24 שעות",
+            type: "lead",
             read: false,
             created_at: new Date().toISOString(),
-            entityType: "lead",
-            entityId: "1"
+            entityType: "lead"
           },
           {
             id: "2",
-            title: "ליד חדש התווסף",
-            message: "ישראל ישראלי נוסף למערכת כליד חדש",
-            type: "lead",
-            read: true,
-            created_at: new Date(Date.now() - 8600000).toISOString(),
-            entityType: "lead",
-            entityId: "2"
-          },
-          {
-            id: "3",
-            title: "מועד תזכורת הגיע",
-            message: "יש להתקשר ללקוח להזכיר על פגישה מחר",
-            type: "task",
+            title: "רכבים לפרסום",
+            message: "2 רכבים מחכים לפרסום",
+            type: "car",
             read: false,
-            created_at: new Date(Date.now() - 36000000).toISOString(),
-            entityType: "task",
-            entityId: "5"
+            created_at: new Date().toISOString(),
+            entityType: "car"
           }
         ];
         
-        setNotifications(demoNotifications);
-        setUnreadCount(demoNotifications.filter(n => !n.read).length);
+        setNotifications(sampleNotifications);
+        setUnreadCount(sampleNotifications.filter(n => !n.read).length);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       } finally {
@@ -74,65 +143,26 @@ export function useNotifications() {
     };
     
     fetchNotifications();
-    
-    // כאן ניתן להוסיף האזנה לשינויים בזמן אמת
-    // הדוגמה הבאה היתה עובדת עם סופאבייס
-    /*
-    const channel = supabase
-      .channel('notifications-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        payload => {
-          if (payload.eventType === 'INSERT') {
-            setNotifications(prev => [payload.new as Notification, ...prev]);
-            setUnreadCount(prev => prev + 1);
-            toast({
-              title: payload.new.title,
-              description: payload.new.message
-            });
-          }
-        }
-      )
-      .subscribe();
-      
-    return () => {
-      supabase.removeChannel(channel);
-    };
-    */
   }, [user]);
 
   const markAsRead = async (notificationId: string) => {
-    // כאן היינו מעדכנים גם בדאטאבייס
-    /*
-    try {
-      await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-    */
-    
-    // עדכון המצב המקומי
     setNotifications(notifications.map(notification => 
       notification.id === notificationId ? { ...notification, read: true } : notification
     ));
     
-    // עדכון ספירת הלא נקראות
     setUnreadCount(prev => Math.max(0, prev - 1));
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
+    setUnreadCount(0);
   };
 
   return {
     notifications,
     loading,
     unreadCount,
-    markAsRead
+    markAsRead,
+    markAllAsRead
   };
 }
