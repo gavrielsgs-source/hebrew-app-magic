@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +29,7 @@ import { FileIcon, FileTextIcon, Image, MoreHorizontal, Search, Upload, X, Link 
 import { useDocuments, type UploadDocumentParams } from "@/hooks/use-documents";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DocumentsManagerProps {
   entityId?: string;
@@ -45,6 +45,8 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   const [documentType, setDocumentType] = useState<string>("contract");
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(entityId || null);
   const [selectedEntityType, setSelectedEntityType] = useState<'lead' | 'car' | 'agency' | null>(entityType || null);
+  
+  const isMobile = useIsMobile();
   
   const { documents, isLoading, error, uploadDocument, deleteDocument, isUploading, isDeleting } = useDocuments(
     selectedEntityId || entityId, 
@@ -154,12 +156,17 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   
   const getDocumentIcon = (fileType: string) => {
     if (fileType?.startsWith('image/')) {
-      return <Image className="h-6 w-6 text-blue-500" />;
+      return <Image className="h-5 w-5 text-blue-500 flex-shrink-0" />;
     } else if (fileType === 'application/pdf') {
-      return <FileTextIcon className="h-6 w-6 text-red-500" />;
+      return <FileTextIcon className="h-5 w-5 text-red-500 flex-shrink-0" />;
     } else {
-      return <FileIcon className="h-6 w-6 text-gray-500" />;
+      return <FileIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />;
     }
+  };
+  
+  const truncateFileName = (name: string, maxLength: number = 30) => {
+    if (name.length <= maxLength) return name;
+    return name.slice(0, maxLength) + '...';
   };
   
   if (error) {
@@ -375,13 +382,13 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+          <div className={`grid gap-4 p-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {filteredDocuments?.map((document) => (
-              <div key={document.id} className="border rounded-lg p-4 space-y-2">
-                <div className="flex items-start justify-between">
+              <div key={document.id} className="border rounded-lg p-4 h-20 flex items-center justify-between">
+                <div className={`flex items-center gap-2 ${isMobile ? 'gap-1' : 'gap-2'}`}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size={isMobile ? "sm" : "sm"} className="h-8 w-8 p-0">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -397,29 +404,28 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <div className="flex items-center gap-2 text-right">
-                    <div>
-                      <h4 className="font-medium truncate" title={document.name}>
-                        {document.name}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {getDocumentTypeLabel(document.type)}
-                      </p>
-                    </div>
-                    {getDocumentIcon(document.file_type || '')}
-                  </div>
                 </div>
                 
-                {/* שיוך המסמך ללקוח/רכב */}
-                {(document.entity_id && document.entity_type) && (
-                  <div className="flex items-center justify-end text-xs text-muted-foreground gap-1">
-                    <span className="truncate">{getEntityLabel(document.entity_id, document.entity_type)}</span>
-                    <LinkIcon className="h-3 w-3" />
+                <div className="flex items-center gap-2 text-right flex-1 min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium truncate text-right" title={document.name}>
+                      {truncateFileName(document.name, 30)}
+                    </h4>
+                    <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+                      <span>{getDocumentTypeLabel(document.type)}</span>
+                      <span>•</span>
+                      <span>{new Date(document.created_at).toLocaleDateString('he-IL')}</span>
+                    </div>
+                    
+                    {/* שיוך המסמך ללקוח/רכב */}
+                    {(document.entity_id && document.entity_type) && (
+                      <div className="flex items-center justify-end text-xs text-muted-foreground gap-1 mt-1">
+                        <span className="truncate">{getEntityLabel(document.entity_id, document.entity_type)}</span>
+                        <LinkIcon className="h-3 w-3 flex-shrink-0" />
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                <div className="text-xs text-muted-foreground text-right">
-                  הועלה ב-{new Date(document.created_at).toLocaleDateString('he-IL')}
+                  {getDocumentIcon(document.file_type || '')}
                 </div>
               </div>
             ))}
