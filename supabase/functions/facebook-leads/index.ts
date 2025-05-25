@@ -222,6 +222,4 @@ const handler = async (req: Request): Promise<Response> => {
 
 export default handler
 
-if (import.meta.main) {
-  serve(handler);
-}
+serve(handler);
