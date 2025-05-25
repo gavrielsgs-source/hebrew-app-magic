@@ -139,10 +139,6 @@ serve(async (req) => {
                   .limit(1)
                   .single();
                 
-                if (!adminUser || !adminUser.id) {
-                  throw new Error("No default user found for lead assignment");
-                }
-                
                 const { data: lead, error } = await supabase
                   .from('leads')
                   .insert({
