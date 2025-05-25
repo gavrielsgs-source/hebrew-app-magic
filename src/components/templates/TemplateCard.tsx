@@ -35,12 +35,12 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
-          <div className="text-right">
+          <div className="flex-1 text-right">
             <CardTitle className="text-lg font-semibold flex items-center gap-2 justify-end">
               {template.name}
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardTitle>
-            <CardDescription className="mt-1">
+            <CardDescription className="mt-1 text-right">
               תבנית הודעת וואטסאפ
             </CardDescription>
           </div>
