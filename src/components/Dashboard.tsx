@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const CarSleadLogoSVG = () => (
   <svg width="48" height="48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,6 +26,7 @@ const CarSleadLogoSVG = () => (
 export default function Dashboard() {
   const isMobile = useIsMobile();
   const { data: salesData } = useSalesAnalytics();
+  const navigate = useNavigate();
   
   // Mock data for hot actions - in real implementation, this would come from hooks
   const hotActions = [
@@ -37,7 +39,8 @@ export default function Dashboard() {
       color: "bg-red-500",
       textColor: "text-white",
       icon: AlertTriangle,
-      action: "טפל בלידים"
+      action: "טפל בלידים",
+      route: "/leads"
     },
     {
       id: 2,
@@ -48,7 +51,8 @@ export default function Dashboard() {
       color: "bg-orange-500",
       textColor: "text-white",
       icon: TrendingUp,
-      action: "פרסם רכבים"
+      action: "פרסם רכבים",
+      route: "/cars"
     },
     {
       id: 3,
@@ -59,9 +63,14 @@ export default function Dashboard() {
       color: "bg-blue-500",
       textColor: "text-white",
       icon: Calendar,
-      action: "צפה בפגישה"
+      action: "צפה בפגישה",
+      route: "/tasks"
     }
   ];
+
+  const handleActionClick = (route: string) => {
+    navigate(route);
+  };
   
   return (
     <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8" dir="rtl">
@@ -96,6 +105,7 @@ export default function Dashboard() {
                     variant="secondary" 
                     size="sm"
                     className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl"
+                    onClick={() => handleActionClick(action.route)}
                   >
                     {action.action}
                   </Button>
