@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     // Facebook שולח לנו מערך של changes בתוך entry
-    const results = [];
+    const results = ["test"];
     
     for (const entry of body.entry) {
       if (entry.changes && Array.isArray(entry.changes)) {
