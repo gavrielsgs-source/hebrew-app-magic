@@ -77,11 +77,11 @@ export function CarGrid({ cars, isLoading }: CarGridProps) {
   
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-2 auto-rows-fr">
         {cars.map((car, index) => (
           <div 
             key={car.id}
-            className="animate-fade-in"
+            className="animate-fade-in h-full"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             <CarCard

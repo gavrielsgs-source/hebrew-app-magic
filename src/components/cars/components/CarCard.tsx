@@ -53,7 +53,7 @@ export function CarCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group border-0 shadow-lg bg-white rounded-2xl">
+    <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 group border-0 shadow-lg bg-white rounded-2xl flex flex-col">
       <CarImageSection 
         car={car} 
         loadingImages={loadingImages} 
@@ -61,56 +61,56 @@ export function CarCard({
         onEditClick={onEditClick} 
       />
       
-      <CardHeader className="p-6 pb-4">
+      <CardHeader className="p-6 pb-4 flex-shrink-0">
         <div className="flex justify-between items-start mb-3">
-          <div className="text-right">
-            <CardTitle className="text-xl font-bold text-[#2F3C7E] mb-1">
+          <div className="text-right min-w-0 flex-1">
+            <CardTitle className="text-xl font-bold text-[#2F3C7E] mb-1 truncate">
               {car.make} {car.model}
             </CardTitle>
             <CardDescription className="text-lg font-medium text-gray-600">
               שנת {car.year}
             </CardDescription>
           </div>
-          <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full`}>
+          <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full flex-shrink-0 ml-2`}>
             {getStatusText(car.status)}
           </Badge>
         </div>
         
         {/* מחיר בולט */}
         <div className="text-center bg-gradient-to-l from-blue-50 to-white p-4 rounded-xl border border-blue-100">
-          <div className="text-3xl font-bold text-[#2F3C7E]">
+          <div className="text-3xl font-bold text-[#2F3C7E] truncate">
             {formatPrice(car.price)}
           </div>
           <div className="text-sm text-gray-500 mt-1">מחיר מבוקש</div>
         </div>
       </CardHeader>
       
-      <CardContent className="p-6 pt-0">
+      <CardContent className="p-6 pt-0 flex-1 flex flex-col">
         {/* פרטים טכניים בעיצוב משופר */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 flex-1">
           <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
-            <div className="text-sm">
-              <div className="font-medium text-gray-900">{car.kilometers.toLocaleString()}</div>
+            <div className="text-sm min-w-0 flex-1">
+              <div className="font-medium text-gray-900 truncate">{car.kilometers.toLocaleString()}</div>
               <div className="text-xs text-gray-500">קילומטרים</div>
             </div>
-            <Gauge className="h-5 w-5 text-[#2F3C7E]" />
+            <Gauge className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
           </div>
           
           <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
-            <div className="text-sm">
-              <div className="font-medium text-gray-900">{car.fuel_type || 'לא צוין'}</div>
+            <div className="text-sm min-w-0 flex-1">
+              <div className="font-medium text-gray-900 truncate">{car.fuel_type || 'לא צוין'}</div>
               <div className="text-xs text-gray-500">סוג דלק</div>
             </div>
-            <Fuel className="h-5 w-5 text-[#2F3C7E]" />
+            <Fuel className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
           </div>
           
           {car.transmission && (
             <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg col-span-2">
-              <div className="text-sm">
-                <div className="font-medium text-gray-900">{car.transmission}</div>
+              <div className="text-sm min-w-0 flex-1">
+                <div className="font-medium text-gray-900 truncate">{car.transmission}</div>
                 <div className="text-xs text-gray-500">תיבת הילוכים</div>
               </div>
-              <CarIcon className="h-5 w-5 text-[#2F3C7E]" />
+              <CarIcon className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
             </div>
           )}
         </div>
@@ -125,7 +125,7 @@ export function CarCard({
         )}
       </CardContent>
       
-      <CardFooter className="p-6 pt-0">
+      <CardFooter className="p-6 pt-0 flex-shrink-0">
         <CarCardActions 
           car={car} 
           onSendWhatsapp={onSendWhatsapp} 

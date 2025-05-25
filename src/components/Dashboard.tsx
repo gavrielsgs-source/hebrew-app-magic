@@ -326,13 +326,69 @@ export default function Dashboard() {
         ) : null}
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className={`font-rubik bg-white border border-gray-200 p-1 rounded-2xl shadow-sm w-full ${isMobile ? 'flex flex-wrap grid-cols-2' : 'flex flex-nowrap'} overflow-x-auto`}>
-          <TabsTrigger value="overview" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">סיכום</TabsTrigger>
-          <TabsTrigger value="leads" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">לידים</TabsTrigger>
-          <TabsTrigger value="cars" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">רכבים</TabsTrigger>
-          <TabsTrigger value="tasks" className="font-rubik data-[state=active]:bg-[#2F3C7E] data-[state=active]:text-white flex-1 rounded-xl">משימות</TabsTrigger>
-        </TabsList>
+      {/* Enhanced Horizontal Navigation Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <div className="bg-white border border-gray-200 rounded-3xl shadow-lg p-2">
+          <TabsList className={`
+            bg-transparent border-0 p-0 rounded-none w-full h-auto gap-1
+            ${isMobile ? 'flex flex-wrap grid-cols-2' : 'flex flex-nowrap'} 
+            overflow-x-auto
+          `}>
+            <TabsTrigger 
+              value="overview" 
+              className="
+                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
+                data-[state=active]:text-white data-[state=active]:shadow-lg
+                hover:bg-gray-50 transition-all duration-300
+                flex flex-col items-center gap-1
+              "
+            >
+              <Eye className="h-5 w-5" />
+              <span>סקירה כללית</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="leads" 
+              className="
+                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
+                data-[state=active]:text-white data-[state=active]:shadow-lg
+                hover:bg-gray-50 transition-all duration-300
+                flex flex-col items-center gap-1
+              "
+            >
+              <Users className="h-5 w-5" />
+              <span>לידים</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="cars" 
+              className="
+                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
+                data-[state=active]:text-white data-[state=active]:shadow-lg
+                hover:bg-gray-50 transition-all duration-300
+                flex flex-col items-center gap-1
+              "
+            >
+              <Car className="h-5 w-5" />
+              <span>רכבים</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="tasks" 
+              className="
+                flex-1 min-h-[60px] px-6 py-3 rounded-2xl font-medium text-base
+                data-[state=active]:bg-gradient-to-l data-[state=active]:from-[#2F3C7E] data-[state=active]:to-blue-600
+                data-[state=active]:text-white data-[state=active]:shadow-lg
+                hover:bg-gray-50 transition-all duration-300
+                flex flex-col items-center gap-1
+              "
+            >
+              <CheckSquare className="h-5 w-5" />
+              <span>משימות</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
         <TabsContent value="overview" className="space-y-8">
           <div className="text-center p-8">
             <Eye className="h-12 w-12 text-[#2F3C7E] mx-auto mb-4" />
