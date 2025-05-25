@@ -25,56 +25,81 @@ export function TasksHeader({ sortField, sortDirection, onSort }: TasksHeaderPro
   return (
     <TableHeader>
       <TableRow className="bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100 hover:bg-gradient-to-l hover:from-slate-50 hover:via-blue-50 hover:to-white">
-        <TableHead className="w-[50px] py-4 px-6 text-right"></TableHead>
+        {/* Checkbox Column */}
+        <TableHead className="w-[50px] text-center">
+          <div className="flex justify-center">
+            {/* Empty for checkbox alignment */}
+          </div>
+        </TableHead>
+        
+        {/* Title Column */}
         <TableHead 
-          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[200px]"
           onClick={() => onSort("title")}
         >
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-1">
             {renderSortIcon("title")}
-            כותרת
+            <span>כותרת</span>
           </div>
         </TableHead>
+        
+        {/* Type Column */}
         <TableHead 
-          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[120px]"
           onClick={() => onSort("type")}
         >
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-1">
             {renderSortIcon("type")}
-            סוג
+            <span>סוג</span>
           </div>
         </TableHead>
+        
+        {/* Priority Column */}
         <TableHead 
-          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[100px]"
           onClick={() => onSort("priority")}
         >
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-1">
             {renderSortIcon("priority")}
-            עדיפות
+            <span>עדיפות</span>
           </div>
         </TableHead>
+        
+        {/* Date Column */}
         <TableHead 
-          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[120px]"
           onClick={() => onSort("due_date")}
         >
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-1">
             {renderSortIcon("due_date")}
-            תאריך
+            <span>תאריך</span>
           </div>
         </TableHead>
+        
+        {/* Status Column */}
         <TableHead 
-          className="cursor-pointer text-right font-semibold text-[#2F3C7E] py-4 px-6 hover:text-[#1F2C5E] transition-colors"
+          className="cursor-pointer font-semibold text-[#2F3C7E] hover:text-[#1F2C5E] transition-colors w-[100px]"
           onClick={() => onSort("status")}
         >
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-1">
             {renderSortIcon("status")}
-            סטטוס
+            <span>סטטוס</span>
           </div>
         </TableHead>
-        <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">
-          קשור ל
+        
+        {/* Related To Column */}
+        <TableHead className="font-semibold text-[#2F3C7E] w-[150px]">
+          <div className="flex justify-end">
+            <span>קשור ל</span>
+          </div>
         </TableHead>
-        <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6"></TableHead>
+        
+        {/* Actions Column */}
+        <TableHead className="w-[60px]">
+          <div className="flex justify-center">
+            {/* Empty for actions */}
+          </div>
+        </TableHead>
       </TableRow>
     </TableHeader>
   );

@@ -60,7 +60,6 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
     }
   };
   
-  // Safely format a date string
   const safeFormatDate = (dateString: string | null | undefined, formatString: string): string => {
     if (!dateString) return "ללא תאריך";
     
@@ -75,14 +74,14 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
 
   return (
     <TableRow 
-      key={task.id} 
       className={cn(
         "hover:bg-blue-50/50 transition-colors border-b border-gray-50",
         task.status === 'completed' && "bg-gray-50/80"
       )}
     >
-      <TableCell className="py-4 px-6 text-right">
-        <div className="flex justify-end">
+      {/* Checkbox Cell - matches header width */}
+      <TableCell className="w-[50px]">
+        <div className="flex justify-center">
           <Checkbox 
             checked={task.status === 'completed'} 
             onCheckedChange={(checked) => onStatusChange(task.id, checked as boolean)}
@@ -90,13 +89,17 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           />
         </div>
       </TableCell>
+      
+      {/* Title Cell */}
       <TableCell className={cn(
-        "text-right py-4 px-6",
+        "w-[200px]",
         task.status === 'completed' && "line-through text-muted-foreground"
       )}>
-        <div className="font-medium text-[#2F3C7E] text-right">{task.title}</div>
+        <div className="text-right font-medium text-[#2F3C7E]">{task.title}</div>
       </TableCell>
-      <TableCell className="py-4 px-6 text-right">
+      
+      {/* Type Cell */}
+      <TableCell className="w-[120px]">
         <div className="flex justify-end">
           <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
             {getTaskTypeIcon(task.type)}
@@ -104,7 +107,9 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           </Badge>
         </div>
       </TableCell>
-      <TableCell className="py-4 px-6 text-right">
+      
+      {/* Priority Cell */}
+      <TableCell className="w-[100px]">
         <div className="flex justify-end">
           <Badge className={`${getTaskPriorityColor(task.priority)} border font-medium`}>
             {task.priority === 'high' ? 'גבוהה' : 
@@ -114,7 +119,9 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           </Badge>
         </div>
       </TableCell>
-      <TableCell className="py-4 px-6 text-right">
+      
+      {/* Date Cell */}
+      <TableCell className="w-[120px]">
         {task.due_date ? (
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-1">
@@ -131,10 +138,14 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
             </div>
           </div>
         ) : (
-          <span className="text-muted-foreground text-sm text-right block">ללא תאריך</span>
+          <div className="text-right">
+            <span className="text-muted-foreground text-sm">ללא תאריך</span>
+          </div>
         )}
       </TableCell>
-      <TableCell className="py-4 px-6 text-right">
+      
+      {/* Status Cell */}
+      <TableCell className="w-[100px]">
         <div className="flex justify-end">
           <Badge className={`${getStatusColor(task.status)} border font-medium`}>
             {task.status === 'pending' ? 'ממתין' : 
@@ -144,7 +155,9 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           </Badge>
         </div>
       </TableCell>
-      <TableCell className="py-4 px-6 text-right">
+      
+      {/* Related To Cell */}
+      <TableCell className="w-[150px]">
         <div className="flex flex-col gap-1 items-end">
           {task.car_id && (
             <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700 border-purple-200">
@@ -160,8 +173,10 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           )}
         </div>
       </TableCell>
-      <TableCell className="py-4 px-6 text-right">
-        <div className="flex justify-end">
+      
+      {/* Actions Cell */}
+      <TableCell className="w-[60px]">
+        <div className="flex justify-center">
           <Button 
             variant="ghost" 
             size="icon"
