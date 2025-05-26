@@ -61,6 +61,7 @@ const App = () => {
 
 function AppLayout() {
   const isMobile = useIsMobile();
+  console.log(window.location.url)
   
   return (
     <div className="flex min-h-screen w-full">
