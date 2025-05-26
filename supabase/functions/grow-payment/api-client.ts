@@ -25,25 +25,24 @@ export interface GrowPaymentResponse {
 // Single function for making direct debit requests - used for both initial payment and updates
 export async function processDirectDebitPayment(payload: GrowPaymentRequest): Promise<GrowPaymentResponse> {
   console.log('Processing direct debit payment with payload:', payload);
-  
-  // Create a FormData object for multipart/form-data format
-  const formData = new FormData();
-  
-  // Add optional fields if they exist
-  if (payload.fullName) formData.append('fullName', payload.fullName);
-  if (payload.phone) formData.append('phone', payload.phone);
-  if (payload.email) formData.append('email', payload.email);
-  if (payload.sum) formData.append('sum', payload.sum);
-  formData.append('pageCode', GROW_PAGE_CODE);
-  formData.append('userId', GROW_USER_ID);
 
-  
+  const formData = new FormData();
+
+  formData.append('pageCode', GROW_PAGE_CODE);
+
+  if (payload.userId) formData.append('userId', payload.userId);
+  if (payload.sum) formData.append('sum', payload.sum);
+
+  // ✅ Correct way to add pageField values
+  if (payload.fullName) formData.append('pageField[fullName]', payload.fullName);
+  if (payload.phone) formData.append('pageField[phone]', payload.phone);
+  if (payload.email) formData.append('pageField[email]', payload.email);
+
   console.log('Sending form data to GROW API:', Object.fromEntries(formData.entries()));
 
-  // Send the request with the appropriate content type
   const response = await fetch(`${GROW_API_BASE}/createPaymentProcess`, {
     method: 'POST',
-    body: formData
+    body: formData,
   });
 
   if (!response.ok) {
@@ -52,9 +51,9 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   }
 
   const response_json = await response.json();
-
-  return await response_json
+  return response_json;
 }
+
 
 // Alias for backward compatibility
 export const createPaymentProcess = processDirectDebitPayment;
