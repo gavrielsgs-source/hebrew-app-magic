@@ -19,7 +19,7 @@ export function FacebookLeadIntegration() {
     }
     window.fbAsyncInit = function () {
       window.FB.init({
-        appId: "101137678772993",
+        appId: "2890118827858371",
         cookie: true,
         xfbml: false,
         version: "v17.0",
