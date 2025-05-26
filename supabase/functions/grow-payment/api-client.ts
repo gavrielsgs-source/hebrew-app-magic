@@ -24,7 +24,7 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   console.log('Processing direct debit payment with payload:', payload);
 
   const formData = new FormData();
-  console.log(Deno.env.get('SUPABASE_URL'))
+
   formData.append('pageCode', GROW_PAGE_CODE);
   formData.append('userId', GROW_USER_ID);
   formData.append('successUrl', SUCCESS_URL)
