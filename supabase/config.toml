@@ -1,58 +1,63 @@
-# A string used as a project reference and to name resources based on the project.
+
 project_id = "zjmkdmmnajzevoupgfhg"
 
 [api]
-# Port for the API
+enabled = true
 port = 54321
-# Schemas to expose in the API
-schemas = []
-# Extra schemas to add to the API
-extra_schemas = ["public", "storage", "graphql_public"]
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
 [db]
-# Port for the database
 port = 54322
-# The database major version
-major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
 
 [realtime]
 enabled = true
+ip_version = "ipv6"
+port = 54323
+max_header_length = 4096
 
 [studio]
-# Port for the Studio
-port = 54323
-
-# Email testing
-[inbucket]
-# Port for the SMTP server
-smtp_port = 54324
-# Port for the POP3 API
-pop3_port = 54325
-# Port for the web interface
-web_port = 54326
-
-[storage]
-# The storage backend to use
-backend = "file"
-# The path to the storage data
-file_storage_backend_path = "./storage"
-
-[auth]
-# The host of the JWT issuer
-host = "localhost"
-# The port of the JWT issuer
-port = 9999
-
-[auth.smtp]
-# SMTP configuration for auth emails
-host = "localhost"
+enabled = true
 port = 54324
+api_url = "http://127.0.0.1:54321"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+[inbucket]
+enabled = true
+port = 54325
+smtp_port = 54326
+pop3_port = 54327
+
+[functions.facebook-leads]
+verify_jwt = false
+
+[functions.grow-payment]
+verify_jwt = false
 
 [functions.grow-webhook]
 verify_jwt = false
 
-[functions.grow-payment]
-verify_jwt = true
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["https://zjmkdmmnajzevoupgfhg.supabase.co/auth/v1/callback"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_update_enabled = true
 
-[functions.facebook-leads]
-verify_jwt = true
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
