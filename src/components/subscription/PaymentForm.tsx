@@ -17,13 +17,6 @@ const paymentFormSchema = z.object({
     .min(10, "מספר טלפון חייב להכיל 10 ספרות")
     .max(10, "מספר טלפון חייב להכיל 10 ספרות")
     .regex(/^05\d{8}$/, "מספר טלפון חייב להתחיל ב-05 ולהכיל 10 ספרות"),
-  email: z.string().email("נא להזין כתובת אימייל תקינה").optional().or(z.literal("")),
-  notes: z.string().optional(),
-  // Direct debit required fields
-  userId: z.string().min(1, "שדה חובה"),
-  transactionToken: z.string().min(1, "שדה חובה"),
-  transactionId: z.string().min(1, "שדה חובה"),
-  asmachta: z.string().min(1, "שדה חובה"),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
