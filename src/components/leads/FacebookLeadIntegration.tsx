@@ -59,6 +59,7 @@ export function FacebookLeadIntegration() {
     setMessage("");
 
     window.FB.login(async function (response) {
+      console.log(response)
       if (response.authResponse) {
         window.FB.api("/me/accounts", async function (pagesResponse) {
           if (pagesResponse.error) {
