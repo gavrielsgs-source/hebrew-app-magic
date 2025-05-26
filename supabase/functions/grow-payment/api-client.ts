@@ -46,6 +46,8 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   }
 
   const response_json = await response.json();
+
+  //you must not send back the process id and process token back to the client
   if (
   response_json?.status === 1 &&
   typeof response_json.data === "object" &&
