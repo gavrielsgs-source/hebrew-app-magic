@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 
@@ -14,9 +13,19 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request body
-    const payload = await req.json();
-    console.log('Received webhook from GROW:', payload);
+    const contentType = req.headers.get("content-type") || "";
+    let payload: Record<string, any> = {};
+
+    if (contentType.includes("application/json")) {
+      payload = await req.json();
+    } else if (contentType.includes("application/x-www-form-urlencoded")) {
+      const formData = await req.text();
+      payload = Object.fromEntries(new URLSearchParams(formData));
+    } else {
+      throw new Error("Unsupported content-type");
+    }
+
+    console.log("Received webhook from GROW:", payload);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -28,7 +37,6 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Extract transaction details from payload
     const { 
       transactionId, 
       status, 
@@ -41,7 +49,6 @@ serve(async (req) => {
       throw new Error('Missing required webhook payload fields');
     }
 
-    // Update user's subscription status
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
@@ -57,7 +64,6 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Log the webhook event
     const { error: logError } = await supabase
       .from('audit_logs')
       .insert({
