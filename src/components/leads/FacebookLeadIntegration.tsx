@@ -1,7 +1,15 @@
+import { useState, useEffect } from "react";
+
 export function FacebookLeadIntegration() {
   const [fbInitialized, setFbInitialized] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
+    if (window.FB) {
+      setFbInitialized(true);
+      return;
+    }
     window.fbAsyncInit = function () {
       window.FB.init({
         appId: "YOUR_APP_ID",
@@ -15,42 +23,73 @@ export function FacebookLeadIntegration() {
     if (!document.getElementById("facebook-jssdk")) {
       const js = document.createElement("script");
       js.id = "facebook-jssdk";
-      js.src = "https://connect.facebook.net/he_IL/sdk.js"; // Hebrew locale
+      js.src = "https://connect.facebook.net/he_IL/sdk.js";
       document.head.appendChild(js);
     }
   }, []);
 
+  async function subscribePageToWebhook(pageId, pageAccessToken) {
+    return new Promise((resolve, reject) => {
+      window.FB.api(
+        `/${pageId}/subscribed_apps`,
+        "POST",
+        { access_token: pageAccessToken, subscribed_fields: "leadgen" },
+        function (response) {
+          if (!response || response.error) {
+            reject(response?.error || "Unknown error");
+          } else {
+            resolve(response);
+          }
+        }
+      );
+    });
+  }
+
   const loginAndSubscribe = () => {
     if (!fbInitialized) return;
+
+    setLoading(true);
+    setMessage("");
 
     window.FB.login(async function (response) {
       if (response.authResponse) {
         window.FB.api("/me/accounts", async function (pagesResponse) {
           if (pagesResponse.error) {
-            alert("Error fetching pages: " + JSON.stringify(pagesResponse.error));
+            setMessage(`שגיאה בקבלת דפים: ${JSON.stringify(pagesResponse.error)}`);
+            setLoading(false);
             return;
           }
 
-          for (const page of pagesResponse.data) {
-            try {
+          try {
+            for (const page of pagesResponse.data) {
               await subscribePageToWebhook(page.id, page.access_token);
-              console.log(`Subscribed page ${page.name} (${page.id}) successfully`);
-              // TODO: save page.access_token in backend here
-            } catch (error) {
-              console.error(`Failed to subscribe page ${page.id}`, error);
+              // TODO: Call your backend API here to save page.access_token
+              console.log(`Subscribed page ${page.name} (${page.id})`);
             }
+            setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
+          } catch (error) {
+            setMessage(`שגיאה בהרשמת דף: ${error.message || error}`);
+          } finally {
+            setLoading(false);
           }
-
-          alert("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
         });
       } else {
-        alert("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+        setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+        setLoading(false);
       }
     }, { scope: "pages_manage_metadata,pages_show_list,leads_retrieval" });
   };
 
   return (
-    <button onClick={loginAndSubscribe} className="btn-primary">
-      התחבר לפייסבוק והרשם לכל הדפים
-    </button>
+    <div className="p-4 text-right">
+      <button
+        className="btn-primary"
+        onClick={loginAndSubscribe}
+        disabled={!fbInitialized || loading}
+      >
+        {loading ? "טוען..." : "התחבר לפייסבוק והרשם לכל הדפים"}
+      </button>
+      {message && <p className="mt-2">{message}</p>}
+    </div>
   );
+}
