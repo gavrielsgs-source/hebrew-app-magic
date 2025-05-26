@@ -59,36 +59,34 @@ export function FacebookLeadIntegration() {
     setLoading(true);
     setMessage("");
 
-    window.FB.login(
-      async function (response: any) {
-        if (response.authResponse) {
-          window.FB.api("/me/accounts", async function (pagesResponse: any) {
-            if (pagesResponse.error) {
-              setMessage(`שגיאה בקבלת דפים: ${JSON.stringify(pagesResponse.error)}`);
-              setLoading(false);
-              return;
-            }
-
-            try {
-              for (const page of pagesResponse.data) {
-                await subscribePageToWebhook(page.id, page.access_token);
-                console.log(`Subscribed page ${page.name} (${page.id})`);
-              }
-              setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
-            } catch (error: any) {
-              setMessage(`שגיאה בהרשמת דף: ${error.message || error}`);
-            } finally {
-              setLoading(false);
-            }
+    window.FB.login(function (response) {
+  (async () => {
+    if (response.authResponse) {
+      try {
+        const pagesResponse = await new Promise((resolve, reject) => {
+          window.FB.api("/me/accounts", function (res) {
+            if (res.error) reject(res.error);
+            else resolve(res);
           });
-        } else {
-          setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
-          setLoading(false);
+        });
+
+        for (const page of (pagesResponse as any).data) {
+          await subscribePageToWebhook(page.id, page.access_token);
+          console.log(`Subscribed page ${page.name} (${page.id})`);
         }
-      },
-      { scope: "pages_manage_metadata,pages_show_list,leads_retrieval" }
-    );
-  };
+        setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
+      } catch (error: any) {
+        setMessage(`שגיאה בקבלת דפים או בהרשמת דף: ${error.message || error}`);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+      setLoading(false);
+    }
+  })();
+});
+
 
   return (
     <div className="p-4 text-right">
