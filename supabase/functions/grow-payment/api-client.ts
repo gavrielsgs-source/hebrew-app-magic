@@ -1,4 +1,4 @@
-import { GROW_API_BASE, GROW_USER_ID, GROW_PAGE_CODE, SUCCESS_URL, CANCEL_URL } from './config.ts';
+import { GROW_API_BASE, GROW_USER_ID, GROW_PAGE_CODE, SUCCESS_URL, CANCEL_URL, NOTIFY_URL } from './config.ts';
 
 export interface GrowPaymentRequest {
   fullName: string;
@@ -29,6 +29,7 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   formData.append('userId', GROW_USER_ID);
   formData.append('successUrl', SUCCESS_URL)
   formData.append('cancelUrl', CANCEL_URL)
+  formData.append('notifyUrl', NOTIFY_URL)
   formData.append('sum', payload.sum);
   formData.append('pageField[fullName]', payload.fullName);
   formData.append('pageField[phone]', payload.phone);
