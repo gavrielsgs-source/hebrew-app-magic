@@ -38,7 +38,6 @@ export default function Leads() {
     filterAndSortLeads
   } = useLeadsFilters();
 
-  console.log(window.location.url)
   // Get filtered and sorted leads
   const filteredLeads = filterAndSortLeads(leads);
 
