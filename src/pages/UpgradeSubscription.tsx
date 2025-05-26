@@ -112,8 +112,8 @@ export default function UpgradeSubscription() {
         body: {
           action: 'updateDirectDebit',
           payload: {
-             customerName: params.fullName,
-              customerPhone: params.phone,
+             fullName: params.fullName,
+             phone: params.phone,
           }
         }
       });
