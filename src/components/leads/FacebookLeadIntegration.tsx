@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 
+declare global {
+  interface Window {
+    FB: any;
+    fbAsyncInit: () => void;
+  }
+}
+
 export function FacebookLeadIntegration() {
   const [fbInitialized, setFbInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
