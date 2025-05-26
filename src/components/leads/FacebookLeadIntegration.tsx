@@ -60,33 +60,34 @@ export function FacebookLeadIntegration() {
     setMessage("");
 
     window.FB.login(function (response) {
-  (async () => {
-    if (response.authResponse) {
-      try {
-        const pagesResponse = await new Promise((resolve, reject) => {
-          window.FB.api("/me/accounts", function (res) {
-            if (res.error) reject(res.error);
-            else resolve(res);
-          });
-        });
+      (async () => {
+        if (response.authResponse) {
+          try {
+            const pagesResponse = await new Promise((resolve, reject) => {
+              window.FB.api("/me/accounts", function (res) {
+                if (res.error) reject(res.error);
+                else resolve(res);
+              });
+            });
 
-        for (const page of (pagesResponse as any).data) {
-          await subscribePageToWebhook(page.id, page.access_token);
-          console.log(`Subscribed page ${page.name} (${page.id})`);
+            for (const page of (pagesResponse as any).data) {
+              await subscribePageToWebhook(page.id, page.access_token);
+              console.log(`Subscribed page ${page.name} (${page.id})`);
+            }
+            setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
+          } catch (error: any) {
+            setMessage(`שגיאה בקבלת דפים או בהרשמת דף: ${error.message || error}`);
+          } finally {
+            setLoading(false);
+          }
+        } else {
+          setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+          setLoading(false);
         }
-        setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
-      } catch (error: any) {
-        setMessage(`שגיאה בקבלת דפים או בהרשמת דף: ${error.message || error}`);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
-      setLoading(false);
-    }
-  })();
-});
+      })();
+    });  
 
+  };  
 
   return (
     <div className="p-4 text-right">
