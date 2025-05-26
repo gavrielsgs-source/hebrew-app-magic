@@ -1,22 +1,11 @@
 
-import { GROW_API_BASE } from './config.ts';
+import { GROW_API_BASE, GROW_USER_ID, GROW_PAGE_CODE } from './config.ts';
 
 // Updated interface to match the exact parameters required by direct debit operations
-export interface GrowPaymentRequest {
-  userId: string;          // Required - Unique identifier for the business
-  transactionToken: string; // Required - Transaction identifier token
-  transactionId: string;    // Required - Transaction identifier number (must be a string)
-  asmachta: string;        // Required - Approval from credit card company (must be a string)
-  fullName?: string;       // Optional - Full name must consist of at least two names
-  phone?: string;          // Optional - A valid Israeli mobile phone number
-  email?: string;          // Optional - A valid email address
-  chargeDay?: string;      // Optional - 1-31
-  sum?: string;            // Optional - Total amount for payment (as string)
-  paymentNum?: string;     // Optional - 1-48 (as string)
-  changeStatus?: string;   // Optional
-  updateCard?: string;     // Optional
-  clientId: string;        // Authentication
-  ECPwd: string;           // Authentication
+export interface GrowPaymentRequest {       // Required - Approval from credit card company (must be a string)
+  fullName: string;       // Optional - Full name must consist of at least two names
+  phone: string;          // Optional - A valid Israeli mobile phone number      // Optional - A valid email address   // Optional - 1-31
+  sum?: string;            // Optional - Total amount for payment (as string)  // Optional - 1-48 (as string)/ Optional    // Authentication        // Authentication
 }
 
 export interface GrowPaymentResponse {
@@ -40,28 +29,19 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   // Create a FormData object for multipart/form-data format
   const formData = new FormData();
   
-  // Add all required fields to the form data
-  formData.append('userId', payload.userId);
-  formData.append('transactionToken', payload.transactionToken);
-  formData.append('transactionId', payload.transactionId);
-  formData.append('asmachta', payload.asmachta);
-  formData.append('clientId', payload.clientId);
-  formData.append('ECPwd', payload.ECPwd);
-  
   // Add optional fields if they exist
   if (payload.fullName) formData.append('fullName', payload.fullName);
   if (payload.phone) formData.append('phone', payload.phone);
   if (payload.email) formData.append('email', payload.email);
-  if (payload.chargeDay) formData.append('chargeDay', payload.chargeDay);
   if (payload.sum) formData.append('sum', payload.sum);
-  if (payload.paymentNum) formData.append('paymentNum', payload.paymentNum);
-  if (payload.changeStatus) formData.append('changeStatus', payload.changeStatus);
-  if (payload.updateCard) formData.append('updateCard', payload.updateCard);
+  formData.append('pageCode', GROW_PAGE_CODE);
+  formData.append('userId', GROW_USER_ID);
 
+  
   console.log('Sending form data to GROW API:', Object.fromEntries(formData.entries()));
 
   // Send the request with the appropriate content type
-  const response = await fetch(GROW_API_BASE, {
+  const response = await fetch(`${GROW_API_BASE}/createPaymentProcess`, {
     method: 'POST',
     body: formData
   });
@@ -71,7 +51,9 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
     throw new Error(`GROW API error: ${response.status} - ${errorText}`);
   }
 
-  return await response.json();
+  const response_json = await response.json();
+
+  return await response_json
 }
 
 // Alias for backward compatibility
