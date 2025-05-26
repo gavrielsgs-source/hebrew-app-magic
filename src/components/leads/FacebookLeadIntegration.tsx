@@ -18,8 +18,6 @@ export function FacebookLeadIntegration() {
       return;
     }
 
-    console.log(window.location.url)
-
     window.fbAsyncInit = () => {
       window.FB.init({
         appId: "2106125989900776",
