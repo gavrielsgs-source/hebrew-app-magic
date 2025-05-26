@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
-import { GROW_PAGE_CODE } from '../grow-payment/config.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +7,7 @@ const corsHeaders = {
 };
 
 const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0'; // Replace with your actual base URL
+const GROW_PAGE_CODE = Deno.env.get('GROW_PAGE_CODE') || 'f8dc02a4a03d';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
