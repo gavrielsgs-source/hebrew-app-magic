@@ -46,6 +46,15 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   }
 
   const response_json = await response.json();
+  if (
+  response_json?.status === 1 &&
+  typeof response_json.data === "object" &&
+  response_json.data !== null
+) {
+  delete response_json.data.processId;
+  delete response_json.data.processToken;
+}
+  
   return response_json;
 }
 
