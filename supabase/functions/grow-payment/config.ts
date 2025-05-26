@@ -6,7 +6,7 @@ export const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || '3bdaec1d6c7e9ef
 export const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || 'f8dc02a4a03d';
 
 // Update to use the correct direct debit endpoint for both payment creation and updates
-export const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0/updateDirectDebit';
+export const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0/';
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
