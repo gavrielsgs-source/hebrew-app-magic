@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
+import { GROW_PAGE_CODE } from '../grow-payment/config.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -54,6 +55,7 @@ serve(async (req) => {
     }
 
     const downstreamForm = new FormData();
+    downstreamForm.append('pageCode', GROW_PAGE_CODE)
     for (const key in payload) {
       downstreamForm.append(key, payload[key]);
     }
