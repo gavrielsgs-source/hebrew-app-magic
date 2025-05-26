@@ -44,6 +44,8 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    
+
     const transactionId = payload["transactionId"] || payload["data[transactionId]"];
     const status = payload["status"] || payload["data[statusCode]"];
     const userId = payload["recurringDebitId"] || payload["data[recurringDebitId]"];
@@ -56,8 +58,13 @@ serve(async (req) => {
 
     const downstreamForm = new FormData();
     downstreamForm.append('pageCode', GROW_PAGE_CODE)
+    function normalizeKey(key: string): string {
+    const match = key.match(/^data\[(.+)\]$/);
+      return match ? match[1] : key;
+    }
+
     for (const key in payload) {
-      downstreamForm.append(key, payload[key]);
+      downstreamForm.append(normalizeKey(key), payload[key]);
     }
 
     const response = await fetch(`${GROW_API_BASE}/approveTransaction`, {
