@@ -36,6 +36,7 @@ serve(async (req) => {
   // Facebook Webhook Verification (GET)
   if (req.method === "GET") {
     const url = new URL(req.url);
+    console.log(url)
     const mode = url.searchParams.get("hub.mode");
     const token = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
