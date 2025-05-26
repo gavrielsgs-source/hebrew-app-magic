@@ -8,7 +8,7 @@ export const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || 'f8dc02a4a03d';
 export const SITE_URL = 'https://fb9cfd38-7a13-46ea-b988-44577bd53611.lovableproject.com/tasks';
 export const SUCCESS_URL = `${SITE_URL}/subscription/payment-success`;
 export const CANCEL_URL = `${SITE_URL}/subscription/upgrade`;
-export const NOTIFY_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/grow-payment`;
+export const NOTIFY_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/grow-webhook`;
 
 // Update to use the correct direct debit endpoint for both payment creation and updates
 export const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0';
