@@ -6,8 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0'; // Replace with your actual base URL
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -19,15 +20,20 @@ serve(async (req) => {
     if (contentType.includes("application/json")) {
       payload = await req.json();
     } else if (contentType.includes("application/x-www-form-urlencoded")) {
-      const formData = await req.text();
-      payload = Object.fromEntries(new URLSearchParams(formData));
+      const formText = await req.text();
+      payload = Object.fromEntries(new URLSearchParams(formText));
+    } else if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      payload = {};
+      for (const [key, value] of formData.entries()) {
+        payload[key] = value;
+      }
     } else {
       throw new Error("Unsupported content-type");
     }
 
     console.log("Received webhook from GROW:", payload);
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -37,18 +43,34 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { 
-      transactionId, 
-      status, 
-      userId, 
-      amount,
-      planId 
-    } = payload;
+    const transactionId = payload["transactionId"] || payload["data[transactionId]"];
+    const status = payload["status"] || payload["data[statusCode]"];
+    const userId = payload["recurringDebitId"] || payload["data[recurringDebitId]"];
+    const amount = payload["sum"] || payload["data[sum]"];
+    const planId = payload["description"] || payload["data[description]"];
 
     if (!transactionId || !status || !userId) {
       throw new Error('Missing required webhook payload fields');
     }
 
+    const downstreamForm = new FormData();
+    for (const key in payload) {
+      downstreamForm.append(key, payload[key]);
+    }
+
+    const response = await fetch(`${GROW_API_BASE}/approveTransaction`, {
+      method: 'POST',
+      body: downstreamForm,
+      headers: {
+        'accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Error approving transaction:', errText);
+      throw new Error(`Downstream approveTransaction failed: ${errText}`);
+    }
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
