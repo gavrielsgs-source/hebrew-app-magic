@@ -34,21 +34,6 @@ export function validatePayload(payload: PaymentPayload, action: string = 'creat
 
   if (action === 'createPaymentProcess') {
     // For direct debit structure, validate required fields
-    if (!payload.userId) {
-      return 'userId is required for creating payment process';
-    }
-    
-    if (!payload.transactionToken) {
-      return 'transactionToken is required for creating payment process';
-    }
-    
-    if (!payload.transactionId) {
-      return 'transactionId is required for creating payment process';
-    }
-    
-    if (!payload.asmachta) {
-      return 'asmachta is required for creating payment process';
-    }
     
     if (payload.sum === undefined) {
       return 'sum is required for creating payment process';
