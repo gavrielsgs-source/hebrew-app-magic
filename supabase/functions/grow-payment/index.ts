@@ -49,8 +49,8 @@ serve(async (req) => {
     if (action === 'createPaymentProcess' || action === 'updateDirectDebit') {
       // Compose payload for the API client, matching expected GrowPaymentRequest interface
       const directDebitPayload: GrowPaymentRequest = {
-        fullName: payload.customerName || '',      // fallback empty string if missing
-        phone: payload.customerPhone || '',        // fallback empty string if missing
+        fullName: payload.fullName || '',      // fallback empty string if missing
+        phone: payload.phone || '',        // fallback empty string if missing
         sum: payload.sum ? String(payload.sum) : undefined,
         // Add any other optional fields your API client accepts here
         // e.g. email, chargeDay, maxPayments, etc. if supported
