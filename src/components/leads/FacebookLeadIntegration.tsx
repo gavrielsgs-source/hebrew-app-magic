@@ -35,13 +35,13 @@ export function FacebookLeadIntegration() {
     }
   }, []);
 
-  async function subscribePageToWebhook(pageId, pageAccessToken) {
+  function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
     return new Promise((resolve, reject) => {
       window.FB.api(
         `/${pageId}/subscribed_apps`,
         "POST",
         { access_token: pageAccessToken, subscribed_fields: "leadgen" },
-        function (response) {
+        function (response: any) {
           if (!response || response.error) {
             reject(response?.error || "Unknown error");
           } else {
@@ -58,33 +58,35 @@ export function FacebookLeadIntegration() {
     setLoading(true);
     setMessage("");
 
-    window.FB.login(async function (response) {
-      console.log(response)
-      if (response.authResponse) {
-        window.FB.api("/me/accounts", async function (pagesResponse) {
-          if (pagesResponse.error) {
-            setMessage(`שגיאה בקבלת דפים: ${JSON.stringify(pagesResponse.error)}`);
-            setLoading(false);
-            return;
-          }
+    window.FB.login(function (response: any) {
+      (async () => {
+        if (response.authResponse) {
+          window.FB.api("/me/accounts", function (pagesResponse: any) {
+            (async () => {
+              if (pagesResponse.error) {
+                setMessage(`שגיאה בקבלת דפים: ${JSON.stringify(pagesResponse.error)}`);
+                setLoading(false);
+                return;
+              }
 
-          try {
-            for (const page of pagesResponse.data) {
-              await subscribePageToWebhook(page.id, page.access_token);
-              // TODO: Call your backend API here to save page.access_token
-              console.log(`Subscribed page ${page.name} (${page.id})`);
-            }
-            setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
-          } catch (error) {
-            setMessage(`שגיאה בהרשמת דף: ${error.message || error}`);
-          } finally {
-            setLoading(false);
-          }
-        });
-      } else {
-        setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
-        setLoading(false);
-      }
+              try {
+                for (const page of pagesResponse.data) {
+                  await subscribePageToWebhook(page.id, page.access_token);
+                  console.log(`Subscribed page ${page.name} (${page.id})`);
+                }
+                setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
+              } catch (error: any) {
+                setMessage(`שגיאה בהרשמת דף: ${error.message || error}`);
+              } finally {
+                setLoading(false);
+              }
+            })();
+          });
+        } else {
+          setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+          setLoading(false);
+        }
+      })();
     }, { scope: "pages_manage_metadata,pages_show_list,leads_retrieval" });
   };
 
