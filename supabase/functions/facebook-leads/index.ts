@@ -42,8 +42,7 @@ serve(async (req) => {
     const challenge = url.searchParams.get("hub.challenge");
 
     const verifyToken = Deno.env.get("FB_VERIFY_TOKEN");
-
-    console.log(token, verifyToken)
+    
     if (mode === "subscribe" && token === verifyToken) {
       console.log("Facebook Webhook verified");
       return new Response(challenge, { status: 200, headers: corsHeaders });
