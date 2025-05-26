@@ -1,4 +1,4 @@
-import { GROW_API_BASE, GROW_USER_ID, GROW_PAGE_CODE, SUCCESS_URL, CANCEl_URL } from './config.ts';
+import { GROW_API_BASE, GROW_USER_ID, GROW_PAGE_CODE, SUCCESS_URL, CANCEL_URL } from './config.ts';
 
 export interface GrowPaymentRequest {
   fullName: string;
