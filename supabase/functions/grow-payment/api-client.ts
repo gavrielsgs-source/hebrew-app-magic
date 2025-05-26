@@ -29,11 +29,11 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   const formData = new FormData();
 
   formData.append('pageCode', GROW_PAGE_CODE);
-    formData.append('userId', GROW_USER_ID);
+  formData.append('userId', GROW_USER_ID);
 
-  if (payload.sum) formData.append('sum', payload.sum);
-  if (payload.fullName) formData.append('pageField[fullName]', payload.fullName);
-  if (payload.phone) formData.append('pageField[phone]', payload.phone);
+  formData.append('sum', payload.sum); 
+  formData.append('pageField[fullName]', payload.fullName);
+  formData.append('pageField[phone]', payload.phone);
 
   console.log('Sending form data to GROW API:', Object.fromEntries(formData.entries()));
 
