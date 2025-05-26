@@ -35,15 +35,9 @@ export default function UpgradeSubscription() {
 
       // Prepare payment parameters with proper types
       const paymentPayload = {
-        userId: data.userId,
-        transactionToken: data.transactionToken,
-        transactionId: data.transactionId,
-        asmachta: data.asmachta,
         sum: selectedPlanObj.priceValue,
-        // Add other fields for user identification
-        customerName: data.fullName,
-        customerPhone: data.phone,
-        customerEmail: data.email || undefined,
+        fullName: data.fullName,
+        phone: data.phone,
       };
 
       console.log("Sending payment payload:", paymentPayload);
@@ -114,6 +108,7 @@ export default function UpgradeSubscription() {
           payload: {
              fullName: params.fullName,
              phone: params.phone,
+             sum: 10 //put here the intended sum
           }
         }
       });
