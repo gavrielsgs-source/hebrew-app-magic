@@ -24,7 +24,7 @@ export interface GrowPaymentResponse {
 
 // Single function for making direct debit requests - used for both initial payment and updates
 export async function processDirectDebitPayment(payload: any): Promise<GrowPaymentResponse> {
-  console.log('Processing direct debit payment with payload:', payload);
+  console.log('Processing direct debit payment with payload test:', payload);
 
   const formData = new FormData();
 
