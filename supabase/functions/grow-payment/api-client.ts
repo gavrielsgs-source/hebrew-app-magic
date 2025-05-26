@@ -28,7 +28,7 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   formData.append('pageCode', GROW_PAGE_CODE);
   formData.append('userId', GROW_USER_ID);
   formData.append('successUrl', SUCCESS_URL)
-  formData.append('cancelUrl', CANCEl_URL)
+  formData.append('cancelUrl', CANCEL_URL)
   formData.append('sum', payload.sum);
   formData.append('pageField[fullName]', payload.fullName);
   formData.append('pageField[phone]', payload.phone);
