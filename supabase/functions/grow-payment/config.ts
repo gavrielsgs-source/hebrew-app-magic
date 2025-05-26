@@ -10,6 +10,8 @@ export const SUCCESS_URL = `${SITE_URL}/subscription/payment-success`;
 export const CANCEL_URL = `${SITE_URL}/subscription/upgrade`;
 export const NOTIFY_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/grow-webhook`;
 
+console.log(Deno.env.get('SUPABASE_URL'))
+
 // Update to use the correct direct debit endpoint for both payment creation and updates
 export const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0';
 
