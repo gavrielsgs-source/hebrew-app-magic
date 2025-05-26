@@ -80,7 +80,7 @@ serve(async (req) => {
       console.error('Error approving transaction:', errText);
       throw new Error(`Downstream approveTransaction failed: ${errText}`);
     }
-    console.log(await response.json())
+    
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
