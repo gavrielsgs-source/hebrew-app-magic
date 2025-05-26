@@ -17,7 +17,8 @@ export function FacebookLeadIntegration() {
       setFbInitialized(true);
       return;
     }
-    window.fbAsyncInit = function () {
+
+    window.fbAsyncInit = () => {
       window.FB.init({
         appId: "2890118827858371",
         cookie: true,
@@ -35,7 +36,7 @@ export function FacebookLeadIntegration() {
     }
   }, []);
 
-  function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
+  async function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
     return new Promise((resolve, reject) => {
       window.FB.api(
         `/${pageId}/subscribed_apps`,
@@ -58,36 +59,35 @@ export function FacebookLeadIntegration() {
     setLoading(true);
     setMessage("");
 
-    window.FB.login(function (response: any) {
-      (async () => {
+    window.FB.login(
+      async function (response: any) {
         if (response.authResponse) {
-          window.FB.api("/me/accounts", function (pagesResponse: any) {
-            (async () => {
-              if (pagesResponse.error) {
-                setMessage(`שגיאה בקבלת דפים: ${JSON.stringify(pagesResponse.error)}`);
-                setLoading(false);
-                return;
-              }
+          window.FB.api("/me/accounts", async function (pagesResponse: any) {
+            if (pagesResponse.error) {
+              setMessage(`שגיאה בקבלת דפים: ${JSON.stringify(pagesResponse.error)}`);
+              setLoading(false);
+              return;
+            }
 
-              try {
-                for (const page of pagesResponse.data) {
-                  await subscribePageToWebhook(page.id, page.access_token);
-                  console.log(`Subscribed page ${page.name} (${page.id})`);
-                }
-                setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
-              } catch (error: any) {
-                setMessage(`שגיאה בהרשמת דף: ${error.message || error}`);
-              } finally {
-                setLoading(false);
+            try {
+              for (const page of pagesResponse.data) {
+                await subscribePageToWebhook(page.id, page.access_token);
+                console.log(`Subscribed page ${page.name} (${page.id})`);
               }
-            })();
+              setMessage("כל הדפים שלך נרשמו לקבלת לידים בהצלחה!");
+            } catch (error: any) {
+              setMessage(`שגיאה בהרשמת דף: ${error.message || error}`);
+            } finally {
+              setLoading(false);
+            }
           });
         } else {
           setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
           setLoading(false);
         }
-      })();
-    }, { scope: "pages_manage_metadata,pages_show_list,leads_retrieval" });
+      },
+      { scope: "pages_manage_metadata,pages_show_list,leads_retrieval" }
+    );
   };
 
   return (
