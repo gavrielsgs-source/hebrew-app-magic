@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, GROW_CLIENT_ID, GROW_EC_PWD } from './config.ts';
 import { validatePayload, type PaymentPayload } from './validators.ts';
@@ -22,7 +21,7 @@ serve(async (req) => {
     } catch (e) {
       console.error("Error parsing JSON:", e);
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON', details: e.message }), 
+        JSON.stringify({ error: 'Invalid JSON', details: e.message }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -31,7 +30,7 @@ serve(async (req) => {
     if (!GROW_CLIENT_ID || !GROW_EC_PWD) {
       console.error("Missing required GROW credentials");
       return new Response(
-        JSON.stringify({ error: 'Missing GROW API credentials' }), 
+        JSON.stringify({ error: 'Missing GROW API credentials' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -40,60 +39,40 @@ serve(async (req) => {
     const validationError = validatePayload(payload, action);
     if (validationError) {
       return new Response(
-        JSON.stringify({ error: validationError }), 
+        JSON.stringify({ error: validationError }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     let responseData;
-    
+
     if (action === 'createPaymentProcess' || action === 'updateDirectDebit') {
-      // For both actions, we'll use the same direct debit endpoint with similar parameters
-      
-      // Create a standardized payload for the direct debit API
+      // Compose payload for the API client, matching expected GrowPaymentRequest interface
       const directDebitPayload: GrowPaymentRequest = {
-        userId: payload.userId || '',
-        transactionToken: payload.transactionToken || '',
-        transactionId: payload.transactionId || '',
-        asmachta: payload.asmachta || '',
-        clientId: GROW_CLIENT_ID,
-        ECPwd: GROW_EC_PWD
+        fullName: payload.customerName || '',      // fallback empty string if missing
+        phone: payload.customerPhone || '',        // fallback empty string if missing
+        sum: payload.sum ? String(payload.sum) : undefined,
+        // Add any other optional fields your API client accepts here
+        // e.g. email, chargeDay, maxPayments, etc. if supported
       };
-      
-      // Add optional fields if they exist
-      if (payload.customerName) directDebitPayload.fullName = payload.customerName;
-      if (payload.customerPhone) directDebitPayload.phone = payload.customerPhone;
-      if (payload.customerEmail) directDebitPayload.email = payload.customerEmail;
-      if (payload.chargeDay) directDebitPayload.chargeDay = payload.chargeDay;
-      if (payload.sum) directDebitPayload.sum = payload.sum?.toString();
-      if (payload.maxPayments) directDebitPayload.paymentNum = payload.maxPayments?.toString();
-      if (payload.changeStatus) directDebitPayload.changeStatus = payload.changeStatus;
-      if (payload.updateCard) directDebitPayload.updateCard = payload.updateCard;
 
       console.log(`Making request to GROW API for ${action}:`, directDebitPayload);
       responseData = await processDirectDebitPayment(directDebitPayload);
-    } 
-    else {
+    } else {
       return new Response(
-        JSON.stringify({ error: 'Invalid action, must be createPaymentProcess or updateDirectDebit' }), 
+        JSON.stringify({ error: 'Invalid action, must be createPaymentProcess or updateDirectDebit' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     console.log(`GROW API response:`, responseData);
 
-    // Check for errors in the API response
     if (responseData.err) {
-      let errorMessage = 'GROW API error';
-      if (responseData.err.message) {
-        errorMessage = responseData.err.message;
-      }
-      
       return new Response(
-        JSON.stringify({ 
-          error: errorMessage,
+        JSON.stringify({
+          error: responseData.err.message || 'GROW API error',
           code: responseData.err.id || 'unknown',
-          details: responseData.err
+          details: responseData.err,
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -105,30 +84,23 @@ serve(async (req) => {
       url: responseData.data?.url,
       processId: responseData.data?.processId,
       transactionId: responseData.data?.transactionId,
-      asmachta: responseData.data?.asmachta
+      asmachta: responseData.data?.asmachta,
     };
 
     return new Response(
       JSON.stringify(successResponse),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-    
+
   } catch (error) {
     console.error('Error processing GROW payment request:', error);
-    
-    let errorMessage = 'Internal server error';
-    let errorDetails = {};
-    
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === 'object' && error !== null) {
-      errorDetails = error;
-    }
-    
+
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: errorMessage,
-        details: errorDetails
+        details: error instanceof Error ? undefined : error,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
