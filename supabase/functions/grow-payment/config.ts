@@ -4,8 +4,10 @@ export const GROW_USER_ID = Deno.env.get('GROW_USER_ID') || '3bdaec1d6c7e9ef7';
 export const GROW_PAGE_CODE = Deno.env.get('GROW_PAGE_CODE') || 'f8dc02a4a03d';
 export const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || '3bdaec1d6c7e9ef7';
 export const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || 'f8dc02a4a03d';
-export const SUCCESS_URL = '/subscription/payment-success'
-export const CANCEL_URL = '/subscription/upgrade'
+//change this accordingly when it changes
+export const SITE_URL 'https://fb9cfd38-7a13-46ea-b988-44577bd53611.lovableproject.com/tasks' 
+export const SUCCESS_URL = `${SITE_URL}/subscription/payment-success`
+export const CANCEL_URL = `${SITE_URL}/subscription/upgrade`
 
 // Update to use the correct direct debit endpoint for both payment creation and updates
 export const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0';
