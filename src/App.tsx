@@ -30,7 +30,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const queryClient = new QueryClient();
 
 const App = () => {
-  console.log(window.location.href);
+  console.log("url:",window.location.href);
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
