@@ -1,3 +1,4 @@
+
 import { 
   Table, 
   TableBody, 
@@ -10,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Phone, MessageSquare, Send, Plus, Edit, Calendar, User } from "lucide-react";
 import { useLeads } from "@/hooks/use-leads";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AddLeadForm } from "./leads/AddLeadForm";
 import { useState } from "react";
 import { EditLeadForm } from "./leads/EditLeadForm";
@@ -30,6 +31,8 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+  const [isEditLeadOpen, setIsEditLeadOpen] = useState(false);
   
   const selectedLead = selectedLeadId 
     ? leads.find(lead => lead.id === selectedLeadId) 
@@ -50,19 +53,19 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
   return (
     <div dir="rtl">
       <div className="flex justify-between items-center mb-6">
-        <Sheet>
-          <SheetTrigger asChild>
+        <SwipeDialog open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
+          <DialogTrigger asChild>
             <Button className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] hover:from-[#1F2C5E] hover:to-[#3A4A7C] text-white shadow-lg">
               <Plus className="ml-2 h-4 w-4" /> הוסף לקוח חדש
             </Button>
-          </SheetTrigger>
-          <SheetContent className="w-[400px]" dir="rtl">
-            <SheetHeader>
-              <SheetTitle>הוסף לקוח חדש</SheetTitle>
-            </SheetHeader>
-            <AddLeadForm />
-          </SheetContent>
-        </Sheet>
+          </DialogTrigger>
+          <DialogContent className="w-[400px]" dir="rtl">
+            <DialogHeader>
+              <DialogTitle>הוסף לקוח חדש</DialogTitle>
+            </DialogHeader>
+            <AddLeadForm onSuccess={() => setIsAddLeadOpen(false)} />
+          </DialogContent>
+        </SwipeDialog>
       </div>
       
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -150,13 +153,17 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                         <Phone className="h-4 w-4" />
                       </Button>
                       
-                      <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
+                      <SwipeDialog open={isWhatsappOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
+                        setIsWhatsappOpen(open);
+                        if (open) setSelectedLeadId(lead.id as string);
+                      }}>
                         <DialogTrigger asChild>
                           <Button 
                             variant="ghost" 
                             size="icon"
                             className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600 transition-colors"
                             disabled={!lead.cars}
+                            onClick={() => setSelectedLeadId(lead.id as string)}
                           >
                             <Send className="h-4 w-4" />
                           </Button>
@@ -172,9 +179,9 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                             />
                           )}
                         </DialogContent>
-                      </Dialog>
+                      </SwipeDialog>
                       
-                      <Dialog open={isScheduleOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
+                      <SwipeDialog open={isScheduleOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
                         setIsScheduleOpen(open);
                         if (open) setSelectedLeadId(lead.id as string);
                       }}>
@@ -197,10 +204,13 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                             onSuccess={() => setIsScheduleOpen(false)}
                           />
                         </DialogContent>
-                      </Dialog>
+                      </SwipeDialog>
                       
-                      <Sheet>
-                        <SheetTrigger asChild>
+                      <SwipeDialog open={isEditLeadOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
+                        setIsEditLeadOpen(open);
+                        if (open) setSelectedLeadId(lead.id as string);
+                      }}>
+                        <DialogTrigger asChild>
                           <Button 
                             variant="ghost" 
                             size="icon"
@@ -209,14 +219,19 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                        </SheetTrigger>
-                        <SheetContent className="w-[400px]" dir="rtl">
-                          <SheetHeader>
-                            <SheetTitle>עריכת לקוח</SheetTitle>
-                          </SheetHeader>
-                          {selectedLead && <EditLeadForm lead={selectedLead} />}
-                        </SheetContent>
-                      </Sheet>
+                        </DialogTrigger>
+                        <DialogContent className="w-[400px]" dir="rtl">
+                          <DialogHeader>
+                            <DialogTitle>עריכת לקוח</DialogTitle>
+                          </DialogHeader>
+                          {selectedLead && (
+                            <EditLeadForm 
+                              lead={selectedLead} 
+                              onSuccess={() => setIsEditLeadOpen(false)}
+                            />
+                          )}
+                        </DialogContent>
+                      </SwipeDialog>
                     </div>
                   </TableCell>
                 </TableRow>

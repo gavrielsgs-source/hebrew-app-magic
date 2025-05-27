@@ -6,7 +6,8 @@ import { useTasks } from "@/hooks/use-tasks";
 import { format, isValid } from "date-fns";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TaskForm } from "./tasks/TaskForm";
 
 interface TaskListProps {
@@ -39,12 +40,18 @@ export function TaskList({ extended = false }: TaskListProps) {
     .slice(0, extended ? tasks.length : 5);
   
   const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
-    await updateTask.mutateAsync({
-      id: taskId,
-      data: {
-        status: isCompleted ? 'completed' : 'pending'
-      }
-    });
+    console.log("TaskList - Updating task status:", { taskId, isCompleted });
+    try {
+      await updateTask.mutateAsync({
+        id: taskId,
+        data: {
+          status: isCompleted ? 'completed' : 'pending'
+        }
+      });
+      console.log("TaskList - Task status updated successfully");
+    } catch (error) {
+      console.error("TaskList - Error updating task status:", error);
+    }
   };
   
   const getTaskTypeLabel = (taskType: string | null | undefined) => {
@@ -125,19 +132,19 @@ export function TaskList({ extended = false }: TaskListProps) {
         ))
       )}
       
-      <Sheet open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-        <SheetTrigger asChild>
+      <SwipeDialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+        <DialogTrigger asChild>
           <Button variant="ghost" className="w-full" size="sm">
             {extended ? "הוסף משימה חדשה" : "הצג את כל המשימות"}
           </Button>
-        </SheetTrigger>
-        <SheetContent className="w-[400px]">
-          <SheetHeader>
-            <SheetTitle>הוסף משימה חדשה</SheetTitle>
-          </SheetHeader>
+        </DialogTrigger>
+        <DialogContent className="w-[400px]">
+          <DialogHeader>
+            <DialogTitle>הוסף משימה חדשה</DialogTitle>
+          </DialogHeader>
           <TaskForm onSuccess={() => setIsAddTaskOpen(false)} />
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </SwipeDialog>
     </div>
   );
 }

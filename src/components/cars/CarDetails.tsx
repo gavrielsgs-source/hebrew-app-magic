@@ -12,6 +12,8 @@ import { CarSpecifications } from "./details/CarSpecifications";
 import { CarDescription } from "./details/CarDescription";
 import { CarAdditionalDetails } from "./details/CarAdditionalDetails";
 import { CarTestDate } from "./details/CarTestDate";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface CarDetailsProps {
   car: Car;
@@ -20,7 +22,7 @@ interface CarDetailsProps {
 export function CarDetails({ car }: CarDetailsProps) {
   const [images, setImages] = useState<string[]>([]);
   const [loadingImages, setLoadingImages] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -38,22 +40,27 @@ export function CarDetails({ car }: CarDetailsProps) {
     fetchImages();
   }, [car.id]);
 
-  if (isEditing) {
-    return <EditCarForm car={car} onCancel={() => setIsEditing(false)} />;
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={() => setIsEditing(true)}
-        >
-          <Edit className="h-4 w-4" />
-          ערוך רכב
-        </Button>
+        <SwipeDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              ערוך רכב
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="w-[90%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>עריכת רכב</DialogTitle>
+            </DialogHeader>
+            <EditCarForm car={car} onCancel={() => setIsEditDialogOpen(false)} />
+          </DialogContent>
+        </SwipeDialog>
       </div>
       
       <CarImagesCarousel 

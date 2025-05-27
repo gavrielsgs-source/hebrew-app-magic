@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Car } from "@/types/car";
 import { CarFormValues } from "../car-form-schema";
 import { CarFormBase } from "../CarFormBase";
-import { useCars } from "@/hooks/use-cars";
+import { useUpdateCar } from "@/hooks/cars/use-update-car";
 import { useAuthContext } from "@/contexts/auth-context";
 import { createDefaultFormValues } from "./CarFormValues";
 
@@ -14,14 +14,17 @@ interface EditCarFormProps {
 }
 
 export function EditCarForm({ car, onCancel }: EditCarFormProps) {
-  const { updateCar } = useCars();
+  const updateCar = useUpdateCar();
   const { agencies } = useAuthContext();
   const [initialImages] = useState<File[]>([]);
   const defaultValues = createDefaultFormValues(car);
 
   const onSubmit = async (values: CarFormValues, images: File[]) => {
+    console.log("EditCarForm - Starting submission with values:", values);
+    console.log("EditCarForm - Images provided:", images?.length || 0);
+    
     try {
-      await updateCar.mutateAsync({
+      const updateData = {
         id: car.id,
         make: values.make,
         model: values.model,
@@ -40,11 +43,15 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         status: car.status,
         agency_id: values.agency_id,
         images
-      });
-      toast.success("הרכב עודכן בהצלחה");
+      };
+
+      console.log("EditCarForm - Calling updateCar.mutateAsync with:", updateData);
+      await updateCar.mutateAsync(updateData);
+      
+      console.log("EditCarForm - Update successful, calling onCancel");
       onCancel();
     } catch (error) {
-      console.error("Error updating car:", error);
+      console.error("EditCarForm - Error updating car:", error);
       toast.error("אירעה שגיאה בעדכון הרכב");
     }
   };
