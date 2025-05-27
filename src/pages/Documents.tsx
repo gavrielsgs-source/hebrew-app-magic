@@ -88,8 +88,8 @@ export default function Documents() {
                           <SelectItem value="empty" disabled>אין לקוחות</SelectItem>
                         ) : (
                           leads?.map(lead => (
-                            <SelectItem key={lead.id} value={lead.id}>
-                              {lead.name} {lead.phone ? `(${lead.phone})` : ''}
+                            <SelectItem key={lead.id as string} value={lead.id as string}>
+                              {(lead.name as string)} {lead.phone ? `(${lead.phone as string})` : ''}
                             </SelectItem>
                           ))
                         )}
@@ -132,8 +132,8 @@ export default function Documents() {
                           <SelectItem value="empty" disabled>אין רכבים</SelectItem>
                         ) : (
                           cars?.map(car => (
-                            <SelectItem key={car.id} value={car.id}>
-                              {car.make} {car.model} {car.year}
+                            <SelectItem key={car.id as string} value={car.id as string}>
+                              {(car.make as string)} {(car.model as string)} {(car.year as number)}
                             </SelectItem>
                           ))
                         )}

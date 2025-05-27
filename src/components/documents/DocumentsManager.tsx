@@ -91,6 +91,10 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
   const updateFormData = (updates: Partial<DocumentFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
   };
+
+  const handleUpload = async (params: UploadDocumentParams) => {
+    await uploadDocument(params);
+  };
   
   if (error) {
     return (
@@ -116,7 +120,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
             onOpenChange={setIsDialogOpen}
             formData={formData}
             onFormChange={updateFormData}
-            onUpload={uploadDocument}
+            onUpload={handleUpload}
             onReset={resetForm}
             isUploading={isUploading}
             entityId={entityId}

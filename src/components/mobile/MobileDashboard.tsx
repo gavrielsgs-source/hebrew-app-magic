@@ -189,7 +189,7 @@ export function MobileDashboard() {
           
           <div className="space-y-2">
             {dashboardData.todayTasks.slice(0, 3).map((task) => (
-              <Card key={task.id} className="border-0 shadow-sm bg-blue-50">
+              <Card key={task.id as string} className="border-0 shadow-sm bg-blue-50">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <Button
@@ -200,12 +200,12 @@ export function MobileDashboard() {
                       פתח
                     </Button>
                     <div className="text-right flex-1 mr-3">
-                      <h4 className="font-medium text-gray-900">{task.title}</h4>
+                      <h4 className="font-medium text-gray-900">{task.title as string}</h4>
                       <p className="text-xs text-gray-600">
-                        {new Date(task.due_date).toLocaleTimeString('he-IL', { 
+                        {task.due_date ? new Date(task.due_date as string).toLocaleTimeString('he-IL', { 
                           hour: '2-digit', 
                           minute: '2-digit' 
-                        })}
+                        }) : ''}
                       </p>
                     </div>
                   </div>
