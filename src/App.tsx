@@ -26,7 +26,6 @@ import Documents from "./pages/Documents";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const queryClient = new QueryClient();
 
@@ -37,25 +36,23 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <SidebarProvider defaultOpen={true}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<AuthRoute />} />
-              <Route path="/dashboard" element={<DashboardRoute />} />
-              <Route
-                path="*"
-                element={
-                  <ProtectedRoute>
-                    <SubscriptionProvider>
-                      <AuthProvider>
-                        <AppLayout />
-                      </AuthProvider>
-                    </SubscriptionProvider>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </SidebarProvider>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<AuthRoute />} />
+            <Route path="/dashboard" element={<DashboardRoute />} />
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionProvider>
+                    <AuthProvider>
+                      <AppLayout />
+                    </AuthProvider>
+                  </SubscriptionProvider>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
@@ -63,13 +60,11 @@ const App = () => {
 };
 
 function AppLayout() {
-  const isMobile = useIsMobile();
-  
   return (
-    <div className="flex min-h-screen w-full">
-      <AppSidebar />
-      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? '' : 'md:mr-[16rem]'}`}>
-        <div className="w-full">
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <main className="flex-1 overflow-auto">
           <Routes>
             <Route path="/profile" element={<Profile />} />
             <Route path="/tasks" element={<Tasks />} />
@@ -85,9 +80,9 @@ function AppLayout() {
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
 
@@ -112,14 +107,14 @@ function DashboardRoute() {
     <ProtectedRoute>
       <SubscriptionProvider>
         <AuthProvider>
-          <div className="flex min-h-screen w-full">
-            <AppSidebar />
-            <main className="flex-1 overflow-auto transition-all duration-300 md:mr-[16rem]">
-              <div className="w-full">
+          <SidebarProvider defaultOpen={true}>
+            <div className="flex min-h-screen w-full">
+              <AppSidebar />
+              <main className="flex-1 overflow-auto">
                 <Index />
-              </div>
-            </main>
-          </div>
+              </main>
+            </div>
+          </SidebarProvider>
         </AuthProvider>
       </SubscriptionProvider>
     </ProtectedRoute>

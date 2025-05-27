@@ -51,3 +51,14 @@ self.addEventListener('notificationclick', function(event) {
 self.addEventListener('notificationclose', function(event) {
   console.log('Notification closed:', event);
 });
+
+// הרשמה אוטומטית ל-Service Worker
+self.addEventListener('install', function(event) {
+  console.log('Service Worker installing...');
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  console.log('Service Worker activating...');
+  event.waitUntil(self.clients.claim());
+});
