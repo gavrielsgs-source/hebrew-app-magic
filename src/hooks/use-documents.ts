@@ -58,14 +58,25 @@ export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'a
         throw new Error(`Error fetching documents: ${error.message}`);
       }
 
-      return data as Document[];
+      return (data || []).map(item => ({
+        id: item.id as string,
+        name: item.name as string,
+        type: item.type as string,
+        url: item.url as string,
+        file_type: item.file_type as string,
+        created_at: item.created_at as string,
+        entity_id: item.entity_id as string,
+        entity_type: item.entity_type as 'lead' | 'car' | 'agency',
+        user_id: item.user_id as string,
+        is_template: item.is_template as boolean
+      })) as Document[];
     },
     enabled: !!user?.id
   });
 
   // Upload document
   const uploadDocumentMutation = useMutation({
-    mutationFn: async (params: UploadDocumentParams) => {
+    mutationFn: async (params: UploadDocumentParams): Promise<Document> => {
       if (!user?.id) {
         throw new Error("User not authenticated");
       }
@@ -109,7 +120,18 @@ export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'a
         throw documentError;
       }
 
-      return documentData;
+      return {
+        id: documentData.id as string,
+        name: documentData.name as string,
+        type: documentData.type as string,
+        url: documentData.url as string,
+        file_type: documentData.file_type as string,
+        created_at: documentData.created_at as string,
+        entity_id: documentData.entity_id as string,
+        entity_type: documentData.entity_type as 'lead' | 'car' | 'agency',
+        user_id: documentData.user_id as string,
+        is_template: documentData.is_template as boolean
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents", entityId, entityType, user?.id] });
@@ -153,7 +175,7 @@ export function useDocuments(entityId?: string, entityType?: 'lead' | 'car' | 'a
       if (document?.file_path) {
         const { error: storageError } = await supabase.storage
           .from("documents")
-          .remove([document.file_path]);
+          .remove([document.file_path as string]);
 
         if (storageError) {
           console.error("Error removing file from storage:", storageError);

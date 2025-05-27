@@ -37,10 +37,10 @@ ${document.url}
   }, [document]);
 
   const handleLeadSelect = (leadId: string) => {
-    const selectedLead = leads?.find(lead => lead.id === leadId);
+    const selectedLead = leads?.find(lead => (lead.id as string) === leadId);
     if (selectedLead) {
       setSelectedLeadId(leadId);
-      setPhoneNumber(selectedLead.phone || "");
+      setPhoneNumber((selectedLead.phone as string) || "");
     }
   };
 
@@ -122,8 +122,8 @@ ${document.url}
                 </SelectTrigger>
                 <SelectContent align="end">
                   {leads?.map(lead => (
-                    <SelectItem key={lead.id} value={lead.id}>
-                      {lead.name} {lead.phone ? `(${lead.phone})` : ''}
+                    <SelectItem key={lead.id as string} value={lead.id as string}>
+                      {lead.name as string} {lead.phone ? `(${lead.phone as string})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>

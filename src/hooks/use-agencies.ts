@@ -26,7 +26,13 @@ export function useAgencies() {
           throw error;
         }
 
-        return data as Agency[];
+        return (data || []).map(item => ({
+          id: item.id as string,
+          name: item.name as string,
+          owner_id: item.owner_id as string,
+          created_at: item.created_at as string,
+          updated_at: item.updated_at as string
+        })) as Agency[];
       } catch (error) {
         console.error("Error in agencies query:", error);
         throw error;
@@ -55,7 +61,13 @@ export function useAgencies() {
         throw error;
       }
 
-      return data as Agency;
+      return {
+        id: data.id as string,
+        name: data.name as string,
+        owner_id: data.owner_id as string,
+        created_at: data.created_at as string,
+        updated_at: data.updated_at as string
+      } as Agency;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agencies"] });

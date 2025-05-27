@@ -26,7 +26,7 @@ export function useRole(userId?: string) {
           console.error("Error fetching user role:", error);
           setRole(null);
         } else {
-          setRole(data?.role || null);
+          setRole((data?.role as string) || null);
         }
       } catch (error) {
         console.error("Error in useRole hook:", error);

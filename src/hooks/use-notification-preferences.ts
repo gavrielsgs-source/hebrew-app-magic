@@ -32,7 +32,7 @@ export function useNotificationPreferences() {
 
       if (error) throw error;
       if (data?.notification_preferences) {
-        setPreferences(data.notification_preferences);
+        setPreferences(data.notification_preferences as NotificationPreferences);
       }
     } catch (error) {
       console.error("Error loading preferences:", error);

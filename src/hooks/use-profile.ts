@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase"; // שימוש בקליינט סופאבייס מהנתיב הנכון
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "./use-auth";
 
@@ -58,7 +58,14 @@ export function useProfile() {
               throw insertError;
             }
 
-            return newProfile as Profile;
+            return {
+              id: newProfile.id as string,
+              full_name: newProfile.full_name as string | null,
+              phone: newProfile.phone as string | null,
+              company_name: newProfile.company_name as string | null,
+              position: newProfile.position as string | null,
+              avatar_url: newProfile.avatar_url as string | null
+            } as Profile;
           } else {
             console.error("Error fetching profile:", error);
             toast.error("שגיאה בטעינת פרופיל");
@@ -66,7 +73,14 @@ export function useProfile() {
           }
         }
 
-        return data as Profile;
+        return {
+          id: data.id as string,
+          full_name: data.full_name as string | null,
+          phone: data.phone as string | null,
+          company_name: data.company_name as string | null,
+          position: data.position as string | null,
+          avatar_url: data.avatar_url as string | null
+        } as Profile;
       } catch (error) {
         console.error("Error in profile function:", error);
         throw error;
@@ -83,7 +97,7 @@ export function useProfile() {
 
       const { error } = await supabase
         .from("profiles")
-        .update(updates)
+        .update(updates as Record<string, unknown>)
         .eq("id", user.id);
 
       if (error) {

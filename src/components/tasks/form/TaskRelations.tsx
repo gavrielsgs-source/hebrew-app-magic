@@ -28,8 +28,8 @@ export function TaskRelations() {
               <SelectContent>
                 <SelectItem value="none">ללא רכב</SelectItem>
                 {cars?.map((car) => (
-                  <SelectItem key={car.id} value={car.id}>
-                    {car.make} {car.model} ({car.year})
+                  <SelectItem key={car.id as string} value={car.id as string}>
+                    {car.make as string} {car.model as string} ({car.year as number})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -54,8 +54,8 @@ export function TaskRelations() {
               <SelectContent>
                 <SelectItem value="none">ללא ליד</SelectItem>
                 {leads?.map((lead) => (
-                  <SelectItem key={lead.id} value={lead.id}>
-                    {lead.name} - {lead.phone}
+                  <SelectItem key={lead.id as string} value={lead.id as string}>
+                    {lead.name as string} - {lead.phone as string}
                   </SelectItem>
                 ))}
               </SelectContent>
