@@ -20,10 +20,21 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
+import { PricingCard } from '@/components/subscription/PricingCard';
 
 export default function Landing() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const { user, loading } = useAuth();
+
+  const handlePricingSelect = (plan: string) => {
+    if (user) {
+      // If user is logged in, redirect to subscription upgrade
+      window.location.href = '/subscription/upgrade';
+    } else {
+      // If not logged in, redirect to auth
+      window.location.href = '/auth';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" dir="rtl">
@@ -184,6 +195,79 @@ export default function Landing() {
                 <p className="text-gray-600">בלי פתקים ובלי כאב ראש - כל המידע מאורגן ונגיש</p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-20 bg-gradient-to-r from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              מחירים שקופים לכל סוחר
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              בחר את החבילה שמתאימה לעסק שלך
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <PricingCard
+              title="פרימיום"
+              price={199}
+              description="מתאים לעסק קטן"
+              features={[
+                "עד 20 רכבים",
+                "עד 50 לידים",
+                "משתמש אחד",
+                "עד 100 הודעות וואטסאפ BETA",
+                "דשבורד בסיסי",
+                "תמיכה בוואטסאפ"
+              ]}
+              onSelect={() => handlePricingSelect('premium')}
+            />
+
+            <PricingCard
+              title="ביזנס"
+              price={399}
+              description="מתאים לעסק בינוני"
+              features={[
+                "עד 50 רכבים",
+                "עד 200 לידים",
+                "עד 5 משתמשים",
+                "עד 500 הודעות וואטסאפ BETA",
+                "דשבורד מתקדם",
+                "אנליטיקה מלאה",
+                "תמיכה מועדפת"
+              ]}
+              isPopular={true}
+              onSelect={() => handlePricingSelect('business')}
+            />
+
+            <PricingCard
+              title="אנטרפרייז"
+              price={699}
+              description="מתאים למגרש גדול"
+              features={[
+                "ללא הגבלה על רכבים ולידים",
+                "עד 10 משתמשים",
+                "עד 2000 הודעות וואטסאפ BETA",
+                "אנליטיקה מותאמת אישית",
+                "API מלא",
+                "תמיכה VIP",
+                "הדרכה אישית"
+              ]}
+              onSelect={() => handlePricingSelect('enterprise')}
+            />
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-600 mb-4">
+              💡 כל החבילות כוללות תקופת ניסיון של 14 יום ללא עלות
+            </p>
+            <p className="text-sm text-gray-500">
+              אין דמי הפעלה • אפשר לבטל בכל עת • תמיכה בעברית
+            </p>
           </div>
         </div>
       </section>
