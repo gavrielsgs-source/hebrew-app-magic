@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Phone, MessageSquare, Calendar, Edit, Send, Plus, Trash2, Users } from "lucide-react";
+import { Phone, MessageSquare, Calendar, Edit, Send, Plus, Trash2, Users, CheckCircle } from "lucide-react";
 import { EditLeadForm } from "./EditLeadForm";
 import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 import { getStatusBadgeColor, getStatusText } from "./grid/utils/lead-status";
@@ -14,21 +15,6 @@ import { useLeads, useDeleteLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { QuickStatusChange } from "./QuickStatusChange";
-
-// Helper function to get status colors according to new design
-const getLeadStatusColor = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case 'new':
-      return "bg-blue-500 text-white";
-    case 'hot':
-      return "bg-red-500 text-white";
-    case 'closed':
-    case 'converted':
-      return "bg-gray-500 text-white";
-    default:
-      return "bg-blue-500 text-white";
-  }
-};
 
 export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isLoading: boolean; error?: Error | null }) {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
@@ -69,18 +55,29 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
     }
   };
 
+  const handleWhatsAppMessage = (phone: string, name: string) => {
+    if (phone) {
+      const message = `שלום ${name}, איך אתה? אני מעוניין לדבר איתך על רכב`;
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="space-y-4" dir="rtl">
+      <div className="space-y-4 p-4" dir="rtl">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse rounded-2xl">
-            <CardHeader className="pb-2">
-              <div className="h-6 bg-slate-200 rounded w-1/3 mb-2"></div>
-              <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+          <Card key={i} className="animate-pulse rounded-2xl overflow-hidden">
+            <CardHeader className="pb-3">
+              <div className="h-8 bg-slate-200 rounded-xl mb-2"></div>
+              <div className="h-6 bg-slate-200 rounded-lg w-2/3"></div>
             </CardHeader>
             <CardContent>
-              <div className="h-4 bg-slate-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+              <div className="h-16 bg-slate-200 rounded-xl mb-3"></div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="h-12 bg-slate-200 rounded-xl"></div>
+                <div className="h-12 bg-slate-200 rounded-xl"></div>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -90,8 +87,13 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl" dir="rtl">
-        <p className="font-semibold">שגיאה בטעינת הלקוחות</p>
+      <div className="m-4 bg-red-50 border-2 border-red-200 text-red-700 p-6 rounded-3xl text-center" dir="rtl">
+        <div className="mb-3">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Phone className="h-6 w-6 text-red-500" />
+          </div>
+        </div>
+        <p className="font-bold text-lg mb-2">שגיאה בטעינת הלקוחות</p>
         <p className="text-sm">{error.message}</p>
       </div>
     );
@@ -99,132 +101,143 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   if (leads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-center" dir="rtl">
-        <div className="bg-slate-100 rounded-full p-3 mb-3">
-          <MessageSquare className="h-6 w-6 text-slate-400" />
+      <div className="flex flex-col items-center justify-center py-16 px-6 text-center" dir="rtl">
+        <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-full p-6 mb-6">
+          <Users className="h-12 w-12 text-[#2F3C7E]" />
         </div>
-        <h3 className="font-medium text-lg mb-1">אין לקוחות פוטנציאליים</h3>
-        <p className="text-slate-500 text-sm mb-4">הוסף את הלקוח הראשון שלך להתחיל</p>
+        <h3 className="font-bold text-2xl mb-3 text-gray-900">אין לקוחות פוטנציאליים</h3>
+        <p className="text-gray-500 text-lg mb-6 leading-relaxed">הוסף את הלקוח הראשון שלך כדי להתחיל לעקוב ולנהל לידים</p>
+        <Button 
+          className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] text-white text-lg py-4 px-8 rounded-2xl shadow-lg"
+          size="lg"
+        >
+          <Plus className="h-6 w-6 ml-2" />
+          הוסף לקוח ראשון
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4" dir="rtl">
+    <div className="space-y-4 p-4 pb-24" dir="rtl">
       {leads.map((lead) => (
-        <Card key={lead.id} className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl border border-gray-100">
-          <CardHeader className="pb-3 bg-gradient-to-l from-slate-50 to-white">
+        <Card key={lead.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 rounded-3xl border-0 bg-white">
+          <CardHeader className="pb-4 bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100">
             <div className="flex justify-between items-start">
-              <div>
-                <div className="font-bold text-xl text-[#2F3C7E] mb-2">{lead.name}</div>
+              <div className="flex-1">
+                <h3 className="font-bold text-2xl text-[#2F3C7E] mb-3 leading-tight">{lead.name}</h3>
                 <QuickStatusChange lead={lead} />
               </div>
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="text-[#2F3C7E] hover:bg-[#2F3C7E]/10"
+                className="text-[#2F3C7E] hover:bg-[#2F3C7E]/10 h-12 w-12 rounded-2xl"
                 onClick={() => {
                   setSelectedLeadId(lead.id);
                   setActiveDialog("edit");
                 }}
               >
-                <Edit className="h-5 w-5" />
+                <Edit className="h-6 w-6" />
               </Button>
             </div>
           </CardHeader>
           
-          <CardContent className="p-4">
-            <div className="space-y-3">
+          <CardContent className="p-6">
+            {/* פרטי קשר */}
+            <div className="space-y-4 mb-6">
               {lead.phone && (
-                <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-                  <div className="flex items-center">
-                    <Phone className="h-4 w-4 ml-2 text-[#2F3C7E]" />
-                    <span dir="ltr" className="font-medium">{lead.phone}</span>
-                  </div>
+                <div className="flex justify-between items-center bg-gradient-to-l from-blue-50 to-white p-4 rounded-2xl border border-blue-100">
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white"
+                    className="border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white rounded-xl px-4 py-2 font-semibold"
                     onClick={() => handleCallLead(lead.phone)}
                   >
-                    <Phone className="h-4 w-4" />
+                    <Phone className="h-5 w-5" />
                   </Button>
+                  <div className="text-right flex-1 mr-4">
+                    <div className="font-bold text-lg" dir="ltr">{lead.phone}</div>
+                    <div className="text-sm text-gray-600">טלפון</div>
+                  </div>
                 </div>
               )}
               
               {lead.email && (
-                <div className="flex items-center bg-slate-50 p-3 rounded-xl">
-                  <MessageSquare className="h-4 w-4 ml-2 text-[#2F3C7E]" />
-                  <span className="text-sm font-medium truncate max-w-[200px]">{lead.email}</span>
+                <div className="flex items-center bg-gradient-to-l from-purple-50 to-white p-4 rounded-2xl border border-purple-100">
+                  <div className="text-right flex-1">
+                    <div className="font-semibold text-gray-900 truncate">{lead.email}</div>
+                    <div className="text-sm text-gray-600">אימייל</div>
+                  </div>
+                  <MessageSquare className="h-5 w-5 text-purple-600 mr-3" />
                 </div>
               )}
               
               {lead.source && (
-                <div className="flex items-center bg-slate-50 p-3 rounded-xl">
-                  <span className="text-sm ml-2 font-bold text-[#2F3C7E]">מקור:</span>
-                  <span className="text-sm font-medium">{lead.source}</span>
+                <div className="flex items-center bg-gradient-to-l from-green-50 to-white p-4 rounded-2xl border border-green-100">
+                  <div className="text-right flex-1">
+                    <div className="font-semibold text-gray-900">{lead.source}</div>
+                    <div className="text-sm text-gray-600">מקור הליד</div>
+                  </div>
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
                 </div>
               )}
             </div>
             
-            {/* Action Buttons Grid */}
-            <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
-              {/* WhatsApp Button */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-green-500 text-green-600 hover:bg-green-500 hover:text-white flex items-center justify-center"
-                disabled={!lead.phone}
-                onClick={() => {
-                  setSelectedLeadId(lead.id);
-                  setActiveDialog("whatsapp");
-                }}
-              >
-                <MessageSquare className="h-4 w-4 ml-1" />
-                וואטסאפ
-              </Button>
+            {/* כפתורי פעולה ראשיים */}
+            <div className="space-y-3">
+              {/* שורה ראשונה - פעולות ראשיות */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl py-4 h-16 shadow-lg font-bold text-lg"
+                  disabled={!lead.phone}
+                  onClick={() => handleWhatsAppMessage(lead.phone, lead.name)}
+                >
+                  <MessageSquare className="h-6 w-6 ml-2" />
+                  וואטסאפ
+                </Button>
 
-              {/* Task Button */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white flex items-center justify-center"
-                onClick={() => {
-                  setSelectedLeadId(lead.id);
-                  setActiveDialog("task");
-                }}
-              >
-                <Calendar className="h-4 w-4 ml-1" />
-                משימה
-              </Button>
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] hover:from-[#1F2C5E] hover:to-[#3A4A7C] text-white rounded-2xl py-4 h-16 shadow-lg font-bold text-lg"
+                  onClick={() => {
+                    setSelectedLeadId(lead.id);
+                    setActiveDialog("task");
+                  }}
+                >
+                  <Calendar className="h-6 w-6 ml-2" />
+                  קבע פגישה
+                </Button>
+              </div>
 
-              {/* Send to Client Button */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white flex items-center justify-center"
-                onClick={() => {
-                  setSelectedLeadId(lead.id);
-                  setActiveDialog("clients");
-                }}
-              >
-                <Users className="h-4 w-4 ml-1" />
-                שלח ללקוח
-              </Button>
+              {/* שורה שנייה - פעולות משניות */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="border-2 border-orange-300 text-orange-700 hover:bg-orange-50 rounded-2xl py-4 h-14 font-semibold"
+                  onClick={() => {
+                    setSelectedLeadId(lead.id);
+                    setActiveDialog("clients");
+                  }}
+                >
+                  <Users className="h-5 w-5 ml-2" />
+                  שתף ליד
+                </Button>
 
-              {/* Delete Button */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-red-500 text-red-600 hover:bg-red-500 hover:text-white flex items-center justify-center"
-                onClick={() => {
-                  setLeadToDelete(lead.id);
-                  setIsDeleteDialogOpen(true);
-                }}
-              >
-                <Trash2 className="h-4 w-4 ml-1" />
-                מחק
-              </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="border-2 border-red-300 text-red-600 hover:bg-red-50 rounded-2xl py-4 h-14 font-semibold"
+                  onClick={() => {
+                    setLeadToDelete(lead.id);
+                    setIsDeleteDialogOpen(true);
+                  }}
+                >
+                  <Trash2 className="h-5 w-5 ml-2" />
+                  מחק
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -232,9 +245,9 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
       {/* Edit Lead Dialog */}
       <Dialog open={activeDialog === "edit"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="w-full max-w-md" dir="rtl">
+        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
           <DialogHeader>
-            <DialogTitle>עריכת ליד</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-[#2F3C7E]">עריכת ליד</DialogTitle>
           </DialogHeader>
           {selectedLead && (
             <EditLeadForm 
@@ -245,35 +258,11 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
         </DialogContent>
       </Dialog>
 
-      {/* WhatsApp Dialog */}
-      <Dialog open={activeDialog === "whatsapp"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="w-full max-w-md" dir="rtl">
-          <DialogHeader>
-            <DialogTitle>שליחת הודעת וואטסאפ</DialogTitle>
-          </DialogHeader>
-          {selectedLead?.phone && (
-            <div className="p-4">
-              <p className="mb-4">שליחת הודעה ל: {selectedLead.name}</p>
-              <Button 
-                className="w-full bg-green-500 hover:bg-green-600 text-white rounded-xl"
-                onClick={() => {
-                  const message = `שלום ${selectedLead.name}, אני מעוניין להציע לך רכב מתאים. האם תוכל לחזור אלי?`;
-                  window.open(`https://wa.me/${selectedLead.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
-                  setActiveDialog(null);
-                }}
-              >
-                שלח הודעה
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Task Dialog */}
       <Dialog open={activeDialog === "task"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="w-full max-w-md" dir="rtl">
+        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
           <DialogHeader>
-            <DialogTitle>הוספת משימה חדשה</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-[#2F3C7E]">קביעת פגישה</DialogTitle>
           </DialogHeader>
           {selectedLead && (
             <TaskForm 
@@ -286,40 +275,46 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
       {/* Send to Client Dialog */}
       <Dialog open={activeDialog === "clients"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="w-full max-w-md" dir="rtl">
+        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
           <DialogHeader>
-            <DialogTitle>שליחה ללקוח קיים</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-[#2F3C7E]">שיתוף ליד</DialogTitle>
           </DialogHeader>
-          <div className="p-4">
-            <p className="mb-4 text-center text-gray-600">תכונה זו תהיה זמינה בקרוב</p>
-            <p className="text-sm text-center text-gray-500">תוכל לשלוח פרטי ליד ללקוחות קיימים במערכת</p>
+          <div className="p-6 text-center">
+            <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
+              <Users className="h-8 w-8 text-[#2F3C7E]" />
+            </div>
+            <p className="mb-4 text-lg font-semibold text-gray-700">תכונה זו תהיה זמינה בקרוב</p>
+            <p className="text-sm text-gray-500 leading-relaxed">תוכל לשלוח פרטי ליד ללקוחות קיימים במערכת ולשתף מידע בצורה מהירה ובטוחה</p>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="w-full max-w-md" dir="rtl">
+        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
           <DialogHeader>
-            <DialogTitle>מחיקת ליד</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-red-600">מחיקת ליד</DialogTitle>
           </DialogHeader>
-          <div className="p-4">
-            <p className="mb-4">האם אתה בטוח שברצונך למחוק את הליד?</p>
-            <p className="text-sm text-gray-600 mb-6">פעולה זו לא ניתנת לביטול</p>
-            <div className="flex gap-2">
+          <div className="p-6 text-center">
+            <div className="bg-red-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
+              <Trash2 className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="mb-2 text-lg font-semibold">האם אתה בטוח?</p>
+            <p className="text-gray-600 mb-6 leading-relaxed">פעולה זו תמחק את הליד לצמיתות ולא ניתן יהיה לשחזר אותו</p>
+            <div className="flex gap-3">
               <Button 
                 variant="outline" 
-                className="flex-1"
+                className="flex-1 py-3 rounded-2xl font-semibold"
                 onClick={() => setIsDeleteDialogOpen(false)}
               >
                 ביטול
               </Button>
               <Button 
                 variant="destructive" 
-                className="flex-1"
+                className="flex-1 py-3 rounded-2xl font-semibold"
                 onClick={handleDeleteLead}
               >
-                מחק
+                מחק לצמיתות
               </Button>
             </div>
           </div>
