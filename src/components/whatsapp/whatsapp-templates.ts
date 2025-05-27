@@ -72,7 +72,7 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 *מחיר מבצע: לפי פנייה* (הנחה מיוחדת!)
 
 הרכב כולל:
-✓ ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'קילומטראז' נמוך'} בלבד
+✓ ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'קילומטראז נמוך'} בלבד
 ✓ צבע ${car.exterior_color || 'מעולה'}
 ✓ מנוע ${car.engine_size || 'חזק ויעיל'}
 ✓ ${car.transmission || 'תיבת הילוכים מעולה'}
