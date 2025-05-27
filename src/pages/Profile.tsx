@@ -120,10 +120,10 @@ export default function Profile() {
 
           <TabsContent value="profile">
             <Card className="border-gray-200 shadow-sm">
-              <CardHeader className="bg-gray-50 border-b border-gray-200">
-                <CardTitle className="text-xl text-gray-900 flex items-center justify-start gap-3">
+              <CardHeader className="bg-gray-50 border-b border-gray-200 text-right">
+                <CardTitle className="text-xl text-gray-900 flex items-center justify-end gap-3">
+                  <span>עריכת פרטים אישיים</span>
                   <User className="h-5 w-5 text-carslead-purple" />
-                  עריכת פרטים אישיים
                 </CardTitle>
                 <CardDescription className="text-gray-600 text-right">
                   עדכן את הפרטים האישיים שלך כאן. המידע ישמר באופן מאובטח במערכת.
@@ -133,9 +133,9 @@ export default function Profile() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
+                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center justify-end gap-2">
+                        <span>שם מלא</span>
                         <User className="h-4 w-4 text-carslead-purple" />
-                        שם מלא
                       </Label>
                       <Input
                         id="full_name"
@@ -148,9 +148,9 @@ export default function Profile() {
                     </div>
 
                     <div className="space-y-3">
-                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
+                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center justify-end gap-2">
+                        <span>מספר טלפון</span>
                         <Phone className="h-4 w-4 text-carslead-purple" />
-                        מספר טלפון
                       </Label>
                       <Input
                         id="phone"
@@ -163,9 +163,9 @@ export default function Profile() {
                     </div>
 
                     <div className="space-y-3">
-                      <Label htmlFor="company_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
+                      <Label htmlFor="company_name" className="text-sm font-medium text-gray-700 flex items-center justify-end gap-2">
+                        <span>שם החברה</span>
                         <Building className="h-4 w-4 text-carslead-purple" />
-                        שם החברה
                       </Label>
                       <Input
                         id="company_name"
@@ -178,9 +178,9 @@ export default function Profile() {
                     </div>
 
                     <div className="space-y-3">
-                      <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
+                      <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center justify-end gap-2">
+                        <span>תפקיד</span>
                         <Briefcase className="h-4 w-4 text-carslead-purple" />
-                        תפקיד
                       </Label>
                       <Input
                         id="position"
