@@ -68,22 +68,24 @@ function AppLayout() {
   return (
     <div className="flex min-h-screen w-full">
       <AppSidebar />
-      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? 'p-3' : 'md:pr-[16rem] p-6'}`}>
-        <Routes>
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/cars" element={<Cars />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
-          <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
-          <Route path="/subscription/payment-error" element={<PaymentError />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? '' : 'md:mr-[16rem]'}`}>
+        <div className="w-full">
+          <Routes>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/cars" element={<Cars />} />
+            <Route path="/leads" element={<Leads />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/documents" element={<Documents />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
+            <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
+            <Route path="/subscription/payment-error" element={<PaymentError />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </main>
     </div>
   );
@@ -112,8 +114,10 @@ function DashboardRoute() {
         <AuthProvider>
           <div className="flex min-h-screen w-full">
             <AppSidebar />
-            <main className="flex-1 overflow-auto transition-all duration-300 p-6 md:pr-[16rem]">
-              <Index />
+            <main className="flex-1 overflow-auto transition-all duration-300 md:mr-[16rem]">
+              <div className="w-full">
+                <Index />
+              </div>
             </main>
           </div>
         </AuthProvider>

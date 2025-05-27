@@ -38,27 +38,30 @@ export default function Dashboard() {
   
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      <div className="p-6 space-y-8 max-w-[1400px] mx-auto">
-        <AppHeader />
+      {/* Container with max-width and centered layout */}
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-8 xl:px-8">
+        <div className="space-y-8 py-6">
+          <AppHeader />
 
-        <DashboardHeader />
+          <DashboardHeader />
 
-        <DashboardStats dashboardData={dashboardData} />
+          <DashboardStats dashboardData={dashboardData} />
 
-        <DashboardActionCards 
-          dashboardData={dashboardData} 
-          handleActionClick={handleActionClick} 
-        />
+          <DashboardActionCards 
+            dashboardData={dashboardData} 
+            handleActionClick={handleActionClick} 
+          />
 
-        <DashboardCalendarSection />
+          <DashboardCalendarSection />
 
-        <DashboardTodayTasks todayTasks={dashboardData?.todayTasks} />
+          <DashboardTodayTasks todayTasks={dashboardData?.todayTasks} />
 
-        <DashboardAnalytics todayTasksCount={dashboardData?.todayTasks?.length || 0} />
+          <DashboardAnalytics todayTasksCount={dashboardData?.todayTasks?.length || 0} />
 
-        <DashboardDetailedTables />
+          <DashboardDetailedTables />
 
-        <SmartInsights data={salesData} />
+          <SmartInsights data={salesData} />
+        </div>
       </div>
     </div>
   );
