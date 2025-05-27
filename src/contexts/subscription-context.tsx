@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Subscription, SubscriptionTier, subscriptionFeatures } from '@/types/subscription';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
 
 interface SubscriptionContextType {
   subscription: Subscription;
@@ -28,23 +27,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setError(null);
     
     try {
-      // In a real app, this would call a Supabase function to verify subscription with Stripe
-      // For now, we'll simulate with a mock subscription tier lookup
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('subscription_tier')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) throw error;
-      
-      const tier = (data?.subscription_tier as SubscriptionTier) || 'free';
-      setSubscription(subscriptionFeatures[tier]);
+      // For now, just use free tier since subscription_tier column doesn't exist
+      console.log('Using free subscription tier for user:', user.id);
+      setSubscription(subscriptionFeatures.free);
     } catch (err) {
-      console.error("Error fetching subscription:", err);
-      const errorObj = err instanceof Error ? err : new Error('Unknown error fetching subscription');
-      setError(errorObj);
-      // Fallback to free tier on error
+      console.error("Error with subscription:", err);
+      // Always fallback to free tier
       setSubscription(subscriptionFeatures.free);
     } finally {
       setIsLoading(false);

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,7 @@ import { cn } from "@/lib/utils";
 import { QuickStatusChange } from "./QuickStatusChange";
 
 export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isLoading: boolean; error?: Error | null }) {
-  console.log('LeadsMobileView rendered with:', { leads, isLoading, error });
-  console.log('Leads count:', leads?.length);
+  console.log('LeadsMobileView rendered with:', { leads: leads?.length, isLoading, error });
   
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [activeDialog, setActiveDialog] = useState<"edit" | "task" | "clients" | null>(null);
@@ -25,7 +25,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
   const deleteLead = useDeleteLead();
   
   const selectedLead = selectedLeadId 
-    ? leads.find(lead => lead.id === selectedLeadId) 
+    ? leads?.find(lead => lead.id === selectedLeadId) 
     : null;
 
   const handleDeleteLead = async () => {
@@ -280,8 +280,50 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
         ))}
       </div>
 
-      {/* Dialogs */}
-      {/* ... keep existing code (all dialog components) */}
+      {/* Edit Lead Dialog */}
+      <Dialog open={activeDialog === "edit"} onOpenChange={(open) => !open && setActiveDialog(null)}>
+        <DialogContent className="sm:max-w-[400px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>עריכת לקוח</DialogTitle>
+          </DialogHeader>
+          {selectedLead && <EditLeadForm lead={selectedLead} />}
+        </DialogContent>
+      </Dialog>
+
+      {/* Task Dialog */}
+      <Dialog open={activeDialog === "task"} onOpenChange={(open) => !open && setActiveDialog(null)}>
+        <DialogContent className="sm:max-w-[500px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>קבע פגישה/תזכורת - {selectedLead?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedLead && (
+            <TaskForm 
+              prefilledLead={selectedLead}
+              onSuccess={() => setActiveDialog(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>מחיקת ליד</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>האם אתה בטוח שברצונך למחוק את הליד הזה? פעולה זו לא ניתנת לביטול.</p>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              ביטול
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteLead}>
+              מחק
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
