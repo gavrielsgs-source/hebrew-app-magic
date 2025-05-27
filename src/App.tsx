@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 import { SubscriptionProvider } from "@/contexts/subscription-context";
 import { AuthProvider } from "@/contexts/auth-context";
 import Index from "./pages/Index";
@@ -63,7 +64,7 @@ function AppLayout() {
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
+        <SidebarInset>
           <Routes>
             <Route path="/dashboard" element={<Index />} />
             <Route path="/profile" element={<Profile />} />
@@ -80,7 +81,7 @@ function AppLayout() {
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </main>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );

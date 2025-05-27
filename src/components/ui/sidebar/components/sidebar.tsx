@@ -56,7 +56,7 @@ export const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "fixed inset-y-0 z-40 flex h-svh transition-all duration-300 ease-in-out",
+            "fixed inset-y-0 z-50 flex h-svh transition-all duration-300 ease-in-out",
             side === "left" ? "left-0" : "right-0",
             state === "expanded" ? "w-[--sidebar-width]" : "w-[--sidebar-width-icon]",
             className
