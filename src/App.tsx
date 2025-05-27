@@ -39,8 +39,9 @@ const App = () => {
         <BrowserRouter>
           <SidebarProvider defaultOpen={true}>
             <Routes>
-              <Route path="/landing" element={<Landing />} />
               <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/landing" element={<Landing />} />
+              <Route path="/" element={<LandingOrDashboard />} />
               <Route
                 path="*"
                 element={
@@ -69,7 +70,6 @@ function AppLayout() {
       <AppSidebar />
       <main className={`flex-1 overflow-auto transition-all duration-300 rtl-fix ${isMobile ? 'p-3' : 'p-6 md:pr-[20rem] md:pl-6'}`}>
         <Routes>
-          <Route path="/" element={<Index />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/cars" element={<Cars />} />
@@ -97,6 +97,33 @@ function AuthRoute() {
   if (user) return <Navigate to="/" replace />;
   
   return <Auth />;
+}
+
+function LandingOrDashboard() {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div className="flex items-center justify-center h-screen">טוען...</div>;
+  
+  // If user is logged in, show the dashboard
+  if (user) {
+    return (
+      <ProtectedRoute>
+        <SubscriptionProvider>
+          <AuthProvider>
+            <div className="flex min-h-screen w-full">
+              <AppSidebar />
+              <main className="flex-1 overflow-auto transition-all duration-300 rtl-fix p-6">
+                <Index />
+              </main>
+            </div>
+          </AuthProvider>
+        </SubscriptionProvider>
+      </ProtectedRoute>
+    );
+  }
+  
+  // If user is not logged in, show the landing page
+  return <Landing />;
 }
 
 export default App;
