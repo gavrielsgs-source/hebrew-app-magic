@@ -34,12 +34,10 @@ export default function LoginForm() {
         description: "ברוך הבא למערכת",
       });
       
-      // לאחר התחברות מוצלחת, מפנה למסך הראשי
-      navigate('/');
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Error logging in:', error);
       
-      // מטפל בסוגי שגיאות שונים
       if (error.message.includes('Invalid login credentials')) {
         setErrorMsg('פרטי התחברות שגויים');
       } else if (error.message.includes('Email not confirmed')) {
@@ -59,44 +57,51 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleLogin} className="space-y-6 w-full max-w-sm mx-auto">
+    <form onSubmit={handleLogin} className="space-y-6 w-full">
       <div className="space-y-2">
-        <Label htmlFor="email">אימייל</Label>
+        <Label htmlFor="email" className="text-gray-700 font-medium">אימייל</Label>
         <div className="relative">
-          <Mail className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+          <Mail className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
           <Input
             id="email"
             type="email"
             placeholder="your@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="pr-10"
+            className="pr-12 h-12 border-gray-200 rounded-xl focus:border-[#2F3C7E] focus:ring-[#2F3C7E]"
             required
           />
         </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="password">סיסמה</Label>
+        <Label htmlFor="password" className="text-gray-700 font-medium">סיסמה</Label>
         <div className="relative">
-          <Lock className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+          <Lock className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
           <Input
             id="password"
             type="password"
+            placeholder="הכנס את הסיסמה שלך"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="pr-10"
+            className="pr-12 h-12 border-gray-200 rounded-xl focus:border-[#2F3C7E] focus:ring-[#2F3C7E]"
             required
           />
         </div>
       </div>
 
       {errorMsg && (
-        <div className="text-red-500 text-sm">{errorMsg}</div>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+          <p className="text-red-600 text-sm">{errorMsg}</p>
+        </div>
       )}
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'מתחבר...' : 'התחבר'}
+      <Button 
+        type="submit" 
+        className="w-full h-12 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
+        disabled={loading}
+      >
+        {loading ? 'מתחבר...' : 'התחבר למערכת'}
       </Button>
     </form>
   );
