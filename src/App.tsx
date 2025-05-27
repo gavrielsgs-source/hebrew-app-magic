@@ -10,6 +10,7 @@ import { SubscriptionProvider } from "@/contexts/subscription-context";
 import { AuthProvider } from "@/contexts/auth-context";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import Profile from "./pages/Profile";
 import Tasks from "./pages/Tasks";
 import Cars from "./pages/Cars";
@@ -38,6 +39,7 @@ const App = () => {
         <BrowserRouter>
           <SidebarProvider defaultOpen={true}>
             <Routes>
+              <Route path="/landing" element={<Landing />} />
               <Route path="/auth" element={<AuthRoute />} />
               <Route
                 path="*"
