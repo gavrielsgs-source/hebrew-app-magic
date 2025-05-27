@@ -50,7 +50,7 @@ export default function Leads() {
   };
 
   return (
-    <div className={cn("p-4 sm:p-6 rtl-fix", isMobile && "mobile-content")}>
+    <div className={cn("p-4 sm:p-6 rtl-fix", isMobile && "pb-24")}>
       <SubscriptionLimitAlert 
         featureKey="leadLimit" 
         currentCount={leads.length} 
@@ -107,7 +107,7 @@ export default function Leads() {
         <TabsContent value="leads" className="mt-0">
           {activeTab === "leads" && (
             <>
-              {/* New Filters Component */}
+              {/* Filters Component */}
               <LeadsFilters
                 searchTerm={filters.searchTerm}
                 onSearchChange={(value) => updateFilter("searchTerm", value)}
