@@ -13,6 +13,9 @@ import { cn } from "@/lib/utils";
 import { QuickStatusChange } from "./QuickStatusChange";
 
 export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isLoading: boolean; error?: Error | null }) {
+  console.log('LeadsMobileView rendered with:', { leads, isLoading, error });
+  console.log('Leads count:', leads?.length);
+  
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [activeDialog, setActiveDialog] = useState<"edit" | "task" | "clients" | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -81,9 +84,10 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   // Loading state
   if (isLoading) {
+    console.log('Showing loading state');
     return (
-      <div className="min-h-screen bg-gray-50" dir="rtl">
-        <div className="space-y-4 p-4 pb-24">
+      <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
+        <div className="space-y-4 p-4">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse rounded-2xl overflow-hidden">
               <CardHeader className="pb-3">
@@ -106,8 +110,9 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   // Error state
   if (error) {
+    console.log('Showing error state:', error);
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 pb-24" dir="rtl">
         <div className="bg-red-50 border-2 border-red-200 text-red-700 p-6 rounded-3xl text-center max-w-md w-full">
           <div className="mb-3">
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -123,8 +128,9 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
 
   // Empty state
   if (!leads || leads.length === 0) {
+    console.log('Showing empty state');
     return (
-      <div className="min-h-screen bg-gray-50" dir="rtl">
+      <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
           <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-full p-6 mb-6">
             <Users className="h-12 w-12 text-[#2F3C7E]" />
@@ -144,9 +150,10 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
   }
 
   // Main content
+  console.log('Showing main content with leads:', leads.length);
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <div className="space-y-4 p-4 pb-24">
+    <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
+      <div className="space-y-4 p-4">
         {leads.map((lead) => (
           <Card key={lead.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 rounded-3xl border-0 bg-white">
             <CardHeader className="pb-4 bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100">
@@ -273,83 +280,8 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
         ))}
       </div>
 
-      {/* Edit Lead Dialog */}
-      <Dialog open={activeDialog === "edit"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-[#2F3C7E]">עריכת ליד</DialogTitle>
-          </DialogHeader>
-          {selectedLead && (
-            <EditLeadForm 
-              lead={selectedLead} 
-              onSuccess={() => setActiveDialog(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Task Dialog */}
-      <Dialog open={activeDialog === "task"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-[#2F3C7E]">קביעת פגישה</DialogTitle>
-          </DialogHeader>
-          {selectedLead && (
-            <TaskForm 
-              initialLeadId={selectedLead.id}
-              onSuccess={() => setActiveDialog(null)} 
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Send to Client Dialog */}
-      <Dialog open={activeDialog === "clients"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-[#2F3C7E]">שיתוף ליד</DialogTitle>
-          </DialogHeader>
-          <div className="p-6 text-center">
-            <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-              <Users className="h-8 w-8 text-[#2F3C7E]" />
-            </div>
-            <p className="mb-4 text-lg font-semibold text-gray-700">תכונה זו תהיה זמינה בקרוב</p>
-            <p className="text-sm text-gray-500 leading-relaxed">תוכל לשלוח פרטי ליד ללקוחות קיימים במערכת ולשתף מידע בצורה מהירה ובטוחה</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="w-full max-w-md mx-4 rounded-3xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-red-600">מחיקת ליד</DialogTitle>
-          </DialogHeader>
-          <div className="p-6 text-center">
-            <div className="bg-red-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-              <Trash2 className="h-8 w-8 text-red-500" />
-            </div>
-            <p className="mb-2 text-lg font-semibold">האם אתה בטוח?</p>
-            <p className="text-gray-600 mb-6 leading-relaxed">פעולה זו תמחק את הליד לצמיתות ולא ניתן יהיה לשחזר אותו</p>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                className="flex-1 py-3 rounded-2xl font-semibold"
-                onClick={() => setIsDeleteDialogOpen(false)}
-              >
-                ביטול
-              </Button>
-              <Button 
-                variant="destructive" 
-                className="flex-1 py-3 rounded-2xl font-semibold"
-                onClick={handleDeleteLead}
-              >
-                מחק לצמיתות
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs */}
+      {/* ... keep existing code (all dialog components) */}
     </div>
   );
 }

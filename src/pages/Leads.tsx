@@ -20,6 +20,8 @@ import { NotificationsPopover } from "@/components/notifications/NotificationsPo
 import { cn } from "@/lib/utils";
 
 export default function Leads() {
+  console.log('Leads page rendered');
+  
   const { toast } = useToast();
   const { leads, isLoading, error } = useLeads();
   const addLead = useCreateLead();
@@ -29,6 +31,14 @@ export default function Leads() {
   const [activeTab, setActiveTab] = useState<string>("leads");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const isMobile = useIsMobile();
+
+  console.log('Leads page state:', { 
+    leadsCount: leads?.length, 
+    isLoading, 
+    error: error?.message, 
+    isMobile,
+    activeTab 
+  });
 
   // Use the new filters hook
   const {
@@ -42,12 +52,24 @@ export default function Leads() {
   // Get filtered and sorted leads
   const filteredLeads = filterAndSortLeads(leads);
 
+  console.log('Filtered leads count:', filteredLeads?.length);
+
   const onLeadAdded = () => {
     toast({
       title: "ליד נוסף",
       description: "הליד נוסף בהצלחה!",
     });
   };
+
+  // Early return for mobile to debug the issue
+  if (isMobile) {
+    console.log('Mobile view - rendering LeadsMobileView directly');
+    return (
+      <div className="mobile-content">
+        <LeadsMobileView leads={filteredLeads} isLoading={isLoading} error={error} />
+      </div>
+    );
+  }
 
   return (
     <div className={cn("p-4 sm:p-6 rtl-fix", isMobile && "pb-24")}>
