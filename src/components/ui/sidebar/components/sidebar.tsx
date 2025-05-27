@@ -61,11 +61,17 @@ export const Sidebar = React.forwardRef<
             state === "expanded" ? "w-[--sidebar-width]" : "w-[--sidebar-width-icon]",
             className
           )}
+          style={
+            {
+              "--sidebar-width": "16rem",
+              "--sidebar-width-icon": "4rem",
+            } as React.CSSProperties
+          }
           {...props}
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-gradient-to-b from-gray-900 to-gray-800 shadow-xl border-l border-gray-700/30"
+            className="flex h-full w-full flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-xl border-l border-gray-700/30"
           >
             {children}
           </div>

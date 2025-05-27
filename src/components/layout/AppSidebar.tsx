@@ -44,24 +44,24 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-l">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-3 px-2">
           <CarSleadLogoSVG />
-          <h1 className="text-lg font-bold">CarsLead</h1>
+          <h1 className="text-lg font-bold text-white">CarsLead</h1>
         </div>
       </SidebarHeader>
 
       <SidebarContent className="overflow-hidden">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 px-4">
           <SidebarMenu key="main">
             <SidebarMenuItem>
               <button
                 onClick={() => navigate("/")}
                 data-active={pathname === "/"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <Home className="h-5 w-5 ml-2" />
-                <span>לוח בקרה</span>
+                <Home className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">לוח בקרה</span>
               </button>
             </SidebarMenuItem>
 
@@ -69,10 +69,10 @@ export function AppSidebar() {
               <button
                 onClick={() => navigate("/leads")}
                 data-active={pathname === "/leads"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <Users className="h-5 w-5 ml-2" />
-                <span>לידים</span>
+                <Users className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">לידים</span>
               </button>
             </SidebarMenuItem>
 
@@ -80,10 +80,10 @@ export function AppSidebar() {
               <button
                 onClick={() => navigate("/cars")}
                 data-active={pathname === "/cars"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <Car className="h-5 w-5 ml-2" />
-                <span>רכבים</span>
+                <Car className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">רכבים</span>
               </button>
             </SidebarMenuItem>
 
@@ -91,10 +91,10 @@ export function AppSidebar() {
               <button
                 onClick={() => navigate("/tasks")}
                 data-active={pathname === "/tasks"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <CalendarDays className="h-5 w-5 ml-2" />
-                <span>משימות</span>
+                <CalendarDays className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">משימות</span>
               </button>
             </SidebarMenuItem>
 
@@ -102,10 +102,10 @@ export function AppSidebar() {
               <button
                 onClick={() => navigate("/templates")}
                 data-active={pathname === "/templates"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <MessageSquare className="h-5 w-5 ml-2" />
-                <span>תבניות</span>
+                <MessageSquare className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">תבניות</span>
               </button>
             </SidebarMenuItem>
             
@@ -113,10 +113,10 @@ export function AppSidebar() {
               <button
                 onClick={() => navigate("/analytics")}
                 data-active={pathname === "/analytics"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <FileBarChart className="h-5 w-5 ml-2" />
-                <span>אנליטיקה מתקדמת</span>
+                <FileBarChart className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">אנליטיקה מתקדמת</span>
               </button>
             </SidebarMenuItem>
             
@@ -124,10 +124,10 @@ export function AppSidebar() {
               <button
                 onClick={() => navigate("/documents")}
                 data-active={pathname === "/documents"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <FileText className="h-5 w-5 ml-2" />
-                <span>מסמכים</span>
+                <FileText className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">מסמכים</span>
               </button>
             </SidebarMenuItem>
 
@@ -136,10 +136,10 @@ export function AppSidebar() {
                 <button
                   onClick={() => navigate("/admin")}
                   data-active={pathname === "/admin"}
-                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
                 >
-                  <Settings className="h-5 w-5 ml-2" />
-                  <span>ניהול מערכת</span>
+                  <Settings className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">ניהול מערכת</span>
                 </button>
               </SidebarMenuItem>
             )}
@@ -147,17 +147,17 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarContent className="border-t">
-        <div className="flex flex-col gap-2">
+      <SidebarContent className="border-t border-gray-700/50 mt-auto">
+        <div className="flex flex-col gap-2 px-4 py-4">
           <SidebarMenu key="user">
             <SidebarMenuItem>
               <button
                 onClick={() => navigate("/profile")}
                 data-active={pathname === "/profile"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <User className="h-5 w-5 ml-2" />
-                <span>פרופיל</span>
+                <User className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">פרופיל</span>
               </button>
             </SidebarMenuItem>
 
@@ -165,10 +165,10 @@ export function AppSidebar() {
               <button
                 onClick={() => navigate("/subscription")}
                 data-active={pathname === "/subscription"}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <CreditCard className="h-5 w-5 ml-2" />
-                <span>מנוי</span>
+                <CreditCard className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">מנוי</span>
               </button>
             </SidebarMenuItem>
           </SidebarMenu>
