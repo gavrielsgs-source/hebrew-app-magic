@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WhatsappLeadSelector } from "./WhatsappLeadSelector";
+import { useState } from "react";
 
 interface WhatsappPhoneInputProps {
   phoneNumber: string;
@@ -21,9 +22,24 @@ export function WhatsappPhoneInput({
   onLeadSelect,
   onClearLead 
 }: WhatsappPhoneInputProps) {
+  const [activeTab, setActiveTab] = useState("existing");
+
+  const handleNewLead = () => {
+    // Switch to manual tab when adding new lead
+    setActiveTab("manual");
+  };
+
+  const handlePhoneNumberChange = (value: string) => {
+    setPhoneNumber(value);
+    // Clear selected lead when typing manually
+    if (onClearLead) {
+      onClearLead();
+    }
+  };
+
   return (
     <div>
-      <Tabs defaultValue="existing" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="existing">לקוח קיים</TabsTrigger>
           <TabsTrigger value="manual">מספר ידני</TabsTrigger>
@@ -34,11 +50,7 @@ export function WhatsappPhoneInput({
             <WhatsappLeadSelector
               selectedLeadId={selectedLeadId}
               onLeadSelect={onLeadSelect}
-              onNewLead={() => {
-                // Switch to manual tab when adding new lead
-                const manualTab = document.querySelector('[value="manual"]') as HTMLElement;
-                manualTab?.click();
-              }}
+              onNewLead={handleNewLead}
             />
           )}
           
@@ -68,20 +80,14 @@ export function WhatsappPhoneInput({
             <label htmlFor="phone" className="block text-sm font-medium mb-1">
               מספר טלפון של הלקוח
             </label>
-            <input
+            <Input
               id="phone"
               type="tel"
               placeholder="דוגמה: 0541234567"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={phoneNumber}
-              onChange={(e) => {
-                setPhoneNumber(e.target.value);
-                // Clear selected lead when typing manually
-                if (onClearLead) {
-                  onClearLead();
-                }
-              }}
-              dir="rtl"
+              onChange={(e) => handlePhoneNumberChange(e.target.value)}
+              className="text-right"
+              dir="ltr"
             />
             <p className="text-xs text-muted-foreground mt-1">
               ניתן להזין עם או בלי קידומת (972)

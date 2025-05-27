@@ -4,6 +4,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useLeads } from "@/hooks/use-leads";
 import { UserPlus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AddLeadForm } from "@/components/leads/AddLeadForm";
 
 interface WhatsappLeadSelectorProps {
   onLeadSelect: (leadId: string, leadPhone: string, leadName: string) => void;
@@ -13,6 +15,7 @@ interface WhatsappLeadSelectorProps {
 
 export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }: WhatsappLeadSelectorProps) {
   const { leads } = useLeads();
+  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
   
   // Filter leads that have phone numbers with proper type checking
   const leadsWithPhone = leads.filter(lead => {
@@ -20,54 +23,75 @@ export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }
     return phone && phone.trim() !== '';
   });
 
+  const handleNewLeadClick = () => {
+    setIsAddLeadOpen(true);
+  };
+
+  const handleNewLeadSuccess = () => {
+    setIsAddLeadOpen(false);
+    // Switch to manual tab when a new lead is added
+    onNewLead();
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium">בחר לקוח קיים</label>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onNewLead}
-          className="flex items-center gap-1 text-xs"
-        >
-          <UserPlus className="h-3 w-3" />
-          לקוח חדש
-        </Button>
-      </div>
-      
-      <Select value={selectedLeadId} onValueChange={(leadId) => {
-        const selectedLead = leadsWithPhone.find(lead => lead.id === leadId);
-        if (selectedLead) {
-          onLeadSelect(leadId, selectedLead.phone as string, selectedLead.name as string);
-        }
-      }}>
-        <SelectTrigger className="w-full" dir="rtl">
-          <SelectValue placeholder="בחר לקוח מהרשימה..." />
-        </SelectTrigger>
-        <SelectContent dir="rtl">
-          {leadsWithPhone.length === 0 ? (
-            <SelectItem value="no-leads" disabled>
-              אין לקוחות עם מספר טלפון
-            </SelectItem>
-          ) : (
-            leadsWithPhone.map((lead) => (
-              <SelectItem key={lead.id as string} value={lead.id as string}>
-                <div className="flex justify-between items-center w-full">
-                  <span className="font-medium">{lead.name as string}</span>
-                  <span className="text-xs text-gray-500 mr-2">{lead.phone as string}</span>
-                </div>
+    <>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">בחר לקוח קיים</label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleNewLeadClick}
+            className="flex items-center gap-1 text-xs"
+          >
+            <UserPlus className="h-3 w-3" />
+            לקוח חדש
+          </Button>
+        </div>
+        
+        <Select value={selectedLeadId} onValueChange={(leadId) => {
+          const selectedLead = leadsWithPhone.find(lead => (lead.id as string) === leadId);
+          if (selectedLead) {
+            onLeadSelect(leadId, selectedLead.phone as string, selectedLead.name as string);
+          }
+        }}>
+          <SelectTrigger className="w-full" dir="rtl">
+            <SelectValue placeholder="בחר לקוח מהרשימה..." />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            {leadsWithPhone.length === 0 ? (
+              <SelectItem value="no-leads" disabled>
+                אין לקוחות עם מספר טלפון
               </SelectItem>
-            ))
-          )}
-        </SelectContent>
-      </Select>
-      
-      {leadsWithPhone.length === 0 && (
-        <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
-          לא נמצאו לקוחות עם מספר טלפון במערכת
-        </p>
-      )}
-    </div>
+            ) : (
+              leadsWithPhone.map((lead) => (
+                <SelectItem key={lead.id as string} value={lead.id as string}>
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-medium">{lead.name as string}</span>
+                    <span className="text-xs text-gray-500 mr-2">{lead.phone as string}</span>
+                  </div>
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+        
+        {leadsWithPhone.length === 0 && (
+          <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
+            לא נמצאו לקוחות עם מספר טלפון במערכת
+          </p>
+        )}
+      </div>
+
+      <Dialog open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
+        <DialogContent className="w-[400px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>הוסף לקוח חדש</DialogTitle>
+          </DialogHeader>
+          <AddLeadForm />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
