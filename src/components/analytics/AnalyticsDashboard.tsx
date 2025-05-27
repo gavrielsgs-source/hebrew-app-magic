@@ -1,10 +1,20 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, TrendingUp, Users, Car } from "lucide-react";
-import { useCombinedAnalytics } from "@/hooks/analytics/use-combined-analytics";
+import { useDateRangeAnalytics } from "@/hooks/analytics/use-date-range-analytics";
+import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
 
 export function AnalyticsDashboard() {
-  const { data: analytics, isLoading, error } = useCombinedAnalytics();
+  const { data: dateRanges } = useDateRangeAnalytics();
+  const currentPeriod = dateRanges?.thisMonth || { from: new Date(), to: new Date() };
+  const previousPeriod = dateRanges?.lastMonth || { from: new Date(), to: new Date() };
+
+  const { data: currentAnalytics, isLoading: currentLoading, error: currentError } = useAdvancedAnalytics(currentPeriod);
+  const { data: previousAnalytics, isLoading: previousLoading, error: previousError } = useAdvancedAnalytics(previousPeriod);
+
+  const isLoading = currentLoading || previousLoading;
+  const error = currentError || previousError;
 
   if (isLoading) {
     return (
@@ -38,8 +48,8 @@ export function AnalyticsDashboard() {
     );
   }
 
-  const currentPeriodData = analytics?.currentPeriod || {};
-  const previousPeriodData = analytics?.previousPeriod || {};
+  const currentPeriodData = currentAnalytics || {};
+  const previousPeriodData = previousAnalytics || {};
 
   return (
     <div className="space-y-6">
