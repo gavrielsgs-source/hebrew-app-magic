@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,11 +51,31 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
     }
   };
 
+  const formatPhoneForWhatsApp = (phone: string) => {
+    if (!phone) return '';
+    
+    // Remove all non-numeric characters
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    
+    // If already starts with 972, return as is
+    if (cleanPhone.startsWith('972')) {
+      return cleanPhone;
+    }
+    
+    // If starts with 0, replace with 972
+    if (cleanPhone.startsWith('0')) {
+      return '972' + cleanPhone.substring(1);
+    }
+    
+    // If doesn't start with 972 or 0, add 972 prefix
+    return '972' + cleanPhone;
+  };
+
   const handleWhatsAppMessage = (phone: string, name: string) => {
     if (phone) {
       const message = `שלום ${name}, איך אתה? אני מעוניין לדבר איתך על רכב`;
-      const cleanPhone = phone.replace(/[^0-9]/g, '');
-      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+      const formattedPhone = formatPhoneForWhatsApp(phone);
+      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
     }
   };
 
@@ -134,7 +153,9 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-bold text-2xl text-[#2F3C7E] mb-3 leading-tight">{lead.name}</h3>
-                  <QuickStatusChange lead={lead} />
+                  <div className="text-left">
+                    <QuickStatusChange lead={lead} />
+                  </div>
                 </div>
                 <Button 
                   variant="ghost" 

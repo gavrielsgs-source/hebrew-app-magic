@@ -44,18 +44,33 @@ ${document.url}
     }
   };
 
+  const formatPhoneForWhatsApp = (phone: string) => {
+    if (!phone) return '';
+    
+    // Remove all non-numeric characters
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    
+    // If already starts with 972, return as is
+    if (cleanPhone.startsWith('972')) {
+      return cleanPhone;
+    }
+    
+    // If starts with 0, replace with 972
+    if (cleanPhone.startsWith('0')) {
+      return '972' + cleanPhone.substring(1);
+    }
+    
+    // If doesn't start with 972 or 0, add 972 prefix
+    return '972' + cleanPhone;
+  };
+
   const handleSend = () => {
     if (!phoneNumber) {
       toast.error("יש להזין מספר טלפון או לבחור לקוח");
       return;
     }
 
-    const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, "");
-    const formattedNumber = cleanPhoneNumber.startsWith("972") 
-      ? cleanPhoneNumber 
-      : cleanPhoneNumber.startsWith("0") 
-        ? "972" + cleanPhoneNumber.substring(1) 
-        : "972" + cleanPhoneNumber;
+    const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
     
     const encodedText = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
