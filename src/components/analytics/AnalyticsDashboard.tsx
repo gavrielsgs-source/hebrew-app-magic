@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, TrendingUp, Users, Car } from "lucide-react";
 import { useDateRangeAnalytics } from "@/hooks/analytics/use-date-range-analytics";
-import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
+import { useAdvancedAnalytics, type AdvancedAnalyticsData } from "@/hooks/analytics/use-combined-analytics";
 
 export function AnalyticsDashboard() {
   const { data: dateRanges } = useDateRangeAnalytics();
@@ -48,8 +48,23 @@ export function AnalyticsDashboard() {
     );
   }
 
-  const currentPeriodData = currentAnalytics || {};
-  const previousPeriodData = previousAnalytics || {};
+  // Provide proper default values with correct types
+  const defaultAnalytics: AdvancedAnalyticsData = {
+    totalLeads: 0,
+    totalCars: 0,
+    totalSales: 0,
+    leadsBySource: [],
+    leadsOverTime: [],
+    avgResponseTime: 0,
+    conversionRate: 0,
+    conversionBySource: [],
+    salesByAgent: [],
+    salesOverTime: [],
+    templatePerformance: [],
+  };
+
+  const currentPeriodData = currentAnalytics || defaultAnalytics;
+  const previousPeriodData = previousAnalytics || defaultAnalytics;
 
   return (
     <div className="space-y-6">
@@ -60,10 +75,10 @@ export function AnalyticsDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.totalLeads || 0}</div>
+            <div className="text-2xl font-bold">{currentPeriodData.totalLeads}</div>
             <p className="text-xs text-muted-foreground">
               {previousPeriodData.totalLeads ? 
-                `${((((currentPeriodData.totalLeads || 0) - previousPeriodData.totalLeads) / previousPeriodData.totalLeads) * 100).toFixed(1)}%` : 
+                `${(((currentPeriodData.totalLeads - previousPeriodData.totalLeads) / previousPeriodData.totalLeads) * 100).toFixed(1)}%` : 
                 '0%'} מהתקופה הקודמת
             </p>
           </CardContent>
@@ -75,10 +90,10 @@ export function AnalyticsDashboard() {
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.totalCars || 0}</div>
+            <div className="text-2xl font-bold">{currentPeriodData.totalCars}</div>
             <p className="text-xs text-muted-foreground">
               {previousPeriodData.totalCars ? 
-                `${((((currentPeriodData.totalCars || 0) - previousPeriodData.totalCars) / previousPeriodData.totalCars) * 100).toFixed(1)}%` : 
+                `${(((currentPeriodData.totalCars - previousPeriodData.totalCars) / previousPeriodData.totalCars) * 100).toFixed(1)}%` : 
                 '0%'} מהתקופה הקודמת
             </p>
           </CardContent>
@@ -90,10 +105,10 @@ export function AnalyticsDashboard() {
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.completedTasks || 0}</div>
+            <div className="text-2xl font-bold">{currentPeriodData.totalSales}</div>
             <p className="text-xs text-muted-foreground">
-              {previousPeriodData.completedTasks ? 
-                `${((((currentPeriodData.completedTasks || 0) - previousPeriodData.completedTasks) / previousPeriodData.completedTasks) * 100).toFixed(1)}%` : 
+              {previousPeriodData.totalSales ? 
+                `${(((currentPeriodData.totalSales - previousPeriodData.totalSales) / previousPeriodData.totalSales) * 100).toFixed(1)}%` : 
                 '0%'} מהתקופה הקודמת
             </p>
           </CardContent>
@@ -105,7 +120,7 @@ export function AnalyticsDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.conversionRate || '0%'}</div>
+            <div className="text-2xl font-bold">{currentPeriodData.conversionRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               מלידים לעסקאות סגורות
             </p>
