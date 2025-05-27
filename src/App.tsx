@@ -39,7 +39,6 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<AuthRoute />} />
-            <Route path="/dashboard" element={<DashboardRoute />} />
             <Route
               path="/*"
               element={
@@ -66,6 +65,7 @@ function AppLayout() {
         <AppSidebar />
         <main className="flex-1 overflow-auto">
           <Routes>
+            <Route path="/dashboard" element={<Index />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/cars" element={<Cars />} />
@@ -94,31 +94,6 @@ function AuthRoute() {
   if (user) return <Navigate to="/dashboard" replace />;
   
   return <Auth />;
-}
-
-function DashboardRoute() {
-  const { user, loading } = useAuth();
-  
-  if (loading) return <div className="flex items-center justify-center h-screen">טוען...</div>;
-  
-  if (!user) return <Navigate to="/auth" replace />;
-  
-  return (
-    <ProtectedRoute>
-      <SubscriptionProvider>
-        <AuthProvider>
-          <SidebarProvider defaultOpen={true}>
-            <div className="flex min-h-screen w-full">
-              <AppSidebar />
-              <main className="flex-1 overflow-auto">
-                <Index />
-              </main>
-            </div>
-          </SidebarProvider>
-        </AuthProvider>
-      </SubscriptionProvider>
-    </ProtectedRoute>
-  );
 }
 
 export default App;
