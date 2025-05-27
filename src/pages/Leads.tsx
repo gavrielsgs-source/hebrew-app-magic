@@ -6,7 +6,8 @@ import { LeadsTable } from "@/components/LeadsTable";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
 import { LeadsFilters } from "@/components/leads/LeadsFilters";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Settings, Grid, Table as TableIcon } from "lucide-react";
 import { useLeads, useCreateLead } from "@/hooks/use-leads";
 import { useLeadsFilters } from "@/hooks/use-leads-filters";
@@ -55,6 +56,8 @@ export default function Leads() {
   console.log('Filtered leads count:', filteredLeads?.length);
 
   const onLeadAdded = () => {
+    console.log("Lead added successfully, closing dialog");
+    setIsAddingLead(false);
     toast({
       title: "ליד נוסף",
       description: "הליד נוסף בהצלחה!",
@@ -99,24 +102,25 @@ export default function Leads() {
             <Settings className="h-4 w-4 ml-1.5" />
             הגדרות
           </Button>
-          <Sheet>
-            <SheetTrigger asChild>
+          <SwipeDialog open={isAddingLead} onOpenChange={setIsAddingLead}>
+            <DialogTrigger asChild>
               <Button 
                 size="sm" 
                 className={`flex items-center gap-2 ${isMobile ? "flex-1" : ""}`}
                 disabled={!canAddLead}
+                onClick={() => setIsAddingLead(true)}
               >
                 <Plus className="h-4 w-4 ml-1.5" />
                 לקוח חדש
               </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full sm:w-[400px]">
-              <SheetHeader>
-                <SheetTitle className="text-right">הוסף לקוח חדש</SheetTitle>
-              </SheetHeader>
-              <AddLeadForm />
-            </SheetContent>
-          </Sheet>
+            </DialogTrigger>
+            <DialogContent className="w-full sm:w-[400px]">
+              <DialogHeader>
+                <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
+              </DialogHeader>
+              <AddLeadForm onSuccess={onLeadAdded} />
+            </DialogContent>
+          </SwipeDialog>
         </div>
       </div>
 

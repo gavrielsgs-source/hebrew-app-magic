@@ -64,7 +64,9 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
   };
 
   const onSubmit = async (data: TaskFormValues) => {
+    console.log("Starting task submission with data:", data);
     setIsSubmitting(true);
+    
     try {
       const taskData = {
         title: data.title,
@@ -73,8 +75,8 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
         priority: data.priority,
         type: data.type,
         due_date: data.due_date ? data.due_date.toISOString() : null,
-        lead_id: data.lead_id || null,
-        car_id: data.car_id || null,
+        lead_id: data.lead_id === "none" || !data.lead_id ? null : data.lead_id,
+        car_id: data.car_id === "none" || !data.car_id ? null : data.car_id,
       };
 
       console.log("Submitting task data:", taskData);
@@ -84,6 +86,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
       
       // Create notifications if requested and due date is set
       if (shouldCreateNotification && data.due_date && newTask && newTask[0] && selectedNotificationOptions.length > 0) {
+        console.log("Creating notifications for task:", newTask[0].id);
         for (const option of selectedNotificationOptions) {
           const minutesBefore = getMinutesFromOption(option);
           const reminderTime = new Date(data.due_date.getTime() - minutesBefore * 60 * 1000);
@@ -97,6 +100,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
             newTask[0].id
           );
         }
+        console.log(`Created ${selectedNotificationOptions.length} notifications`);
       }
       
       let successMessage = "המשימה נוצרה בהצלחה";
@@ -112,7 +116,10 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
       form.reset();
       setShouldCreateNotification(false);
       setSelectedNotificationOptions([]);
-      onSuccess?.();
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Error creating task:", error);
       toast({

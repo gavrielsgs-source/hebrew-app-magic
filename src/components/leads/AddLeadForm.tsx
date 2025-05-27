@@ -19,7 +19,7 @@ import { AddLeadNotesField } from "./AddLeadNotesField";
 import { NotificationCheckbox } from "@/components/notifications/NotificationCheckbox";
 import { useState } from "react";
 
-export function AddLeadForm({ carId }: { carId?: string }) {
+export function AddLeadForm({ carId, onSuccess }: { carId?: string; onSuccess?: () => void }) {
   const { user } = useAuth();
   const addLead = useCreateLead();
   const { addTask } = useTasks();
@@ -29,6 +29,8 @@ export function AddLeadForm({ carId }: { carId?: string }) {
   const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
 
   const handleSubmit = async (values: LeadFormValues) => {
+    console.log("Starting lead submission with values:", values);
+    
     try {
       const leadData = {
         name: values.name,
@@ -42,10 +44,13 @@ export function AddLeadForm({ carId }: { carId?: string }) {
         user_id: user?.id || null
       };
 
+      console.log("Submitting lead data:", leadData);
       const newLead = await addLead.mutateAsync(leadData);
+      console.log("Lead created successfully:", newLead);
       
       // If user wants to schedule a meeting, create a task
       if (shouldScheduleMeeting && newLead && newLead[0]) {
+        console.log("Creating meeting task for lead:", newLead[0].id);
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(10, 0, 0, 0);
@@ -61,7 +66,9 @@ export function AddLeadForm({ carId }: { carId?: string }) {
           car_id: values.car_id || null,
         };
 
+        console.log("Creating task with data:", taskData);
         const newTask = await addTask.mutateAsync(taskData);
+        console.log("Task created successfully:", newTask);
         
         // Create notification for the meeting if requested
         if (shouldCreateNotification && newTask && newTask[0]) {
@@ -74,6 +81,7 @@ export function AddLeadForm({ carId }: { carId?: string }) {
             "task",
             newTask[0].id as string
           );
+          console.log("Meeting notification scheduled");
         }
       }
 
@@ -90,12 +98,18 @@ export function AddLeadForm({ carId }: { carId?: string }) {
           "lead",
           newLead[0].id as string
         );
+        console.log("Follow-up notification scheduled");
       }
       
       if (shouldScheduleMeeting) {
         toast.success("הלקוח נוסף בהצלחה ונקבעה פגישה למחר בשעה 10:00");
       } else {
         toast.success("הלקוח נוסף בהצלחה");
+      }
+
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
       }
     } catch (error) {
       console.error("שגיאה בהוספת לקוח:", error);
