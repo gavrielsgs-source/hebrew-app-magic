@@ -1,5 +1,4 @@
-
-import { AdvancedAnalyticsData } from "@/hooks/use-advanced-analytics";
+import { AdvancedAnalyticsData } from "@/hooks/analytics";
 
 export function generateLeadsBySourceInsight(data: AdvancedAnalyticsData) {
   if (!data.leadsBySource || data.leadsBySource.length === 0) {
