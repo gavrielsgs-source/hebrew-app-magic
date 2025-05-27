@@ -25,11 +25,11 @@ export function NotificationSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center justify-start gap-2">
           <Bell className="h-5 w-5" />
           הגדרות התראות
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-right">
           נהל את העדפות ההתראות שלך
         </CardDescription>
       </CardHeader>
@@ -37,13 +37,13 @@ export function NotificationSettings() {
         {/* Push Notifications Permission */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
+            <div className="space-y-1 text-right flex-1">
               <Label className="text-base font-medium">התראות פוש</Label>
               <p className="text-sm text-muted-foreground">
                 קבל התראות ישירות למכשיר שלך
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mr-4">
               {permission === "granted" ? (
                 <div className="flex items-center gap-2 text-green-600">
                   <Smartphone className="h-4 w-4" />
@@ -68,7 +68,7 @@ export function NotificationSettings() {
           
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label htmlFor="tasks" className="flex items-center gap-2">
+              <Label htmlFor="tasks" className="flex items-center justify-start gap-2 flex-1">
                 <Monitor className="h-4 w-4" />
                 משימות
               </Label>
@@ -81,7 +81,7 @@ export function NotificationSettings() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="meetings" className="flex items-center gap-2">
+              <Label htmlFor="meetings" className="flex items-center justify-start gap-2 flex-1">
                 <Monitor className="h-4 w-4" />
                 פגישות
               </Label>
@@ -94,7 +94,7 @@ export function NotificationSettings() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="leads" className="flex items-center gap-2">
+              <Label htmlFor="leads" className="flex items-center justify-start gap-2 flex-1">
                 <Monitor className="h-4 w-4" />
                 לידים חדשים
               </Label>
@@ -107,7 +107,7 @@ export function NotificationSettings() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="reminders" className="flex items-center gap-2">
+              <Label htmlFor="reminders" className="flex items-center justify-start gap-2 flex-1">
                 <Monitor className="h-4 w-4" />
                 תזכורות כלליות
               </Label>
@@ -123,7 +123,7 @@ export function NotificationSettings() {
 
         {permission !== "granted" && (
           <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800">
+            <p className="text-sm text-yellow-800 text-right">
               כדי לקבל התראות פוש, יש לאשר הרשאות בדפדפן
             </p>
           </div>

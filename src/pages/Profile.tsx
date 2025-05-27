@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { User, Phone, Building, Briefcase, Save } from "lucide-react";
+import { User, Phone, Building, Briefcase, Save, Bell } from "lucide-react";
 
 export default function Profile() {
   const { profile, updateProfile, isLoading } = useProfile();
@@ -97,15 +97,16 @@ export default function Profile() {
             <TabsList className="grid w-full grid-cols-2 bg-gray-50">
               <TabsTrigger 
                 value="profile" 
-                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm"
+                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm flex items-center justify-center"
               >
                 <User className="h-4 w-4 ml-2" />
                 פרטים אישיים
               </TabsTrigger>
               <TabsTrigger 
                 value="notifications"
-                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm"
+                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm flex items-center justify-center"
               >
+                <Bell className="h-4 w-4 ml-2" />
                 התראות
               </TabsTrigger>
             </TabsList>
@@ -114,11 +115,11 @@ export default function Profile() {
           <TabsContent value="profile">
             <Card className="border-gray-200 shadow-sm">
               <CardHeader className="bg-gray-50 border-b border-gray-200">
-                <CardTitle className="text-xl text-gray-900 flex items-center gap-3">
+                <CardTitle className="text-xl text-gray-900 flex items-center justify-start gap-3">
                   <User className="h-5 w-5 text-carslead-purple" />
                   עריכת פרטים אישיים
                 </CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardDescription className="text-gray-600 text-right">
                   עדכן את הפרטים האישיים שלך כאן. המידע ישמר באופן מאובטח במערכת.
                 </CardDescription>
               </CardHeader>
@@ -126,7 +127,7 @@ export default function Profile() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
                         <User className="h-4 w-4 text-carslead-purple" />
                         שם מלא
                       </Label>
@@ -135,12 +136,13 @@ export default function Profile() {
                         value={formData.full_name}
                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                         placeholder="הכנס שם מלא"
-                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple"
+                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple text-right"
+                        dir="rtl"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
                         <Phone className="h-4 w-4 text-carslead-purple" />
                         מספר טלפון
                       </Label>
@@ -149,12 +151,13 @@ export default function Profile() {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="הכנס מספר טלפון"
-                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple"
+                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple text-right"
+                        dir="rtl"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <Label htmlFor="company_name" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Label htmlFor="company_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
                         <Building className="h-4 w-4 text-carslead-purple" />
                         שם החברה
                       </Label>
@@ -163,12 +166,13 @@ export default function Profile() {
                         value={formData.company_name}
                         onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
                         placeholder="הכנס שם חברה"
-                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple"
+                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple text-right"
+                        dir="rtl"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
                         <Briefcase className="h-4 w-4 text-carslead-purple" />
                         תפקיד
                       </Label>
@@ -177,12 +181,13 @@ export default function Profile() {
                         value={formData.position}
                         onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                         placeholder="הכנס תפקיד"
-                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple"
+                        className="h-12 border-gray-300 focus:border-carslead-purple focus:ring-carslead-purple text-right"
+                        dir="rtl"
                       />
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-gray-200">
+                  <div className="pt-6 border-t border-gray-200 flex justify-start">
                     <Button 
                       type="submit" 
                       disabled={updateProfile.isPending}
