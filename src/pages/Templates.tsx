@@ -5,13 +5,13 @@ import { TemplateHeader } from "@/components/templates/TemplateHeader";
 import { useToast } from "@/hooks/use-toast";
 import {
   WhatsappTemplate,
-  templates as defaultWhatsappTemplates,
+  whatsappTemplates as defaultWhatsappTemplates,
 } from "@/components/whatsapp/whatsapp-templates";
 import { useEffect, useState } from "react";
 
 const templateFormSchema = {
   name: (value: string) => value.length >= 2 ? null : "שם התבנית חייב להיות לפחות 2 תווים.",
-  template: (value: string) => value.length >= 10 ? null : "התבנית חייבת להכיל לפחות 10 תווים.",
+  description: (value: string) => value.length >= 10 ? null : "התיאור חייב להכיל לפחות 10 תווים.",
 };
 
 export default function TemplatesPage() {
@@ -57,7 +57,8 @@ export default function TemplatesPage() {
     setSelectedTemplate({
       id: Date.now().toString(),
       name: "",
-      template: "",
+      description: "",
+      generateMessage: () => "",
     });
     setIsDialogOpen(true);
   };
@@ -73,10 +74,10 @@ export default function TemplatesPage() {
   };
 
   const onSaveTemplate = () => {
-    if (!selectedTemplate.name || !selectedTemplate.template) {
+    if (!selectedTemplate.name || !selectedTemplate.description) {
       toast({
         title: "יש למלא את כל השדות",
-        description: "יש לוודא ששם התבנית והתוכן שלה מלאים.",
+        description: "יש לוודא ששם התבנית והתיאור שלה מלאים.",
         variant: "destructive",
       });
       return;

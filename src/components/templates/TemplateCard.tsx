@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -11,7 +12,22 @@ interface TemplateCardProps {
   onDelete: (id: string) => void;
 }
 
+// Mock car data for preview
+const mockCar = {
+  make: "טויוטה",
+  model: "קורולה",
+  year: 2022,
+  price: 120000,
+  mileage: 25000,
+  exterior_color: "כסוף",
+  engine_size: "1.6L",
+  transmission: "אוטומטית",
+  fuel_type: "בנזין"
+};
+
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
+  const previewMessage = template.generateMessage(mockCar);
+  
   return (
     <Card className="hover:shadow-lg transition-all duration-200 border-border">
       <CardHeader className="pb-3">
@@ -23,7 +39,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               {template.name}
             </CardTitle>
             <CardDescription className="mt-1 text-right">
-              תבנית הודעת וואטסאפ
+              {template.description}
             </CardDescription>
           </div>
           
@@ -52,7 +68,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       <CardContent className="pt-0">
         <div className="bg-muted/30 rounded-lg p-3 min-h-[100px] max-h-[120px] overflow-hidden">
           <div className="text-sm text-muted-foreground whitespace-pre-line text-right line-clamp-4">
-            {template.template}
+            {previewMessage}
           </div>
         </div>
       </CardContent>
@@ -70,7 +86,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               <DialogTitle className="text-right">תצוגה מקדימה - {template.name}</DialogTitle>
             </DialogHeader>
             <div className="mt-4">
-              <WhatsappTemplatePreview template={template.template} />
+              <WhatsappTemplatePreview template={previewMessage} />
             </div>
           </DialogContent>
         </Dialog>
