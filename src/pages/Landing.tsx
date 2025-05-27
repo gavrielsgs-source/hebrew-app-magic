@@ -39,7 +39,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" dir="rtl">
       {/* Header */}
-      <header className="container mx-auto px-4 py-6">
+      <header className="container mx-auto px-4 py-4 md:py-6">
         <nav className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-[#2F3C7E] to-[#4CAF50] rounded-xl flex items-center justify-center">
@@ -71,30 +71,30 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 text-center">
+      <section className="container mx-auto px-4 py-8 md:py-16 text-center">
         <div className="max-w-4xl mx-auto">
           <div className="animate-fade-in">
-            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
               ניהול לידים. רכבים. לקוחות.
               <span className="block text-transparent bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] bg-clip-text">
                 הכל במקום אחד.
               </span>
             </h1>
             
-            <h2 className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <h2 className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto px-4">
               מערכת שעוזרת לך לסגור יותר עסקאות – מכל מכשיר, בכל שעה.
             </h2>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-8 md:mb-12 px-4">
               {user ? (
                 <Link to="/dashboard">
-                  <Button size="lg" className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-lg px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
+                  <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all min-h-[48px]">
                     כניסה למערכת
                   </Button>
                 </Link>
               ) : (
                 <Link to="/auth">
-                  <Button size="lg" className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-lg px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all">
+                  <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all min-h-[48px]">
                     התחל בחינם
                   </Button>
                 </Link>
@@ -102,41 +102,41 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="text-lg px-8 py-6 rounded-2xl border-2"
+                className="w-full sm:w-auto text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-2xl border-2 min-h-[48px]"
                 onClick={() => setIsVideoOpen(true)}
               >
-                <Play className="ml-2 h-5 w-5" />
+                <Play className="ml-2 h-4 w-4 md:h-5 md:w-5" />
                 צפה בסרטון הדגמה
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-2xl mx-auto text-center px-4">
               <div>
-                <div className="text-3xl font-bold text-[#2F3C7E]">500+</div>
-                <div className="text-sm text-gray-600">סוחרים פעילים</div>
+                <div className="text-2xl md:text-3xl font-bold text-[#2F3C7E]">500+</div>
+                <div className="text-xs md:text-sm text-gray-600">סוחרים פעילים</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-[#4CAF50]">10K+</div>
-                <div className="text-sm text-gray-600">לידים מנוהלים</div>
+                <div className="text-2xl md:text-3xl font-bold text-[#4CAF50]">10K+</div>
+                <div className="text-xs md:text-sm text-gray-600">לידים מנוהלים</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-[#2F3C7E]">98%</div>
-                <div className="text-sm text-gray-600">שביעות רצון</div>
+                <div className="text-2xl md:text-3xl font-bold text-[#2F3C7E]">98%</div>
+                <div className="text-xs md:text-sm text-gray-600">שביעות רצון</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-[#4CAF50]">24/7</div>
-                <div className="text-sm text-gray-600">זמינות</div>
+                <div className="text-2xl md:text-3xl font-bold text-[#4CAF50]">24/7</div>
+                <div className="text-xs md:text-sm text-gray-600">זמינות</div>
               </div>
             </div>
           </div>
 
           {/* Hero Image */}
-          <div className="mt-16 relative">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-4xl mx-auto">
+          <div className="mt-8 md:mt-16 relative px-4">
+            <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 max-w-4xl mx-auto">
               <img 
                 src="/placeholder.svg" 
                 alt="CarsLead Dashboard" 
-                className="w-full rounded-2xl shadow-lg"
+                className="w-full rounded-xl md:rounded-2xl shadow-lg"
               />
             </div>
           </div>
@@ -144,18 +144,18 @@ export default function Landing() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               איך CarsLead עוזרת לך?
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               כל מה שאתה צריך לניהול מכירות מוצלח במקום אחד
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             <Card className="text-center p-8 hover:shadow-lg transition-shadow rounded-2xl border-0 shadow-md">
               <CardContent className="space-y-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto">
@@ -200,18 +200,18 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-gradient-to-r from-slate-50 to-blue-50">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               מחירים שקופים לכל סוחר
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               בחר את החבילה שמתאימה לעסק שלך
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
             <PricingCard
               title="פרימיום"
               price={199}
@@ -261,11 +261,11 @@ export default function Landing() {
             />
           </div>
 
-          <div className="text-center mt-12">
-            <p className="text-gray-600 mb-4">
+          <div className="text-center mt-8 md:mt-12 px-4">
+            <p className="text-gray-600 mb-4 text-sm md:text-base">
               💡 כל החבילות כוללות תקופת ניסיון של 14 יום ללא עלות
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs md:text-sm text-gray-500">
               אין דמי הפעלה • אפשר לבטל בכל עת • תמיכה בעברית
             </p>
           </div>
@@ -273,10 +273,10 @@ export default function Landing() {
       </section>
 
       {/* Demo Section */}
-      <section className="py-20 bg-gradient-to-r from-slate-50 to-blue-50">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-8">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8">
               ראה את המערכת בפעולה
             </h2>
             <div className="bg-white rounded-3xl shadow-2xl p-8">
@@ -298,13 +298,13 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               מה אומרים המשתמשים
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg md:text-xl">
               סוחרים מכל הארץ משתמשים ב-CarsLead
             </p>
           </div>
@@ -380,14 +380,14 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gradient-to-r from-slate-50 to-blue-50">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-12 md:mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 שאלות נפוצות
               </h2>
-              <p className="text-xl text-gray-600">
+              <p className="text-lg md:text-xl">
                 כל מה שרצית לדעת על CarsLead
               </p>
             </div>
@@ -446,32 +446,32 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50]">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50]">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto text-white">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
               מוכן להתחיל?
             </h2>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-lg md:text-xl mb-8 opacity-90 px-4">
               הצטרף ל-500+ סוחרי רכב שכבר משתמשים ב-CarsLead
             </p>
             
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-md mx-auto">
+            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-8 max-w-md mx-auto">
               <div className="space-y-4">
                 <Input 
                   type="email" 
                   placeholder="האימייל שלך" 
-                  className="bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-2xl"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-2xl h-12"
                 />
                 <Input 
                   type="password" 
                   placeholder="בחר סיסמה" 
-                  className="bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-2xl"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-2xl h-12"
                 />
                 <Link to="/auth">
                   <Button 
                     size="lg" 
-                    className="w-full bg-white text-[#2F3C7E] hover:bg-gray-100 font-bold py-6 rounded-2xl shadow-lg"
+                    className="w-full bg-white text-[#2F3C7E] hover:bg-gray-100 font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"
                   >
                     הירשם עכשיו - חינם!
                   </Button>
@@ -500,7 +500,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-8 md:py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
