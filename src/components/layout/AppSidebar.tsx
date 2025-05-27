@@ -43,7 +43,7 @@ export function AppSidebar() {
   const isAdmin = role === "admin";
 
   return (
-    <Sidebar className="border-l">
+    <Sidebar className="border-l z-40">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3 px-2">
           <CarSleadLogoSVG />
@@ -57,7 +57,7 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <button
                 onClick={() => navigate("/")}
-                data-active={pathname === "/"}
+                data-active={pathname === "/" || pathname === "/dashboard"}
                 className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
                 <Home className="h-5 w-5" />

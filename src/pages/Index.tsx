@@ -32,7 +32,7 @@ export default function Index() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          <div className="p-6" dir="rtl">
+          <div className="p-6 max-w-full overflow-hidden" dir="rtl">
             <Suspense fallback={<div className="flex items-center justify-center h-screen text-right">טוען...</div>}>
               <Dashboard />
             </Suspense>
