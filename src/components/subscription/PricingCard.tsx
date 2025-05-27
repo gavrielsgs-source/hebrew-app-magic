@@ -24,47 +24,50 @@ export function PricingCard({
   return (
     <Card className={cn(
       "relative flex flex-col justify-between text-right",
-      "transition-all duration-300 hover:shadow-lg",
-      "border border-gray-200 backdrop-blur-sm",
-      isPopular && "border-blue-500 shadow-lg scale-[1.02]",
-      "sm:max-w-[350px] mx-auto"
+      "transition-all duration-300 hover:shadow-xl hover:scale-105",
+      "rounded-2xl border-0 shadow-lg backdrop-blur-sm bg-white/95",
+      "h-[500px] w-full max-w-sm mx-auto",
+      isPopular && "ring-2 ring-blue-500 shadow-2xl scale-[1.05]"
     )}>
       {isPopular && (
-        <div className="absolute -top-4 left-0 right-0 flex justify-center">
-          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-            פופולרי
+        <div className="absolute -top-4 left-0 right-0 flex justify-center z-10">
+          <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+            🔥 הפופולרי ביותר
           </span>
         </div>
       )}
       
-      <CardHeader className="text-right pt-8">
-        <h3 className="text-2xl font-bold mb-2">{title}</h3>
-        <p className="text-gray-500 mb-4">{description}</p>
-        <div className="flex justify-end items-baseline gap-1">
-          <span className="text-gray-500">/חודש</span>
-          <span className="text-4xl font-bold">₪{price}</span>
+      <CardHeader className="text-right pt-8 pb-6">
+        <div className="space-y-2">
+          <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
+          <p className="text-gray-600">{description}</p>
+        </div>
+        <div className="flex justify-end items-baseline gap-2 mt-4">
+          <span className="text-gray-500 text-lg">/חודש</span>
+          <span className="text-5xl font-bold text-gray-900">₪{price}</span>
         </div>
       </CardHeader>
       
-      <CardContent className="flex-grow">
-        <ul className="space-y-3">
+      <CardContent className="flex-grow px-6">
+        <ul className="space-y-4">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-center gap-2 flex-row-reverse">
-              <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-              <span className="text-gray-600">{feature}</span>
+            <li key={index} className="flex items-center gap-3 text-right">
+              <Check className="h-5 w-5 text-green-500 flex-shrink-0 ml-auto" />
+              <span className="text-gray-700 text-right flex-1">{feature}</span>
             </li>
           ))}
         </ul>
       </CardContent>
       
-      <CardFooter className="pt-6 pb-8">
+      <CardFooter className="pt-6 pb-8 px-6">
         <Button
           onClick={onSelect}
+          size="lg"
           className={cn(
-            "w-full py-6 text-lg transition-all",
+            "w-full py-6 text-lg font-bold transition-all rounded-2xl shadow-lg hover:shadow-xl",
             isPopular 
-              ? "bg-blue-500 hover:bg-blue-600" 
-              : "bg-gray-900 hover:bg-gray-800"
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700" 
+              : "bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black"
           )}
         >
           בחר תוכנית
