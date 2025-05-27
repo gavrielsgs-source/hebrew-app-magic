@@ -54,31 +54,29 @@ export function MobileBottomNav() {
       id: "menu",
       label: "עוד",
       icon: Menu,
-      path: "/menu",
+      path: "/profile",
       badge: null
     }
   ];
 
   const isActive = (path: string) => {
     if (path === "/dashboard" && location.pathname === "/") return true;
+    if (path === "/dashboard" && location.pathname === "/dashboard") return true;
+    if (path === "/profile" && (location.pathname === "/profile" || location.pathname === "/subscription" || location.pathname === "/analytics" || location.pathname === "/documents" || location.pathname === "/templates")) return true;
     return location.pathname.startsWith(path);
   };
 
-  const handleNavigation = (path: string) => {
-    if (path === "/menu") {
-      // נפתח תפריט נוסף או drawer
+  const handleNavigation = (path: string, id: string) => {
+    if (id === "menu") {
+      navigate("/profile");
       return;
     }
     
-    if (path === "/dashboard") {
-      navigate("/");
-    } else {
-      navigate(path);
-    }
+    navigate(path);
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-pb" dir="rtl">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 pb-safe" dir="rtl">
       <div className="flex items-center justify-around px-2 py-3">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -87,7 +85,7 @@ export function MobileBottomNav() {
           return (
             <button
               key={item.id}
-              onClick={() => handleNavigation(item.path)}
+              onClick={() => handleNavigation(item.path, item.id)}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px] relative",
                 active 

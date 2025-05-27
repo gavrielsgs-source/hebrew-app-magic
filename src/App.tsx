@@ -7,8 +7,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { SubscriptionProvider } from "@/contexts/subscription-context";
 import { AuthProvider } from "@/contexts/auth-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
@@ -60,6 +62,8 @@ const App = () => {
 };
 
 function AppLayout() {
+  const isMobile = useIsMobile();
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
@@ -82,6 +86,7 @@ function AppLayout() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </SidebarInset>
+        {isMobile && <MobileBottomNav />}
       </div>
     </SidebarProvider>
   );

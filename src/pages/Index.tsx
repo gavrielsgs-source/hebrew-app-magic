@@ -2,7 +2,6 @@
 import { Suspense } from "react";
 import Dashboard from "@/components/Dashboard";
 import { MobileDashboard } from "@/components/mobile/MobileDashboard";
-import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Index() {
@@ -20,7 +19,6 @@ export default function Index() {
         }>
           <MobileDashboard />
         </Suspense>
-        <MobileBottomNav />
       </div>
     );
   }

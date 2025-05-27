@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
+import { cn } from "@/lib/utils";
 
 export default function Leads() {
   const { toast } = useToast();
@@ -49,7 +50,7 @@ export default function Leads() {
   };
 
   return (
-    <div className="p-4 sm:p-6 rtl-fix">
+    <div className={cn("p-4 sm:p-6 rtl-fix", isMobile && "mobile-content")}>
       <SubscriptionLimitAlert 
         featureKey="leadLimit" 
         currentCount={leads.length} 
@@ -122,27 +123,35 @@ export default function Leads() {
                 activeFiltersCount={getActiveFiltersCount()}
               />
 
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "outline"} 
-                    size="icon"
-                    onClick={() => setViewMode("grid")}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={viewMode === "table" ? "default" : "outline"} 
-                    size="icon"
-                    onClick={() => setViewMode("table")}
-                  >
-                    <TableIcon className="h-4 w-4" />
-                  </Button>
+              {!isMobile && (
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={viewMode === "grid" ? "default" : "outline"} 
+                      size="icon"
+                      onClick={() => setViewMode("grid")}
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant={viewMode === "table" ? "default" : "outline"} 
+                      size="icon"
+                      onClick={() => setViewMode("table")}
+                    >
+                      <TableIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {filteredLeads.length} מתוך {leads.length} לקוחות
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
+              )}
+
+              {isMobile && (
+                <div className="text-sm text-muted-foreground mb-4 text-center">
                   {filteredLeads.length} מתוך {leads.length} לקוחות
                 </div>
-              </div>
+              )}
             </>
           )}
 
