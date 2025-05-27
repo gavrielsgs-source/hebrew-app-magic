@@ -21,7 +21,7 @@ export function NotificationPermissionCard() {
           <CardDescription className="text-orange-700">
             הדפדפן שלך לא תומך בהתראות פוש. תוכל עדיין ליצור תזכורות שיוצגו ברשימת המשימות.
           </CardDescription>
-        </CardContent>
+        </CardHeader>
       </Card>
     );
   }
@@ -37,7 +37,7 @@ export function NotificationPermissionCard() {
           <CardDescription className="text-green-700">
             תוכל עכשיו ליצור תזכורות ולקבל התראות במועד הנדרש.
           </CardDescription>
-        </CardContent>
+        </CardHeader>
       </Card>
     );
   }
