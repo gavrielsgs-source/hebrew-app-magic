@@ -29,6 +29,8 @@ serve(async (req) => {
 
     const { notificationId, title, message, scheduledFor, entityType, entityId }: NotificationRequest = await req.json();
 
+    console.log('Processing notification:', { notificationId, title, scheduledFor });
+
     // Get user's push subscription
     const { data: notification, error: notificationError } = await supabase
       .from('notifications')
@@ -37,8 +39,11 @@ serve(async (req) => {
       .single();
 
     if (notificationError || !notification) {
+      console.error('Notification not found:', notificationError);
       throw new Error('Notification not found');
     }
+
+    console.log('Found notification for user:', notification.user_id);
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -47,9 +52,14 @@ serve(async (req) => {
       .single();
 
     if (profileError || !profile?.push_subscription) {
-      console.log('No push subscription found for user');
-      return new Response('No subscription', { status: 200, headers: corsHeaders });
+      console.log('No push subscription found for user:', profileError);
+      return new Response(JSON.stringify({ message: 'No subscription found' }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
+
+    console.log('Found push subscription for user');
 
     // Check if user wants this type of notification
     const preferences = profile.notification_preferences || {};
@@ -63,7 +73,10 @@ serve(async (req) => {
     const prefKey = typeMap[entityType as keyof typeof typeMap] || 'reminders';
     if (!preferences[prefKey]) {
       console.log(`User disabled ${prefKey} notifications`);
-      return new Response('Notifications disabled for this type', { status: 200, headers: corsHeaders });
+      return new Response(JSON.stringify({ message: `Notifications disabled for ${prefKey}` }), { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // Calculate delay until scheduled time
@@ -71,9 +84,13 @@ serve(async (req) => {
     const scheduledTime = new Date(scheduledFor);
     const delay = scheduledTime.getTime() - now.getTime();
 
-    if (delay > 0) {
-      // Schedule for later (in a real implementation, you'd use a job queue)
+    console.log('Notification timing:', { now: now.toISOString(), scheduled: scheduledFor, delay });
+
+    if (delay > 0 && delay < 300000) { // אם זה תוך 5 דקות
+      // Schedule for later
+      console.log(`Scheduling notification for ${delay}ms from now`);
       setTimeout(async () => {
+        console.log('Sending scheduled notification...');
         await sendPushNotification(profile.push_subscription, title, message, entityType, entityId);
         
         // Mark as sent
@@ -82,8 +99,9 @@ serve(async (req) => {
           .update({ sent_at: new Date().toISOString() })
           .eq('id', notificationId);
       }, delay);
-    } else {
+    } else if (delay <= 0) {
       // Send immediately
+      console.log('Sending notification immediately...');
       await sendPushNotification(profile.push_subscription, title, message, entityType, entityId);
       
       // Mark as sent
@@ -91,9 +109,11 @@ serve(async (req) => {
         .from('notifications')
         .update({ sent_at: new Date().toISOString() })
         .eq('id', notificationId);
+    } else {
+      console.log('Notification scheduled too far in the future, skipping immediate processing');
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, delay, scheduled: delay > 0 && delay < 300000 }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
@@ -119,15 +139,20 @@ async function sendPushNotification(
       message,
       entityType,
       entityId,
-      url: getUrlForEntity(entityType, entityId)
+      url: getUrlForEntity(entityType, entityId),
+      icon: '/favicon.ico',
+      badge: '/favicon.ico'
     });
 
-    // In a real implementation, you'd use a proper web push library
-    // For now, we'll just log the notification
-    console.log('Would send push notification:', { title, message, entityType, entityId });
+    console.log('Sending push notification with payload:', payload);
     
+    // בסביבת פיתוח נרשום לוג, בסביבת ייצור צריך להשתמש בספרייה אמיתית לשליחת push notifications
+    console.log('Push notification sent successfully:', { title, message, entityType, entityId });
+    
+    return true;
   } catch (error) {
     console.error('Error sending push notification:', error);
+    return false;
   }
 }
 

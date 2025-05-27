@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Smartphone, Monitor } from "lucide-react";
+import { Bell, BellOff, Smartphone, Monitor, TestTube } from "lucide-react";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 export function NotificationSettings() {
@@ -12,7 +12,8 @@ export function NotificationSettings() {
     permission,
     preferences,
     requestPermission,
-    updatePreferences
+    updatePreferences,
+    sendTestNotification
   } = usePushNotifications();
 
   const handlePreferenceChange = (key: keyof typeof preferences, value: boolean) => {
@@ -61,6 +62,29 @@ export function NotificationSettings() {
             </div>
           </div>
         </div>
+
+        {/* Test Notification Button */}
+        {permission === "granted" && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <Button 
+                onClick={sendTestNotification}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <TestTube className="h-4 w-4" />
+                שלח התראת בדיקה
+              </Button>
+              <div className="text-right flex-1 mr-4">
+                <Label className="text-sm font-medium text-blue-800">בדיקת התראות</Label>
+                <p className="text-xs text-blue-600">
+                  לחץ כדי לבדוק שההתראות עובדות
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Notification Type Preferences */}
         <div className="space-y-4">
