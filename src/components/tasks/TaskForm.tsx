@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useTasks } from "@/hooks/use-tasks";
 import { useToast } from "@/hooks/use-toast";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { TaskBasicDetails } from "./form/TaskBasicDetails";
 import { TaskDateAndStatus } from "./form/TaskDateAndStatus";
 import { TaskTypeAndPriority } from "./form/TaskTypeAndPriority";
 import { TaskRelations } from "./form/TaskRelations";
+import { NotificationCheckbox } from "@/components/notifications/NotificationCheckbox";
 
 const taskFormSchema = z.object({
   title: z.string().min(1, "כותרת המשימה חובה"),
@@ -34,7 +36,9 @@ interface TaskFormProps {
 export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
   const { addTask } = useTasks();
   const { toast } = useToast();
+  const { scheduleNotification, permission } = usePushNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
@@ -52,7 +56,6 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
     try {
-      // Convert form data to match NewTask interface
       const taskData = {
         title: data.title,
         description: data.description || null,
@@ -64,14 +67,28 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
         car_id: data.car_id || null,
       };
 
-      await addTask.mutateAsync(taskData);
+      const newTask = await addTask.mutateAsync(taskData);
+      
+      // Create notification if requested and due date is set
+      if (shouldCreateNotification && data.due_date && newTask && newTask[0]) {
+        const reminderTime = new Date(data.due_date.getTime() - 30 * 60 * 1000); // 30 minutes before
+        await scheduleNotification(
+          `תזכורת למשימה: ${data.title}`,
+          `המשימה מתחילה בעוד 30 דקות`,
+          reminderTime,
+          data.type,
+          "task",
+          newTask[0].id
+        );
+      }
       
       toast({
         title: "משימה נוצרה",
-        description: "המשימה נוצרה בהצלחה",
+        description: shouldCreateNotification ? "המשימה נוצרה והתזכורת נקבעה" : "המשימה נוצרה בהצלחה",
       });
       
       form.reset();
+      setShouldCreateNotification(false);
       onSuccess?.();
     } catch (error) {
       toast({
@@ -84,6 +101,8 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
     }
   };
 
+  const watchedDueDate = form.watch("due_date");
+
   return (
     <div className="space-y-6" dir="rtl">
       <Form {...form}>
@@ -92,6 +111,16 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
           <TaskDateAndStatus />
           <TaskTypeAndPriority />
           <TaskRelations />
+          
+          {/* Notification Option */}
+          {watchedDueDate && (
+            <NotificationCheckbox
+              checked={shouldCreateNotification}
+              onCheckedChange={setShouldCreateNotification}
+              label="צור תזכורת 30 דקות לפני המשימה"
+              disabled={permission !== "granted"}
+            />
+          )}
           
           <div className="flex gap-2 pt-4">
             <Button 

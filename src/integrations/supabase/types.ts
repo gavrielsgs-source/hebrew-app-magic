@@ -254,6 +254,51 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          message: string
+          read_at: string | null
+          scheduled_for: string | null
+          sent_at: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          message: string
+          read_at?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -261,8 +306,10 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           id: string
+          notification_preferences: Json | null
           phone: string | null
           position: string | null
+          push_subscription: Json | null
           updated_at: string | null
         }
         Insert: {
@@ -271,8 +318,10 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id: string
+          notification_preferences?: Json | null
           phone?: string | null
           position?: string | null
+          push_subscription?: Json | null
           updated_at?: string | null
         }
         Update: {
@@ -281,8 +330,10 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id?: string
+          notification_preferences?: Json | null
           phone?: string | null
           position?: string | null
+          push_subscription?: Json | null
           updated_at?: string | null
         }
         Relationships: []
