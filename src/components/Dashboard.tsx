@@ -70,7 +70,7 @@ export default function Dashboard() {
   
   if (isDashboardLoading) {
     return (
-      <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8" dir="rtl">
+      <div className="flex min-h-screen flex-col space-y-6" dir="rtl">
         <AppHeader />
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -83,7 +83,7 @@ export default function Dashboard() {
   }
   
   return (
-    <div className="flex min-h-screen flex-col space-y-6 p-2 md:p-8" dir="rtl">
+    <div className="flex min-h-screen flex-col space-y-6" dir="rtl">
       <AppHeader />
 
       {/* Real-time Dashboard Stats */}
