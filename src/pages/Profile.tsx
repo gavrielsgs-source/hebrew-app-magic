@@ -92,16 +92,9 @@ export default function Profile() {
         </div>
 
         {/* Tabs Section */}
-        <Tabs defaultValue="profile" className="space-y-6">
+        <Tabs defaultValue="notifications" className="space-y-6">
           <div className="bg-white rounded-xl border border-gray-200 p-2">
             <TabsList className="grid w-full grid-cols-2 bg-gray-50">
-              <TabsTrigger 
-                value="profile" 
-                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm flex items-center justify-center"
-              >
-                <User className="h-4 w-4 ml-2" />
-                פרטים אישיים
-              </TabsTrigger>
               <TabsTrigger 
                 value="notifications"
                 className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm flex items-center justify-center"
@@ -109,8 +102,21 @@ export default function Profile() {
                 <Bell className="h-4 w-4 ml-2" />
                 התראות
               </TabsTrigger>
+              <TabsTrigger 
+                value="profile" 
+                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm flex items-center justify-center"
+              >
+                <User className="h-4 w-4 ml-2" />
+                פרטים אישיים
+              </TabsTrigger>
             </TabsList>
           </div>
+
+          <TabsContent value="notifications">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <NotificationSettings />
+            </div>
+          </TabsContent>
 
           <TabsContent value="profile">
             <Card className="border-gray-200 shadow-sm">
@@ -200,12 +206,6 @@ export default function Profile() {
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-              <NotificationSettings />
-            </div>
           </TabsContent>
         </Tabs>
       </div>
