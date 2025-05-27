@@ -28,7 +28,24 @@ export function useNotificationData() {
         .limit(50);
 
       if (error) throw error;
-      setNotifications(data || []);
+      
+      // Convert unknown data to PushNotification type with proper validation
+      const validNotifications: PushNotification[] = (data || []).map((item: any) => ({
+        id: String(item.id || ''),
+        user_id: String(item.user_id || ''),
+        title: String(item.title || ''),
+        message: String(item.message || ''),
+        type: String(item.type || 'reminder'),
+        entity_type: item.entity_type ? String(item.entity_type) : undefined,
+        entity_id: item.entity_id ? String(item.entity_id) : undefined,
+        scheduled_for: item.scheduled_for ? String(item.scheduled_for) : undefined,
+        sent_at: item.sent_at ? String(item.sent_at) : undefined,
+        read_at: item.read_at ? String(item.read_at) : undefined,
+        created_at: String(item.created_at || new Date().toISOString()),
+        updated_at: String(item.updated_at || new Date().toISOString())
+      }));
+
+      setNotifications(validNotifications);
     } catch (error) {
       console.error("Error loading notifications:", error);
     } finally {
@@ -73,7 +90,7 @@ export function useNotificationData() {
             new Notification(title, {
               body: message,
               icon: "/favicon.ico",
-              tag: data.id
+              tag: String(data.id)
             });
           }
         }, timeDiff);

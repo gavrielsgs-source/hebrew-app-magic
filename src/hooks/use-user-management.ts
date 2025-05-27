@@ -9,7 +9,7 @@ interface UserWithEmail {
   id: string;
   email: string;
   full_name?: string;
-  roles?: UserRoleAssignment[]; // הוספנו את שדה הרולים כאופציונלי
+  roles?: UserRoleAssignment[];
 }
 
 export function useUserManagement() {
@@ -41,9 +41,16 @@ export function useUserManagement() {
         return [];
       }
 
+      // Convert unknown data to proper types with validation
+      const usersData: UserWithEmail[] = (data || []).map((item: any) => ({
+        id: String(item.id || ''),
+        email: String(item.id || ''), // Using id as email for now
+        full_name: item.full_name ? String(item.full_name) : undefined
+      }));
+
       // קבלת רולים של כל המשתמשים
       const usersWithRoles = await Promise.all(
-        data.map(async (userItem: UserWithEmail) => {
+        usersData.map(async (userItem: UserWithEmail) => {
           try {
             const roles = await getUserRoles(userItem.id);
             return {
@@ -79,7 +86,17 @@ export function useUserManagement() {
         throw error;
       }
 
-      return data as UserRoleAssignment[];
+      // Convert unknown data to UserRoleAssignment type with proper validation
+      const validRoles: UserRoleAssignment[] = (data || []).map((item: any) => ({
+        id: String(item.id || ''),
+        user_id: String(item.user_id || ''),
+        role: String(item.role || '') as UserRole,
+        agency_id: item.agency_id ? String(item.agency_id) : null,
+        created_at: String(item.created_at || new Date().toISOString()),
+        updated_at: String(item.updated_at || new Date().toISOString())
+      }));
+
+      return validRoles;
     } catch (error) {
       console.error("Error in getUserRoles:", error);
       throw error;
@@ -106,7 +123,17 @@ export function useUserManagement() {
           throw error;
         }
 
-        return data as UserRoleAssignment;
+        // Convert result to proper type
+        const roleAssignment: UserRoleAssignment = {
+          id: String(data.id),
+          user_id: String(data.user_id),
+          role: String(data.role) as UserRole,
+          agency_id: data.agency_id ? String(data.agency_id) : null,
+          created_at: String(data.created_at),
+          updated_at: String(data.updated_at)
+        };
+
+        return roleAssignment;
       } catch (error) {
         console.error("Error in assignRole:", error);
         throw error;

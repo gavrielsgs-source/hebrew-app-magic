@@ -43,46 +43,53 @@ export function useNotifications() {
 
         if (upcomingTasks) {
           upcomingTasks.forEach(task => {
-            const taskDate = new Date(task.due_date);
-            const timeDiff = Math.ceil((taskDate.getTime() - now.getTime()) / (1000 * 60));
+            const dueDateValue = (task as any).due_date;
+            if (typeof dueDateValue === 'string' || typeof dueDateValue === 'number' || dueDateValue instanceof Date) {
+              const taskDate = new Date(dueDateValue);
+              const timeDiff = Math.ceil((taskDate.getTime() - now.getTime()) / (1000 * 60));
 
-            if (timeDiff <= 30 && timeDiff > 0) {
-              const notification: Notification = {
-                id: `task-reminder-${task.id}`,
-                title: "תזכורת למשימה",
-                message: `יש לך ${task.type === "meeting" ? "פגישה" : "משימה"} בעוד ${timeDiff} דקות: ${task.title}`,
-                type: "reminder",
-                read: false,
-                created_at: new Date().toISOString(),
-                entityId: task.id,
-                entityType: "task",
-                scheduledFor: task.due_date
-              };
+              if (timeDiff <= 30 && timeDiff > 0) {
+                const taskId = String((task as any).id || '');
+                const taskTitle = String((task as any).title || '');
+                const taskType = String((task as any).type || '');
+                
+                const notification: Notification = {
+                  id: `task-reminder-${taskId}`,
+                  title: "תזכורת למשימה",
+                  message: `יש לך ${taskType === "meeting" ? "פגישה" : "משימה"} בעוד ${timeDiff} דקות: ${taskTitle}`,
+                  type: "reminder",
+                  read: false,
+                  created_at: new Date().toISOString(),
+                  entityId: taskId,
+                  entityType: "task",
+                  scheduledFor: dueDateValue.toString()
+                };
 
-              // Show browser notification if supported
-              if (Notification.permission === "granted") {
-                new Notification(notification.title, {
-                  body: notification.message,
-                  icon: "/favicon.ico"
+                // Show browser notification if supported
+                if (Notification.permission === "granted") {
+                  new Notification(notification.title, {
+                    body: notification.message,
+                    icon: "/favicon.ico"
+                  });
+                }
+
+                // Show toast notification
+                toast(notification.title, {
+                  description: notification.message,
+                  action: {
+                    label: "צפה במשימה",
+                    onClick: () => window.location.href = "/tasks"
+                  }
+                });
+
+                setNotifications(prev => {
+                  const exists = prev.some(n => n.id === notification.id);
+                  if (!exists) {
+                    return [notification, ...prev];
+                  }
+                  return prev;
                 });
               }
-
-              // Show toast notification
-              toast(notification.title, {
-                description: notification.message,
-                action: {
-                  label: "צפה במשימה",
-                  onClick: () => window.location.href = "/tasks"
-                }
-              });
-
-              setNotifications(prev => {
-                const exists = prev.some(n => n.id === notification.id);
-                if (!exists) {
-                  return [notification, ...prev];
-                }
-                return prev;
-              });
             }
           });
         }

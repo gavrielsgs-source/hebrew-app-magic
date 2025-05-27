@@ -52,14 +52,19 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
         if (profilesError) throw profilesError;
         
         // עיבוד הנתונים
-        const totalLeads = leads.length;
-        const totalSales = leads.filter(lead => lead.status === "closed").length;
-        const totalCars = new Set(leads.filter(l => l.car_id).map(l => l.car_id)).size;
+        const safeLeads = leads || [];
+        const safeProfiles = profiles || [];
+        
+        const totalLeads = safeLeads.length;
+        const totalSales = safeLeads.filter(lead => (lead as any).status === "closed").length;
+        const totalCars = new Set(safeLeads.filter(l => (l as any).car_id).map(l => (l as any).car_id)).size;
         
         // חישוב מקורות לידים
-        const sources = leads.reduce((acc: Record<string, number>, lead) => {
-          const source = lead.source || "לא ידוע";
-          acc[source] = (acc[source] || 0) + 1;
+        const sources = safeLeads.reduce((acc: Record<string, number>, lead) => {
+          const source = (lead as any).source || "לא ידוע";
+          if (typeof source === 'string') {
+            acc[source] = (acc[source] || 0) + 1;
+          }
           return acc;
         }, {});
 
@@ -69,9 +74,12 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
         }));
         
         // חישוב לידים לאורך זמן
-        const leadsByDate = leads.reduce((acc: Record<string, number>, lead) => {
-          const date = lead.created_at.split("T")[0];
-          acc[date] = (acc[date] || 0) + 1;
+        const leadsByDate = safeLeads.reduce((acc: Record<string, number>, lead) => {
+          const createdAt = (lead as any).created_at;
+          if (typeof createdAt === 'string') {
+            const date = createdAt.split("T")[0];
+            acc[date] = (acc[date] || 0) + 1;
+          }
           return acc;
         }, {});
 
@@ -90,8 +98,8 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
         
         // חישוב המרות לפי מקור
         const conversionBySource = Object.entries(sources).map(([source, count]) => {
-          const sourceLeads = leads.filter(l => l.source === source);
-          const sourceSales = sourceLeads.filter(l => l.status === "closed").length;
+          const sourceLeads = safeLeads.filter(l => (l as any).source === source);
+          const sourceSales = sourceLeads.filter(l => (l as any).status === "closed").length;
           return {
             source,
             rate: sourceLeads.length > 0 ? (sourceSales / sourceLeads.length) * 100 : 0,
@@ -99,13 +107,16 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
         });
         
         // חישוב מכירות לפי סוכן
-        const salesByAgent = profiles
+        const salesByAgent = safeProfiles
           .map((profile: any) => {
-            const agentLeads = leads.filter(l => l.assigned_to === profile.id);
-            const sales = agentLeads.filter(l => l.status === "closed").length;
+            const agentLeads = safeLeads.filter(l => (l as any).assigned_to === profile.id);
+            const sales = agentLeads.filter(l => (l as any).status === "closed").length;
             const amount = agentLeads
-              .filter(l => l.status === "closed" && l.cars && l.cars.price)
-              .reduce((sum: number, l: any) => sum + (l.cars?.price || 0), 0);
+              .filter(l => (l as any).status === "closed" && (l as any).cars && (l as any).cars.price)
+              .reduce((sum: number, l: any) => {
+                const carPrice = l.cars?.price;
+                return sum + (typeof carPrice === 'number' ? carPrice : 0);
+              }, 0);
             
             return {
               agent: profile.full_name || profile.id,
@@ -118,13 +129,17 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
         // חישוב מכירות לאורך זמן
         const salesByDate: Record<string, { sales: number; amount: number }> = {};
         
-        leads.filter(l => l.status === "closed").forEach((lead: any) => {
-          const date = lead.created_at.split("T")[0];
-          if (!salesByDate[date]) {
-            salesByDate[date] = { sales: 0, amount: 0 };
+        safeLeads.filter(l => (l as any).status === "closed").forEach((lead: any) => {
+          const createdAt = lead.created_at;
+          if (typeof createdAt === 'string') {
+            const date = createdAt.split("T")[0];
+            if (!salesByDate[date]) {
+              salesByDate[date] = { sales: 0, amount: 0 };
+            }
+            salesByDate[date].sales += 1;
+            const carPrice = lead.cars?.price;
+            salesByDate[date].amount += (typeof carPrice === 'number' ? carPrice : 0);
           }
-          salesByDate[date].sales += 1;
-          salesByDate[date].amount += (lead.cars?.price || 0);
         });
 
         const salesOverTime = Object.entries(salesByDate)
