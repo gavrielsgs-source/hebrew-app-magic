@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
@@ -56,8 +55,8 @@ export function AppSidebar() {
           <SidebarMenu key="main">
             <SidebarMenuItem>
               <button
-                onClick={() => navigate("/")}
-                data-active={pathname === "/" || pathname === "/dashboard"}
+                onClick={() => navigate("/dashboard")}
+                data-active={pathname === "/dashboard"}
                 className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
                 <Home className="h-5 w-5" />

@@ -37,9 +37,9 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 w-full overflow-x-hidden" dir="rtl">
       {/* Header */}
-      <header className="container mx-auto px-4 py-4 md:py-6">
+      <header className="container mx-auto px-4 py-4 md:py-6 w-full">
         <nav className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-[#2F3C7E] to-[#4CAF50] rounded-xl flex items-center justify-center">
@@ -71,7 +71,7 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-8 md:py-16 text-center">
+      <section className="container mx-auto px-4 py-8 md:py-16 text-center w-full">
         <div className="max-w-4xl mx-auto">
           <div className="animate-fade-in">
             <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
@@ -144,7 +144,7 @@ export default function Landing() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-12 md:py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white w-full">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -200,7 +200,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50 w-full">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -273,7 +273,7 @@ export default function Landing() {
       </section>
 
       {/* Demo Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50 w-full">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8">
@@ -298,7 +298,7 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-12 md:py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white w-full">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -380,7 +380,7 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50 w-full">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12 md:mb-16">
@@ -446,7 +446,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50]">
+      <section className="py-12 md:py-20 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] w-full">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto text-white">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
@@ -500,7 +500,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 md:py-12">
+      <footer className="bg-gray-900 text-white py-8 md:py-12 w-full">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>

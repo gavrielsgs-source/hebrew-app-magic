@@ -68,7 +68,7 @@ function AppLayout() {
   return (
     <div className="flex min-h-screen w-full">
       <AppSidebar />
-      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? 'p-3' : 'md:pr-[20rem] p-6'}`}>
+      <main className={`flex-1 overflow-auto transition-all duration-300 ${isMobile ? 'p-3' : 'md:pr-[16rem] p-6'}`}>
         <Routes>
           <Route path="/profile" element={<Profile />} />
           <Route path="/tasks" element={<Tasks />} />
@@ -112,7 +112,7 @@ function DashboardRoute() {
         <AuthProvider>
           <div className="flex min-h-screen w-full">
             <AppSidebar />
-            <main className="flex-1 overflow-auto transition-all duration-300 p-6 md:pr-[20rem]">
+            <main className="flex-1 overflow-auto transition-all duration-300 p-6 md:pr-[16rem]">
               <Index />
             </main>
           </div>
