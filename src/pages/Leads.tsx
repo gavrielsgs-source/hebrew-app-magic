@@ -64,12 +64,92 @@ export default function Leads() {
     });
   };
 
-  // Early return for mobile to debug the issue
+  // Mobile view with header
   if (isMobile) {
-    console.log('Mobile view - rendering LeadsMobileView directly');
+    console.log('Mobile view - rendering with header and LeadsMobileView');
     return (
-      <div className="mobile-content">
-        <LeadsMobileView leads={filteredLeads} isLoading={isLoading} error={error} />
+      <div className="mobile-content pb-24" dir="rtl">
+        <SubscriptionLimitAlert 
+          featureKey="leadLimit" 
+          currentCount={leads.length} 
+          entityName="לקוחות" 
+        />
+        
+        {/* Mobile Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 p-4">
+          <div className="text-right">
+            <h1 className="text-2xl font-bold tracking-tight">לקוחות פוטנציאליים</h1>
+            <p className="text-muted-foreground mt-1">
+              ניהול ומעקב אחר לידים פוטנציאליים
+            </p>
+          </div>
+          <div className="flex gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
+            <NotificationsPopover />
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={() => setActiveTab("settings")}
+            >
+              <Settings className="h-4 w-4 ml-1.5" />
+              הגדרות
+            </Button>
+            <SwipeDialog open={isAddingLead} onOpenChange={setIsAddingLead}>
+              <DialogTrigger asChild>
+                <Button 
+                  size="sm" 
+                  className="flex items-center gap-2 flex-1"
+                  disabled={!canAddLead}
+                  onClick={() => setIsAddingLead(true)}
+                >
+                  <Plus className="h-4 w-4 ml-1.5" />
+                  לקוח חדש
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="w-full sm:w-[400px]">
+                <DialogHeader>
+                  <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
+                </DialogHeader>
+                <AddLeadForm onSuccess={onLeadAdded} />
+              </DialogContent>
+            </SwipeDialog>
+          </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl" className="w-full px-4">
+          <TabsList className="mb-6">
+            <TabsTrigger value="leads">לידים</TabsTrigger>
+            <TabsTrigger value="settings">אינטגרציות</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="leads" className="mt-0">
+            {/* Filters Component */}
+            <LeadsFilters
+              searchTerm={filters.searchTerm}
+              onSearchChange={(value) => updateFilter("searchTerm", value)}
+              statusFilter={filters.statusFilter}
+              onStatusFilterChange={(value) => updateFilter("statusFilter", value)}
+              sourceFilter={filters.sourceFilter}
+              onSourceFilterChange={(value) => updateFilter("sourceFilter", value)}
+              sortBy={filters.sortBy}
+              onSortByChange={(value) => updateFilter("sortBy", value)}
+              sortOrder={filters.sortOrder}
+              onSortOrderChange={(value) => updateFilter("sortOrder", value)}
+              onClearFilters={clearFilters}
+              activeFiltersCount={getActiveFiltersCount()}
+            />
+
+            <div className="text-sm text-muted-foreground mb-4 text-center">
+              {filteredLeads.length} מתוך {leads.length} לקוחות
+            </div>
+
+            <LeadsMobileView leads={filteredLeads} isLoading={isLoading} error={error} />
+          </TabsContent>
+          
+          <TabsContent value="settings" className="mt-0">
+            <FacebookLeadIntegration />
+          </TabsContent>
+        </Tabs>
       </div>
     );
   }
@@ -90,9 +170,6 @@ export default function Leads() {
           </p>
         </div>
         <div className="flex gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
-          {isMobile && (
-            <NotificationsPopover />
-          )}
           <Button 
             variant="outline" 
             size="sm"
@@ -106,7 +183,7 @@ export default function Leads() {
             <DialogTrigger asChild>
               <Button 
                 size="sm" 
-                className={`flex items-center gap-2 ${isMobile ? "flex-1" : ""}`}
+                className="flex items-center gap-2"
                 disabled={!canAddLead}
                 onClick={() => setIsAddingLead(true)}
               >
@@ -149,41 +226,31 @@ export default function Leads() {
                 activeFiltersCount={getActiveFiltersCount()}
               />
 
-              {!isMobile && (
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant={viewMode === "grid" ? "default" : "outline"} 
-                      size="icon"
-                      onClick={() => setViewMode("grid")}
-                    >
-                      <Grid className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant={viewMode === "table" ? "default" : "outline"} 
-                      size="icon"
-                      onClick={() => setViewMode("table")}
-                    >
-                      <TableIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {filteredLeads.length} מתוך {leads.length} לקוחות
-                  </div>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "outline"} 
+                    size="icon"
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === "table" ? "default" : "outline"} 
+                    size="icon"
+                    onClick={() => setViewMode("table")}
+                  >
+                    <TableIcon className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-
-              {isMobile && (
-                <div className="text-sm text-muted-foreground mb-4 text-center">
+                <div className="text-sm text-muted-foreground">
                   {filteredLeads.length} מתוך {leads.length} לקוחות
                 </div>
-              )}
+              </div>
             </>
           )}
 
-          {isMobile ? (
-            <LeadsMobileView leads={filteredLeads} isLoading={isLoading} error={error} />
-          ) : viewMode === "grid" ? (
+          {viewMode === "grid" ? (
             <LeadsGrid leads={filteredLeads} isLoading={isLoading} error={error} />
           ) : (
             <LeadsTable searchTerm={filters.searchTerm} />
