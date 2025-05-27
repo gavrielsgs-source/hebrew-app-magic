@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
@@ -85,7 +86,7 @@ export function TemplateDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <SwipeDialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader className="text-right">
           <DialogTitle className="text-2xl flex items-center justify-end gap-2">
@@ -184,6 +185,6 @@ export function TemplateDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+    </SwipeDialog>
   );
 }

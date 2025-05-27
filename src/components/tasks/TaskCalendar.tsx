@@ -16,7 +16,7 @@ interface TaskCalendarProps {
 
 export function TaskCalendar({ tasks, onTaskClick }: TaskCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [viewMode, setViewMode] = useState<"calendar" | "agenda">("calendar");
+  const [viewMode, setViewMode] = useState<"calendar" | "agenda">("agenda"); // Changed default to agenda
 
   const getTasksForDate = (date: Date) => {
     return tasks.filter(task => {

@@ -5,7 +5,8 @@ import { CarsTable } from "@/components/CarsTable";
 import { CarGrid } from "@/components/cars/CarGrid";
 import { Button } from "@/components/ui/button";
 import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AddCarForm } from "@/components/cars/AddCarForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
@@ -55,8 +56,8 @@ export default function Cars() {
               </>
             )}
           </Button>
-          <Sheet>
-            <SheetTrigger asChild>
+          <SwipeDialog>
+            <DialogTrigger asChild>
               <LimitAwareButton
                 resourceType="car"
                 currentCount={cars.length}
@@ -67,14 +68,14 @@ export default function Cars() {
                 <Plus className="h-4 w-4 ml-1" />
                 הוסף רכב
               </LimitAwareButton>
-            </SheetTrigger>
-            <SheetContent className="w-[90%] sm:w-[600px] overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle>הוסף רכב חדש</SheetTitle>
-              </SheetHeader>
+            </DialogTrigger>
+            <DialogContent className="w-[90%] sm:w-[600px] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>הוסף רכב חדש</DialogTitle>
+              </DialogHeader>
               <AddCarForm onSuccess={onCarAdded} />
-            </SheetContent>
-          </Sheet>
+            </DialogContent>
+          </SwipeDialog>
         </div>
       </div>
 

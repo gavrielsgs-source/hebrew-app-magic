@@ -36,6 +36,8 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
       return;
     }
 
+    console.log("Updating lead with values:", values);
+
     const leadData = {
       name: values.name,
       email: values.email || null,
@@ -51,6 +53,8 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
 
     try {
       await updateLead.mutateAsync({ id: lead.id, data: leadData });
+      console.log("Lead updated successfully");
+      
       toast({
         title: "ליד עודכן",
         description: "הליד עודכן בהצלחה",

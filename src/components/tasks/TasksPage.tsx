@@ -8,7 +8,8 @@ import { TasksPageHeader } from "./TasksPageHeader";
 import { TasksErrorState } from "./TasksErrorState";
 import { TasksLoadingState } from "./TasksLoadingState";
 import { TasksCardsView } from "./TasksCardsView";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent } from "@/components/ui/dialog";
 import { type Task } from "@/types/task";
 
 type ViewMode = "calendar" | "table" | "cards";
@@ -17,7 +18,7 @@ export function TasksPage() {
   const { tasks = [], isLoading, error, refetch, updateTask, deleteTask } = useTasks();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("cards"); // Changed default from "calendar" to "cards"
+  const [viewMode, setViewMode] = useState<ViewMode>("calendar"); // Changed back to calendar as default
 
   const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
     try {
@@ -70,8 +71,8 @@ export function TasksPage() {
 
       {viewMode === "table" && <TasksTable />}
 
-      {/* Task Notifications Dialog */}
-      <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+      {/* Task Notifications SwipeDialog */}
+      <SwipeDialog open={showNotifications} onOpenChange={setShowNotifications}>
         <DialogContent className="sm:max-w-[425px]">
           {selectedTask && (
             <TaskNotifications
@@ -80,7 +81,7 @@ export function TasksPage() {
             />
           )}
         </DialogContent>
-      </Dialog>
+      </SwipeDialog>
     </div>
   );
 }

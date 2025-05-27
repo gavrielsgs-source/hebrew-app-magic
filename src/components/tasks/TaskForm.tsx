@@ -77,7 +77,10 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
         car_id: data.car_id || null,
       };
 
+      console.log("Submitting task data:", taskData);
+
       const newTask = await addTask.mutateAsync(taskData);
+      console.log("Task created successfully:", newTask);
       
       // Create notifications if requested and due date is set
       if (shouldCreateNotification && data.due_date && newTask && newTask[0] && selectedNotificationOptions.length > 0) {
@@ -111,6 +114,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
       setSelectedNotificationOptions([]);
       onSuccess?.();
     } catch (error) {
+      console.error("Error creating task:", error);
       toast({
         title: "שגיאה ביצירת משימה",
         description: "לא ניתן ליצור את המשימה. נסה שנית.",

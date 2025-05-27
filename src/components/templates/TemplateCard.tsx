@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
 import { FileText, Edit, Trash2, Eye } from "lucide-react";
@@ -74,7 +75,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       </CardContent>
       
       <CardFooter className="pt-3 justify-start">
-        <Dialog>
+        <SwipeDialog>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
@@ -89,7 +90,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               <WhatsappTemplatePreview template={previewMessage} />
             </div>
           </DialogContent>
-        </Dialog>
+        </SwipeDialog>
       </CardFooter>
     </Card>
   );
