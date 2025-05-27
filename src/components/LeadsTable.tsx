@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -36,13 +35,16 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
     ? leads.find(lead => lead.id === selectedLeadId) 
     : null;
   
-  // Use filtered leads if provided, otherwise use original logic
+  // Use filtered leads if provided, otherwise use original logic with proper type checking
   const displayLeads = filteredLeads || (searchTerm
-    ? leads.filter(lead => 
-        lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (lead.phone && lead.phone.includes(searchTerm)) ||
-        (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+    ? leads.filter(lead => {
+        const name = lead.name as string || "";
+        const phone = lead.phone as string || "";
+        const email = lead.email as string || "";
+        return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               phone.includes(searchTerm) ||
+               email.toLowerCase().includes(searchTerm.toLowerCase());
+      })
     : leads);
   
   return (
@@ -105,13 +107,13 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                   }`}
                 >
                   <TableCell className="font-medium text-right py-4 px-6">
-                    <div className="font-semibold text-[#2F3C7E]">{lead.name}</div>
+                    <div className="font-semibold text-[#2F3C7E]">{lead.name as string}</div>
                   </TableCell>
                   <TableCell className="text-right py-4 px-6">
-                    <div className="text-gray-700">{lead.phone || '-'}</div>
+                    <div className="text-gray-700">{(lead.phone as string) || '-'}</div>
                   </TableCell>
                   <TableCell className="text-right py-4 px-6">
-                    <div className="text-gray-700 truncate max-w-[200px]">{lead.email || '-'}</div>
+                    <div className="text-gray-700 truncate max-w-[200px]">{(lead.email as string) || '-'}</div>
                   </TableCell>
                   <TableCell className="text-right py-4 px-6">
                     <Badge 
@@ -121,12 +123,12 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                         'bg-gray-100 text-gray-600 border-gray-200'
                       } font-medium`}
                     >
-                      {lead.source || "ידני"}
+                      {(lead.source as string) || "ידני"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right py-4 px-6">
                     <div className="text-sm text-gray-600">
-                      {new Date(lead.created_at).toLocaleDateString('he-IL')}
+                      {new Date(lead.created_at as string).toLocaleDateString('he-IL')}
                     </div>
                   </TableCell>
                   <TableCell className="text-right py-4 px-6">
@@ -167,7 +169,7 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                             <WhatsappTemplateSelector 
                               car={lead.cars} 
                               onClose={() => setIsWhatsappOpen(false)}
-                              initialPhoneNumber={lead.phone || ""}
+                              initialPhoneNumber={(lead.phone as string) || ""}
                             />
                           )}
                         </DialogContent>
@@ -175,21 +177,21 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                       
                       <Dialog open={isScheduleOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
                         setIsScheduleOpen(open);
-                        if (open) setSelectedLeadId(lead.id);
+                        if (open) setSelectedLeadId(lead.id as string);
                       }}>
                         <DialogTrigger asChild>
                           <Button 
                             variant="ghost" 
                             size="icon"
                             className="h-8 w-8 hover:bg-purple-100 hover:text-purple-600 transition-colors"
-                            onClick={() => setSelectedLeadId(lead.id)}
+                            onClick={() => setSelectedLeadId(lead.id as string)}
                           >
                             <Calendar className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[500px]" dir="rtl">
                           <DialogHeader>
-                            <DialogTitle>קבע פגישה/תזכורת - {lead.name}</DialogTitle>
+                            <DialogTitle>קבע פגישה/תזכורת - {lead.name as string}</DialogTitle>
                           </DialogHeader>
                           <ScheduleMeetingForm 
                             lead={lead} 
@@ -204,7 +206,7 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                             variant="ghost" 
                             size="icon"
                             className="h-8 w-8 hover:bg-orange-100 hover:text-orange-600 transition-colors"
-                            onClick={() => setSelectedLeadId(lead.id)}
+                            onClick={() => setSelectedLeadId(lead.id as string)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>

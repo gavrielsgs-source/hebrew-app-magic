@@ -24,7 +24,8 @@ export const useCreateReminder = () => {
         completed: false
       };
       
-      let followUpNotes = lead.follow_up_notes || [];
+      // Type assertion to handle unknown type from Supabase
+      let followUpNotes = (lead.follow_up_notes as any[]) || [];
       followUpNotes = [...followUpNotes, reminder];
       
       const { data, error } = await supabase
@@ -67,11 +68,13 @@ export const useUpdateReminder = () => {
         throw new Error(fetchError.message);
       }
       
-      if (!lead.follow_up_notes || !Array.isArray(lead.follow_up_notes)) {
+      // Type assertion to handle unknown type from Supabase
+      const followUpNotes = lead.follow_up_notes as any[];
+      if (!followUpNotes || !Array.isArray(followUpNotes)) {
         throw new Error("אין תזכורות ללקוח זה");
       }
       
-      const updatedFollowUpNotes = [...lead.follow_up_notes];
+      const updatedFollowUpNotes = [...followUpNotes];
       if (reminderIndex >= 0 && reminderIndex < updatedFollowUpNotes.length) {
         updatedFollowUpNotes[reminderIndex] = {
           ...updatedFollowUpNotes[reminderIndex],

@@ -57,7 +57,7 @@ export function AddLeadForm({ carId }: { carId?: string }) {
           priority: "medium",
           type: "meeting",
           due_date: tomorrow.toISOString(),
-          lead_id: newLead[0].id,
+          lead_id: newLead[0].id as string,
           car_id: values.car_id || null,
         };
 
@@ -72,7 +72,7 @@ export function AddLeadForm({ carId }: { carId?: string }) {
             reminderTime,
             "meeting",
             "task",
-            newTask[0].id
+            newTask[0].id as string
           );
         }
       }
@@ -88,7 +88,7 @@ export function AddLeadForm({ carId }: { carId?: string }) {
           followUpTime,
           "lead",
           "lead",
-          newLead[0].id
+          newLead[0].id as string
         );
       }
       

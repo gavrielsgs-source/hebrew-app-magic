@@ -159,7 +159,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
             <CardHeader className="pb-4 bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="font-bold text-2xl text-[#2F3C7E] mb-3 leading-tight">{lead.name}</h3>
+                  <h3 className="font-bold text-2xl text-[#2F3C7E] mb-3 leading-tight">{lead.name as string}</h3>
                   <div className="text-left">
                     <QuickStatusChange lead={lead} />
                   </div>
@@ -169,7 +169,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                   size="icon"
                   className="text-[#2F3C7E] hover:bg-[#2F3C7E]/10 h-12 w-12 rounded-2xl"
                   onClick={() => {
-                    setSelectedLeadId(lead.id);
+                    setSelectedLeadId(lead.id as string);
                     setActiveDialog("edit");
                   }}
                 >
@@ -187,12 +187,12 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                       variant="outline" 
                       size="sm"
                       className="border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white rounded-xl px-4 py-2 font-semibold"
-                      onClick={() => handleCallLead(lead.phone)}
+                      onClick={() => handleCallLead(lead.phone as string)}
                     >
                       <Phone className="h-5 w-5" />
                     </Button>
                     <div className="text-right flex-1 mr-4">
-                      <div className="font-bold text-lg" dir="ltr">{lead.phone}</div>
+                      <div className="font-bold text-lg" dir="ltr">{lead.phone as string}</div>
                       <div className="text-sm text-gray-600">טלפון</div>
                     </div>
                   </div>
@@ -201,7 +201,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                 {lead.email && (
                   <div className="flex items-center bg-gradient-to-l from-purple-50 to-white p-4 rounded-2xl border border-purple-100">
                     <div className="text-right flex-1">
-                      <div className="font-semibold text-gray-900 truncate">{lead.email}</div>
+                      <div className="font-semibold text-gray-900 truncate">{lead.email as string}</div>
                       <div className="text-sm text-gray-600">אימייל</div>
                     </div>
                     <MessageSquare className="h-5 w-5 text-purple-600 mr-3" />
@@ -211,7 +211,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                 {lead.source && (
                   <div className="flex items-center bg-gradient-to-l from-green-50 to-white p-4 rounded-2xl border border-green-100">
                     <div className="text-right flex-1">
-                      <div className="font-semibold text-gray-900">{lead.source}</div>
+                      <div className="font-semibold text-gray-900">{lead.source as string}</div>
                       <div className="text-sm text-gray-600">מקור הליד</div>
                     </div>
                     <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
@@ -227,7 +227,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     size="lg"
                     className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl py-4 h-16 shadow-lg font-bold text-lg"
                     disabled={!lead.phone}
-                    onClick={() => handleWhatsAppMessage(lead.phone, lead.name)}
+                    onClick={() => handleWhatsAppMessage(lead.phone as string, lead.name as string)}
                   >
                     <MessageSquare className="h-6 w-6 ml-2" />
                     וואטסאפ
@@ -237,7 +237,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     size="lg"
                     className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] hover:from-[#1F2C5E] hover:to-[#3A4A7C] text-white rounded-2xl py-4 h-16 shadow-lg font-bold text-lg"
                     onClick={() => {
-                      setSelectedLeadId(lead.id);
+                      setSelectedLeadId(lead.id as string);
                       setActiveDialog("task");
                     }}
                   >
@@ -253,7 +253,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     size="lg"
                     className="border-2 border-orange-300 text-orange-700 hover:bg-orange-50 rounded-2xl py-4 h-14 font-semibold"
                     onClick={() => {
-                      setSelectedLeadId(lead.id);
+                      setSelectedLeadId(lead.id as string);
                       setActiveDialog("clients");
                     }}
                   >
@@ -266,7 +266,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     size="lg"
                     className="border-2 border-red-300 text-red-600 hover:bg-red-50 rounded-2xl py-4 h-14 font-semibold"
                     onClick={() => {
-                      setLeadToDelete(lead.id);
+                      setLeadToDelete(lead.id as string);
                       setIsDeleteDialogOpen(true);
                     }}
                   >
@@ -294,11 +294,11 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
       <Dialog open={activeDialog === "task"} onOpenChange={(open) => !open && setActiveDialog(null)}>
         <DialogContent className="sm:max-w-[500px]" dir="rtl">
           <DialogHeader>
-            <DialogTitle>קבע פגישה/תזכורת - {selectedLead?.name}</DialogTitle>
+            <DialogTitle>קבע פגישה/תזכורת - {selectedLead?.name as string}</DialogTitle>
           </DialogHeader>
           {selectedLead && (
             <TaskForm 
-              prefilledLead={selectedLead}
+              initialLeadId={selectedLead.id as string}
               onSuccess={() => setActiveDialog(null)}
             />
           )}

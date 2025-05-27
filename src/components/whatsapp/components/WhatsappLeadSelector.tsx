@@ -14,8 +14,11 @@ interface WhatsappLeadSelectorProps {
 export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }: WhatsappLeadSelectorProps) {
   const { leads } = useLeads();
   
-  // Filter leads that have phone numbers
-  const leadsWithPhone = leads.filter(lead => lead.phone && lead.phone.trim() !== '');
+  // Filter leads that have phone numbers with proper type checking
+  const leadsWithPhone = leads.filter(lead => {
+    const phone = lead.phone as string;
+    return phone && phone.trim() !== '';
+  });
 
   return (
     <div className="space-y-3">
@@ -36,7 +39,7 @@ export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }
       <Select value={selectedLeadId} onValueChange={(leadId) => {
         const selectedLead = leadsWithPhone.find(lead => lead.id === leadId);
         if (selectedLead) {
-          onLeadSelect(leadId, selectedLead.phone!, selectedLead.name);
+          onLeadSelect(leadId, selectedLead.phone as string, selectedLead.name as string);
         }
       }}>
         <SelectTrigger className="w-full" dir="rtl">
@@ -49,10 +52,10 @@ export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }
             </SelectItem>
           ) : (
             leadsWithPhone.map((lead) => (
-              <SelectItem key={lead.id} value={lead.id}>
+              <SelectItem key={lead.id as string} value={lead.id as string}>
                 <div className="flex justify-between items-center w-full">
-                  <span className="font-medium">{lead.name}</span>
-                  <span className="text-xs text-gray-500 mr-2">{lead.phone}</span>
+                  <span className="font-medium">{lead.name as string}</span>
+                  <span className="text-xs text-gray-500 mr-2">{lead.phone as string}</span>
                 </div>
               </SelectItem>
             ))
