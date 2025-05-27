@@ -39,6 +39,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
   const { scheduleNotification, permission } = usePushNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
+  const [selectedNotificationOptions, setSelectedNotificationOptions] = useState<string[]>([]);
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
@@ -52,6 +53,15 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
       car_id: initialCarId || "",
     },
   });
+
+  const getMinutesFromOption = (option: string): number => {
+    switch (option) {
+      case "5_minutes": return 5;
+      case "1_hour": return 60;
+      case "24_hours": return 1440;
+      default: return 30;
+    }
+  };
 
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
@@ -69,26 +79,36 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
 
       const newTask = await addTask.mutateAsync(taskData);
       
-      // Create notification if requested and due date is set
-      if (shouldCreateNotification && data.due_date && newTask && newTask[0]) {
-        const reminderTime = new Date(data.due_date.getTime() - 30 * 60 * 1000); // 30 minutes before
-        await scheduleNotification(
-          `תזכורת למשימה: ${data.title}`,
-          `המשימה מתחילה בעוד 30 דקות`,
-          reminderTime,
-          data.type,
-          "task",
-          newTask[0].id
-        );
+      // Create notifications if requested and due date is set
+      if (shouldCreateNotification && data.due_date && newTask && newTask[0] && selectedNotificationOptions.length > 0) {
+        for (const option of selectedNotificationOptions) {
+          const minutesBefore = getMinutesFromOption(option);
+          const reminderTime = new Date(data.due_date.getTime() - minutesBefore * 60 * 1000);
+          
+          await scheduleNotification(
+            `תזכורת למשימה: ${data.title}`,
+            `המשימה מתחילה בעוד ${option === "5_minutes" ? "5 דקות" : option === "1_hour" ? "שעה" : "24 שעות"}`,
+            reminderTime,
+            data.type,
+            "task",
+            newTask[0].id
+          );
+        }
+      }
+      
+      let successMessage = "המשימה נוצרה בהצלחה";
+      if (shouldCreateNotification && selectedNotificationOptions.length > 0) {
+        successMessage = `המשימה נוצרה והתזכורות נקבעו (${selectedNotificationOptions.length} תזכורות)`;
       }
       
       toast({
         title: "משימה נוצרה",
-        description: shouldCreateNotification ? "המשימה נוצרה והתזכורת נקבעה" : "המשימה נוצרה בהצלחה",
+        description: successMessage,
       });
       
       form.reset();
       setShouldCreateNotification(false);
+      setSelectedNotificationOptions([]);
       onSuccess?.();
     } catch (error) {
       toast({
@@ -117,8 +137,11 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
             <NotificationCheckbox
               checked={shouldCreateNotification}
               onCheckedChange={setShouldCreateNotification}
-              label="צור תזכורת 30 דקות לפני המשימה"
+              label="צור תזכורות למשימה"
               disabled={permission !== "granted"}
+              showOptions={true}
+              selectedOptions={selectedNotificationOptions}
+              onOptionsChange={setSelectedNotificationOptions}
             />
           )}
           

@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Calendar, TrendingUp, Eye, Clock, Users, Car, CheckSquare } from "lucide-react";
@@ -81,7 +82,7 @@ export default function Dashboard() {
   
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="p-6 space-y-8">
         <AppHeader />
 
         {/* Real-time Dashboard Stats */}
@@ -205,7 +206,7 @@ export default function Dashboard() {
           </div>
           
           <div className="flex justify-center">
-            <div className="w-full max-w-4xl">
+            <div className="w-full">
               <MiniCalendar />
             </div>
           </div>
@@ -219,7 +220,7 @@ export default function Dashboard() {
               <p className="text-gray-600">משימות שחשוב לטפל בהן היום</p>
             </div>
             
-            <div className="max-w-4xl mx-auto">
+            <div className="">
               <div className="grid gap-4">
                 {dashboardData.todayTasks.map((task) => (
                   <Card key={task.id} className="bg-white/90 backdrop-blur-sm shadow-lg border border-gray-100 rounded-2xl">
@@ -259,7 +260,7 @@ export default function Dashboard() {
             <p className="text-gray-600">המלצות אוטומטיות לשיפור הביצועים</p>
           </div>
           
-          <div className="grid gap-4 md:grid-cols-2 max-w-4xl mx-auto">
+          <div className="grid gap-4 md:grid-cols-2">
             <Card className="bg-gradient-to-l from-blue-50 to-white border border-blue-200 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -297,7 +298,7 @@ export default function Dashboard() {
             <p className="text-gray-600">מעקב אחר ביצועים ומגמות בעסק</p>
           </div>
           
-          <div className={`grid gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'} max-w-6xl mx-auto`}>
+          <div className={`grid gap-6 grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'}`}>
             <div className="min-h-[340px] flex flex-col">
               <SalesAnalytics />
             </div>
@@ -328,7 +329,7 @@ export default function Dashboard() {
         </div>
 
         {/* Enhanced Horizontal Navigation Tabs */}
-        <div className="max-w-6xl mx-auto">
+        <div className="">
           <Tabs defaultValue="overview" className="space-y-6">
             <div className="bg-white border border-gray-200 rounded-3xl shadow-lg p-3">
               <TabsList className={`
@@ -435,7 +436,7 @@ export default function Dashboard() {
         </div>
 
         {/* Smart Insights moved to bottom */}
-        <div className="space-y-4 max-w-6xl mx-auto">
+        <div className="space-y-4">
           <SmartInsights data={salesData} />
         </div>
       </div>

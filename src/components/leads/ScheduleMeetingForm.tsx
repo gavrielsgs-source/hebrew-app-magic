@@ -16,6 +16,8 @@ import { he } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 import { useAuth } from "@/hooks/use-auth";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { NotificationCheckbox } from "@/components/notifications/NotificationCheckbox";
 import { toast } from "sonner";
 
 const scheduleFormSchema = z.object({
@@ -37,7 +39,10 @@ interface ScheduleMeetingFormProps {
 export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProps) {
   const { user } = useAuth();
   const { addTask } = useTasks();
+  const { scheduleNotification, permission } = usePushNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
+  const [selectedNotificationOptions, setSelectedNotificationOptions] = useState<string[]>([]);
 
   const form = useForm<ScheduleFormValues>({
     resolver: zodResolver(scheduleFormSchema),
@@ -49,6 +54,15 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
       priority: "medium",
     },
   });
+
+  const getMinutesFromOption = (option: string): number => {
+    switch (option) {
+      case "5_minutes": return 5;
+      case "1_hour": return 60;
+      case "24_hours": return 1440;
+      default: return 30;
+    }
+  };
 
   const onSubmit = async (data: ScheduleFormValues) => {
     setIsSubmitting(true);
@@ -69,10 +83,34 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
         car_id: lead.car_id || null,
       };
 
-      await addTask.mutateAsync(taskData);
+      const newTask = await addTask.mutateAsync(taskData);
       
-      toast.success("הפגישה/תזכורת נוצרה בהצלחה");
+      // Create notifications if requested
+      if (shouldCreateNotification && newTask && newTask[0] && selectedNotificationOptions.length > 0) {
+        for (const option of selectedNotificationOptions) {
+          const minutesBefore = getMinutesFromOption(option);
+          const reminderTime = new Date(dueDate.getTime() - minutesBefore * 60 * 1000);
+          
+          await scheduleNotification(
+            `תזכורת ל${data.type === "meeting" ? "פגישה" : "שיחה"}: ${data.title}`,
+            `${data.type === "meeting" ? "הפגישה" : "השיחה"} מתחילה בעוד ${option === "5_minutes" ? "5 דקות" : option === "1_hour" ? "שעה" : "24 שעות"}`,
+            reminderTime,
+            data.type,
+            "task",
+            newTask[0].id
+          );
+        }
+      }
+      
+      let successMessage = "הפגישה/תזכורת נוצרה בהצלחה";
+      if (shouldCreateNotification && selectedNotificationOptions.length > 0) {
+        successMessage = `הפגישה/תזכורת נוצרה והתזכורות נקבעו (${selectedNotificationOptions.length} תזכורות)`;
+      }
+      
+      toast.success(successMessage);
       form.reset();
+      setShouldCreateNotification(false);
+      setSelectedNotificationOptions([]);
       onSuccess?.();
     } catch (error) {
       toast.error("שגיאה ביצירת הפגישה/תזכורת");
@@ -81,6 +119,8 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
       setIsSubmitting(false);
     }
   };
+
+  const watchedDate = form.watch("date");
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -175,6 +215,7 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
+                        className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
                   </Popover>
@@ -227,6 +268,19 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
               </FormItem>
             )}
           />
+
+          {/* Notification Options */}
+          {watchedDate && (
+            <NotificationCheckbox
+              checked={shouldCreateNotification}
+              onCheckedChange={setShouldCreateNotification}
+              label="צור תזכורות לפגישה/שיחה"
+              disabled={permission !== "granted"}
+              showOptions={true}
+              selectedOptions={selectedNotificationOptions}
+              onOptionsChange={setSelectedNotificationOptions}
+            />
+          )}
 
           <Button 
             type="submit" 
