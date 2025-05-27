@@ -26,7 +26,7 @@ export function useDateRangeAnalytics() {
         lastQuarter: {
           label: "רבעון קודם",
           from: new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 - 3, 1),
-          to: new Date(now.getFullYear(), now.getMonth() / 3) * 3, 0),
+          to: new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 0),
         },
         thisYear: {
           label: "השנה",
@@ -40,6 +40,6 @@ export function useDateRangeAnalytics() {
         },
       };
     },
-    staleTime: Infinity, // לא משתנה
+    staleTime: Infinity,
   });
 }
