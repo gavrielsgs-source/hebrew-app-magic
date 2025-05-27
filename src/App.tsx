@@ -39,9 +39,9 @@ const App = () => {
         <BrowserRouter>
           <SidebarProvider defaultOpen={true}>
             <Routes>
+              <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<AuthRoute />} />
-              <Route path="/landing" element={<Landing />} />
-              <Route path="/" element={<LandingOrDashboard />} />
+              <Route path="/dashboard" element={<DashboardRoute />} />
               <Route
                 path="*"
                 element={
@@ -94,36 +94,32 @@ function AuthRoute() {
   
   if (loading) return <div className="flex items-center justify-center h-screen">טוען...</div>;
   
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
   
   return <Auth />;
 }
 
-function LandingOrDashboard() {
+function DashboardRoute() {
   const { user, loading } = useAuth();
   
   if (loading) return <div className="flex items-center justify-center h-screen">טוען...</div>;
   
-  // If user is logged in, show the dashboard
-  if (user) {
-    return (
-      <ProtectedRoute>
-        <SubscriptionProvider>
-          <AuthProvider>
-            <div className="flex min-h-screen w-full">
-              <AppSidebar />
-              <main className="flex-1 overflow-auto transition-all duration-300 rtl-fix p-6">
-                <Index />
-              </main>
-            </div>
-          </AuthProvider>
-        </SubscriptionProvider>
-      </ProtectedRoute>
-    );
-  }
+  if (!user) return <Navigate to="/auth" replace />;
   
-  // If user is not logged in, show the landing page
-  return <Landing />;
+  return (
+    <ProtectedRoute>
+      <SubscriptionProvider>
+        <AuthProvider>
+          <div className="flex min-h-screen w-full">
+            <AppSidebar />
+            <main className="flex-1 overflow-auto transition-all duration-300 rtl-fix p-6">
+              <Index />
+            </main>
+          </div>
+        </AuthProvider>
+      </SubscriptionProvider>
+    </ProtectedRoute>
+  );
 }
 
 export default App;
