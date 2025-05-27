@@ -169,7 +169,6 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
                             <WhatsappTemplateSelector 
                               car={lead.cars} 
                               onClose={() => setIsWhatsappOpen(false)}
-                              initialPhoneNumber={(lead.phone as string) || ""}
                             />
                           )}
                         </DialogContent>

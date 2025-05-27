@@ -2,46 +2,48 @@
 export interface WhatsappTemplate {
   id: string;
   name: string;
-  template: string;
+  description: string;
+  generateMessage: (car: any) => string;
 }
 
-export const templates: WhatsappTemplate[] = [
+export const whatsappTemplates: WhatsappTemplate[] = [
   {
     id: "basic",
     name: "תבנית בסיסית",
-    template: `שלום,
+    description: "הודעה פשוטה עם פרטי הרכב הבסיסיים",
+    generateMessage: (car: any) => `שלום,
 
 רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:
 
-*{{make}} {{model}} {{year}}*
-מחיר: {{price}}
-קילומטראז': {{kilometers}} ק"מ
-צבע: {{color}}
-מנוע: {{engine}}
-תיבת הילוכים: {{transmission}}
-סוג דלק: {{fuel}}
+*${car.make} ${car.model} ${car.year}*
+מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
+קילומטראז': ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין'}
+צבע: ${car.exterior_color || 'לא צוין'}
+מנוע: ${car.engine_size || 'לא צוין'}
+תיבת הילוכים: ${car.transmission || 'לא צוין'}
+סוג דלק: ${car.fuel_type || 'לא צוין'}
 
 נשמח לתאם לך ביקור ונסיעת מבחן!
 
 בברכה,
-צוות המכירות
-`,
+צוות המכירות`
   },
   {
     id: "detailed",
     name: "תבנית מפורטת",
-    template: `שלום רב,
+    description: "הודעה מפורטת עם כל הפרטים והמלצות",
+    generateMessage: (car: any) => `שלום רב,
 
 בהמשך לפנייתך, להלן פרטי הרכב המלאים:
 
-🚗 *{{make}} {{model}} שנת {{year}}*
+🚗 *${car.make} ${car.model} שנת ${car.year}*
 
-💰 *מחיר:* {{price}}
-🛣️ *ק"מ:* {{kilometers}}
-🎨 *צבע:* {{color}}
-🔧 *מנוע:* {{engine}}
-⚙️ *תיבת הילוכים:* {{transmission}}
-⛽ *סוג דלק:* {{fuel}}
+💰 *מחיר:* ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
+🛣️ *ק"מ:* ${car.mileage ? `${car.mileage.toLocaleString()}` : 'לא צוין'}
+🎨 *צבע:* ${car.exterior_color || 'לא צוין'}
+🔧 *מנוע:* ${car.engine_size || 'לא צוין'}
+⚙️ *תיבת הילוכים:* ${car.transmission || 'לא צוין'}
+⛽ *סוג דלק:* ${car.fuel_type || 'לא צוין'}
 
 ✅ הרכב נמצא במצב מצוין ועבר את כל הבדיקות הנדרשות
 ✅ טסט לשנה
@@ -53,100 +55,37 @@ export const templates: WhatsappTemplate[] = [
 מה השעה שנוחה לך?
 
 בברכה,
-צוות המכירות
-`,
+צוות המכירות`
   },
   {
     id: "promotion",
     name: "מבצע מיוחד",
-    template: `🔥 *הצעה מיוחדת* 🔥
+    description: "הודעה עם הדגשת מבצע והנחה",
+    generateMessage: (car: any) => `🔥 *הצעה מיוחדת* 🔥
 
 שלום!
 
 רצינו לעדכן אותך על מבצע מיוחד על הרכב שהתעניינת בו:
 
-*{{make}} {{model}} {{year}}*
-מחיר רגיל: {{price}}
-*מחיר מבצע: ₪XXX,XXX* (הנחה של ₪XX,XXX)
+*${car.make} ${car.model} ${car.year}*
+מחיר רגיל: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
+*מחיר מבצע: לפי פנייה* (הנחה מיוחדת!)
 
 הרכב כולל:
-✓ {{kilometers}} ק"מ בלבד
-✓ צבע {{color}}
-✓ מנוע {{engine}}
-✓ {{transmission}}
-✓ {{fuel}}
+✓ ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'קילומטראז' נמוך'} בלבד
+✓ צבע ${car.exterior_color || 'מעולה'}
+✓ מנוע ${car.engine_size || 'חזק ויעיל'}
+✓ ${car.transmission || 'תיבת הילוכים מעולה'}
+✓ ${car.fuel_type || 'חסכוני בדלק'}
 ✓ אחריות יצרן בתוקף
 
-המבצע בתוקף עד סוף השבוע!
+המבצע בתוקף לזמן מוגבל!
 נשמח לתאם לך ביקור ונסיעת מבחן.
 
 בברכה,
-צוות המכירות
-`,
-  },
-  {
-    id: "financing",
-    name: "מימון ותשלומים",
-    template: `שלום,
-
-בעקבות שיחתנו, הנה פרטי הרכב עם אפשרויות המימון:
-
-🚘 *{{make}} {{model}} {{year}}*
-💵 *מחיר מלא:* {{price}}
-
-אפשרויות מימון:
-✅ 36 תשלומים של ₪X,XXX
-✅ 48 תשלומים של ₪X,XXX
-✅ 60 תשלומים של ₪X,XXX
-
-כל המסלולים כוללים:
-- ריבית אטרקטיבית
-- אפשרות לפירעון מוקדם ללא קנס
-- אישור תוך 24 שעות
-
-פרטי הרכב:
-🔄 קילומטראז': {{kilometers}}
-🎨 צבע: {{color}}
-⚙️ תיבת הילוכים: {{transmission}}
-⛽ סוג דלק: {{fuel}}
-
-נשמח לענות על כל שאלה!
-
-בברכה,
-צוות המכירות
-`,
-  },
-  {
-    id: "test_drive",
-    name: "נסיעת מבחן",
-    template: `שלום!
-
-שמחים לאשר את נסיעת המבחן שלך ברכב:
-
-*{{make}} {{model}} {{year}}*
-
-פרטי הרכב:
-• קילומטראז': {{kilometers}}
-• מנוע: {{engine}}
-• תיבת הילוכים: {{transmission}}
-• דלק: {{fuel}}
-• צבע: {{color}}
-
-הנסיעה מתוכננת ל[הכנס תאריך ושעה].
-
-לפני הנסיעה נדרש להציג:
-- רישיון נהיגה בתוקף
-- תעודה מזהה
-
-כתובת המגרש: [הכנס כתובת]
-
-לשאלות או שינויים בתיאום, אנא השב להודעה זו.
-
-מצפים לראותך!
-צוות המכירות
-`,
+צוות המכירות`
   }
 ];
 
 // מייצא את התבניות הדיפולטיביות
-export const defaultWhatsappTemplates = templates;
+export const defaultWhatsappTemplates = whatsappTemplates;

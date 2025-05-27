@@ -1,14 +1,15 @@
 
 import * as React from "react";
-import { Dialog, DialogContent, DialogProps } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-interface SwipeDialogProps extends DialogProps {
+interface SwipeDialogProps {
   children: React.ReactNode;
+  open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function SwipeDialog({ children, onOpenChange, ...props }: SwipeDialogProps) {
+export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDialogProps) {
   const isMobile = useIsMobile();
   const [startY, setStartY] = React.useState<number | null>(null);
   const [currentY, setCurrentY] = React.useState<number | null>(null);
@@ -63,7 +64,7 @@ export function SwipeDialog({ children, onOpenChange, ...props }: SwipeDialogPro
   }, [isMobile, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   return (
-    <Dialog onOpenChange={onOpenChange} {...props}>
+    <Dialog open={open} onOpenChange={onOpenChange} {...props}>
       <DialogContent className={isMobile ? "transition-transform duration-200" : ""}>
         {isMobile && (
           <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 flex-shrink-0" />

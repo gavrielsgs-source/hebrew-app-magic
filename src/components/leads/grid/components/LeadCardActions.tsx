@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,7 +64,7 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
           </DialogContent>
         </Dialog>
 
-        {/* WhatsApp Button - ללא רקע ירוק */}
+        {/* WhatsApp Button */}
         <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
           <DialogTrigger asChild>
             <Button 
@@ -86,7 +85,6 @@ export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) 
               <WhatsappTemplateSelector 
                 car={lead.cars} 
                 onClose={() => setIsWhatsappOpen(false)}
-                initialPhoneNumber={lead.phone || ""}
               />
             )}
           </DialogContent>

@@ -97,13 +97,16 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
         </TabsContent>
         
         <TabsContent value="leads" className="space-y-4">
-          <WhatsappLeadSelector onPhoneSelect={setSelectedPhone} />
+          <WhatsappLeadSelector 
+            onLeadSelect={(leadId, phone, name) => setSelectedPhone(phone)}
+            onNewLead={() => {}}
+          />
           
           {selectedPhone && (
             <div className="mt-4">
               <WhatsappPhoneInput
-                phone={selectedPhone}
-                onPhoneChange={setSelectedPhone}
+                phoneNumber={selectedPhone}
+                setPhoneNumber={setSelectedPhone}
               />
             </div>
           )}
@@ -120,10 +123,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
       {(selectedPhone || false) && (
         <>
           <WhatsappTemplatePreview
-            template={selectedTemplate}
-            car={car}
-            customMessage={customMessage}
-            onCustomMessageChange={setCustomMessage}
+            template={message}
           />
 
           <div className="flex gap-3">
