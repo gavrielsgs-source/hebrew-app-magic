@@ -17,7 +17,7 @@ export function TasksPage() {
   const { tasks = [], isLoading, error, refetch, updateTask, deleteTask } = useTasks();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [viewMode, setViewMode] = useState<ViewMode>("cards"); // Changed default from "calendar" to "cards"
 
   const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
     try {
@@ -56,16 +56,16 @@ export function TasksPage() {
         onViewModeChange={setViewMode} 
       />
 
-      {viewMode === "calendar" && (
-        <TaskCalendar tasks={tasks} onTaskClick={handleTaskClick} />
-      )}
-
       {viewMode === "cards" && (
         <TasksCardsView 
           tasks={tasks}
           onTaskStatusChange={handleTaskStatusChange}
           onTaskDelete={handleTaskDelete}
         />
+      )}
+
+      {viewMode === "calendar" && (
+        <TaskCalendar tasks={tasks} onTaskClick={handleTaskClick} />
       )}
 
       {viewMode === "table" && <TasksTable />}

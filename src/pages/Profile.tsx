@@ -10,10 +10,12 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { User, Phone, Building, Briefcase, Save, Bell } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Profile() {
   const { profile, updateProfile, isLoading } = useProfile();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -41,6 +43,7 @@ export default function Profile() {
         description: "הפרטים שלך נשמרו בהצלחה",
       });
     } catch (error) {
+      console.error("Profile update error:", error);
       toast({
         title: "שגיאה",
         description: "לא ניתן לעדכן את הפרופיל",
@@ -51,7 +54,7 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-gradient-to-br from-carslead-purple to-carslead-lightpurple rounded-full flex items-center justify-center mx-auto animate-pulse">
             <User className="h-8 w-8 text-white" />
@@ -66,23 +69,23 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6" dir="rtl">
+    <div className={`min-h-screen bg-gray-50 ${isMobile ? 'p-4 pb-24' : 'p-6'}`} dir="rtl">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple p-8">
-            <div className="flex items-center space-x-6 space-x-reverse">
-              <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+          <div className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple p-6">
+            <div className={`flex items-center ${isMobile ? 'flex-col text-center space-y-4' : 'space-x-6 space-x-reverse'}`}>
+              <Avatar className={`${isMobile ? 'h-16 w-16' : 'h-20 w-20'} border-4 border-white shadow-lg`}>
                 <AvatarImage src={profile?.avatar_url || ""} />
                 <AvatarFallback className="bg-white text-carslead-purple text-2xl font-bold">
                   {formData.full_name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="text-white">
-                <h1 className="text-3xl font-bold mb-2">
+                <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold mb-2`}>
                   {formData.full_name || "שם המשתמש"}
                 </h1>
-                <p className="text-carslead-lightblue text-lg">
+                <p className={`text-carslead-lightblue ${isMobile ? 'text-base' : 'text-lg'}`}>
                   {formData.position || "תפקיד לא צוין"} 
                   {formData.company_name && ` ב${formData.company_name}`}
                 </p>
@@ -121,7 +124,7 @@ export default function Profile() {
           <TabsContent value="profile">
             <Card className="border-gray-200 shadow-sm">
               <CardHeader className="bg-gray-50 border-b border-gray-200 text-right">
-                <CardTitle className="text-xl text-gray-900 flex items-center justify-end gap-3">
+                <CardTitle className={`${isMobile ? 'text-lg' : 'text-xl'} text-gray-900 flex items-center justify-end gap-3`}>
                   <span>עריכת פרטים אישיים</span>
                   <User className="h-5 w-5 text-carslead-purple" />
                 </CardTitle>
@@ -129,9 +132,9 @@ export default function Profile() {
                   עדכן את הפרטים האישיים שלך כאן. המידע ישמר באופן מאובטח במערכת.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-8">
+              <CardContent className={`${isMobile ? 'p-4' : 'p-8'}`}>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
                     <div className="space-y-3">
                       <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center justify-end gap-2">
                         <span>שם מלא</span>
@@ -197,7 +200,7 @@ export default function Profile() {
                     <Button 
                       type="submit" 
                       disabled={updateProfile.isPending}
-                      className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white h-12 px-8 rounded-lg font-medium transition-all duration-200 flex items-center gap-3"
+                      className={`bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white ${isMobile ? 'h-12 px-6' : 'h-12 px-8'} rounded-lg font-medium transition-all duration-200 flex items-center gap-3`}
                     >
                       <Save className="h-4 w-4" />
                       {updateProfile.isPending ? "שומר שינויים..." : "שמור שינויים"}

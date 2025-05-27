@@ -1,214 +1,144 @@
 
-import { useState, useEffect } from "react";
-import { Car } from "@/types/car";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WhatsappTemplateForm } from "./WhatsappTemplateForm";
-import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
-import { Separator } from "@/components/ui/separator";
-import { templates } from "./whatsapp-templates";
-import { toast } from "sonner";
-import { getCarImages } from "@/lib/image-utils";
-import { ArrowLeft } from "lucide-react";
+import { Car } from "@/types/car";
+import { WhatsappLeadSelector } from "./components/WhatsappLeadSelector";
 import { WhatsappPhoneInput } from "./components/WhatsappPhoneInput";
+import { ManualPhoneInput } from "./components/ManualPhoneInput";
+import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { SelectedCarDetails } from "./components/SelectedCarDetails";
-import { ImageWarning } from "./components/ImageWarning";
-import { formatPrice } from "@/lib/utils";
+import { whatsappTemplates } from "./whatsapp-templates";
+import { toast } from "sonner";
 
 interface WhatsappTemplateSelectorProps {
   car: Car;
   onClose: () => void;
-  initialPhoneNumber?: string;
 }
 
-export function WhatsappTemplateSelector({ car, onClose, initialPhoneNumber = "" }: WhatsappTemplateSelectorProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
-  const [customizedTemplate, setCustomizedTemplate] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
-  const [selectedLeadId, setSelectedLeadId] = useState<string>("");
-  const [selectedLeadName, setSelectedLeadName] = useState<string>("");
-  const [carImages, setCarImages] = useState<string[]>([]);
-  const [loadingImages, setLoadingImages] = useState(false);
-  
-  useEffect(() => {
-    const fetchCarImages = async () => {
-      if (!car.id) return;
-      
-      setLoadingImages(true);
-      try {
-        const imageUrls = await getCarImages(car.id);
-        setCarImages(imageUrls);
-      } catch (error) {
-        console.error('Error processing car images:', error);
-      } finally {
-        setLoadingImages(false);
-      }
-    };
+export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelectorProps) {
+  const [selectedTemplate, setSelectedTemplate] = useState(whatsappTemplates[0]);
+  const [selectedPhone, setSelectedPhone] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
+
+  const generateMessage = () => {
+    if (customMessage.trim()) {
+      return customMessage;
+    }
     
-    fetchCarImages();
-  }, [car.id]);
-  
-  useEffect(() => {
-    const initialTemplate = selectedTemplate.template
-      .replace(/\{\{make\}\}/g, car.make)
-      .replace(/\{\{model\}\}/g, car.model)
-      .replace(/\{\{year\}\}/g, car.year.toString())
-      .replace(/\{\{price\}\}/g, formatPrice(car.price))
-      .replace(/\{\{kilometers\}\}/g, car.kilometers?.toString() || "לא צוין")
-      .replace(/\{\{color\}\}/g, car.exterior_color || "לא צוין")
-      .replace(/\{\{engine\}\}/g, car.engine_size || "לא צוין")
-      .replace(/\{\{transmission\}\}/g, car.transmission ? 
-        (car.transmission === 'manual' ? 'ידני' : 
-         car.transmission === 'automatic' ? 'אוטומט' : 
-         car.transmission === 'robotics' ? 'רובוטי' : car.transmission) : "לא צוין")
-      .replace(/\{\{fuel\}\}/g, car.fuel_type ? 
-        (car.fuel_type === 'gasoline' ? 'בנזין' : 
-         car.fuel_type === 'diesel' ? 'דיזל' : 
-         car.fuel_type === 'hybrid' ? 'היברידי' : 
-         car.fuel_type === 'electric' ? 'חשמלי' : car.fuel_type) : "לא צוין");
-      
-    setCustomizedTemplate(initialTemplate);
-  }, [car, selectedTemplate]);
-
-  const handleTemplateChange = (templateId: string) => {
-    const newTemplate = templates.find(t => t.id === templateId) || templates[0];
-    setSelectedTemplate(newTemplate);
-  };
-
-  const handleLeadSelect = (leadId: string, phone: string, name: string) => {
-    setSelectedLeadId(leadId);
-    setSelectedLeadName(name);
-    setPhoneNumber(phone);
-  };
-
-  const handleClearLead = () => {
-    setSelectedLeadId("");
-    setSelectedLeadName("");
-    setPhoneNumber("");
+    return selectedTemplate.generateMessage(car);
   };
 
   const formatPhoneForWhatsApp = (phone: string) => {
     if (!phone) return '';
     
-    // Remove all non-numeric characters
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     
-    // If already starts with 972, return as is
     if (cleanPhone.startsWith('972')) {
       return cleanPhone;
     }
     
-    // If starts with 0, replace with 972
     if (cleanPhone.startsWith('0')) {
       return '972' + cleanPhone.substring(1);
     }
     
-    // If doesn't start with 972 or 0, add 972 prefix
     return '972' + cleanPhone;
   };
 
-  const handleSendWhatsApp = () => {
-    if (!phoneNumber) {
-      toast.error("יש להזין מספר טלפון או לבחור לקוח");
+  const handleSendMessage = (phone: string, message: string) => {
+    if (!phone || !message) {
+      toast.error("אנא בחר מספר טלפון והודעה");
       return;
     }
+
+    const formattedPhone = formatPhoneForWhatsApp(phone);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     
-    const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
-    
-    const encodedText = encodeURIComponent(customizedTemplate);
-    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
     window.open(whatsappUrl, '_blank');
-    
-    if (carImages.length > 0) {
-      const maxImages = Math.min(carImages.length, 3);
-      const selectedImages = carImages.slice(0, maxImages);
-      
-      const imageUrls = selectedImages.join('\n');
-      const imageMessage = `תמונות ${car.make} ${car.model}:\n${imageUrls}`;
-      const encodedImageMessage = encodeURIComponent(imageMessage);
-      const imageWhatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedImageMessage}`;
-      
-      setTimeout(() => {
-        window.open(imageWhatsappUrl, '_blank');
-      }, 1000);
-    }
-    
-    if (selectedLeadId && selectedLeadName) {
-      toast.success(`הודעת וואטסאפ נשלחה ללקוח ${selectedLeadName}`);
-    } else {
-      toast.success("הודעת וואטסאפ נשלחה");
-    }
-    
+    toast.success("נפתח וואטסאפ עם ההודעה");
     onClose();
   };
-  
+
+  const message = generateMessage();
+
   return (
-    <div className="space-y-4 max-w-md mx-auto md:max-w-full">
-      {/* כפתור חזרה במובייל */}
-      <div className="md:hidden">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onClose} 
-          className="flex items-center justify-center text-xs gap-2 mb-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          חזרה
-        </Button>
+    <div className="space-y-6" dir="rtl">
+      <div>
+        <h2 className="text-xl font-semibold mb-2">שליחת פרטי רכב בוואטסאפ</h2>
+        <p className="text-gray-600">בחר תבנית הודעה ולקוח לשליחה</p>
       </div>
 
       <SelectedCarDetails car={car} />
-      
-      <Separator />
-      
-      <WhatsappPhoneInput 
-        phoneNumber={phoneNumber} 
-        setPhoneNumber={setPhoneNumber}
-        selectedLeadId={selectedLeadId}
-        selectedLeadName={selectedLeadName}
-        onLeadSelect={handleLeadSelect}
-        onClearLead={handleClearLead}
-      />
-      
-      <Tabs defaultValue="template" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="template">בחר תבנית</TabsTrigger>
-          <TabsTrigger value="preview">תצוגה מקדימה</TabsTrigger>
+
+      <Tabs defaultValue="templates" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="templates">תבניות</TabsTrigger>
+          <TabsTrigger value="leads">לקוחות</TabsTrigger>
+          <TabsTrigger value="manual">הקלדה ידנית</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="template">
-          <WhatsappTemplateForm 
-            templates={templates}
-            selectedTemplateId={selectedTemplate.id}
-            customizedTemplate={customizedTemplate}
-            onTemplateChange={handleTemplateChange}
-            onCustomizedTemplateChange={setCustomizedTemplate}
-          />
+        <TabsContent value="templates" className="space-y-4">
+          <div className="grid gap-3">
+            {whatsappTemplates.map((template) => (
+              <div
+                key={template.id}
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  selectedTemplate.id === template.id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+                onClick={() => setSelectedTemplate(template)}
+              >
+                <h3 className="font-medium text-right">{template.name}</h3>
+                <p className="text-sm text-gray-600 text-right mt-1">{template.description}</p>
+              </div>
+            ))}
+          </div>
         </TabsContent>
         
-        <TabsContent value="preview">
-          <WhatsappTemplatePreview 
-            template={customizedTemplate}
-            images={carImages}
-            loadingImages={loadingImages}
+        <TabsContent value="leads" className="space-y-4">
+          <WhatsappLeadSelector onPhoneSelect={setSelectedPhone} />
+          
+          {selectedPhone && (
+            <div className="mt-4">
+              <WhatsappPhoneInput
+                phone={selectedPhone}
+                onPhoneChange={setSelectedPhone}
+              />
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="manual" className="space-y-4">
+          <ManualPhoneInput
+            onSendMessage={handleSendMessage}
+            defaultMessage={message}
           />
         </TabsContent>
       </Tabs>
-      
-      <div className="flex justify-end space-x-2 rtl:space-x-reverse">
-        <Button variant="outline" onClick={onClose} className="hidden md:inline-flex">
-          ביטול
-        </Button>
-        <Button 
-          onClick={handleSendWhatsApp}
-          disabled={!phoneNumber || !customizedTemplate}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          שלח בוואטסאפ
-        </Button>
-      </div>
-      
-      <ImageWarning hasImages={carImages.length > 0} />
+
+      {(selectedPhone || false) && (
+        <>
+          <WhatsappTemplatePreview
+            template={selectedTemplate}
+            car={car}
+            customMessage={customMessage}
+            onCustomMessageChange={setCustomMessage}
+          />
+
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => handleSendMessage(selectedPhone, message)}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+            >
+              שלח בוואטסאפ
+            </Button>
+            <Button variant="outline" onClick={onClose}>
+              ביטול
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
