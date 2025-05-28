@@ -14,6 +14,8 @@ interface AddTaskDialogProps {
   initialCarId?: string;
   initialDate?: Date | null;
   onSuccess?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function AddTaskDialog({ 
@@ -21,17 +23,23 @@ export function AddTaskDialog({
   initialLeadId, 
   initialCarId, 
   initialDate,
-  onSuccess 
+  onSuccess,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange
 }: AddTaskDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  // Auto-open dialog when initialDate is provided
+  // Use controlled props if provided, otherwise use internal state
+  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setIsOpen = controlledOnOpenChange || setInternalOpen;
+
+  // Auto-open dialog when initialDate is provided (only for uncontrolled mode)
   useEffect(() => {
-    if (initialDate) {
-      setIsOpen(true);
+    if (initialDate && controlledOpen === undefined) {
+      setInternalOpen(true);
     }
-  }, [initialDate]);
+  }, [initialDate, controlledOpen]);
 
   const handleSuccess = () => {
     setIsOpen(false);
@@ -59,7 +67,7 @@ export function AddTaskDialog({
   if (isMobile) {
     return (
       <SwipeDialog open={isOpen} onOpenChange={setIsOpen}>
-        {!initialDate && (
+        {!initialDate && !controlledOpen && (
           <DialogTrigger asChild>
             {trigger}
           </DialogTrigger>
@@ -78,7 +86,7 @@ export function AddTaskDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {!initialDate && (
+      {!initialDate && !controlledOpen && (
         <DialogTrigger asChild>
           {trigger}
         </DialogTrigger>

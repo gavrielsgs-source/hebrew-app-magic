@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, CalendarDays, Clock, Plus } from "lucide-rea
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { DetailedDayView } from "./DetailedDayView";
 
 interface CalendarViewProps {
   tasks: Task[];
@@ -28,6 +29,8 @@ export function CalendarView({
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
+  const [showDetailedDay, setShowDetailedDay] = useState(false);
+  const [detailedDayDate, setDetailedDayDate] = useState<Date | null>(null);
 
   const monthStart = startOfMonth(selectedDate);
   const monthEnd = endOfMonth(selectedDate);
@@ -118,6 +121,17 @@ export function CalendarView({
 
   const handleDateClick = (date: Date) => {
     onSelectedDateChange(date);
+    // Open detailed day view if there are tasks on this day
+    const dayTasks = getTasksForDate(date);
+    if (dayTasks.length > 0) {
+      setDetailedDayDate(date);
+      setShowDetailedDay(true);
+    }
+  };
+
+  const handleShowDetailedDay = (date: Date) => {
+    setDetailedDayDate(date);
+    setShowDetailedDay(true);
   };
 
   const renderDay = (date: Date) => {
@@ -183,40 +197,48 @@ export function CalendarView({
               לחץ פעמיים להוספת משימה
             </div>
           ) : (
-            dayTasks.slice(0, 3).map(task => (
-              <div
-                key={task.id}
-                draggable={onTaskDateChange ? true : false}
-                onDragStart={(e) => handleDragStart(e, task)}
-                onDragEnd={handleDragEnd}
-                className={cn(
-                  "p-1 rounded border text-xs cursor-pointer hover:shadow-sm transition-all truncate",
-                  getTaskTypeColor(task),
-                  task.status === 'completed' && "line-through opacity-60",
-                  onTaskDateChange && "cursor-move",
-                  draggedTask?.id === task.id && "opacity-50 scale-95"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTaskClick?.(task);
-                }}
-                title={task.title}
-              >
-                <div className="font-medium truncate">{task.title}</div>
-                {task.due_date && (
-                  <div className="flex items-center gap-1 text-xs opacity-75">
-                    <Clock className="h-2 w-2" />
-                    {format(new Date(task.due_date), 'HH:mm')}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-          
-          {dayTasks.length > 3 && (
-            <div className="text-xs text-center text-gray-500 py-1 bg-gray-100 rounded">
-              +{dayTasks.length - 3}
-            </div>
+            <>
+              {dayTasks.slice(0, 2).map(task => (
+                <div
+                  key={task.id}
+                  draggable={onTaskDateChange ? true : false}
+                  onDragStart={(e) => handleDragStart(e, task)}
+                  onDragEnd={handleDragEnd}
+                  className={cn(
+                    "p-1 rounded border text-xs cursor-pointer hover:shadow-sm transition-all truncate",
+                    getTaskTypeColor(task),
+                    task.status === 'completed' && "line-through opacity-60",
+                    onTaskDateChange && "cursor-move",
+                    draggedTask?.id === task.id && "opacity-50 scale-95"
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTaskClick?.(task);
+                  }}
+                  title={task.title}
+                >
+                  <div className="font-medium truncate">{task.title}</div>
+                  {task.due_date && (
+                    <div className="flex items-center gap-1 text-xs opacity-75">
+                      <Clock className="h-2 w-2" />
+                      {format(new Date(task.due_date), 'HH:mm')}
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {dayTasks.length > 2 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShowDetailedDay(date);
+                  }}
+                  className="text-xs text-center text-blue-600 py-1 bg-blue-50 rounded hover:bg-blue-100 transition-colors w-full"
+                >
+                  +{dayTasks.length - 2} עוד
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -251,6 +273,26 @@ export function CalendarView({
       </div>
     );
   };
+
+  // Show detailed day view if requested
+  if (showDetailedDay && detailedDayDate) {
+    return (
+      <DetailedDayView
+        selectedDate={detailedDayDate}
+        tasks={tasks}
+        onClose={() => setShowDetailedDay(false)}
+        onTaskClick={onTaskClick}
+        onTaskUpdate={async (taskId, updates) => {
+          // Handle task updates - this would connect to your task update logic
+          console.log('Update task:', taskId, updates);
+        }}
+        onTaskDelete={(taskId) => {
+          // Handle task deletion - this would connect to your task delete logic
+          console.log('Delete task:', taskId);
+        }}
+      />
+    );
+  }
 
   return (
     <Card className="shadow-sm">
@@ -327,7 +369,7 @@ export function CalendarView({
           )}
           {onCreateTask && (
             <div className="flex items-center gap-1 text-green-600">
-              <span>💡 לחץ פעמיים על תאריך להוספת משימה</span>
+              <span>💡 לחץ על תאריך לתצוגה מפורטת או פעמיים להוספת משימה</span>
             </div>
           )}
         </div>

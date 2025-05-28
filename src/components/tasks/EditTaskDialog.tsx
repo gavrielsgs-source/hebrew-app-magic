@@ -13,11 +13,17 @@ import type { Task } from "@/types/task";
 interface EditTaskDialogProps {
   task: Task;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function EditTaskDialog({ task, children }: EditTaskDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function EditTaskDialog({ task, children, open: controlledOpen, onOpenChange: controlledOnOpenChange }: EditTaskDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Use controlled props if provided, otherwise use internal state
+  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setIsOpen = controlledOnOpenChange || setInternalOpen;
 
   const handleSuccess = () => {
     setIsOpen(false);
@@ -51,9 +57,11 @@ export function EditTaskDialog({ task, children }: EditTaskDialogProps) {
   if (isMobile) {
     return (
       <SwipeDialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          {trigger}
-        </DialogTrigger>
+        {!controlledOpen && (
+          <DialogTrigger asChild>
+            {trigger}
+          </DialogTrigger>
+        )}
         <DialogContent className="h-[90vh] overflow-auto">
           <MobileCard 
             className="mx-0 my-0" 
@@ -75,9 +83,11 @@ export function EditTaskDialog({ task, children }: EditTaskDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      {!controlledOpen && (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
         <div className="space-y-6 p-6 bg-white rounded-xl" dir="rtl">
           <div className="text-center mb-6">
