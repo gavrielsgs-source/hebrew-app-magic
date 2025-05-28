@@ -96,7 +96,7 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
           ) : (
             <div className="space-y-3">
               {todayTasks.map(task => (
-                <MobileCard
+                <div
                   key={task.id}
                   className={cn(
                     "cursor-pointer hover:shadow-md transition-all",
@@ -104,40 +104,42 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
                   )}
                   onClick={() => onTaskClick(task)}
                 >
-                  <div className="p-4 space-y-3">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-medium text-base flex-1">{task.title}</h4>
-                      <div className="flex items-center gap-1 text-sm text-gray-600 flex-shrink-0 mr-3">
-                        <Clock className="h-4 w-4" />
-                        {format(new Date(task.due_date!), "HH:mm")}
+                  <MobileCard>
+                    <div className="p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium text-base flex-1">{task.title}</h4>
+                        <div className="flex items-center gap-1 text-sm text-gray-600 flex-shrink-0 mr-3">
+                          <Clock className="h-4 w-4" />
+                          {format(new Date(task.due_date!), "HH:mm")}
+                        </div>
+                      </div>
+                      
+                      {task.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
+                      )}
+                      
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">
+                          {task.type === 'call' ? 'שיחה' : 
+                           task.type === 'meeting' ? 'פגישה' : 
+                           task.type === 'follow_up' ? 'מעקב' : 'משימה'}
+                        </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-xs",
+                            task.priority === 'high' ? 'border-red-300 text-red-700' :
+                            task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
+                            'border-green-300 text-green-700'
+                          )}
+                        >
+                          {task.priority === 'high' ? 'עדיפות גבוהה' : 
+                           task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
+                        </Badge>
                       </div>
                     </div>
-                    
-                    {task.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
-                    )}
-                    
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs">
-                        {task.type === 'call' ? 'שיחה' : 
-                         task.type === 'meeting' ? 'פגישה' : 
-                         task.type === 'follow_up' ? 'מעקב' : 'משימה'}
-                      </Badge>
-                      <Badge 
-                        variant="outline" 
-                        className={cn(
-                          "text-xs",
-                          task.priority === 'high' ? 'border-red-300 text-red-700' :
-                          task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
-                          'border-green-300 text-green-700'
-                        )}
-                      >
-                        {task.priority === 'high' ? 'עדיפות גבוהה' : 
-                         task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
-                      </Badge>
-                    </div>
-                  </div>
-                </MobileCard>
+                  </MobileCard>
+                </div>
               ))}
             </div>
           )}
@@ -165,7 +167,7 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
           ) : (
             <div className="space-y-3">
               {upcomingTasks.map(task => (
-                <MobileCard
+                <div
                   key={task.id}
                   className={cn(
                     "cursor-pointer hover:shadow-md transition-all",
@@ -173,45 +175,47 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
                   )}
                   onClick={() => onTaskClick(task)}
                 >
-                  <div className="p-4 space-y-3">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-medium text-base flex-1">{task.title}</h4>
-                      <div className="text-sm text-gray-600 flex-shrink-0 mr-3">
-                        <div className="text-xs text-gray-500">
-                          {format(new Date(task.due_date!), "dd/MM")}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {format(new Date(task.due_date!), "HH:mm")}
+                  <MobileCard>
+                    <div className="p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium text-base flex-1">{task.title}</h4>
+                        <div className="text-sm text-gray-600 flex-shrink-0 mr-3">
+                          <div className="text-xs text-gray-500">
+                            {format(new Date(task.due_date!), "dd/MM")}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {format(new Date(task.due_date!), "HH:mm")}
+                          </div>
                         </div>
                       </div>
+                      
+                      {task.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
+                      )}
+                      
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">
+                          {task.type === 'call' ? 'שיחה' : 
+                           task.type === 'meeting' ? 'פגישה' : 
+                           task.type === 'follow_up' ? 'מעקב' : 'משימה'}
+                        </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-xs",
+                            task.priority === 'high' ? 'border-red-300 text-red-700' :
+                            task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
+                            'border-green-300 text-green-700'
+                          )}
+                        >
+                          {task.priority === 'high' ? 'עדיפות גבוהה' : 
+                           task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
+                        </Badge>
+                      </div>
                     </div>
-                    
-                    {task.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
-                    )}
-                    
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs">
-                        {task.type === 'call' ? 'שיחה' : 
-                         task.type === 'meeting' ? 'פגישה' : 
-                         task.type === 'follow_up' ? 'מעקב' : 'משימה'}
-                      </Badge>
-                      <Badge 
-                        variant="outline" 
-                        className={cn(
-                          "text-xs",
-                          task.priority === 'high' ? 'border-red-300 text-red-700' :
-                          task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
-                          'border-green-300 text-green-700'
-                        )}
-                      >
-                        {task.priority === 'high' ? 'עדיפות גבוהה' : 
-                         task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
-                      </Badge>
-                    </div>
-                  </div>
-                </MobileCard>
+                  </MobileCard>
+                </div>
               ))}
             </div>
           )}

@@ -49,7 +49,6 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
     );
   }
 
-  // Desktop version - keep existing code
   return (
     <Card className={`hover:shadow-lg transition-all duration-300 ${getCardColorClass()} rounded-2xl`} dir="rtl">
       <CardHeader className="space-y-3 pb-4">
