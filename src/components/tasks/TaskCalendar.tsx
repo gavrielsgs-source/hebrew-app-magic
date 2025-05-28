@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTaskCalendar } from "./MobileTaskCalendar";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarView } from "./calendar/CalendarView";
+import { WeekView } from "./calendar/WeekView";
 import { AgendaView } from "./calendar/AgendaView";
 import { SelectedDateTasks } from "./calendar/SelectedDateTasks";
 import { type Task } from "@/types/task";
@@ -16,7 +17,7 @@ interface TaskCalendarProps {
 
 export function TaskCalendar({ tasks, onTaskClick }: TaskCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [viewMode, setViewMode] = useState<"calendar" | "agenda">("agenda");
+  const [viewMode, setViewMode] = useState<"calendar" | "agenda" | "week">("week");
   const isMobile = useIsMobile();
 
   // If mobile, use the mobile calendar component
@@ -36,7 +37,14 @@ export function TaskCalendar({ tasks, onTaskClick }: TaskCalendarProps) {
             />
           </CardHeader>
           <CardContent>
-            {viewMode === "calendar" ? (
+            {viewMode === "week" ? (
+              <WeekView
+                tasks={tasks}
+                selectedDate={selectedDate}
+                onSelectedDateChange={setSelectedDate}
+                onTaskClick={onTaskClick}
+              />
+            ) : viewMode === "calendar" ? (
               <CalendarView
                 tasks={tasks}
                 selectedDate={selectedDate}

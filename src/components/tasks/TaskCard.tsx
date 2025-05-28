@@ -39,13 +39,21 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
     }
   };
 
+  const getTaskTypeColor = (taskType: string | null | undefined) => {
+    switch(taskType?.toLowerCase()) {
+      case 'call': return "bg-blue-100 text-blue-700 border-blue-200";
+      case 'meeting': return "bg-green-100 text-green-700 border-green-200";
+      case 'follow_up': return "bg-purple-100 text-purple-700 border-purple-200";
+      case 'task':
+      default: return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
   const getTaskPriorityColor = (priority: string | null | undefined) => {
-    if (!priority) return "bg-gray-100 text-gray-700 border-gray-200";
-    
     switch(priority) {
-      case 'high': return "bg-red-100 text-red-700 border-red-200";
-      case 'medium': return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case 'low': return "bg-green-100 text-green-700 border-green-200";
+      case 'high': return "bg-red-100 text-red-700 border-red-300";
+      case 'medium': return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      case 'low': return "bg-green-100 text-green-700 border-green-300";
       default: return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
@@ -57,6 +65,21 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
       case 'cancelled': return "bg-red-100 text-red-700 border-red-200";
       case 'pending':
       default: return "bg-yellow-100 text-yellow-700 border-yellow-200";
+    }
+  };
+
+  const getCardBorderColor = () => {
+    // Priority takes precedence for visual importance
+    if (task.priority === 'high') return "border-r-red-500";
+    if (task.priority === 'medium') return "border-r-yellow-500";
+    if (task.priority === 'low') return "border-r-green-500";
+    
+    // Fall back to type colors
+    switch(task.type?.toLowerCase()) {
+      case 'call': return "border-r-blue-500";
+      case 'meeting': return "border-r-green-500";
+      case 'follow_up': return "border-r-purple-500";
+      default: return "border-r-[#2F3C7E]";
     }
   };
   
@@ -74,7 +97,8 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
 
   return (
     <Card className={cn(
-      "hover:shadow-md transition-shadow border-r-4 border-r-[#2F3C7E]",
+      "hover:shadow-md transition-shadow border-r-4",
+      getCardBorderColor(),
       task.status === 'completed' && "bg-gray-50/80 opacity-75"
     )} dir="rtl">
       <CardHeader className="pb-3">
@@ -111,7 +135,7 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
       
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between text-sm">
-          <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
+          <Badge className={`${getTaskTypeColor(task.type)} border font-medium`}>
             {getTaskTypeLabel(task.type)}
           </Badge>
           
