@@ -8,20 +8,25 @@ interface MobileCardProps {
   className?: string;
   header?: ReactNode;
   contentClassName?: string;
+  dir?: string;
 }
 
 export function MobileCard({ 
   children, 
   className, 
   header, 
-  contentClassName 
+  contentClassName,
+  dir
 }: MobileCardProps) {
   return (
-    <Card className={cn(
-      "w-full shadow-lg border-0 rounded-3xl bg-white overflow-hidden",
-      "hover:shadow-xl transition-all duration-300",
-      className
-    )}>
+    <Card 
+      className={cn(
+        "w-full shadow-lg border-0 rounded-3xl bg-white overflow-hidden",
+        "hover:shadow-xl transition-all duration-300",
+        className
+      )}
+      dir={dir}
+    >
       {header && (
         <CardHeader className="pb-4">
           {header}
