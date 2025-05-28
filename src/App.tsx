@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -75,12 +76,12 @@ class ErrorBoundary extends Component<
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4" dir="rtl">
           <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold text-red-600 mb-4">אירעה שגיאה</h2>
+            <h2 className="text-xl font-bold text-red-600 mb-4">אירעה שגיאה בטעינת הדף</h2>
             <p className="text-gray-600 mb-6">
-              אירעה שגיאה לא צפויה באפליקציה. אנא רענן את הדף.
+              אירעה שגיאה לא צפויה באפליקציה. אנא רענן את הדף או חזור לעמוד הבית.
             </p>
             <div className="space-y-2 mb-6 text-sm text-gray-500">
-              <p>שגיאה: {this.state.error?.message}</p>
+              <p>שגיאה: {this.state.error?.message || 'שגיאה לא מוכרת'}</p>
               {this.state.errorInfo && (
                 <details className="text-xs">
                   <summary>פרטים טכניים</summary>
@@ -90,12 +91,20 @@ class ErrorBoundary extends Component<
                 </details>
               )}
             </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              רענן דף
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                רענן דף
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="w-full bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                חזור לעמוד הבית
+              </button>
+            </div>
           </div>
         </div>
       );
@@ -106,7 +115,7 @@ class ErrorBoundary extends Component<
 }
 
 const App = () => {
-  console.log('App component rendering...');
+  console.log('🚀 App component starting to render...');
   
   return (
     <ErrorBoundary>
@@ -140,7 +149,7 @@ const App = () => {
 
 function AppLayout() {
   const isMobile = useIsMobile();
-  console.log('AppLayout rendering, isMobile:', isMobile);
+  console.log('📱 AppLayout rendering, isMobile:', isMobile);
 
   return (
     <ErrorBoundary>
@@ -153,12 +162,20 @@ function AppLayout() {
                 <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                   <h2 className="text-lg font-semibold text-red-800 mb-2">שגיאה בטעינת הדף</h2>
                   <p className="text-red-600 mb-4">אירעה שגיאה בטעינת התוכן</p>
-                  <button 
-                    onClick={() => window.location.reload()} 
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-                  >
-                    רענן דף
-                  </button>
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => window.location.reload()} 
+                      className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                    >
+                      רענן דף
+                    </button>
+                    <button 
+                      onClick={() => window.location.href = '/'} 
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+                    >
+                      חזור לעמוד הבית
+                    </button>
+                  </div>
                 </div>
               </div>
             }>
@@ -189,12 +206,26 @@ function AppLayout() {
 
 function AuthRoute() {
   const { user, loading } = useAuth();
-  console.log('AuthRoute rendering, user:', !!user, 'loading:', loading);
+  console.log('🔐 AuthRoute rendering, user:', !!user, 'loading:', loading);
   
-  if (loading) return <div className="flex items-center justify-center h-screen">טוען...</div>;
+  if (loading) {
+    console.log('⏳ AuthRoute showing loading state');
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="text-lg font-medium">טוען...</div>
+        </div>
+      </div>
+    );
+  }
   
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) {
+    console.log('✅ AuthRoute redirecting authenticated user to dashboard');
+    return <Navigate to="/dashboard" replace />;
+  }
   
+  console.log('🔑 AuthRoute showing auth component');
   return <Auth />;
 }
 
