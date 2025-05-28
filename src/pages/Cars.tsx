@@ -57,7 +57,7 @@ export default function Cars() {
               <LimitAwareButton
                 resourceType="car"
                 currentCount={cars.length}
-                size="md"
+                size="sm"
                 className="flex-2"
                 onAction={() => {}}
               >
