@@ -29,6 +29,7 @@ import Documents from "./pages/Documents";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
+import "./components/ui/mobile-responsive.css";
 
 // Create QueryClient with simple configuration
 const queryClient = new QueryClient({
@@ -76,26 +77,28 @@ function AppLayout() {
   const isMobile = useIsMobile();
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <SidebarInset>
-          <Routes>
-            <Route path="/dashboard" element={<Index />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/cars" element={<Cars />} />
-            <Route path="/leads" element={<Leads />} />
-            <Route path="/templates" element={<Templates />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/subscription" element={<Subscription />} />
-            <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
-            <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
-            <Route path="/subscription/payment-error" element={<PaymentError />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+        {!isMobile && <AppSidebar />}
+        <SidebarInset className={isMobile ? "mr-0" : ""}>
+          <div className={isMobile ? "w-full" : ""}>
+            <Routes>
+              <Route path="/dashboard" element={<Index />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/cars" element={<Cars />} />
+              <Route path="/leads" element={<Leads />} />
+              <Route path="/templates" element={<Templates />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/documents" element={<Documents />} />
+              <Route path="/subscription" element={<Subscription />} />
+              <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
+              <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
+              <Route path="/subscription/payment-error" element={<PaymentError />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </SidebarInset>
         {isMobile && <MobileBottomNav />}
       </div>

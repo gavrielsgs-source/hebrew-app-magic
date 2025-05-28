@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { LeadsPageHeader } from "@/components/leads/page/LeadsPageHeader";
 import { LeadsMobileHeader } from "@/components/leads/page/LeadsMobileHeader";
 import { LeadsPageTabs } from "@/components/leads/page/LeadsPageTabs";
+import { MobileContainer } from "@/components/mobile/MobileContainer";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
 
 export default function Leads() {
   const { toast } = useToast();
@@ -33,70 +35,71 @@ export default function Leads() {
   // Error state
   if (error) {
     return (
-      <div className="p-4 text-center" dir="rtl">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">שגיאה בטעינת דף הלידים</h2>
-          <p className="text-red-600 mb-4">
+      <MobileContainer>
+        <div className="bg-red-50 border border-red-200 rounded-3xl p-6 text-center">
+          <h2 className="text-xl font-bold text-red-800 mb-3">שגיאה בטעינת דף הלידים</h2>
+          <p className="text-red-600 mb-6 text-base">
             אירעה שגיאה בטעינת דף הלידים: {error.message || 'שגיאה לא מוכרת'}
           </p>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <button 
               onClick={() => window.location.reload()} 
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 mr-2"
+              className="w-full bg-red-600 text-white px-6 py-4 rounded-2xl hover:bg-red-700 font-semibold text-lg"
             >
               רענן דף
             </button>
             <button 
               onClick={() => window.location.href = '/dashboard'} 
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl hover:bg-blue-700 font-semibold text-lg"
             >
               חזור לדשבורד
             </button>
           </div>
         </div>
-      </div>
+      </MobileContainer>
     );
   }
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64" dir="rtl">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <div className="text-lg font-medium">טוען לידים...</div>
+      <MobileContainer>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-6"></div>
+            <div className="text-xl font-semibold">טוען לידים...</div>
+          </div>
         </div>
-      </div>
+      </MobileContainer>
     );
   }
 
   // Mobile view
   if (isMobile) {
     return (
-      <div className="mobile-content pb-24" dir="rtl">
+      <MobileContainer withPadding={false}>
         <SubscriptionLimitAlert 
           featureKey="leadLimit" 
           currentCount={leads.length} 
           entityName="לקוחות" 
         />
         
-        <LeadsMobileHeader
-          isAddingLead={isAddingLead}
-          setIsAddingLead={setIsAddingLead}
-          canAddLead={canAddLead}
-          onLeadAdded={onLeadAdded}
-          setActiveTab={setActiveTab}
+        <MobileHeader 
+          title="ניהול לידים"
+          subtitle={`${leads.length} לקוחות פוטנציאליים`}
         />
 
-        <LeadsPageTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          leads={leads}
-          isLoading={isLoading}
-          error={error}
-          isMobile={true}
-        />
-      </div>
+        <div className="px-4">
+          <LeadsPageTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            leads={leads}
+            isLoading={isLoading}
+            error={error}
+            isMobile={true}
+          />
+        </div>
+      </MobileContainer>
     );
   }
 

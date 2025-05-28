@@ -1,0 +1,71 @@
+
+/* Mobile-First Responsive Utilities */
+
+/* Base mobile styles (up to 576px) */
+@media (max-width: 576px) {
+  .mobile-text-xs { font-size: 0.75rem; }
+  .mobile-text-sm { font-size: 0.875rem; }
+  .mobile-text-base { font-size: 1rem; }
+  .mobile-text-lg { font-size: 1.125rem; }
+  .mobile-text-xl { font-size: 1.25rem; }
+  .mobile-text-2xl { font-size: 1.5rem; }
+  
+  .mobile-p-2 { padding: 0.5rem; }
+  .mobile-p-3 { padding: 0.75rem; }
+  .mobile-p-4 { padding: 1rem; }
+  .mobile-p-6 { padding: 1.5rem; }
+  
+  .mobile-gap-2 { gap: 0.5rem; }
+  .mobile-gap-3 { gap: 0.75rem; }
+  .mobile-gap-4 { gap: 1rem; }
+  
+  .mobile-rounded-lg { border-radius: 0.5rem; }
+  .mobile-rounded-xl { border-radius: 0.75rem; }
+  .mobile-rounded-2xl { border-radius: 1rem; }
+  .mobile-rounded-3xl { border-radius: 1.5rem; }
+}
+
+/* Regular phones and small tablets (577px to 768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+  .tablet-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tablet-text-lg { font-size: 1.125rem; }
+  .tablet-text-xl { font-size: 1.25rem; }
+}
+
+/* Desktop and larger (769px+) */
+@media (min-width: 769px) {
+  .desktop-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .desktop-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .desktop-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* RTL Support */
+[dir="rtl"] .mobile-text-right { text-align: right; }
+[dir="rtl"] .mobile-pr-4 { padding-right: 1rem; }
+[dir="rtl"] .mobile-pl-4 { padding-left: 1rem; }
+
+/* Touch-friendly interactive elements */
+.mobile-touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.mobile-large-touch-target {
+  min-height: 60px;
+  min-width: 60px;
+}
+
+/* Safe areas for modern phones */
+.mobile-safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.mobile-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Improved scrolling on mobile */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
