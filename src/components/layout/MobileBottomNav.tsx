@@ -1,8 +1,8 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { MobileButton } from "@/components/mobile/MobileButton";
 import { 
   Home, 
   Users, 
@@ -10,10 +10,9 @@ import {
   Calendar, 
   Menu,
   User,
-  Bell,
-  Settings,
-  FileText,
   BarChart,
+  FileText,
+  Settings,
   CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,8 +76,7 @@ export function MobileBottomNav() {
   ];
 
   const isActive = (path: string) => {
-    if (path === "/dashboard" && location.pathname === "/") return true;
-    if (path === "/dashboard" && location.pathname === "/dashboard") return true;
+    if (path === "/dashboard" && (location.pathname === "/" || location.pathname === "/dashboard")) return true;
     return location.pathname.startsWith(path);
   };
 
@@ -104,8 +102,9 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 pb-safe" dir="rtl">
-        <div className="flex items-center justify-around px-2 py-3">
+      {/* Fixed Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-100 shadow-2xl mobile-safe-bottom" dir="rtl">
+        <div className="grid grid-cols-5 gap-1 px-2 py-3 max-w-md mx-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.path ? isActive(item.path) : isMenuItemActive();
@@ -115,23 +114,23 @@ export function MobileBottomNav() {
                 key={item.id}
                 onClick={() => handleNavigation(item.path, item.id)}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px] relative",
+                  "flex flex-col items-center justify-center gap-1 px-2 py-3 rounded-2xl transition-all duration-300 relative min-h-[70px] mobile-touch-target",
                   active 
-                    ? "bg-[#2F3C7E] text-white shadow-lg scale-105" 
-                    : "text-gray-600 hover:text-[#2F3C7E] hover:bg-gray-50"
+                    ? "bg-gradient-to-t from-[#2F3C7E] to-[#4CAF50] text-white shadow-lg transform scale-105" 
+                    : "text-gray-600 hover:text-[#2F3C7E] hover:bg-gray-50 active:bg-gray-100"
                 )}
               >
                 <div className="relative">
                   <Icon 
                     className={cn(
-                      "h-6 w-6 transition-transform",
-                      active ? "scale-110" : ""
+                      "h-7 w-7 transition-transform",
+                      active ? "scale-110 text-white" : "text-gray-600"
                     )} 
                   />
                   {item.badge && item.badge > 0 && (
                     <Badge 
                       variant="destructive" 
-                      className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white rounded-full"
+                      className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white rounded-full border-2 border-white"
                     >
                       {item.badge > 99 ? "99+" : item.badge}
                     </Badge>
@@ -139,8 +138,8 @@ export function MobileBottomNav() {
                 </div>
                 <span 
                   className={cn(
-                    "text-xs font-medium transition-all",
-                    active ? "font-bold" : ""
+                    "text-xs font-medium transition-all leading-tight text-center max-w-full",
+                    active ? "font-bold text-white" : "text-gray-600"
                   )}
                 >
                   {item.label}
@@ -151,29 +150,28 @@ export function MobileBottomNav() {
         </div>
       </div>
 
+      {/* Extended Menu Sheet */}
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetContent side="bottom" className="h-auto max-h-[70vh]" dir="rtl">
-          <SheetHeader>
-            <SheetTitle className="text-right">תפריט נוסף</SheetTitle>
+        <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-3xl border-0 shadow-2xl" dir="rtl">
+          <SheetHeader className="pb-6">
+            <SheetTitle className="text-right text-xl font-bold text-[#2F3C7E]">תפריט נוסף</SheetTitle>
           </SheetHeader>
-          <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 gap-4 pb-6">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               
               return (
-                <Button
+                <MobileButton
                   key={item.id}
-                  variant={active ? "default" : "outline"}
-                  className={cn(
-                    "h-20 flex flex-col gap-2 text-sm",
-                    active && "bg-[#2F3C7E] text-white"
-                  )}
+                  variant={active ? "primary" : "outline"}
+                  size="xl"
                   onClick={() => handleMenuItemClick(item.path)}
+                  icon={<Icon className="h-6 w-6" />}
+                  className="justify-start"
                 >
-                  <Icon className="h-6 w-6" />
                   {item.label}
-                </Button>
+                </MobileButton>
               );
             })}
           </div>

@@ -55,6 +55,12 @@
   min-width: 60px;
 }
 
+/* Enhanced touch targets for navigation */
+.mobile-nav-touch-target {
+  min-height: 70px;
+  min-width: 70px;
+}
+
 /* Safe areas for modern phones */
 .mobile-safe-top {
   padding-top: env(safe-area-inset-top);
@@ -64,8 +70,41 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
 /* Improved scrolling on mobile */
 .mobile-scroll {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+/* Better visual hierarchy for mobile */
+.mobile-card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-card-shadow-active {
+  box-shadow: 0 8px 32px rgba(47, 60, 126, 0.15);
+}
+
+/* Enhanced gradients for mobile */
+.mobile-gradient-primary {
+  background: linear-gradient(135deg, #2F3C7E 0%, #4CAF50 100%);
+}
+
+.mobile-gradient-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+}
+
+/* Mobile-optimized animations */
+@media (max-width: 768px) {
+  .mobile-transition {
+    transition: all 0.2s ease-out;
+  }
+  
+  .mobile-scale-active {
+    transform: scale(1.02);
+  }
 }
