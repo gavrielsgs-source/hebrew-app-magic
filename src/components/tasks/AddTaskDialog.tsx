@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -12,14 +12,30 @@ interface AddTaskDialogProps {
   children?: React.ReactNode;
   initialLeadId?: string;
   initialCarId?: string;
+  initialDate?: Date | null;
+  onSuccess?: () => void;
 }
 
-export function AddTaskDialog({ children, initialLeadId, initialCarId }: AddTaskDialogProps) {
+export function AddTaskDialog({ 
+  children, 
+  initialLeadId, 
+  initialCarId, 
+  initialDate,
+  onSuccess 
+}: AddTaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  // Auto-open dialog when initialDate is provided
+  useEffect(() => {
+    if (initialDate) {
+      setIsOpen(true);
+    }
+  }, [initialDate]);
+
   const handleSuccess = () => {
     setIsOpen(false);
+    onSuccess?.();
   };
 
   const trigger = children || (
@@ -43,14 +59,17 @@ export function AddTaskDialog({ children, initialLeadId, initialCarId }: AddTask
   if (isMobile) {
     return (
       <SwipeDialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          {trigger}
-        </DialogTrigger>
+        {!initialDate && (
+          <DialogTrigger asChild>
+            {trigger}
+          </DialogTrigger>
+        )}
         <DialogContent className="h-[90vh] overflow-auto">
           <TaskForm 
             onSuccess={handleSuccess}
             initialLeadId={initialLeadId}
             initialCarId={initialCarId}
+            initialDate={initialDate}
           />
         </DialogContent>
       </SwipeDialog>
@@ -59,14 +78,17 @@ export function AddTaskDialog({ children, initialLeadId, initialCarId }: AddTask
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      {!initialDate && (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
         <TaskForm 
           onSuccess={handleSuccess}
           initialLeadId={initialLeadId}
           initialCarId={initialCarId}
+          initialDate={initialDate}
         />
       </DialogContent>
     </Dialog>

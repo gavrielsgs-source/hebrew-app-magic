@@ -3,7 +3,7 @@ import { he } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, CalendarDays, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Clock, Plus } from "lucide-react";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -14,6 +14,7 @@ interface CalendarViewProps {
   onSelectedDateChange: (date: Date) => void;
   onTaskClick?: (task: Task) => void;
   onTaskDateChange?: (taskId: string, newDate: Date) => void;
+  onCreateTask?: (date: Date) => void;
 }
 
 export function CalendarView({ 
@@ -21,10 +22,12 @@ export function CalendarView({
   selectedDate, 
   onSelectedDateChange, 
   onTaskClick, 
-  onTaskDateChange 
+  onTaskDateChange,
+  onCreateTask
 }: CalendarViewProps) {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
+  const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
 
   const monthStart = startOfMonth(selectedDate);
   const monthEnd = endOfMonth(selectedDate);
@@ -107,36 +110,66 @@ export function CalendarView({
     setDragOverDate(null);
   };
 
+  const handleDateDoubleClick = (date: Date) => {
+    if (onCreateTask) {
+      onCreateTask(date);
+    }
+  };
+
+  const handleDateClick = (date: Date) => {
+    onSelectedDateChange(date);
+  };
+
   const renderDay = (date: Date) => {
     const dayTasks = getTasksForDate(date);
     const isSelectedDate = isSameDay(date, selectedDate);
     const isTodayDate = isToday(date);
     const isCurrentMonth = isSameMonth(date, selectedDate);
     const isDragOver = dragOverDate && isSameDay(dragOverDate, date);
+    const isHovered = hoveredDate && isSameDay(hoveredDate, date);
 
     return (
       <div
         key={date.toString()}
         className={cn(
-          "min-h-[120px] p-1 border border-gray-200 cursor-pointer transition-all duration-200",
+          "min-h-[120px] p-1 border border-gray-200 cursor-pointer transition-all duration-200 relative group",
           isSelectedDate && "bg-blue-50 border-blue-300",
           isTodayDate && "bg-yellow-50 border-yellow-300",
           !isCurrentMonth && "bg-gray-50 text-gray-400",
           isDragOver && "bg-green-50 border-green-300 border-2",
           "hover:bg-gray-50"
         )}
-        onClick={() => onSelectedDateChange(date)}
+        onClick={() => handleDateClick(date)}
+        onDoubleClick={() => handleDateDoubleClick(date)}
+        onMouseEnter={() => setHoveredDate(date)}
+        onMouseLeave={() => setHoveredDate(null)}
         onDragOver={(e) => handleDragOver(e, date)}
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, date)}
       >
         {/* Day number */}
-        <div className={cn(
-          "text-sm font-medium mb-1",
-          isTodayDate && "bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs",
-          !isCurrentMonth && "text-gray-400"
-        )}>
-          {format(date, 'd')}
+        <div className="flex items-center justify-between mb-1">
+          <div className={cn(
+            "text-sm font-medium",
+            isTodayDate && "bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs",
+            !isCurrentMonth && "text-gray-400"
+          )}>
+            {format(date, 'd')}
+          </div>
+          
+          {/* Add task button - appears on hover */}
+          {isHovered && onCreateTask && isCurrentMonth && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDateDoubleClick(date);
+              }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity bg-[#2F3C7E] text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-[#2F3C7E]/80"
+              title="הוסף משימה"
+            >
+              <Plus className="h-3 w-3" />
+            </button>
+          )}
         </div>
 
         {/* Tasks for this day */}
@@ -144,6 +177,10 @@ export function CalendarView({
           {dayTasks.length === 0 && isDragOver ? (
             <div className="text-xs text-green-600 text-center py-4 font-medium">
               שחרר כאן
+            </div>
+          ) : dayTasks.length === 0 && isHovered && onCreateTask && isCurrentMonth ? (
+            <div className="text-xs text-gray-400 text-center py-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              לחץ פעמיים להוספת משימה
             </div>
           ) : (
             dayTasks.slice(0, 3).map(task => (
@@ -286,6 +323,11 @@ export function CalendarView({
           {onTaskDateChange && (
             <div className="flex items-center gap-1 text-blue-600">
               <span>💡 ניתן לגרור משימות בין תאריכים</span>
+            </div>
+          )}
+          {onCreateTask && (
+            <div className="flex items-center gap-1 text-green-600">
+              <span>💡 לחץ פעמיים על תאריך להוספת משימה</span>
             </div>
           )}
         </div>

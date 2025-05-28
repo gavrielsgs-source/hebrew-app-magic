@@ -8,8 +8,17 @@ import { TaskFormContent } from "./form/TaskFormContent";
 import { TaskFormError } from "./form/TaskFormError";
 import type { TaskFormProps } from "./form/TaskFormTypes";
 
-export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
-  console.log('TaskForm component rendering with props:', { initialLeadId, initialCarId });
+interface TaskFormPropsWithDate extends TaskFormProps {
+  initialDate?: Date | null;
+}
+
+export function TaskForm({ 
+  onSuccess, 
+  initialLeadId, 
+  initialCarId, 
+  initialDate 
+}: TaskFormPropsWithDate) {
+  console.log('TaskForm component rendering with props:', { initialLeadId, initialCarId, initialDate });
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -46,8 +55,13 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
       onSuccess={onSuccess}
       initialLeadId={initialLeadId}
       initialCarId={initialCarId}
+      initialDate={initialDate}
     />
   );
+
+  const headerText = initialDate 
+    ? `משימה חדשה ל-${initialDate.toLocaleDateString('he-IL')}`
+    : "משימה חדשה";
 
   if (isMobile) {
     return (
@@ -57,7 +71,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
         dir="rtl"
         header={
           <div className="text-center">
-            <h2 className="text-xl font-bold text-[#2F3C7E] mb-2">משימה חדשה</h2>
+            <h2 className="text-xl font-bold text-[#2F3C7E] mb-2">{headerText}</h2>
             <p className="text-gray-600">צור משימה חדשה ונהל את הזמן שלך</p>
           </div>
         }
@@ -71,7 +85,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
     return (
       <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border" dir="rtl">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">משימה חדשה</h2>
+          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">{headerText}</h2>
           <p className="text-gray-600">צור משימה חדשה ונהל את הזמן שלך</p>
         </div>
         {formContent}

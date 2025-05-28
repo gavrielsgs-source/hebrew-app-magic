@@ -9,6 +9,7 @@ import { WeekView } from "./calendar/WeekView";
 import { AgendaView } from "./calendar/AgendaView";
 import { SelectedDateTasks } from "./calendar/SelectedDateTasks";
 import { KeyboardShortcutsHelp } from "./calendar/KeyboardShortcutsHelp";
+import { AddTaskDialog } from "./AddTaskDialog";
 import { type Task } from "@/types/task";
 import { toast } from "sonner";
 import { addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } from "date-fns";
@@ -23,6 +24,8 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<"calendar" | "agenda" | "week">("week");
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showAddTaskDialog, setShowAddTaskDialog] = useState(false);
+  const [taskCreationDate, setTaskCreationDate] = useState<Date | null>(null);
   const isMobile = useIsMobile();
 
   const handleTaskDateChange = async (taskId: string, newDate: Date) => {
@@ -37,6 +40,16 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
       console.error("Failed to update task date:", error);
       toast.error("שגיאה בעדכון תאריך המשימה");
     }
+  };
+
+  const handleCreateTask = (date: Date) => {
+    setTaskCreationDate(date);
+    setShowAddTaskDialog(true);
+  };
+
+  const handleAddTaskSuccess = () => {
+    setShowAddTaskDialog(false);
+    setTaskCreationDate(null);
   };
 
   const handleNavigateTime = (direction: 'prev' | 'next') => {
@@ -99,6 +112,7 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
                   onSelectedDateChange={setSelectedDate}
                   onTaskClick={onTaskClick}
                   onTaskDateChange={handleTaskDateChange}
+                  onCreateTask={handleCreateTask}
                 />
               ) : (
                 <AgendaView
@@ -119,6 +133,13 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
           />
         </div>
       </div>
+
+      {/* Add Task Dialog */}
+      <AddTaskDialog 
+        key={taskCreationDate?.toISOString()} 
+        onSuccess={handleAddTaskSuccess}
+        initialDate={taskCreationDate}
+      />
 
       {/* Keyboard shortcuts help overlay */}
       {showKeyboardHelp && (
