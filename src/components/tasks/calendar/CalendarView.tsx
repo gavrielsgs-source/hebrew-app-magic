@@ -1,4 +1,3 @@
-
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameDay, isToday, isSameMonth, addMonths, subMonths } from "date-fns";
 import { he } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,15 +6,26 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CalendarDays, Clock } from "lucide-react";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface CalendarViewProps {
   tasks: Task[];
   selectedDate: Date;
   onSelectedDateChange: (date: Date) => void;
   onTaskClick?: (task: Task) => void;
+  onTaskDateChange?: (taskId: string, newDate: Date) => void;
 }
 
-export function CalendarView({ tasks, selectedDate, onSelectedDateChange, onTaskClick }: CalendarViewProps) {
+export function CalendarView({ 
+  tasks, 
+  selectedDate, 
+  onSelectedDateChange, 
+  onTaskClick, 
+  onTaskDateChange 
+}: CalendarViewProps) {
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
+
   const monthStart = startOfMonth(selectedDate);
   const monthEnd = endOfMonth(selectedDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 });
@@ -59,11 +69,50 @@ export function CalendarView({ tasks, selectedDate, onSelectedDateChange, onTask
     return baseColors[task.type as keyof typeof baseColors] || baseColors.task;
   };
 
+  const handleDragStart = (e: React.DragEvent, task: Task) => {
+    setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', task.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, date: Date) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverDate(date);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverDate(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, date: Date) => {
+    e.preventDefault();
+    setDragOverDate(null);
+    
+    if (draggedTask && onTaskDateChange) {
+      const originalDate = new Date(draggedTask.due_date || new Date());
+      const newDateTime = new Date(date);
+      newDateTime.setHours(originalDate.getHours());
+      newDateTime.setMinutes(originalDate.getMinutes());
+      
+      onTaskDateChange(draggedTask.id, newDateTime);
+    }
+    setDraggedTask(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTask(null);
+    setDragOverDate(null);
+  };
+
   const renderDay = (date: Date) => {
     const dayTasks = getTasksForDate(date);
     const isSelectedDate = isSameDay(date, selectedDate);
     const isTodayDate = isToday(date);
     const isCurrentMonth = isSameMonth(date, selectedDate);
+    const isDragOver = dragOverDate && isSameDay(dragOverDate, date);
 
     return (
       <div
@@ -73,9 +122,13 @@ export function CalendarView({ tasks, selectedDate, onSelectedDateChange, onTask
           isSelectedDate && "bg-blue-50 border-blue-300",
           isTodayDate && "bg-yellow-50 border-yellow-300",
           !isCurrentMonth && "bg-gray-50 text-gray-400",
+          isDragOver && "bg-green-50 border-green-300 border-2",
           "hover:bg-gray-50"
         )}
         onClick={() => onSelectedDateChange(date)}
+        onDragOver={(e) => handleDragOver(e, date)}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDrop(e, date)}
       >
         {/* Day number */}
         <div className={cn(
@@ -88,29 +141,40 @@ export function CalendarView({ tasks, selectedDate, onSelectedDateChange, onTask
 
         {/* Tasks for this day */}
         <div className="space-y-1">
-          {dayTasks.slice(0, 3).map(task => (
-            <div
-              key={task.id}
-              className={cn(
-                "p-1 rounded border text-xs cursor-pointer hover:shadow-sm transition-all truncate",
-                getTaskTypeColor(task),
-                task.status === 'completed' && "line-through opacity-60"
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                onTaskClick?.(task);
-              }}
-              title={task.title}
-            >
-              <div className="font-medium truncate">{task.title}</div>
-              {task.due_date && (
-                <div className="flex items-center gap-1 text-xs opacity-75">
-                  <Clock className="h-2 w-2" />
-                  {format(new Date(task.due_date), 'HH:mm')}
-                </div>
-              )}
+          {dayTasks.length === 0 && isDragOver ? (
+            <div className="text-xs text-green-600 text-center py-4 font-medium">
+              שחרר כאן
             </div>
-          ))}
+          ) : (
+            dayTasks.slice(0, 3).map(task => (
+              <div
+                key={task.id}
+                draggable={onTaskDateChange ? true : false}
+                onDragStart={(e) => handleDragStart(e, task)}
+                onDragEnd={handleDragEnd}
+                className={cn(
+                  "p-1 rounded border text-xs cursor-pointer hover:shadow-sm transition-all truncate",
+                  getTaskTypeColor(task),
+                  task.status === 'completed' && "line-through opacity-60",
+                  onTaskDateChange && "cursor-move",
+                  draggedTask?.id === task.id && "opacity-50 scale-95"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTaskClick?.(task);
+                }}
+                title={task.title}
+              >
+                <div className="font-medium truncate">{task.title}</div>
+                {task.due_date && (
+                  <div className="flex items-center gap-1 text-xs opacity-75">
+                    <Clock className="h-2 w-2" />
+                    {format(new Date(task.due_date), 'HH:mm')}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
           
           {dayTasks.length > 3 && (
             <div className="text-xs text-center text-gray-500 py-1 bg-gray-100 rounded">
@@ -197,7 +261,7 @@ export function CalendarView({ tasks, selectedDate, onSelectedDateChange, onTask
         {/* Calendar grid */}
         {renderCalendarGrid()}
 
-        {/* Legend */}
+        {/* Enhanced Legend */}
         <div className="mt-4 flex flex-wrap gap-3 justify-center text-xs">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-red-100 border border-red-400 rounded"></div>
@@ -219,6 +283,11 @@ export function CalendarView({ tasks, selectedDate, onSelectedDateChange, onTask
             <div className="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></div>
             <span>מעקב</span>
           </div>
+          {onTaskDateChange && (
+            <div className="flex items-center gap-1 text-blue-600">
+              <span>💡 ניתן לגרור משימות בין תאריכים</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
