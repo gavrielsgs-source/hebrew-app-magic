@@ -2,8 +2,9 @@
 import { format, isValid } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Car, Clock, UserRound, Trash2 } from "lucide-react";
+import { Calendar, Car, Clock, UserRound, Trash2, Edit } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EditTaskDialog } from "../EditTaskDialog";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 
@@ -78,7 +79,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         task.status === 'completed' && "bg-gray-50/80"
       )}
     >
-      <div className="grid grid-cols-8 gap-4 items-center text-right">
+      <div className="grid grid-cols-9 gap-4 items-center text-right">
         {/* Checkbox Cell */}
         <div className="flex justify-center">
           <Checkbox 
@@ -163,7 +164,16 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         </div>
         
         {/* Actions Cell */}
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-1">
+          <EditTaskDialog task={task}>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </EditTaskDialog>
           <Button 
             variant="ghost" 
             size="icon"
