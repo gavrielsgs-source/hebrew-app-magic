@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { TasksTable } from "./TasksTable";
@@ -130,10 +129,10 @@ export function TasksPage() {
         )}
 
         {viewMode === "calendar" && (
-          <TaskCalendar 
+          <MobileTaskCalendar 
             tasks={filteredTasks} 
             onTaskClick={handleTaskClick}
-            onTaskUpdate={handleTaskUpdate}
+            onTaskStatusChange={handleTaskStatusChange}
           />
         )}
 

@@ -4,18 +4,24 @@ import { format, isSameDay, isToday, isPast } from "date-fns";
 import { MobileCard } from "@/components/mobile/MobileCard";
 import { MobileButton } from "@/components/mobile/MobileButton";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Clock, ChevronLeft, ChevronRight, Plus, Edit, Check, X } from "lucide-react";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
+import { AddTaskDialog } from "./AddTaskDialog";
+import { EditTaskDialog } from "./EditTaskDialog";
 
 interface MobileTaskCalendarProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  onTaskStatusChange?: (taskId: string, isCompleted: boolean) => void;
 }
 
-export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarProps) {
+export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: MobileTaskCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<"today" | "upcoming">("today");
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const getTasksForToday = () => {
     return tasks.filter(task => {
@@ -32,14 +38,23 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
         return taskDate > new Date() && !isSameDay(taskDate, new Date());
       })
       .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
-      .slice(0, 10); // Show next 10 upcoming tasks
+      .slice(0, 10);
   };
 
   const getTaskTypeColor = (task: Task) => {
     const now = new Date();
     const taskDate = task.due_date ? new Date(task.due_date) : null;
     
+    if (task.status === 'completed') {
+      return "bg-green-100 border-green-300 text-green-800";
+    }
+    
     if (!taskDate) return "bg-gray-100 border-gray-300";
+    
+    // Priority takes precedence
+    if (task.priority === 'high') {
+      return "bg-red-100 border-red-300 text-red-800";
+    }
     
     if (isSameDay(taskDate, now)) {
       return "bg-yellow-100 border-yellow-300 text-yellow-800";
@@ -50,11 +65,25 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
     }
   };
 
+  const handleTaskStatusToggle = (task: Task, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onTaskStatusChange) {
+      const newStatus = task.status === 'completed';
+      onTaskStatusChange(task.id, !newStatus);
+    }
+  };
+
+  const handleEditTask = (task: Task, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTask(task);
+    setShowEditDialog(true);
+  };
+
   const todayTasks = getTasksForToday();
   const upcomingTasks = getUpcomingTasks();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-safe">
       {/* View Mode Toggle */}
       <div className="flex gap-3">
         <MobileButton
@@ -75,6 +104,17 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
         </MobileButton>
       </div>
 
+      {/* Quick Add Task Button */}
+      <MobileButton
+        variant="primary"
+        size="lg"
+        onClick={() => setShowAddDialog(true)}
+        icon={<Plus className="h-5 w-5" />}
+        className="w-full rounded-full shadow-lg mobile-gradient-primary"
+      >
+        הוסף משימה חדשה
+      </MobileButton>
+
       {/* Today's Tasks */}
       {viewMode === "today" && (
         <div className="space-y-4">
@@ -88,7 +128,7 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
           </div>
           
           {todayTasks.length === 0 ? (
-            <MobileCard className="py-12 text-center">
+            <MobileCard className="py-12 text-center mobile-gradient-card">
               <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p className="text-lg font-medium mb-1 text-gray-600">אין משימות להיום</p>
               <p className="text-sm text-gray-500">תיהנה מיום פנוי! 🎉</p>
@@ -98,19 +138,27 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
               {todayTasks.map(task => (
                 <div
                   key={task.id}
-                  className={cn(
-                    "cursor-pointer hover:shadow-md transition-all",
-                    getTaskTypeColor(task)
-                  )}
+                  className="mobile-transition mobile-touch-target"
                   onClick={() => onTaskClick(task)}
                 >
-                  <MobileCard>
+                  <MobileCard className={cn(
+                    "cursor-pointer hover:shadow-xl mobile-transition",
+                    getTaskTypeColor(task),
+                    task.status === 'completed' && "opacity-70"
+                  )}>
                     <div className="p-4 space-y-3">
                       <div className="flex justify-between items-start">
-                        <h4 className="font-medium text-base flex-1">{task.title}</h4>
-                        <div className="flex items-center gap-1 text-sm text-gray-600 flex-shrink-0 mr-3">
-                          <Clock className="h-4 w-4" />
-                          {format(new Date(task.due_date!), "HH:mm")}
+                        <h4 className={cn(
+                          "font-medium text-base flex-1",
+                          task.status === 'completed' && "line-through"
+                        )}>
+                          {task.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mr-3">
+                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <Clock className="h-4 w-4" />
+                            {format(new Date(task.due_date!), "HH:mm")}
+                          </div>
                         </div>
                       </div>
                       
@@ -118,24 +166,49 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
                         <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
                       )}
                       
-                      <div className="flex gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
-                          {task.type === 'call' ? 'שיחה' : 
-                           task.type === 'meeting' ? 'פגישה' : 
-                           task.type === 'follow_up' ? 'מעקב' : 'משימה'}
-                        </Badge>
-                        <Badge 
-                          variant="outline" 
-                          className={cn(
-                            "text-xs",
-                            task.priority === 'high' ? 'border-red-300 text-red-700' :
-                            task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
-                            'border-green-300 text-green-700'
-                          )}
-                        >
-                          {task.priority === 'high' ? 'עדיפות גבוהה' : 
-                           task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
-                        </Badge>
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs">
+                            {task.type === 'call' ? 'שיחה' : 
+                             task.type === 'meeting' ? 'פגישה' : 
+                             task.type === 'follow_up' ? 'מעקב' : 'משימה'}
+                          </Badge>
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              "text-xs",
+                              task.priority === 'high' ? 'border-red-300 text-red-700' :
+                              task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
+                              'border-green-300 text-green-700'
+                            )}
+                          >
+                            {task.priority === 'high' ? 'עדיפות גבוהה' : 
+                             task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => handleTaskStatusToggle(task, e)}
+                            className={cn(
+                              "p-2 rounded-full mobile-touch-target mobile-transition",
+                              task.status === 'completed' 
+                                ? "bg-green-100 text-green-600 hover:bg-green-200" 
+                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            )}
+                          >
+                            {task.status === 'completed' ? 
+                              <X className="h-4 w-4" /> : 
+                              <Check className="h-4 w-4" />
+                            }
+                          </button>
+                          <button
+                            onClick={(e) => handleEditTask(task, e)}
+                            className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 mobile-touch-target mobile-transition"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </MobileCard>
@@ -159,7 +232,7 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
           </div>
           
           {upcomingTasks.length === 0 ? (
-            <MobileCard className="py-12 text-center">
+            <MobileCard className="py-12 text-center mobile-gradient-card">
               <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p className="text-lg font-medium mb-1 text-gray-600">אין משימות עתידיות</p>
               <p className="text-sm text-gray-500">הכל נראה שקט לעת עתה</p>
@@ -169,18 +242,18 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
               {upcomingTasks.map(task => (
                 <div
                   key={task.id}
-                  className={cn(
-                    "cursor-pointer hover:shadow-md transition-all",
-                    getTaskTypeColor(task)
-                  )}
+                  className="mobile-transition mobile-touch-target"
                   onClick={() => onTaskClick(task)}
                 >
-                  <MobileCard>
+                  <MobileCard className={cn(
+                    "cursor-pointer hover:shadow-xl mobile-transition",
+                    getTaskTypeColor(task)
+                  )}>
                     <div className="p-4 space-y-3">
                       <div className="flex justify-between items-start">
                         <h4 className="font-medium text-base flex-1">{task.title}</h4>
                         <div className="text-sm text-gray-600 flex-shrink-0 mr-3">
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 text-left">
                             {format(new Date(task.due_date!), "dd/MM")}
                           </div>
                           <div className="flex items-center gap-1">
@@ -194,24 +267,33 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
                         <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
                       )}
                       
-                      <div className="flex gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
-                          {task.type === 'call' ? 'שיחה' : 
-                           task.type === 'meeting' ? 'פגישה' : 
-                           task.type === 'follow_up' ? 'מעקב' : 'משימה'}
-                        </Badge>
-                        <Badge 
-                          variant="outline" 
-                          className={cn(
-                            "text-xs",
-                            task.priority === 'high' ? 'border-red-300 text-red-700' :
-                            task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
-                            'border-green-300 text-green-700'
-                          )}
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs">
+                            {task.type === 'call' ? 'שיחה' : 
+                             task.type === 'meeting' ? 'פגישה' : 
+                             task.type === 'follow_up' ? 'מעקב' : 'משימה'}
+                          </Badge>
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              "text-xs",
+                              task.priority === 'high' ? 'border-red-300 text-red-700' :
+                              task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
+                              'border-green-300 text-green-700'
+                            )}
+                          >
+                            {task.priority === 'high' ? 'עדיפות גבוהה' : 
+                             task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
+                          </Badge>
+                        </div>
+                        
+                        <button
+                          onClick={(e) => handleEditTask(task, e)}
+                          className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 mobile-touch-target mobile-transition"
                         >
-                          {task.priority === 'high' ? 'עדיפות גבוהה' : 
-                           task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
-                        </Badge>
+                          <Edit className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </MobileCard>
@@ -220,6 +302,22 @@ export function MobileTaskCalendar({ tasks, onTaskClick }: MobileTaskCalendarPro
             </div>
           )}
         </div>
+      )}
+
+      {/* Add Task Dialog */}
+      <AddTaskDialog 
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSuccess={() => setShowAddDialog(false)}
+      />
+
+      {/* Edit Task Dialog */}
+      {editingTask && (
+        <EditTaskDialog 
+          task={editingTask}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+        />
       )}
     </div>
   );
