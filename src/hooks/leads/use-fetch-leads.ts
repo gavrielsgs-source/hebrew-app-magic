@@ -67,12 +67,6 @@ export const useFetchLeads = () => {
     },
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onError: (error) => {
-      console.error('React Query error in useFetchLeads:', error);
-    },
-    onSuccess: (data) => {
-      console.log('React Query success in useFetchLeads:', { count: data?.length });
-    },
   });
 
   console.log('useFetchLeads hook returning:', { 
