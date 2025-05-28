@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { supabase } from "@/lib/supabase";
@@ -17,6 +18,7 @@ export default function UpgradeSubscription() {
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
   const { subscription, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const onSubmit = async (data: PaymentFormValues) => {
     if (!selectedPlan) {
@@ -143,18 +145,6 @@ export default function UpgradeSubscription() {
     setSelectedPlan(planId);
     setPaymentDrawerOpen(true);
   };
-
-  const handleMockSuccess = (planId: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      toast.success(`שדרוג לחבילת ${planId} בוצע בהצלחה!`, {
-        description: "המערכת תתעדכן בקרוב עם הפרמטרים החדשים."
-      });
-      setLoading(false);
-      refreshSubscription();
-      navigate("/subscription");
-    }, 1500);
-  };
   
   const getSelectedPlanDetails = (planId: string) => {
     const plans = [
@@ -182,13 +172,19 @@ export default function UpgradeSubscription() {
   };
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <div className="flex justify-between items-center mb-8">
+    <div className={`container mx-auto py-10 px-4 ${isMobile ? 'pb-24' : ''}`}>
+      <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'} mb-8`}>
         <div>
-          <h1 className="text-3xl font-bold">שדרוג מנוי</h1>
-          <p className="text-muted-foreground mt-2">בחר את החבילה המתאימה לצרכים שלך</p>
+          <h1 className={`font-bold ${isMobile ? 'text-2xl' : 'text-3xl'}`}>שדרוג מנוי</h1>
+          <p className={`text-muted-foreground mt-2 ${isMobile ? 'text-sm' : ''}`}>
+            בחר את החבילה המתאימה לצרכים שלך
+          </p>
         </div>
-        <Button variant="outline" onClick={() => navigate("/subscription")}>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate("/subscription")}
+          className={isMobile ? 'self-start' : ''}
+        >
           <ArrowLeft className="ml-2 h-4 w-4" />
           חזרה לניהול מנוי
         </Button>
@@ -204,27 +200,26 @@ export default function UpgradeSubscription() {
       <PaymentInfo />
 
       <Drawer open={paymentDrawerOpen} onOpenChange={setPaymentDrawerOpen}>
-        <DrawerContent className="max-h-[96%]">
+        <DrawerContent className={`max-h-[96%] ${isMobile ? 'h-[90vh]' : ''}`}>
           <DrawerHeader>
-            <DrawerTitle className="text-center text-lg">
+            <DrawerTitle className={`text-center ${isMobile ? 'text-base' : 'text-lg'}`}>
               {selectedPlan && (
                 <>פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}</>
               )}
             </DrawerTitle>
           </DrawerHeader>
           
-          <div className="px-4">
+          <div className="px-4 overflow-y-auto">
             <PaymentForm 
               onSubmit={onSubmit}
               loading={loading}
               onCancel={() => setPaymentDrawerOpen(false)}
               selectedPlan={selectedPlan}
-              onMockSuccess={handleMockSuccess}
             />
           </div>
           
           <DrawerFooter className="pt-2">
-            <p className="text-sm text-center text-muted-foreground">
+            <p className={`text-center text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
               התשלום מאובטח ומוצפן בתקן PCI DSS
             </p>
           </DrawerFooter>

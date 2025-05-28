@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { LeadsTableHeader } from "./leads/table/LeadsTableHeader";
 import { LeadsTableContent } from "./leads/table/LeadsTableContent";
 
@@ -11,6 +12,7 @@ interface LeadsTableProps {
 
 export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) {
   const { leads, isLoading } = useLeads();
+  const isMobile = useIsMobile();
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -30,7 +32,7 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
     : leads);
   
   return (
-    <div dir="rtl">
+    <div dir="rtl" className={isMobile ? 'pb-24' : ''}>
       <LeadsTableHeader 
         isAddLeadOpen={isAddLeadOpen}
         setIsAddLeadOpen={setIsAddLeadOpen}

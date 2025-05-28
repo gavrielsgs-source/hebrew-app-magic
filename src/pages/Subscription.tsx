@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PricingPlans } from "@/components/subscription/PricingPlans";
 import { Crown, CreditCard, History, ArrowUpRight, Info, BarChart3, Users, Car, FileText, MessageSquare, Activity } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Link } from "react-router-dom";
 import { UsageBar } from "@/components/subscription/UsageBar";
 import { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import { useSubscriptionLimits } from "@/hooks/use-subscription-limits";
 export default function Subscription() {
   const { subscription } = useSubscription();
   const { getTierLabel } = useSubscriptionLimits();
+  const isMobile = useIsMobile();
   const [usageCounts, setUsageCounts] = useState({
     cars: 0,
     leads: 0,
@@ -81,36 +83,49 @@ export default function Subscription() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6" dir="rtl">
+    <div className={`min-h-screen bg-gray-50 p-6 ${isMobile ? 'p-2 pb-24' : ''}`} dir="rtl">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className={`flex gap-6 ${
+              isMobile 
+                ? 'flex-col' 
+                : 'flex-col md:flex-row md:items-center md:justify-between'
+            }`}>
               <div className="text-white">
-                <h1 className="text-3xl font-bold mb-3 flex items-center gap-3">
-                  <Crown className="h-8 w-8 text-carslead-lightblue" />
+                <h1 className={`font-bold mb-3 flex items-center gap-3 ${
+                  isMobile ? 'text-2xl' : 'text-3xl'
+                }`}>
+                  <Crown className={`text-carslead-lightblue ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
                   ניהול מנוי
                 </h1>
                 <div className="space-y-2">
-                  <p className="text-xl">
+                  <p className={isMobile ? 'text-lg' : 'text-xl'}>
                     <span className="text-carslead-lightblue">המנוי הנוכחי שלך: </span>
                     <span className="font-bold">{getTierLabel(subscription.tier)}</span>
                   </p>
                   {subscription.expiresAt && (
-                    <p className="text-carslead-lightblue opacity-90">
+                    <p className={`text-carslead-lightblue opacity-90 ${isMobile ? 'text-sm' : ''}`}>
                       בתוקף עד: {new Date(subscription.expiresAt).toLocaleDateString('he-IL')}
                     </p>
                   )}
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm">
-                  <History className="h-4 w-4 ml-2" />
+              <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
+                <Button 
+                  variant="outline" 
+                  className={`bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm ${
+                    isMobile ? 'w-full text-sm' : ''
+                  }`}
+                >
+                  <History className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                   היסטוריית חיובים
                 </Button>
-                <Button className="bg-white text-carslead-purple hover:bg-gray-100">
-                  <CreditCard className="h-4 w-4 ml-2" />
+                <Button className={`bg-white text-carslead-purple hover:bg-gray-100 ${
+                  isMobile ? 'w-full text-sm' : ''
+                }`}>
+                  <CreditCard className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                   נהל פרטי תשלום
                 </Button>
               </div>
@@ -120,9 +135,14 @@ export default function Subscription() {
         
         {/* Quick Actions */}
         <div className="flex justify-end">
-          <Button asChild className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white h-12 px-6 rounded-lg font-medium">
+          <Button 
+            asChild 
+            className={`bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white rounded-lg font-medium ${
+              isMobile ? 'w-full h-10 px-4 text-sm' : 'h-12 px-6'
+            }`}
+          >
             <Link to="/subscription/upgrade">
-              <ArrowUpRight className="h-4 w-4 ml-2" />
+              <ArrowUpRight className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
               שדרג מנוי
             </Link>
           </Button>
@@ -130,32 +150,42 @@ export default function Subscription() {
         
         {/* Tabs Section */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <Tabs defaultValue="plans" dir="rtl" className="p-6">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-50 p-1">
+          <Tabs defaultValue="plans" dir="rtl" className={isMobile ? 'p-4' : 'p-6'}>
+            <TabsList className={`bg-gray-50 p-1 ${
+              isMobile 
+                ? 'grid w-full grid-cols-3 h-auto' 
+                : 'grid w-full grid-cols-3'
+            }`}>
               <TabsTrigger 
                 value="plans"
-                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm"
+                className={`data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm ${
+                  isMobile ? 'text-xs py-2' : ''
+                }`}
               >
-                <Crown className="h-4 w-4 ml-2" />
-                חבילות
+                <Crown className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                {isMobile ? 'חבילות' : 'חבילות'}
               </TabsTrigger>
               <TabsTrigger 
                 value="usage"
-                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm"
+                className={`data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm ${
+                  isMobile ? 'text-xs py-2' : ''
+                }`}
               >
-                <BarChart3 className="h-4 w-4 ml-2" />
+                <BarChart3 className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 שימוש
               </TabsTrigger>
               <TabsTrigger 
                 value="limits"
-                className="data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm"
+                className={`data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm ${
+                  isMobile ? 'text-xs py-2' : ''
+                }`}
               >
-                <Info className="h-4 w-4 ml-2" />
+                <Info className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 מגבלות
               </TabsTrigger>
             </TabsList>
             
-            <div className="mt-8">
+            <div className={isMobile ? 'mt-4' : 'mt-8'}>
               <TabsContent value="plans" className="mt-0">
                 <PricingPlans />
               </TabsContent>
@@ -163,8 +193,14 @@ export default function Subscription() {
               <TabsContent value="usage" className="mt-0">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">סקירת שימוש נוכחי</h3>
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    <h3 className={`font-semibold text-gray-900 mb-4 ${
+                      isMobile ? 'text-lg' : 'text-xl'
+                    }`}>סקירת שימוש נוכחי</h3>
+                    <div className={`grid gap-6 ${
+                      isMobile 
+                        ? 'grid-cols-1' 
+                        : 'md:grid-cols-2 lg:grid-cols-4'
+                    }`}>
                       <UsageCard 
                         title="רכבים" 
                         icon={Car}
@@ -200,9 +236,13 @@ export default function Subscription() {
               
               <TabsContent value="limits" className="mt-0">
                 <div className="space-y-8">
-                  <div className="bg-gradient-to-l from-gray-50 to-white border border-gray-200 rounded-xl p-8">
-                    <h3 className="text-xl font-semibold mb-6 flex items-center gap-3 text-gray-900">
-                      <Info className="h-6 w-6 text-carslead-purple" />
+                  <div className={`bg-gradient-to-l from-gray-50 to-white border border-gray-200 rounded-xl ${
+                    isMobile ? 'p-6' : 'p-8'
+                  }`}>
+                    <h3 className={`font-semibold mb-6 flex items-center gap-3 text-gray-900 ${
+                      isMobile ? 'text-lg' : 'text-xl'
+                    }`}>
+                      <Info className={`text-carslead-purple ${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
                       מגבלות תכנית {getTierLabel(subscription.tier)}
                     </h3>
                     
@@ -244,9 +284,15 @@ export default function Subscription() {
                       />
                     </div>
                     
-                    <div className="mt-8 p-6 bg-white rounded-xl border border-gray-200">
-                      <h4 className="font-semibold mb-4 text-gray-900">תכונות מתקדמות:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className={`mt-8 p-6 bg-white rounded-xl border border-gray-200 ${
+                      isMobile ? 'p-4' : ''
+                    }`}>
+                      <h4 className={`font-semibold mb-4 text-gray-900 ${
+                        isMobile ? 'text-sm' : ''
+                      }`}>תכונות מתקדמות:</h4>
+                      <div className={`grid gap-4 ${
+                        isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'
+                      }`}>
                         <FeatureListItem 
                           feature="אנליטיקה מתקדמת" 
                           available={subscription.analyticsLevel !== 'basic'} 
@@ -268,9 +314,15 @@ export default function Subscription() {
                   </div>
                   
                   <div className="text-center">
-                    <Button asChild size="lg" className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white h-14 px-8 rounded-xl font-medium">
+                    <Button 
+                      asChild 
+                      size={isMobile ? 'default' : 'lg'} 
+                      className={`bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white rounded-xl font-medium ${
+                        isMobile ? 'w-full h-12 px-6' : 'h-14 px-8'
+                      }`}
+                    >
                       <Link to="/subscription/upgrade">
-                        <ArrowUpRight className="h-5 w-5 ml-2" />
+                        <ArrowUpRight className={`ml-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
                         שדרג את המנוי שלך לקבלת יותר משאבים
                       </Link>
                     </Button>
@@ -294,6 +346,7 @@ interface UsageCardProps {
 }
 
 function UsageCard({ title, icon: Icon, limit = Infinity, used, isLoading = false }: UsageCardProps) {
+  const isMobile = useIsMobile();
   const percentage = limit === Infinity ? 0 : Math.min(Math.round((used / limit) * 100), 100);
   const isNearLimit = percentage >= 80;
   const isAtLimit = percentage >= 100;
@@ -302,26 +355,26 @@ function UsageCard({ title, icon: Icon, limit = Infinity, used, isLoading = fals
     <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+          <div className={`rounded-lg flex items-center justify-center ${
             isAtLimit ? 'bg-red-100' : isNearLimit ? 'bg-orange-100' : 'bg-carslead-purple/10'
-          }`}>
-            <Icon className={`h-5 w-5 ${
+          } ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}>
+            <Icon className={`${
               isAtLimit ? 'text-red-600' : isNearLimit ? 'text-orange-600' : 'text-carslead-purple'
-            }`} />
+            } ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </div>
-          <h3 className="font-medium text-gray-900">{title}</h3>
+          <h3 className={`font-medium text-gray-900 ${isMobile ? 'text-sm' : ''}`}>{title}</h3>
         </div>
       </div>
       
       {isLoading ? (
         <div className="space-y-3">
-          <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+          <div className={`bg-gray-200 rounded animate-pulse ${isMobile ? 'h-6' : 'h-8'}`}></div>
           <div className="h-2 bg-gray-200 rounded animate-pulse"></div>
         </div>
       ) : (
         <>
-          <div className="text-3xl font-bold mb-3 text-gray-900">
-            {used} <span className="text-sm font-normal text-gray-500">/ {limit === Infinity ? '∞' : limit}</span>
+          <div className={`font-bold mb-3 text-gray-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
+            {used} <span className={`font-normal text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>/ {limit === Infinity ? '∞' : limit}</span>
           </div>
           
           <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -344,17 +397,19 @@ interface FeatureListItemProps {
 }
 
 function FeatureListItem({ feature, available }: FeatureListItemProps) {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-      <div className={`h-6 w-6 rounded-full flex items-center justify-center text-sm font-medium ${
+    <div className={`flex items-center gap-3 p-3 rounded-lg bg-gray-50 ${isMobile ? 'p-2' : ''}`}>
+      <div className={`rounded-full flex items-center justify-center font-medium ${
         available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-      }`}>
+      } ${isMobile ? 'h-5 w-5 text-xs' : 'h-6 w-6 text-sm'}`}>
         {available ? '✓' : '✗'}
       </div>
       <div className="flex-1">
-        <span className="text-gray-900">{feature}</span>
+        <span className={`text-gray-900 ${isMobile ? 'text-sm' : ''}`}>{feature}</span>
         {!available && (
-          <span className="text-sm text-gray-500 block">
+          <span className={`text-gray-500 block ${isMobile ? 'text-xs' : 'text-sm'}`}>
             (זמין במנויים מתקדמים)
           </span>
         )}

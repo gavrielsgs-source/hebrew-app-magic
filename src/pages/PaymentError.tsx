@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, HelpCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Accordion,
   AccordionContent,
@@ -14,6 +15,7 @@ import {
 export default function PaymentError() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [detailedError, setDetailedError] = useState<string | null>(null);
   const [troubleshootingTips, setTroubleshootingTips] = useState<string[]>([]);
   
@@ -83,32 +85,38 @@ export default function PaymentError() {
   }, [errorCode, errorDetails]);
 
   return (
-    <div className="container mx-auto max-w-md py-16 px-4">
-      <div className="bg-card border border-destructive/20 rounded-lg p-8 text-center">
+    <div className={`container mx-auto py-16 px-4 ${
+      isMobile ? 'py-8 px-2 max-w-sm' : 'max-w-md'
+    }`}>
+      <div className={`bg-card border border-destructive/20 rounded-lg text-center ${
+        isMobile ? 'p-6' : 'p-8'
+      }`}>
         <div className="flex justify-center mb-6">
-          <AlertTriangle className="h-16 w-16 text-destructive" />
+          <AlertTriangle className={`text-destructive ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
         </div>
         
-        <h1 className="text-2xl font-bold mb-2">שגיאה בתשלום</h1>
+        <h1 className={`font-bold mb-2 ${isMobile ? 'text-xl' : 'text-2xl'}`}>שגיאה בתשלום</h1>
         
-        <Alert variant="destructive" className="mb-6 text-right">
-          <AlertTitle>פרטי השגיאה:</AlertTitle>
-          <AlertDescription>
+        <Alert variant="destructive" className={`mb-6 text-right ${isMobile ? 'text-sm' : ''}`}>
+          <AlertTitle className={isMobile ? 'text-sm' : ''}>פרטי השגיאה:</AlertTitle>
+          <AlertDescription className={isMobile ? 'text-sm' : ''}>
             {errorMessage}
-            {errorCode && <div className="text-sm mt-1">קוד שגיאה: {errorCode}</div>}
-            {detailedError && <div className="mt-2 text-sm">{detailedError}</div>}
+            {errorCode && <div className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'}`}>קוד שגיאה: {errorCode}</div>}
+            {detailedError && <div className={`mt-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>{detailedError}</div>}
           </AlertDescription>
         </Alert>
         
         {troubleshootingTips.length > 0 && (
           <Accordion type="single" collapsible className="mb-6 text-right">
             <AccordionItem value="tips">
-              <AccordionTrigger className="flex">
-                <HelpCircle className="h-4 w-4 ml-2" />
+              <AccordionTrigger className={`flex ${isMobile ? 'text-sm' : ''}`}>
+                <HelpCircle className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 טיפים לפתרון הבעיה
               </AccordionTrigger>
               <AccordionContent>
-                <ul className="list-disc pr-5 mt-2 text-muted-foreground">
+                <ul className={`list-disc pr-5 mt-2 text-muted-foreground ${
+                  isMobile ? 'text-xs' : ''
+                }`}>
                   {troubleshootingTips.map((tip, index) => (
                     <li key={index} className="mt-1">{tip}</li>
                   ))}
@@ -120,7 +128,7 @@ export default function PaymentError() {
         
         <div className="space-y-4">
           <Button 
-            className="w-full" 
+            className={`w-full ${isMobile ? 'text-sm' : ''}`}
             onClick={() => navigate('/subscription/upgrade')}
           >
             נסה שוב
@@ -128,13 +136,15 @@ export default function PaymentError() {
           
           <Button 
             variant="outline" 
-            className="w-full" 
+            className={`w-full ${isMobile ? 'text-sm' : ''}`}
             onClick={() => navigate('/subscription')}
           >
             חזרה לניהול מנוי
           </Button>
           
-          <div className="text-xs text-muted-foreground mt-4">
+          <div className={`text-muted-foreground mt-4 ${
+            isMobile ? 'text-xs' : 'text-xs'
+          }`}>
             אם השגיאה ממשיכה להופיע, אנא צור קשר עם התמיכה שלנו.
           </div>
         </div>

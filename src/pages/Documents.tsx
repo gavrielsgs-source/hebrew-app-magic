@@ -5,6 +5,7 @@ import { DocumentsManager } from "@/components/documents/DocumentsManager";
 import { useEffect, useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,8 @@ import {
 } from "@/components/ui/select";
 
 export default function Documents() {
+  const isMobile = useIsMobile();
+  
   // הגדרת כיוון ה-RTL לתמיכה בעברית
   useEffect(() => {
     document.documentElement.dir = "rtl";
@@ -26,26 +29,41 @@ export default function Documents() {
   const { cars, isLoading: isCarsLoading } = useCars();
   
   return (
-    <div className="container py-6">
+    <div className={`container py-6 ${isMobile ? 'px-2 pb-24' : ''}`}>
       <div className="flex flex-col space-y-4">
         <div className="text-right">
-          <h1 className="text-3xl font-bold">ניהול מסמכים</h1>
-          <p className="text-muted-foreground">ניהול חוזים, מסמכים משפטיים ותיעוד עסקאות</p>
+          <h1 className={`font-bold ${isMobile ? 'text-2xl' : 'text-3xl'}`}>ניהול מסמכים</h1>
+          <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
+            ניהול חוזים, מסמכים משפטיים ותיעוד עסקאות
+          </p>
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList className="flex justify-start">
-            <TabsTrigger value="all">כל המסמכים</TabsTrigger>
-            <TabsTrigger value="templates">תבניות</TabsTrigger>
-            <TabsTrigger value="leads">לפי לקוחות</TabsTrigger>
-            <TabsTrigger value="cars">לפי רכבים</TabsTrigger>
+          <TabsList className={`flex ${isMobile ? 'grid grid-cols-2' : 'justify-start'}`}>
+            <TabsTrigger value="all" className={isMobile ? 'text-sm' : ''}>כל המסמכים</TabsTrigger>
+            <TabsTrigger value="templates" className={isMobile ? 'text-sm' : ''}>תבניות</TabsTrigger>
+            {!isMobile && (
+              <>
+                <TabsTrigger value="leads">לפי לקוחות</TabsTrigger>
+                <TabsTrigger value="cars">לפי רכבים</TabsTrigger>
+              </>
+            )}
           </TabsList>
+          
+          {isMobile && (
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="leads" className="text-sm">לפי לקוחות</TabsTrigger>
+              <TabsTrigger value="cars" className="text-sm">לפי רכבים</TabsTrigger>
+            </TabsList>
+          )}
           
           <TabsContent value="all" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-right">כל המסמכים</CardTitle>
-                <CardDescription className="text-right">צפייה בכל המסמכים שנשמרו במערכת</CardDescription>
+                <CardTitle className={`text-right ${isMobile ? 'text-lg' : ''}`}>כל המסמכים</CardTitle>
+                <CardDescription className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                  צפייה בכל המסמכים שנשמרו במערכת
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <DocumentsManager />
@@ -56,8 +74,10 @@ export default function Documents() {
           <TabsContent value="templates" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-right">תבניות מסמכים</CardTitle>
-                <CardDescription className="text-right">מסמכים שנשמרו כתבניות לשליחה אוטומטית</CardDescription>
+                <CardTitle className={`text-right ${isMobile ? 'text-lg' : ''}`}>תבניות מסמכים</CardTitle>
+                <CardDescription className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                  מסמכים שנשמרו כתבניות לשליחה אוטומטית
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <DocumentsManager />
@@ -68,12 +88,14 @@ export default function Documents() {
           <TabsContent value="leads" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-right">מסמכים לפי לקוחות</CardTitle>
-                <CardDescription className="text-right">מסמכים המקושרים ללקוחות</CardDescription>
+                <CardTitle className={`text-right ${isMobile ? 'text-lg' : ''}`}>מסמכים לפי לקוחות</CardTitle>
+                <CardDescription className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                  מסמכים המקושרים ללקוחות
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="w-full md:w-1/2">
+                  <div className={isMobile ? 'w-full' : 'w-full md:w-1/2'}>
                     <Select 
                       value={selectedLeadId || ""} 
                       onValueChange={setSelectedLeadId}
@@ -98,7 +120,7 @@ export default function Documents() {
                   </div>
                   
                   {!selectedLeadId ? (
-                    <div className="text-center p-4 text-muted-foreground">
+                    <div className={`text-center p-4 text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
                       בחר לקוח מהרשימה כדי לצפות במסמכים המקושרים אליו
                     </div>
                   ) : (
@@ -112,12 +134,14 @@ export default function Documents() {
           <TabsContent value="cars" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-right">מסמכים לפי רכבים</CardTitle>
-                <CardDescription className="text-right">מסמכים המקושרים לרכבים</CardDescription>
+                <CardTitle className={`text-right ${isMobile ? 'text-lg' : ''}`}>מסמכים לפי רכבים</CardTitle>
+                <CardDescription className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                  מסמכים המקושרים לרכבים
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="w-full md:w-1/2">
+                  <div className={isMobile ? 'w-full' : 'w-full md:w-1/2'}>
                     <Select 
                       value={selectedCarId || ""} 
                       onValueChange={setSelectedCarId}
@@ -142,7 +166,7 @@ export default function Documents() {
                   </div>
                   
                   {!selectedCarId ? (
-                    <div className="text-center p-4 text-muted-foreground">
+                    <div className={`text-center p-4 text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
                       בחר רכב מהרשימה כדי לצפות במסמכים המקושרים אליו
                     </div>
                   ) : (

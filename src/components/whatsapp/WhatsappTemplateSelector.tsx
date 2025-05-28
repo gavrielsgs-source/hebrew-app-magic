@@ -9,6 +9,7 @@ import { ManualPhoneInput } from "./components/ManualPhoneInput";
 import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { SelectedCarDetails } from "./components/SelectedCarDetails";
 import { whatsappTemplates } from "./whatsapp-templates";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
 interface WhatsappTemplateSelectorProps {
@@ -20,6 +21,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
   const [selectedTemplate, setSelectedTemplate] = useState(whatsappTemplates[0]);
   const [selectedPhone, setSelectedPhone] = useState("");
   const [customMessage, setCustomMessage] = useState("");
+  const isMobile = useIsMobile();
 
   const generateMessage = () => {
     if (customMessage.trim()) {
@@ -62,41 +64,55 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
   const message = generateMessage();
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className={`space-y-6 ${isMobile ? 'space-y-4' : ''}`} dir="rtl">
       <div>
-        <h2 className="text-xl font-semibold mb-2">שליחת פרטי רכב בוואטסאפ</h2>
-        <p className="text-gray-600">בחר תבנית הודעה ולקוח לשליחה</p>
+        <h2 className={`font-semibold mb-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>שליחת פרטי רכב בוואטסאפ</h2>
+        <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>בחר תבנית הודעה ולקוח לשליחה</p>
       </div>
 
       <SelectedCarDetails car={car} />
 
       <Tabs defaultValue="templates" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="templates">תבניות</TabsTrigger>
-          <TabsTrigger value="leads">לקוחות</TabsTrigger>
-          <TabsTrigger value="manual">הקלדה ידנית</TabsTrigger>
+        <TabsList className={`w-full ${isMobile ? 'h-auto grid-rows-1' : 'grid grid-cols-3'}`}>
+          {isMobile ? (
+            <>
+              <TabsTrigger value="templates" className="text-xs">תבניות</TabsTrigger>
+              <TabsTrigger value="leads" className="text-xs">לקוחות</TabsTrigger>
+              <TabsTrigger value="manual" className="text-xs">ידנית</TabsTrigger>
+            </>
+          ) : (
+            <>
+              <TabsTrigger value="templates">תבניות</TabsTrigger>
+              <TabsTrigger value="leads">לקוחות</TabsTrigger>
+              <TabsTrigger value="manual">הקלדה ידנית</TabsTrigger>
+            </>
+          )}
         </TabsList>
         
-        <TabsContent value="templates" className="space-y-4">
+        <TabsContent value="templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           <div className="grid gap-3">
             {whatsappTemplates.map((template) => (
               <div
                 key={template.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                className={`border rounded-lg cursor-pointer transition-colors ${
+                  isMobile ? 'p-3' : 'p-4'
+                } ${
                   selectedTemplate.id === template.id
                     ? "border-blue-500 bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
                 onClick={() => setSelectedTemplate(template)}
               >
-                <h3 className="font-medium text-right">{template.name}</h3>
-                <p className="text-sm text-gray-600 text-right mt-1">{template.description}</p>
+                <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>{template.name}</h3>
+                <p className={`text-gray-600 text-right mt-1 ${
+                  isMobile ? 'text-xs' : 'text-sm'
+                }`}>{template.description}</p>
               </div>
             ))}
           </div>
         </TabsContent>
         
-        <TabsContent value="leads" className="space-y-4">
+        <TabsContent value="leads" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           <WhatsappLeadSelector 
             onLeadSelect={(leadId, phone, name) => setSelectedPhone(phone)}
             onNewLead={() => {}}
@@ -112,7 +128,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
           )}
         </TabsContent>
 
-        <TabsContent value="manual" className="space-y-4">
+        <TabsContent value="manual" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           <ManualPhoneInput
             onSendMessage={handleSendMessage}
             defaultMessage={message}
@@ -126,14 +142,20 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
             template={message}
           />
 
-          <div className="flex gap-3">
+          <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
             <Button 
               onClick={() => handleSendMessage(selectedPhone, message)}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              className={`bg-green-600 hover:bg-green-700 text-white ${
+                isMobile ? 'flex-1 order-1' : 'flex-1'
+              }`}
             >
               שלח בוואטסאפ
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button 
+              variant="outline" 
+              onClick={onClose}
+              className={isMobile ? 'order-2' : ''}
+            >
               ביטול
             </Button>
           </div>

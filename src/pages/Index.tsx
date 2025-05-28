@@ -9,7 +9,7 @@ export default function Index() {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pb-24">
         <Suspense fallback={
           <div className="flex items-center justify-center h-screen text-right">
             <div className="text-center">

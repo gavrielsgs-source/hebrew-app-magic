@@ -4,6 +4,7 @@ import { useLeads, useUpdateLead } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { LeadFormBase, FormContextValue } from "./LeadFormBase";
 import { LeadFormValues } from "./schemas/lead-form-schema";
 import { EditLeadNameField } from "./fields/EditLeadNameField";
@@ -25,6 +26,7 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
   const updateLead = useUpdateLead();
   const { cars } = useCars();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (values: LeadFormValues) => {
     if (!lead.id) {
@@ -86,7 +88,7 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
       isSubmitting={updateLead.isPending}
     >
       {(context: FormContextValue) => (
-        <>
+        <div className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           <EditLeadNameField control={context.form.control} />
           <EditLeadPhoneField control={context.form.control} />
           <EditLeadEmailField control={context.form.control} />
@@ -97,10 +99,14 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
             <EditLeadAssignedField control={context.form.control} salesAgents={context.salesAgents} />
           )}
           <EditLeadNotesField control={context.form.control} />
-          <Button type="submit" className="w-full" disabled={updateLead.isPending}>
+          <Button 
+            type="submit" 
+            className={`w-full ${isMobile ? 'h-12 text-sm' : ''}`}
+            disabled={updateLead.isPending}
+          >
             {updateLead.isPending ? "מעדכן..." : "עדכן ליד"}
           </Button>
-        </>
+        </div>
       )}
     </LeadFormBase>
   );

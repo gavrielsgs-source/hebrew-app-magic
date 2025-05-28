@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,7 +34,6 @@ interface PaymentFormProps {
   loading: boolean;
   onCancel: () => void;
   selectedPlan: string | null;
-  onMockSuccess: (planId: string) => void;
 }
 
 export function PaymentForm({
@@ -41,7 +41,6 @@ export function PaymentForm({
   loading,
   onCancel,
   selectedPlan,
-  onMockSuccess,
 }: PaymentFormProps) {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
@@ -95,18 +94,6 @@ export function PaymentForm({
             ) : (
               <>המשך לתשלום</>
             )}
-          </Button>
-        </div>
-
-        <div className="border-t pt-4 mt-4">
-          <p className="text-sm text-muted-foreground mb-2">למטרות פיתוח בלבד:</p>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => onMockSuccess(selectedPlan || "premium")}
-          >
-            סימולציית תשלום מוצלח
           </Button>
         </div>
       </form>

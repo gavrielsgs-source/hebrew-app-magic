@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useLeads } from "@/hooks/use-leads";
 import type { Document } from "@/hooks/use-documents";
-import { X, Send } from "lucide-react";
+import { X, Send, ArrowRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DocumentWhatsAppDialogProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function DocumentWhatsAppDialog({ isOpen, onClose, document }: DocumentWh
   const [selectedLeadId, setSelectedLeadId] = useState("");
   const [message, setMessage] = useState("");
   const { leads } = useLeads();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (document) {
@@ -91,20 +93,38 @@ ${document.url}
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg" dir="rtl">
+      <DialogContent 
+        className={`${
+          isMobile 
+            ? "w-[95vw] max-w-[95vw] h-[95vh] max-h-[95vh] m-2 p-4 overflow-y-auto" 
+            : "max-w-lg"
+        }`} 
+        dir="rtl"
+      >
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-right">שליחת מסמך בוואטסאפ</DialogTitle>
-            <Button variant="ghost" size="sm" onClick={handleClose}>
-              <X className="h-4 w-4" />
-            </Button>
+            <DialogTitle className="text-right text-lg">שליחת מסמך בוואטסאפ</DialogTitle>
+            {isMobile ? (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleClose}
+                className="h-8 w-8 p-0"
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={handleClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </DialogHeader>
         
-        <div className="space-y-4 pt-4">
+        <div className={`space-y-4 ${isMobile ? 'pt-2' : 'pt-4'}`}>
           <div className="bg-muted p-3 rounded-lg">
-            <h4 className="font-medium text-right mb-1">{document.name}</h4>
-            <p className="text-sm text-muted-foreground text-right">
+            <h4 className="font-medium text-right mb-1 text-sm">{document.name}</h4>
+            <p className="text-xs text-muted-foreground text-right">
               {document.type === 'contract' ? 'חוזה' : 
                document.type === 'quote' ? 'הצעת מחיר' :
                document.type === 'invoice' ? 'חשבונית' :
@@ -113,9 +133,9 @@ ${document.url}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
             <div>
-              <Label className="text-right">בחר לקוח</Label>
+              <Label className="text-right text-sm">בחר לקוח</Label>
               <Select value={selectedLeadId} onValueChange={handleLeadSelect}>
                 <SelectTrigger className="text-right">
                   <SelectValue placeholder="בחר לקוח" />
@@ -131,7 +151,7 @@ ${document.url}
             </div>
             
             <div>
-              <Label className="text-right">מספר טלפון</Label>
+              <Label className="text-right text-sm">מספר טלפון</Label>
               <Input
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -143,24 +163,24 @@ ${document.url}
           </div>
 
           <div>
-            <Label className="text-right">הודעה</Label>
+            <Label className="text-right text-sm">הודעה</Label>
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              rows={8}
+              rows={isMobile ? 6 : 8}
               className="text-right"
               dir="rtl"
             />
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleClose}>
+          <div className={`flex gap-2 ${isMobile ? 'flex-col-reverse' : 'justify-end'}`}>
+            <Button variant="outline" onClick={handleClose} className={isMobile ? 'w-full' : ''}>
               ביטול
             </Button>
             <Button 
               onClick={handleSend}
               disabled={!phoneNumber || !message}
-              className="bg-green-600 hover:bg-green-700"
+              className={`bg-green-600 hover:bg-green-700 ${isMobile ? 'w-full' : ''}`}
             >
               <Send className="w-4 h-4 ml-2" />
               שלח בוואטסאפ
