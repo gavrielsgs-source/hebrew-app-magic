@@ -1,36 +1,24 @@
 
 import { useState } from "react";
-import { LeadsGrid } from "@/components/leads/LeadsGrid";
-import { LeadsMobileView } from "@/components/leads/LeadsMobileView";
-import { LeadsTable } from "@/components/LeadsTable";
-import { AddLeadForm } from "@/components/leads/AddLeadForm";
-import { LeadsFilters } from "@/components/leads/LeadsFilters";
-import { Button } from "@/components/ui/button";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Settings, Grid, Table as TableIcon } from "lucide-react";
-import { useLeads, useCreateLead } from "@/hooks/use-leads";
-import { useLeadsFilters } from "@/hooks/use-leads-filters";
+import { useLeads } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FacebookLeadIntegration } from "@/components/leads/FacebookLeadIntegration";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
 import { cn } from "@/lib/utils";
+import { LeadsPageHeader } from "@/components/leads/page/LeadsPageHeader";
+import { LeadsMobileHeader } from "@/components/leads/page/LeadsMobileHeader";
+import { LeadsPageTabs } from "@/components/leads/page/LeadsPageTabs";
 
 export default function Leads() {
   console.log('Leads page rendered');
   
   const { toast } = useToast();
   const { leads, isLoading, error } = useLeads();
-  const addLead = useCreateLead();
   const [isAddingLead, setIsAddingLead] = useState(false);
   const { checkEntitlement } = useSubscription();
   const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
   const [activeTab, setActiveTab] = useState<string>("leads");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const isMobile = useIsMobile();
 
   console.log('Leads page state:', { 
@@ -41,20 +29,6 @@ export default function Leads() {
     activeTab,
     canAddLead
   });
-
-  // Use the new filters hook
-  const {
-    filters,
-    updateFilter,
-    clearFilters,
-    getActiveFiltersCount,
-    filterAndSortLeads
-  } = useLeadsFilters();
-
-  // Get filtered and sorted leads
-  const filteredLeads = filterAndSortLeads(leads);
-
-  console.log('Filtered leads count:', filteredLeads?.length);
 
   const onLeadAdded = () => {
     console.log("Lead added successfully, closing dialog");
@@ -70,88 +44,28 @@ export default function Leads() {
     console.log('Mobile view - rendering with header and LeadsMobileView');
     return (
       <div className="mobile-content pb-24" dir="rtl">
-        {/* Subscription Alert - always at the top */}
         <SubscriptionLimitAlert 
           featureKey="leadLimit" 
           currentCount={leads.length} 
           entityName="לקוחות" 
         />
         
-        {/* Mobile Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 p-4">
-          <div className="text-right">
-            <h1 className="text-2xl font-bold tracking-tight">לקוחות פוטנציאליים</h1>
-            <p className="text-muted-foreground mt-1">
-              ניהול ומעקב אחר לידים פוטנציאליים
-            </p>
-          </div>
-          <div className="flex gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
-            <NotificationsPopover />
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="flex items-center gap-2"
-              onClick={() => setActiveTab("settings")}
-            >
-              <Settings className="h-4 w-4 ml-1.5" />
-              הגדרות
-            </Button>
-            <SwipeDialog open={isAddingLead} onOpenChange={setIsAddingLead}>
-              <DialogTrigger asChild>
-                <Button 
-                  size="sm" 
-                  className="flex items-center gap-2 flex-1"
-                  disabled={!canAddLead}
-                  onClick={() => setIsAddingLead(true)}
-                >
-                  <Plus className="h-4 w-4 ml-1.5" />
-                  לקוח חדש
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-full sm:w-[400px]">
-                <DialogHeader>
-                  <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
-                </DialogHeader>
-                <AddLeadForm onSuccess={onLeadAdded} />
-              </DialogContent>
-            </SwipeDialog>
-          </div>
-        </div>
+        <LeadsMobileHeader
+          isAddingLead={isAddingLead}
+          setIsAddingLead={setIsAddingLead}
+          canAddLead={canAddLead}
+          onLeadAdded={onLeadAdded}
+          setActiveTab={setActiveTab}
+        />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl" className="w-full px-4">
-          <TabsList className="mb-6">
-            <TabsTrigger value="leads">לידים</TabsTrigger>
-            <TabsTrigger value="settings">אינטגרציות</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="leads" className="mt-0">
-            {/* Filters Component */}
-            <LeadsFilters
-              searchTerm={filters.searchTerm}
-              onSearchChange={(value) => updateFilter("searchTerm", value)}
-              statusFilter={filters.statusFilter}
-              onStatusFilterChange={(value) => updateFilter("statusFilter", value)}
-              sourceFilter={filters.sourceFilter}
-              onSourceFilterChange={(value) => updateFilter("sourceFilter", value)}
-              sortBy={filters.sortBy}
-              onSortByChange={(value) => updateFilter("sortBy", value)}
-              sortOrder={filters.sortOrder}
-              onSortOrderChange={(value) => updateFilter("sortOrder", value)}
-              onClearFilters={clearFilters}
-              activeFiltersCount={getActiveFiltersCount()}
-            />
-
-            <div className="text-sm text-muted-foreground mb-4 text-center">
-              {filteredLeads.length} מתוך {leads.length} לקוחות
-            </div>
-
-            <LeadsMobileView leads={filteredLeads} isLoading={isLoading} error={error} />
-          </TabsContent>
-          
-          <TabsContent value="settings" className="mt-0">
-            <FacebookLeadIntegration />
-          </TabsContent>
-        </Tabs>
+        <LeadsPageTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          leads={leads}
+          isLoading={isLoading}
+          error={error}
+          isMobile={true}
+        />
       </div>
     );
   }
@@ -164,105 +78,22 @@ export default function Leads() {
         entityName="לקוחות" 
       />
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <div className="text-right">
-          <h1 className="text-2xl font-bold tracking-tight">לקוחות פוטנציאליים</h1>
-          <p className="text-muted-foreground mt-1">
-            ניהול ומעקב אחר לידים פוטנציאליים
-          </p>
-        </div>
-        <div className="flex gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2"
-            onClick={() => setActiveTab("settings")}
-          >
-            <Settings className="h-4 w-4 ml-1.5" />
-            הגדרות
-          </Button>
-          <SwipeDialog open={isAddingLead} onOpenChange={setIsAddingLead}>
-            <DialogTrigger asChild>
-              <Button 
-                size="sm" 
-                className="flex items-center gap-2"
-                disabled={!canAddLead}
-                onClick={() => setIsAddingLead(true)}
-              >
-                <Plus className="h-4 w-4 ml-1.5" />
-                לקוח חדש
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="w-full sm:w-[400px]">
-              <DialogHeader>
-                <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
-              </DialogHeader>
-              <AddLeadForm onSuccess={onLeadAdded} />
-            </DialogContent>
-          </SwipeDialog>
-        </div>
-      </div>
+      <LeadsPageHeader
+        isAddingLead={isAddingLead}
+        setIsAddingLead={setIsAddingLead}
+        canAddLead={canAddLead}
+        onLeadAdded={onLeadAdded}
+        setActiveTab={setActiveTab}
+      />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="leads">לידים</TabsTrigger>
-          <TabsTrigger value="settings">אינטגרציות</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="leads" className="mt-0">
-          {activeTab === "leads" && (
-            <>
-              {/* Filters Component */}
-              <LeadsFilters
-                searchTerm={filters.searchTerm}
-                onSearchChange={(value) => updateFilter("searchTerm", value)}
-                statusFilter={filters.statusFilter}
-                onStatusFilterChange={(value) => updateFilter("statusFilter", value)}
-                sourceFilter={filters.sourceFilter}
-                onSourceFilterChange={(value) => updateFilter("sourceFilter", value)}
-                sortBy={filters.sortBy}
-                onSortByChange={(value) => updateFilter("sortBy", value)}
-                sortOrder={filters.sortOrder}
-                onSortOrderChange={(value) => updateFilter("sortOrder", value)}
-                onClearFilters={clearFilters}
-                activeFiltersCount={getActiveFiltersCount()}
-              />
-
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "outline"} 
-                    size="icon"
-                    onClick={() => setViewMode("grid")}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={viewMode === "table" ? "default" : "outline"} 
-                    size="icon"
-                    onClick={() => setViewMode("table")}
-                  >
-                    <TableIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {filteredLeads.length} מתוך {leads.length} לקוחות
-                </div>
-              </div>
-            </>
-          )}
-
-          {viewMode === "grid" ? (
-            <LeadsGrid leads={filteredLeads} isLoading={isLoading} error={error} />
-          ) : (
-            <LeadsTable searchTerm={filters.searchTerm} />
-          )}
-        </TabsContent>
-        
-        <TabsContent value="settings" className="mt-0">
-          <FacebookLeadIntegration />
-        </TabsContent>
-      </Tabs>
+      <LeadsPageTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        leads={leads}
+        isLoading={isLoading}
+        error={error}
+        isMobile={false}
+      />
     </div>
   );
 }
