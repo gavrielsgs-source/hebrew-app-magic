@@ -1,8 +1,10 @@
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, isToday, isPast } from "date-fns";
+
+import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, isPast } from "date-fns";
 import { he } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, Calendar, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -27,6 +29,15 @@ export function WeekView({
 
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 });
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    const newDate = direction === 'prev' ? subWeeks(selectedDate, 1) : addWeeks(selectedDate, 1);
+    onSelectedDateChange(newDate);
+  };
+
+  const goToCurrentWeek = () => {
+    onSelectedDateChange(new Date());
+  };
 
   const getTasksForDate = (date: Date) => {
     return tasks.filter(task => {
@@ -202,11 +213,41 @@ export function WeekView({
   return (
     <Card className="shadow-sm">
       <CardContent className="p-4">
-        {/* Week header */}
-        <div className="mb-4 text-center">
-          <h3 className="text-lg font-bold text-[#2F3C7E]">
-            {format(weekStart, 'd MMMM', { locale: he })} - {format(weekEnd, 'd MMMM yyyy', { locale: he })}
-          </h3>
+        {/* Enhanced week header with navigation */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateWeek('prev')}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            
+            <h3 className="text-lg font-bold text-[#2F3C7E] min-w-[280px] text-center">
+              {format(weekStart, 'd MMMM', { locale: he })} - {format(weekEnd, 'd MMMM yyyy', { locale: he })}
+            </h3>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateWeek('next')}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToCurrentWeek}
+            className="flex items-center gap-1 text-[#2F3C7E] border-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white"
+          >
+            <CalendarDays className="h-4 w-4" />
+            השבוע
+          </Button>
         </div>
 
         {/* Week grid */}
