@@ -14,12 +14,26 @@ export default function Leads() {
   console.log('Leads page rendered');
   
   const { toast } = useToast();
-  const { leads, isLoading, error } = useLeads();
-  const [isAddingLead, setIsAddingLead] = useState(false);
   const { checkEntitlement } = useSubscription();
-  const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
+  const [isAddingLead, setIsAddingLead] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("leads");
   const isMobile = useIsMobile();
+  
+  // Initialize leads hook with error handling
+  let leads, isLoading, error;
+  try {
+    const leadsData = useLeads();
+    leads = leadsData.leads || [];
+    isLoading = leadsData.isLoading;
+    error = leadsData.error;
+  } catch (hookError) {
+    console.error('Error in useLeads hook:', hookError);
+    leads = [];
+    isLoading = false;
+    error = hookError;
+  }
+
+  const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
 
   console.log('Leads page state:', { 
     leadsCount: leads?.length, 
@@ -38,6 +52,25 @@ export default function Leads() {
       description: "הליד נוסף בהצלחה!",
     });
   };
+
+  // Error boundary fallback
+  if (error) {
+    console.error('Leads page error:', error);
+    return (
+      <div className="p-4 text-center" dir="rtl">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">שגיאה בטעינת הדף</h2>
+          <p className="text-red-600 mb-4">אירעה שגיאה בטעינת דף הלידים</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            רענן דף
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Mobile view with header
   if (isMobile) {

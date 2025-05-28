@@ -44,28 +44,48 @@ export function useTasks() {
     queryKey: ["tasks"],
     queryFn: async () => {
       try {
+        console.log("Fetching tasks...");
+        
+        // Check if user is authenticated
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error("User authentication error:", userError);
+          throw new Error("User not authenticated");
+        }
+
+        if (!user) {
+          console.log("No authenticated user found");
+          return [];
+        }
+
         const { data, error } = await supabase
           .from("tasks")
           .select("*, cars(*), leads(*)")
+          .eq("user_id", user.id)
           .order("due_date", { ascending: true });
 
         if (error) {
           console.error("Error fetching tasks:", error);
-          throw error;
+          throw new Error(`Database error: ${error.message}`);
         }
 
+        console.log("Tasks fetched successfully:", data?.length || 0);
+
         // Ensure every task has a type, defaulting to 'task'
-        return data.map((task: TaskFromDB): Task => ({
+        return (data || []).map((task: TaskFromDB): Task => ({
           ...task,
           type: task.type || 'task'
         }));
       } catch (error) {
         console.error("Error in tasks query:", error);
-        toast.error("שגיאה בטעינת משימות");
         throw error;
       }
     },
-    retry: 1,
+    retry: (failureCount, error) => {
+      console.log(`Query failed ${failureCount} times:`, error);
+      return failureCount < 2; // Retry up to 2 times
+    },
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -73,11 +93,13 @@ export function useTasks() {
   const addTask = useMutation({
     mutationFn: async (task: NewTask) => {
       try {
+        console.log("Adding task:", task);
+        
         const { data: userData, error: userError } = await supabase.auth.getUser();
         
         if (userError || !userData.user) {
-          toast.error("לא ניתן להוסיף משימה - משתמש לא מחובר");
-          throw userError || new Error("User not authenticated");
+          console.error("User authentication error:", userError);
+          throw new Error("User not authenticated");
         }
 
         // Ensure type is set to 'task' if not provided
@@ -97,14 +119,13 @@ export function useTasks() {
 
         if (error) {
           console.error("Error adding task:", error);
-          toast.error("שגיאה בהוספת משימה");
-          throw error;
+          throw new Error(`Failed to create task: ${error.message}`);
         }
 
+        console.log("Task added successfully:", data);
         return data;
       } catch (error) {
         console.error("Error in add task mutation:", error);
-        toast.error("שגיאה בהוספת משימה - אנא ודא שהנך מחובר");
         throw error;
       }
     },
@@ -112,11 +133,17 @@ export function useTasks() {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("משימה נוספה בהצלחה");
     },
+    onError: (error) => {
+      console.error("Add task mutation error:", error);
+      toast.error("שגיאה בהוספת משימה - " + error.message);
+    }
   });
 
   const updateTask = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<NewTask> }) => {
       try {
+        console.log("Updating task:", id, data);
+        
         const { error } = await supabase
           .from("tasks")
           .update(data)
@@ -124,12 +151,12 @@ export function useTasks() {
 
         if (error) {
           console.error("Error updating task:", error);
-          toast.error("שגיאה בעדכון משימה");
-          throw error;
+          throw new Error(`Failed to update task: ${error.message}`);
         }
+
+        console.log("Task updated successfully");
       } catch (error) {
         console.error("Error in update task mutation:", error);
-        toast.error("שגיאה בעדכון משימה - אנא ודא שהנך מחובר");
         throw error;
       }
     },
@@ -137,11 +164,17 @@ export function useTasks() {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("משימה עודכנה בהצלחה");
     },
+    onError: (error) => {
+      console.error("Update task mutation error:", error);
+      toast.error("שגיאה בעדכון משימה - " + error.message);
+    }
   });
 
   const deleteTask = useMutation({
     mutationFn: async (id: string) => {
       try {
+        console.log("Deleting task:", id);
+        
         const { error } = await supabase
           .from("tasks")
           .delete()
@@ -149,12 +182,12 @@ export function useTasks() {
 
         if (error) {
           console.error("Error deleting task:", error);
-          toast.error("שגיאה במחיקת משימה");
-          throw error;
+          throw new Error(`Failed to delete task: ${error.message}`);
         }
+
+        console.log("Task deleted successfully");
       } catch (error) {
         console.error("Error in delete task mutation:", error);
-        toast.error("שגיאה במחיקת משימה - אנא ודא שהנך מחובר");
         throw error;
       }
     },
@@ -162,6 +195,10 @@ export function useTasks() {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("משימה נמחקה בהצלחה");
     },
+    onError: (error) => {
+      console.error("Delete task mutation error:", error);
+      toast.error("שגיאה במחיקת משימה - " + error.message);
+    }
   });
 
   return {

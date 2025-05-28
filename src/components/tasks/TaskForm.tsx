@@ -34,12 +34,34 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
-  const { addTask } = useTasks();
-  const { toast } = useToast();
-  const { scheduleNotification, permission } = usePushNotifications();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
   const [selectedNotificationOptions, setSelectedNotificationOptions] = useState<string[]>([]);
+
+  const { toast } = useToast();
+  
+  // Initialize hooks with error handling
+  let addTask, scheduleNotification, permission;
+  try {
+    const tasksHook = useTasks();
+    addTask = tasksHook.addTask;
+    
+    const pushNotifications = usePushNotifications();
+    scheduleNotification = pushNotifications.scheduleNotification;
+    permission = pushNotifications.permission;
+  } catch (error) {
+    console.error('Error initializing hooks in TaskForm:', error);
+    toast({
+      title: "שגיאה",
+      description: "אירעה שגיאה בטעינת טופס המשימה",
+      variant: "destructive",
+    });
+    return (
+      <div className="p-4 text-center" dir="rtl">
+        <p className="text-red-600">שגיאה בטעינת טופס המשימה</p>
+      </div>
+    );
+  }
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
@@ -81,24 +103,32 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
 
       console.log("Submitting task data:", taskData);
 
+      if (!addTask) {
+        throw new Error("addTask function not available");
+      }
+
       const newTask = await addTask.mutateAsync(taskData);
       console.log("Task created successfully:", newTask);
       
       // Create notifications if requested and due date is set
-      if (shouldCreateNotification && data.due_date && newTask && newTask[0] && selectedNotificationOptions.length > 0) {
+      if (shouldCreateNotification && data.due_date && newTask && newTask[0] && selectedNotificationOptions.length > 0 && scheduleNotification) {
         console.log("Creating notifications for task:", newTask[0].id);
         for (const option of selectedNotificationOptions) {
           const minutesBefore = getMinutesFromOption(option);
           const reminderTime = new Date(data.due_date.getTime() - minutesBefore * 60 * 1000);
           
-          await scheduleNotification(
-            `תזכורת למשימה: ${data.title}`,
-            `המשימה מתחילה בעוד ${option === "5_minutes" ? "5 דקות" : option === "1_hour" ? "שעה" : "24 שעות"}`,
-            reminderTime,
-            data.type,
-            "task",
-            newTask[0].id
-          );
+          try {
+            await scheduleNotification(
+              `תזכורת למשימה: ${data.title}`,
+              `המשימה מתחילה בעוד ${option === "5_minutes" ? "5 דקות" : option === "1_hour" ? "שעה" : "24 שעות"}`,
+              reminderTime,
+              data.type,
+              "task",
+              newTask[0].id
+            );
+          } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+          }
         }
         console.log(`Created ${selectedNotificationOptions.length} notifications`);
       }
