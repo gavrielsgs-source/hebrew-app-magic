@@ -16,6 +16,7 @@ import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { MobileHeader } from "@/components/mobile/MobileHeader";
 import { MobileButton } from "@/components/mobile/MobileButton";
 import { Calendar, List, Grid } from "lucide-react";
+import { TaskFiltersAndSearch } from "./TaskFiltersAndSearch";
 import { type Task } from "@/types/task";
 
 type ViewMode = "calendar" | "table" | "cards";
@@ -25,6 +26,7 @@ export function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>(tasks);
   const isMobile = useIsMobile();
 
   const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
@@ -49,6 +51,10 @@ export function TasksPage() {
     deleteTask.mutate(taskId);
   };
 
+  const handleTasksFilter = (filtered: Task[]) => {
+    setFilteredTasks(filtered);
+  };
+
   if (error) {
     return <TasksErrorState onRetry={() => refetch()} />;
   }
@@ -63,6 +69,12 @@ export function TasksPage() {
         <MobileHeader 
           title="ניהול משימות"
           subtitle={`${tasks.length} משימות פעילות`}
+        />
+        
+        {/* Mobile Filters and Search */}
+        <TaskFiltersAndSearch 
+          tasks={tasks}
+          onTasksFilter={handleTasksFilter}
         />
         
         {/* Mobile View Mode Selector */}
@@ -99,17 +111,23 @@ export function TasksPage() {
         {/* Content based on view mode */}
         {viewMode === "cards" && (
           <TasksCardsView 
-            tasks={tasks}
+            tasks={filteredTasks}
             onTaskStatusChange={handleTaskStatusChange}
             onTaskDelete={handleTaskDelete}
           />
         )}
 
         {viewMode === "calendar" && (
-          <TaskCalendar tasks={tasks} onTaskClick={handleTaskClick} />
+          <TaskCalendar tasks={filteredTasks} onTaskClick={handleTaskClick} />
         )}
 
-        {viewMode === "table" && <TasksTable />}
+        {viewMode === "table" && (
+          <TasksTable 
+            tasks={filteredTasks}
+            onTaskStatusChange={handleTaskStatusChange}
+            onTaskDelete={handleTaskDelete}
+          />
+        )}
 
         {/* Task Notifications SwipeDialog */}
         <SwipeDialog open={showNotifications} onOpenChange={setShowNotifications}>
@@ -133,19 +151,31 @@ export function TasksPage() {
         onViewModeChange={setViewMode} 
       />
 
+      {/* Desktop Filters and Search */}
+      <TaskFiltersAndSearch 
+        tasks={tasks}
+        onTasksFilter={handleTasksFilter}
+      />
+
       {viewMode === "cards" && (
         <TasksCardsView 
-          tasks={tasks}
+          tasks={filteredTasks}
           onTaskStatusChange={handleTaskStatusChange}
           onTaskDelete={handleTaskDelete}
         />
       )}
 
       {viewMode === "calendar" && (
-        <TaskCalendar tasks={tasks} onTaskClick={handleTaskClick} />
+        <TaskCalendar tasks={filteredTasks} onTaskClick={handleTaskClick} />
       )}
 
-      {viewMode === "table" && <TasksTable />}
+      {viewMode === "table" && (
+        <TasksTable 
+          tasks={filteredTasks}
+          onTaskStatusChange={handleTaskStatusChange}
+          onTaskDelete={handleTaskDelete}
+        />
+      )}
 
       {/* Task Notifications SwipeDialog */}
       <SwipeDialog open={showNotifications} onOpenChange={setShowNotifications}>
