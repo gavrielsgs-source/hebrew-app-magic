@@ -38,7 +38,8 @@ export default function Leads() {
     isLoading, 
     error: error?.message, 
     isMobile,
-    activeTab 
+    activeTab,
+    canAddLead
   });
 
   // Use the new filters hook
@@ -69,6 +70,7 @@ export default function Leads() {
     console.log('Mobile view - rendering with header and LeadsMobileView');
     return (
       <div className="mobile-content pb-24" dir="rtl">
+        {/* Subscription Alert - always at the top */}
         <SubscriptionLimitAlert 
           featureKey="leadLimit" 
           currentCount={leads.length} 
