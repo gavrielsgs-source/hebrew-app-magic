@@ -8,11 +8,13 @@ import { Form } from "@/components/ui/form";
 import { useTasks } from "@/hooks/use-tasks";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { TaskBasicDetails } from "./form/TaskBasicDetails";
 import { TaskDateAndStatus } from "./form/TaskDateAndStatus";
 import { TaskTypeAndPriority } from "./form/TaskTypeAndPriority";
 import { TaskRelations } from "./form/TaskRelations";
 import { NotificationCheckbox } from "@/components/notifications/NotificationCheckbox";
+import { MobileCard } from "@/components/mobile/MobileCard";
 
 const taskFormSchema = z.object({
   title: z.string().min(1, "כותרת המשימה חובה"),
@@ -39,6 +41,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
   const [selectedNotificationOptions, setSelectedNotificationOptions] = useState<string[]>([]);
+  const isMobile = useIsMobile();
 
   const { toast } = useToast();
   
@@ -167,7 +170,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
     } catch (error) {
       console.error("Error creating task:", error);
       toast({
-        title: "שגיאה ביצירת משימה",
+        title: "שגיאה ביצירת מששמה",
         description: "לא ניתן ליצור את המשימה. נסה שנית.",
         variant: "destructive",
       });
@@ -178,40 +181,66 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
 
   const watchedDueDate = form.watch("due_date");
 
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <TaskBasicDetails />
+        <TaskDateAndStatus />
+        <TaskTypeAndPriority />
+        <TaskRelations />
+        
+        {/* Notification Option */}
+        {watchedDueDate && (
+          <NotificationCheckbox
+            checked={shouldCreateNotification}
+            onCheckedChange={setShouldCreateNotification}
+            label="צור תזכורות למשימה"
+            disabled={permission !== "granted"}
+            showOptions={true}
+            selectedOptions={selectedNotificationOptions}
+            onOptionsChange={setSelectedNotificationOptions}
+          />
+        )}
+        
+        <div className="flex gap-3 pt-6">
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl h-12 text-base font-medium"
+          >
+            {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+
+  if (isMobile) {
+    return (
+      <MobileCard 
+        className="mx-4 my-6" 
+        contentClassName="p-6"
+        dir="rtl"
+        header={
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-[#2F3C7E] mb-2">משימה חדשה</h2>
+            <p className="text-gray-600">צור משימה חדשה ונהל את הזמן שלך</p>
+          </div>
+        }
+      >
+        {formContent}
+      </MobileCard>
+    );
+  }
+
   try {
     return (
-      <div className="space-y-6" dir="rtl">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <TaskBasicDetails />
-            <TaskDateAndStatus />
-            <TaskTypeAndPriority />
-            <TaskRelations />
-            
-            {/* Notification Option */}
-            {watchedDueDate && (
-              <NotificationCheckbox
-                checked={shouldCreateNotification}
-                onCheckedChange={setShouldCreateNotification}
-                label="צור תזכורות למשימה"
-                disabled={permission !== "granted"}
-                showOptions={true}
-                selectedOptions={selectedNotificationOptions}
-                onOptionsChange={setSelectedNotificationOptions}
-              />
-            )}
-            
-            <div className="flex gap-2 pt-4">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl"
-              >
-                {isSubmitting ? "יוצר..." : "צור משימה"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+      <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border" dir="rtl">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-[#2F3C7E] mb-2">משימה חדשה</h2>
+          <p className="text-gray-600">צור משימה חדשה ונהל את הזמן שלך</p>
+        </div>
+        {formContent}
       </div>
     );
   } catch (renderError) {

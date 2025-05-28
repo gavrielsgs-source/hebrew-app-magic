@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { TasksTable } from "./TasksTable";
@@ -7,6 +8,7 @@ import { TasksPageHeader } from "./TasksPageHeader";
 import { TasksErrorState } from "./TasksErrorState";
 import { TasksLoadingState } from "./TasksLoadingState";
 import { TasksCardsView } from "./TasksCardsView";
+import { AddTaskDialog } from "./AddTaskDialog";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
