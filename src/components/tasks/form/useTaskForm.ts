@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTasks } from "@/hooks/use-tasks";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
-import { taskFormSchema, type TaskFormValues, type TaskFormProps } from "./TaskFormTypes";
+import { taskFormSchema, type TaskFormValues } from "@/types/task";
+import { type TaskFormProps } from "./TaskFormTypes";
 
 export function useTaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
