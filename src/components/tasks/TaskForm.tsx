@@ -34,23 +34,28 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
+  console.log('TaskForm component rendering with props:', { initialLeadId, initialCarId });
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
   const [selectedNotificationOptions, setSelectedNotificationOptions] = useState<string[]>([]);
 
   const { toast } = useToast();
   
-  // Initialize hooks with error handling
+  // Initialize hooks with comprehensive error handling
   let addTask, scheduleNotification, permission;
   try {
+    console.log('Initializing hooks in TaskForm...');
     const tasksHook = useTasks();
     addTask = tasksHook.addTask;
+    console.log('useTasks hook initialized successfully');
     
     const pushNotifications = usePushNotifications();
     scheduleNotification = pushNotifications.scheduleNotification;
     permission = pushNotifications.permission;
+    console.log('usePushNotifications hook initialized successfully');
   } catch (error) {
-    console.error('Error initializing hooks in TaskForm:', error);
+    console.error('Critical error initializing hooks in TaskForm:', error);
     toast({
       title: "שגיאה",
       description: "אירעה שגיאה בטעינת טופס המשימה",
@@ -58,7 +63,16 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
     });
     return (
       <div className="p-4 text-center" dir="rtl">
-        <p className="text-red-600">שגיאה בטעינת טופס המשימה</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">שגיאה בטעינת הטופס</h2>
+          <p className="text-red-600 mb-4">אירעה שגיאה בטעינת טופס המשימה</p>
+          <button 
+            onClick={() => window.history.back()} 
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            חזור
+          </button>
+        </div>
       </div>
     );
   }
@@ -111,8 +125,8 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
       console.log("Task created successfully:", newTask);
       
       // Create notifications if requested and due date is set
-      if (shouldCreateNotification && data.due_date && newTask && newTask[0] && selectedNotificationOptions.length > 0 && scheduleNotification) {
-        console.log("Creating notifications for task:", newTask[0].id);
+      if (shouldCreateNotification && data.due_date && newTask && selectedNotificationOptions.length > 0 && scheduleNotification) {
+        console.log("Creating notifications for task:", newTask.id || 'unknown');
         for (const option of selectedNotificationOptions) {
           const minutesBefore = getMinutesFromOption(option);
           const reminderTime = new Date(data.due_date.getTime() - minutesBefore * 60 * 1000);
@@ -124,7 +138,7 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
               reminderTime,
               data.type,
               "task",
-              newTask[0].id
+              newTask.id || ''
             );
           } catch (notificationError) {
             console.error("Error creating notification:", notificationError);
@@ -164,39 +178,57 @@ export function TaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormPro
 
   const watchedDueDate = form.watch("due_date");
 
-  return (
-    <div className="space-y-6" dir="rtl">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <TaskBasicDetails />
-          <TaskDateAndStatus />
-          <TaskTypeAndPriority />
-          <TaskRelations />
-          
-          {/* Notification Option */}
-          {watchedDueDate && (
-            <NotificationCheckbox
-              checked={shouldCreateNotification}
-              onCheckedChange={setShouldCreateNotification}
-              label="צור תזכורות למשימה"
-              disabled={permission !== "granted"}
-              showOptions={true}
-              selectedOptions={selectedNotificationOptions}
-              onOptionsChange={setSelectedNotificationOptions}
-            />
-          )}
-          
-          <div className="flex gap-2 pt-4">
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl"
-            >
-              {isSubmitting ? "יוצר..." : "צור משימה"}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
-  );
+  try {
+    return (
+      <div className="space-y-6" dir="rtl">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <TaskBasicDetails />
+            <TaskDateAndStatus />
+            <TaskTypeAndPriority />
+            <TaskRelations />
+            
+            {/* Notification Option */}
+            {watchedDueDate && (
+              <NotificationCheckbox
+                checked={shouldCreateNotification}
+                onCheckedChange={setShouldCreateNotification}
+                label="צור תזכורות למשימה"
+                disabled={permission !== "granted"}
+                showOptions={true}
+                selectedOptions={selectedNotificationOptions}
+                onOptionsChange={setSelectedNotificationOptions}
+              />
+            )}
+            
+            <div className="flex gap-2 pt-4">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl"
+              >
+                {isSubmitting ? "יוצר..." : "צור משימה"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+    );
+  } catch (renderError) {
+    console.error('Error rendering TaskForm:', renderError);
+    return (
+      <div className="p-4 text-center" dir="rtl">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">שגיאה בהצגת הטופס</h2>
+          <p className="text-red-600 mb-4">אירעה שגיאה בהצגת טופס המשימה</p>
+          <button 
+            onClick={() => window.history.back()} 
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            חזור
+          </button>
+        </div>
+      </div>
+    );
+  }
 }

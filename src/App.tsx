@@ -40,40 +40,63 @@ const queryClient = new QueryClient({
         return failureCount < 2;
       },
       refetchOnWindowFocus: false,
+      onError: (error) => {
+        console.error('Query error:', error);
+      },
     },
     mutations: {
       retry: 1,
+      onError: (error) => {
+        console.error('Mutation error:', error);
+      },
     },
   },
 });
 
-// Error Boundary Component
+// Enhanced Error Boundary Component
 class ErrorBoundary extends Component<
-  { children: ReactNode },
-  { hasError: boolean; error?: Error }
+  { children: ReactNode; fallbackComponent?: ReactNode },
+  { hasError: boolean; error?: Error; errorInfo?: ErrorInfo }
 > {
-  constructor(props: { children: ReactNode }) {
+  constructor(props: { children: ReactNode; fallbackComponent?: ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): { hasError: boolean; error: Error } {
+    console.error('ErrorBoundary caught error:', error);
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error Boundary caught an error:', error, errorInfo);
+    this.setState({ errorInfo });
   }
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallbackComponent) {
+        return this.props.fallbackComponent;
+      }
+      
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50" dir="rtl">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4" dir="rtl">
           <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
             <h2 className="text-xl font-bold text-red-600 mb-4">אירעה שגיאה</h2>
             <p className="text-gray-600 mb-6">
               אירעה שגיאה לא צפויה באפליקציה. אנא רענן את הדף.
             </p>
+            <div className="space-y-2 mb-6 text-sm text-gray-500">
+              <p>שגיאה: {this.state.error?.message}</p>
+              {this.state.errorInfo && (
+                <details className="text-xs">
+                  <summary>פרטים טכניים</summary>
+                  <pre className="mt-2 text-left overflow-auto">
+                    {this.state.errorInfo.componentStack}
+                  </pre>
+                </details>
+              )}
+            </div>
             <button
               onClick={() => window.location.reload()}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -90,6 +113,8 @@ class ErrorBoundary extends Component<
 }
 
 const App = () => {
+  console.log('App component rendering...');
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -122,6 +147,7 @@ const App = () => {
 
 function AppLayout() {
   const isMobile = useIsMobile();
+  console.log('AppLayout rendering, isMobile:', isMobile);
 
   return (
     <ErrorBoundary>
@@ -129,7 +155,20 @@ function AppLayout() {
         <div className="flex min-h-screen w-full">
           <AppSidebar />
           <SidebarInset>
-            <ErrorBoundary>
+            <ErrorBoundary fallbackComponent={
+              <div className="p-4 text-center" dir="rtl">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                  <h2 className="text-lg font-semibold text-red-800 mb-2">שגיאה בטעינת הדף</h2>
+                  <p className="text-red-600 mb-4">אירעה שגיאה בטעינת התוכן</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                  >
+                    רענן דף
+                  </button>
+                </div>
+              </div>
+            }>
               <Routes>
                 <Route path="/dashboard" element={<Index />} />
                 <Route path="/profile" element={<Profile />} />
@@ -157,6 +196,7 @@ function AppLayout() {
 
 function AuthRoute() {
   const { user, loading } = useAuth();
+  console.log('AuthRoute rendering, user:', !!user, 'loading:', loading);
   
   if (loading) return <div className="flex items-center justify-center h-screen">טוען...</div>;
   
