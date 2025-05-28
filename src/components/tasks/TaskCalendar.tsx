@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileTaskCalendar } from "./MobileTaskCalendar";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,13 @@ interface TaskCalendarProps {
 
 export function TaskCalendar({ tasks, onTaskClick }: TaskCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [viewMode, setViewMode] = useState<"calendar" | "agenda">("agenda"); // Changed default to agenda
+  const [viewMode, setViewMode] = useState<"calendar" | "agenda">("agenda");
+  const isMobile = useIsMobile();
+
+  // If mobile, use the mobile calendar component
+  if (isMobile) {
+    return <MobileTaskCalendar tasks={tasks} onTaskClick={onTaskClick} />;
+  }
 
   const getTasksForDate = (date: Date) => {
     return tasks.filter(task => {

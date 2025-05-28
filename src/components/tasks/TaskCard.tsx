@@ -1,9 +1,10 @@
-
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { TaskCardHeader } from "./components/TaskCardHeader";
 import { TaskCardContent } from "./components/TaskCardContent";
 import { TaskCardFooter } from "./components/TaskCardFooter";
 import { isToday, isPast, isFuture } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileCard } from "@/components/mobile/MobileCard";
 import { type Task } from "@/types/task";
 
 interface TaskCardProps {
@@ -13,6 +14,8 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
+  const isMobile = useIsMobile();
+
   // Determine card color based on due date
   const getCardColorClass = () => {
     if (!task.due_date) return "bg-gray-50 border-gray-200";
@@ -30,6 +33,23 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
     return "bg-gray-50 border-gray-200";
   };
 
+  if (isMobile) {
+    return (
+      <MobileCard className={`${getCardColorClass()} transition-all duration-300`} dir="rtl">
+        <div className="p-5 space-y-4">
+          <TaskCardHeader task={task} />
+          <TaskCardContent task={task} />
+          <TaskCardFooter 
+            task={task} 
+            onStatusChange={onStatusChange} 
+            onDelete={onDelete} 
+          />
+        </div>
+      </MobileCard>
+    );
+  }
+
+  // Desktop version - keep existing code
   return (
     <Card className={`hover:shadow-lg transition-all duration-300 ${getCardColorClass()} rounded-2xl`} dir="rtl">
       <CardHeader className="space-y-3 pb-4">
