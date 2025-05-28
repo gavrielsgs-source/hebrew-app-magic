@@ -1,4 +1,3 @@
-
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, isToday, isPast } from "date-fns";
 import { he } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,15 +5,26 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Calendar } from "lucide-react";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface WeekViewProps {
   tasks: Task[];
   selectedDate: Date;
   onSelectedDateChange: (date: Date) => void;
   onTaskClick: (task: Task) => void;
+  onTaskDateChange?: (taskId: string, newDate: Date) => void;
 }
 
-export function WeekView({ tasks, selectedDate, onSelectedDateChange, onTaskClick }: WeekViewProps) {
+export function WeekView({ 
+  tasks, 
+  selectedDate, 
+  onSelectedDateChange, 
+  onTaskClick, 
+  onTaskDateChange 
+}: WeekViewProps) {
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
+
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 });
 
@@ -58,21 +68,66 @@ export function WeekView({ tasks, selectedDate, onSelectedDateChange, onTaskClic
     return "";
   };
 
+  const handleDragStart = (e: React.DragEvent, task: Task) => {
+    setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', task.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, date: Date) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverDate(date);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if we're leaving the entire day container
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverDate(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, date: Date) => {
+    e.preventDefault();
+    setDragOverDate(null);
+    
+    if (draggedTask && onTaskDateChange) {
+      // Update the task's due date to the new date but keep the same time
+      const originalDate = new Date(draggedTask.due_date || new Date());
+      const newDateTime = new Date(date);
+      newDateTime.setHours(originalDate.getHours());
+      newDateTime.setMinutes(originalDate.getMinutes());
+      
+      onTaskDateChange(draggedTask.id, newDateTime);
+    }
+    setDraggedTask(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTask(null);
+    setDragOverDate(null);
+  };
+
   const renderDay = (date: Date) => {
     const dayTasks = getTasksForDate(date);
     const isSelectedDate = isSameDay(date, selectedDate);
     const isTodayDate = isToday(date);
+    const isDragOver = dragOverDate && isSameDay(dragOverDate, date);
 
     return (
       <div key={date.toString()} className="flex-1 min-h-[200px]">
         <div 
           className={cn(
-            "p-3 border border-gray-200 h-full cursor-pointer transition-colors",
+            "p-3 border border-gray-200 h-full cursor-pointer transition-all duration-200",
             isSelectedDate && "bg-blue-50 border-blue-300",
             isTodayDate && "bg-yellow-50 border-yellow-300",
+            isDragOver && "bg-green-50 border-green-300 border-2",
             "hover:bg-gray-50"
           )}
           onClick={() => onSelectedDateChange(date)}
+          onDragOver={(e) => handleDragOver(e, date)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, date)}
         >
           {/* Day header */}
           <div className="flex items-center justify-between mb-2">
@@ -94,16 +149,21 @@ export function WeekView({ tasks, selectedDate, onSelectedDateChange, onTaskClic
           <div className="space-y-1">
             {dayTasks.length === 0 ? (
               <div className="text-xs text-gray-400 text-center py-4">
-                אין משימות
+                {isDragOver ? "שחרר כאן" : "אין משימות"}
               </div>
             ) : (
               dayTasks.slice(0, 4).map(task => (
                 <div
                   key={task.id}
+                  draggable={onTaskDateChange ? true : false}
+                  onDragStart={(e) => handleDragStart(e, task)}
+                  onDragEnd={handleDragEnd}
                   className={cn(
                     "p-2 rounded border text-xs cursor-pointer hover:shadow-sm transition-all",
                     getTaskTypeColor(task),
-                    getTaskStatusIndicator(task)
+                    getTaskStatusIndicator(task),
+                    onTaskDateChange && "cursor-move",
+                    draggedTask?.id === task.id && "opacity-50 scale-95"
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -176,6 +236,11 @@ export function WeekView({ tasks, selectedDate, onSelectedDateChange, onTaskClic
             <div className="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></div>
             <span>מעקב</span>
           </div>
+          {onTaskDateChange && (
+            <div className="flex items-center gap-1 text-blue-600">
+              <span>💡 ניתן לגרור משימות בין תאריכים</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

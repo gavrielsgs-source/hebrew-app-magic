@@ -42,6 +42,18 @@ export function TasksPage() {
     }
   };
 
+  const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      await updateTask.mutateAsync({
+        id: taskId,
+        data: updates
+      });
+    } catch (error) {
+      console.error("Failed to update task:", error);
+      throw error;
+    }
+  };
+
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task);
     setShowNotifications(true);
@@ -118,7 +130,11 @@ export function TasksPage() {
         )}
 
         {viewMode === "calendar" && (
-          <TaskCalendar tasks={filteredTasks} onTaskClick={handleTaskClick} />
+          <TaskCalendar 
+            tasks={filteredTasks} 
+            onTaskClick={handleTaskClick}
+            onTaskUpdate={handleTaskUpdate}
+          />
         )}
 
         {viewMode === "table" && (
@@ -166,7 +182,11 @@ export function TasksPage() {
       )}
 
       {viewMode === "calendar" && (
-        <TaskCalendar tasks={filteredTasks} onTaskClick={handleTaskClick} />
+        <TaskCalendar 
+          tasks={filteredTasks} 
+          onTaskClick={handleTaskClick}
+          onTaskUpdate={handleTaskUpdate}
+        />
       )}
 
       {viewMode === "table" && (
