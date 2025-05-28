@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -66,6 +65,7 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
                 tasks={tasks}
                 selectedDate={selectedDate}
                 onSelectedDateChange={setSelectedDate}
+                onTaskClick={onTaskClick}
               />
             ) : (
               <AgendaView
