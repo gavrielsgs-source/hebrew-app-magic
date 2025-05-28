@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCars } from "@/hooks/use-cars";
 import { CarsTable } from "@/components/CarsTable";
@@ -11,17 +10,80 @@ import { AddCarForm } from "@/components/cars/AddCarForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
 import { LimitAwareButton } from '@/components/subscription/LimitAwareButton';
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileContainer } from "@/components/mobile/MobileContainer";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
+import { MobileButton } from "@/components/mobile/MobileButton";
 
 export default function Cars() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const { cars = [], isLoading, addCar } = useCars();
   const { checkEntitlement } = useSubscription();
   const canAddCar = checkEntitlement('carLimit', cars.length + 1);
+  const isMobile = useIsMobile();
 
   const onCarAdded = () => {
     // Handled by the hook's internal logic
   };
 
+  if (isMobile) {
+    return (
+      <MobileContainer>
+        <MobileHeader 
+          title="מלאי רכבים"
+          subtitle={`${cars.length} רכבים במלאי`}
+        />
+        
+        <SubscriptionLimitAlert 
+          featureKey="carLimit" 
+          currentCount={cars.length} 
+          entityName="רכבים" 
+        />
+        
+        <div className="flex gap-3 mb-6">
+          <MobileButton 
+            variant="outline" 
+            size="md"
+            fullWidth={false}
+            className="flex-1"
+            onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+            icon={viewMode === 'grid' ? <TableIcon className="h-5 w-5" /> : <LayoutGridIcon className="h-5 w-5" />}
+          >
+            {viewMode === 'grid' ? 'טבלה' : 'גריד'}
+          </MobileButton>
+          
+          <SwipeDialog>
+            <DialogTrigger asChild>
+              <LimitAwareButton
+                resourceType="car"
+                currentCount={cars.length}
+                size="md"
+                className="flex-2"
+                onAction={() => {}}
+              >
+                <Plus className="h-5 w-5 ml-2" />
+                הוסף רכב
+              </LimitAwareButton>
+            </DialogTrigger>
+            <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
+              <DialogHeader>
+                <DialogTitle>הוסף רכב חדש</DialogTitle>
+              </DialogHeader>
+              <AddCarForm onSuccess={onCarAdded} />
+            </DialogContent>
+          </SwipeDialog>
+        </div>
+
+        {viewMode === "grid" ? (
+          <CarGrid cars={cars} isLoading={isLoading} />
+        ) : (
+          <CarsTable />
+        )}
+      </MobileContainer>
+    );
+  }
+
+  // Desktop view - keep existing code
   return (
     <div className="p-6">
       <SubscriptionLimitAlert 

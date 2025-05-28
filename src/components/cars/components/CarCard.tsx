@@ -1,4 +1,3 @@
-
 import { Car } from "@/types/car";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,8 @@ import { CarInfoGrid } from "./CarInfoGrid";
 import { CarCardActions } from "./CarCardActions";
 import { formatPrice } from "@/lib/utils";
 import { Calendar, Gauge, Fuel, Car as CarIcon, MapPin } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileCard } from "@/components/mobile/MobileCard";
 
 interface CarCardProps {
   car: Car;
@@ -26,6 +27,8 @@ export function CarCard({
   onSendWhatsapp,
   onViewDetails
 }: CarCardProps) {
+  const isMobile = useIsMobile();
+
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'available':
@@ -52,6 +55,90 @@ export function CarCard({
     }
   };
 
+  if (isMobile) {
+    return (
+      <MobileCard className="overflow-hidden">
+        <CarImageSection 
+          car={car} 
+          loadingImages={loadingImages} 
+          carImages={carImages} 
+          onEditClick={onEditClick} 
+        />
+        
+        <div className="p-6 space-y-4">
+          {/* כותרת וסטטוס */}
+          <div className="flex justify-between items-start">
+            <div className="text-right min-w-0 flex-1">
+              <h3 className="text-xl font-bold text-[#2F3C7E] mb-1 truncate">
+                {car.make} {car.model}
+              </h3>
+              <p className="text-base text-gray-600">
+                שנת {car.year}
+              </p>
+            </div>
+            <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full flex-shrink-0 mr-3`}>
+              {getStatusText(car.status)}
+            </Badge>
+          </div>
+          
+          {/* מחיר בולט */}
+          <div className="text-center bg-gradient-to-l from-blue-50 to-white p-4 rounded-xl border border-blue-100">
+            <div className="text-2xl font-bold text-[#2F3C7E]">
+              {formatPrice(car.price)}
+            </div>
+            <div className="text-sm text-gray-500 mt-1">מחיר מבוקש</div>
+          </div>
+          
+          {/* פרטים טכניים */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
+              <div className="text-sm min-w-0 flex-1">
+                <div className="font-medium text-gray-900">{car.kilometers.toLocaleString()}</div>
+                <div className="text-xs text-gray-500">קילומטרים</div>
+              </div>
+              <Gauge className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+            </div>
+            
+            <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
+              <div className="text-sm min-w-0 flex-1">
+                <div className="font-medium text-gray-900">{car.fuel_type || 'לא צוין'}</div>
+                <div className="text-xs text-gray-500">סוג דלק</div>
+              </div>
+              <Fuel className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+            </div>
+            
+            {car.transmission && (
+              <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg col-span-2">
+                <div className="text-sm min-w-0 flex-1">
+                  <div className="font-medium text-gray-900">{car.transmission}</div>
+                  <div className="text-xs text-gray-500">תיבת הילוכים</div>
+                </div>
+                <CarIcon className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+              </div>
+            )}
+          </div>
+          
+          {/* תיאור קצר */}
+          {car.description && (
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-gray-700 text-right line-clamp-2">
+                {car.description}
+              </p>
+            </div>
+          )}
+          
+          {/* כפתורי פעולה */}
+          <CarCardActions 
+            car={car} 
+            onSendWhatsapp={onSendWhatsapp} 
+            onViewDetails={onViewDetails} 
+          />
+        </div>
+      </MobileCard>
+    );
+  }
+
+  // Desktop version - keep existing code
   return (
     <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 group border-0 shadow-lg bg-white rounded-2xl flex flex-col">
       <CarImageSection 
