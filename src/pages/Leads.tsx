@@ -149,7 +149,7 @@ export default function Leads() {
                 </AlertDescription>
               </Alert>
             ) : (
-              <AddLeadForm onSuccess={onLeadAdded} />
+              <MobileAddLeadForm onSuccess={onLeadAdded} />
             )}
           </DialogContent>
         </SwipeDialog>

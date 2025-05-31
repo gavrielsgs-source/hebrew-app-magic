@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCars } from "@/hooks/use-cars";
 import { CarsTable } from "@/components/CarsTable";
@@ -121,7 +120,7 @@ export default function Cars() {
                 </AlertDescription>
               </Alert>
             ) : (
-              <AddCarForm onSuccess={onCarAdded} />
+              <MobileAddCarForm onSuccess={onCarAdded} />
             )}
           </DialogContent>
         </SwipeDialog>

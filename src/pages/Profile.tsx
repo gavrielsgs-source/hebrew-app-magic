@@ -1,4 +1,3 @@
-
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationSettings } from "@/components/notifications/NotificationSettings";
+import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { User, Phone, Building, Briefcase, Save, Bell } from "lucide-react";
@@ -210,7 +210,7 @@ export default function Profile() {
             <TabsContent value="notifications">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
                 <div className="p-4" dir="rtl">
-                  <NotificationSettings />
+                  <MobileNotificationSettings />
                 </div>
               </div>
             </TabsContent>

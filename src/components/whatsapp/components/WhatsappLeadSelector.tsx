@@ -6,7 +6,8 @@ import { useLeads } from "@/hooks/use-leads";
 import { UserPlus } from "lucide-react";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AddLeadForm } from "@/components/leads/AddLeadForm";
+import { MobileAddLeadForm } from "@/components/leads/MobileAddLeadForm";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WhatsappLeadSelectorProps {
   onLeadSelect: (leadId: string, leadPhone: string, leadName: string) => void;
@@ -17,6 +18,7 @@ interface WhatsappLeadSelectorProps {
 export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }: WhatsappLeadSelectorProps) {
   const { leads } = useLeads();
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   // Filter leads that have phone numbers with proper type checking
   const leadsWithPhone = leads.filter(lead => {
@@ -88,9 +90,13 @@ export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }
       <SwipeDialog open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
         <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" dir="rtl">
           <DialogHeader>
-            <DialogTitle>הוסף לקוח חדש</DialogTitle>
+            <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
           </DialogHeader>
-          <AddLeadForm onSuccess={handleNewLeadSuccess} />
+          {isMobile ? (
+            <MobileAddLeadForm onSuccess={handleNewLeadSuccess} />
+          ) : (
+            <MobileAddLeadForm onSuccess={handleNewLeadSuccess} />
+          )}
         </DialogContent>
       </SwipeDialog>
     </>
