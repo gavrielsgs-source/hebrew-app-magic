@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus, Sparkles } from "lucide-react";
 
 interface TemplateDialogProps {
@@ -44,7 +45,7 @@ export function TemplateDialog({
   templateTags
 }: TemplateDialogProps) {
   const { toast } = useToast();
-
+  const isMobile = useIsMobile();
   const [templateContent, setTemplateContent] = useState("");
 
   // Get the template content from generateMessage for editing
@@ -85,20 +86,36 @@ export function TemplateDialog({
     });
   };
 
+  const handleSave = () => {
+    if (!newTemplate.name || !newTemplate.description) {
+      toast({
+        title: "יש למלא את כל השדות",
+        description: "יש לוודא ששם התבנית והתיאור שלה מלאים.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onSave();
+  };
+
   return (
     <SwipeDialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent 
+        className={`${isMobile ? 'w-[95%] h-[95vh]' : 'sm:max-w-[700px]'} max-h-[95vh] overflow-y-auto`} 
+        dir="rtl"
+      >
         <DialogHeader className="text-right">
-          <DialogTitle className="text-2xl flex items-center justify-end gap-2">
+          <DialogTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} flex items-center justify-end gap-2`}>
             {isNew ? 'תבנית חדשה' : 'עריכת תבנית'}
             <Sparkles className="h-6 w-6 text-carslead-purple" />
           </DialogTitle>
-          <DialogDescription className="text-right text-base">
+          <DialogDescription className={`text-right ${isMobile ? 'text-sm' : 'text-base'}`}>
             צור תבנית מותאמת אישית לשליחת הודעות. השתמש במשתנים כמו {"{"}car.make{"}"}, {"{"}car.model{"}"} וכו' כדי לכלול פרטים דינמיים מהרכב.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-6 py-6">
+        <div className={`grid gap-4 py-4 ${isMobile ? 'gap-3' : 'gap-6'}`}>
           <div className="space-y-2">
             <Label htmlFor="name" className="text-right text-sm font-medium">
               שם התבנית
@@ -135,7 +152,9 @@ export function TemplateDialog({
               id="template"
               value={templateContent}
               onChange={(e) => handleTemplateContentChange(e.target.value)}
-              className="min-h-[200px] text-right font-mono text-sm leading-relaxed"
+              className={`text-right font-mono text-sm leading-relaxed ${
+                isMobile ? 'min-h-[150px]' : 'min-h-[200px]'
+              }`}
               placeholder="שלום,&#10;&#10;רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:&#10;&#10;*${car.make} ${car.model} ${car.year}*&#10;מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}&#10;..."
               dir="rtl"
             />
@@ -146,12 +165,14 @@ export function TemplateDialog({
               <span className="text-sm font-medium">תגיות זמינות:</span>
               <Plus className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="flex flex-wrap gap-2 justify-end">
+            <div className={`flex flex-wrap gap-2 justify-end ${isMobile ? 'max-h-20 overflow-y-auto' : ''}`}>
               {templateTags.map((tag) => (
                 <Badge
                   key={tag}
                   variant="outline"
-                  className="cursor-pointer hover:bg-carslead-purple hover:text-white transition-colors"
+                  className={`cursor-pointer hover:bg-carslead-purple hover:text-white transition-colors ${
+                    isMobile ? 'text-xs px-2 py-1' : ''
+                  }`}
                   onClick={() => {
                     const carVar = tag.replace(/{{|}}/g, '').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
                     const templateVar = `\${car.${carVar}}`;
@@ -162,24 +183,24 @@ export function TemplateDialog({
                 </Badge>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground text-right">
+            <p className={`text-muted-foreground text-right ${isMobile ? 'text-xs' : 'text-xs'}`}>
               לחץ על תגית כדי להוסיף אותה לתבנית
             </p>
           </div>
         </div>
         
-        <DialogFooter className="gap-2">
+        <DialogFooter className={`gap-2 ${isMobile ? 'flex-col-reverse' : ''}`}>
           <Button 
             variant="outline" 
             onClick={() => setIsOpen(false)}
-            className="px-6"
+            className={`${isMobile ? 'w-full order-2' : ''} px-6`}
           >
             ביטול
           </Button>
           <Button 
             type="submit" 
-            onClick={onSave}
-            className="bg-carslead-purple hover:bg-carslead-purple/90 px-6"
+            onClick={handleSave}
+            className={`${isMobile ? 'w-full order-1' : ''} bg-carslead-purple hover:bg-carslead-purple/90 px-6`}
           >
             {isNew ? 'שמור תבנית' : 'עדכן תבנית'}
           </Button>
