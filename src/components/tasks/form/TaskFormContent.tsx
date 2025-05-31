@@ -32,20 +32,15 @@ export function TaskFormContent(props: TaskFormProps) {
     formValid: form.formState.isValid
   });
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     console.log('TaskFormContent - Form submitted');
-    onSubmit(e);
-  };
-
-  const handleButtonClick = () => {
-    console.log('TaskFormContent - Submit button clicked');
     onSubmit();
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={handleFormSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <TaskBasicDetails />
         <TaskDateAndStatus />
         <TaskTypeAndPriority />
@@ -65,24 +60,14 @@ export function TaskFormContent(props: TaskFormProps) {
         )}
         
         <div className="flex gap-3 pt-6">
-          {isMobile ? (
-            <button
-              type="button"
-              onClick={handleButtonClick}
-              disabled={isSubmitting}
-              className="w-full h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-2xl font-semibold text-lg shadow-lg touch-manipulation active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
-            </button>
-          ) : (
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl h-12 text-base font-medium"
-            >
-              {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
-            </Button>
-          )}
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className={`w-full ${isMobile ? 'h-12 text-base' : 'h-10 text-sm'} bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl font-medium`}
+            onClick={() => handleSubmit()}
+          >
+            {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
+          </Button>
         </div>
       </form>
     </Form>

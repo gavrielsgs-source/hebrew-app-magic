@@ -1,6 +1,5 @@
 
 import { Plus, MessageSquare, Calendar } from "lucide-react";
-import { MobileButton } from "@/components/mobile/MobileButton";
 
 interface LeadsMobileHeaderProps {
   onAddLead: () => void;
@@ -57,24 +56,20 @@ export function LeadsMobileHeader({
 
       {/* Action buttons */}
       <div className="flex gap-3">
-        <MobileButton
-          variant="outline"
-          size="md"
+        <button
           onClick={handleWhatsApp}
-          icon={<MessageSquare className="h-5 w-5" />}
-          className="flex-1 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+          className="flex-1 h-10 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100"
         >
+          <MessageSquare className="h-5 w-5" />
           וואטסאפ
-        </MobileButton>
-        <MobileButton
-          variant="outline"
-          size="md"
+        </button>
+        <button
           onClick={handleScheduleMeeting}
-          icon={<Calendar className="h-5 w-5" />}
-          className="flex-1 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+          className="flex-1 h-10 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100"
         >
+          <Calendar className="h-5 w-5" />
           פגישה
-        </MobileButton>
+        </button>
       </div>
     </div>
   );

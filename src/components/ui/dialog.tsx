@@ -1,6 +1,7 @@
+
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X, ArrowRight } from "lucide-react"
+import { X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 import { cn } from "@/lib/utils"
@@ -20,7 +21,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -40,18 +41,32 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-          isMobile && "w-[95vw] max-w-[95vw] h-[95vh] max-h-[95vh] m-2 p-4 overflow-y-auto",
+          "fixed z-50 gap-4 bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          // Mobile styles
+          isMobile ? [
+            "inset-x-2 top-[2%] bottom-[2%]",
+            "max-h-[96vh] w-[calc(100vw-1rem)]",
+            "overflow-y-auto rounded-lg",
+            "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom"
+          ] : [
+            "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]",
+            "w-full max-w-lg border rounded-lg",
+            "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]"
+          ],
           className
         )}
+        style={isMobile ? {
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain'
+        } : {}}
         {...props}
       >
         {children}
         <DialogPrimitive.Close className={cn(
-          "absolute opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground rounded-full hover:bg-gray-100",
-          isMobile ? "left-4 top-4 h-12 w-12 flex items-center justify-center" : "right-4 top-4 h-10 w-10 flex items-center justify-center"
+          "absolute opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none rounded-sm",
+          isMobile ? "left-4 top-4 h-10 w-10" : "right-4 top-4 h-6 w-6"
         )}>
-          {isMobile ? <ArrowRight className="h-8 w-8" /> : <X className="h-6 w-6" />}
+          <X className={isMobile ? "h-6 w-6" : "h-4 w-4"} />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

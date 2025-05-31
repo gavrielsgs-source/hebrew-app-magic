@@ -4,8 +4,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { TaskNotifications } from "./TaskNotifications";
 import { TasksErrorState } from "./TasksErrorState";
 import { TasksLoadingState } from "./TasksLoadingState";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTasksView } from "./MobileTasksView";
 import { DesktopTasksView } from "./DesktopTasksView";
@@ -109,9 +108,9 @@ export function TasksPageContent() {
         />
       )}
 
-      {/* Task Notifications SwipeDialog */}
-      <SwipeDialog open={showNotifications} onOpenChange={setShowNotifications}>
-        <DialogContent className="sm:max-w-[425px]">
+      {/* Task Notifications Dialog */}
+      <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+        <DialogContent>
           {selectedTask && (
             <TaskNotifications
               task={selectedTask}
@@ -119,7 +118,7 @@ export function TasksPageContent() {
             />
           )}
         </DialogContent>
-      </SwipeDialog>
+      </Dialog>
     </div>
   );
 }

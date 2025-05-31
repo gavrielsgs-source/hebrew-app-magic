@@ -1,10 +1,8 @@
 
 import { useState } from "react";
 import { Plus, MessageSquare, Filter } from "lucide-react";
-import { MobileButton } from "@/components/mobile/MobileButton";
 import { AddCarForm } from "@/components/cars/AddCarForm";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface CarsMobileHeaderProps {
   onAddCar: () => void;
@@ -27,13 +25,11 @@ export function CarsMobileHeader({
   };
 
   const handleWhatsApp = () => {
-    // פתיחת WhatsApp Web
     window.open('https://web.whatsapp.com', '_blank');
     onWhatsApp();
   };
 
   const handleFilter = () => {
-    // יכול להיות מחובר למערכת סינון
     alert('פונקציונליות סינון תתווסף בקרוב');
     onFilter();
   };
@@ -63,36 +59,32 @@ export function CarsMobileHeader({
 
         {/* Action buttons */}
         <div className="flex gap-3">
-          <MobileButton
-            variant="outline"
-            size="md"
+          <button
             onClick={handleWhatsApp}
-            icon={<MessageSquare className="h-5 w-5" />}
-            className="flex-1 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+            className="flex-1 h-10 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100"
           >
+            <MessageSquare className="h-5 w-5" />
             וואטסאפ
-          </MobileButton>
-          <MobileButton
-            variant="outline"
-            size="md"
+          </button>
+          <button
             onClick={handleFilter}
-            icon={<Filter className="h-5 w-5" />}
-            className="flex-1 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+            className="flex-1 h-10 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100"
           >
+            <Filter className="h-5 w-5" />
             סינון
-          </MobileButton>
+          </button>
         </div>
       </div>
 
       {/* Add Car Dialog */}
-      <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>הוסף רכב חדש</DialogTitle>
           </DialogHeader>
           <AddCarForm onSuccess={() => setShowAddDialog(false)} />
         </DialogContent>
-      </SwipeDialog>
+      </Dialog>
     </>
   );
 }

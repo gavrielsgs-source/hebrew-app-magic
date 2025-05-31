@@ -31,7 +31,6 @@ export function MobileTasksView({
   onTaskClick,
   onTasksFilter
 }: MobileTasksViewProps) {
-  const [showAddDialog, setShowAddDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -43,24 +42,8 @@ export function MobileTasksView({
     tasks: tasks?.length || 0, 
     filteredTasks: filteredTasks?.length || 0,
     viewMode,
-    isLoading,
-    showAddDialog
+    isLoading
   });
-
-  const handleAddTaskClick = () => {
-    console.log('MobileTasksView - Add task button clicked');
-    setShowAddDialog(true);
-  };
-
-  const handleAddTaskSuccess = () => {
-    console.log('MobileTasksView - Task added successfully');
-    setShowAddDialog(false);
-  };
-
-  const handleDialogChange = (open: boolean) => {
-    console.log('MobileTasksView - Dialog state change:', open);
-    setShowAddDialog(open);
-  };
 
   if (isLoading) {
     return (
@@ -95,12 +78,12 @@ export function MobileTasksView({
           onTasksFilter={onTasksFilter}
         />
         
-        {/* Mobile View Mode Selector - Only calendar and cards */}
+        {/* Mobile View Mode Selector */}
         <div className="flex gap-2">
           <button
             onClick={() => onViewModeChange("calendar")}
             className={`
-              flex-1 h-10 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors touch-manipulation
+              flex-1 h-10 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors
               ${viewMode === "calendar" 
                 ? "bg-[#2F3C7E] text-white" 
                 : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white"
@@ -113,7 +96,7 @@ export function MobileTasksView({
           <button
             onClick={() => onViewModeChange("cards")}
             className={`
-              flex-1 h-10 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors touch-manipulation
+              flex-1 h-10 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors
               ${viewMode === "cards" 
                 ? "bg-[#2F3C7E] text-white" 
                 : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white"
@@ -131,18 +114,7 @@ export function MobileTasksView({
             <>
               {/* Add Task Button for Cards View */}
               <div className="mb-4">
-                <AddTaskDialog 
-                  open={showAddDialog}
-                  onOpenChange={handleDialogChange}
-                  onSuccess={handleAddTaskSuccess}
-                >
-                  <button
-                    onClick={handleAddTaskClick}
-                    className="w-full h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-3 touch-manipulation active:scale-95 transition-transform"
-                  >
-                    + הוסף משימה חדשה
-                  </button>
-                </AddTaskDialog>
+                <AddTaskDialog />
               </div>
               
               <TasksCardsView 
