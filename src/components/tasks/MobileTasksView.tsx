@@ -2,16 +2,15 @@
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { MobileHeader } from "@/components/mobile/MobileHeader";
 import { MobileButton } from "@/components/mobile/MobileButton";
-import { Calendar, List, Grid, Plus } from "lucide-react";
+import { Calendar, Grid, Plus } from "lucide-react";
 import { TaskFiltersAndSearch } from "./TaskFiltersAndSearch";
 import { TasksCardsView } from "./TasksCardsView";
 import { MobileTaskCalendar } from "./MobileTaskCalendar";
-import { TasksTable } from "./TasksTable";
 import { AddTaskDialog } from "./AddTaskDialog";
 import { type Task } from "@/types/task";
 import { useState, useEffect } from "react";
 
-type ViewMode = "calendar" | "table" | "cards";
+type ViewMode = "calendar" | "cards";
 
 interface MobileTasksViewProps {
   tasks: Task[];
@@ -65,22 +64,25 @@ export function MobileTasksView({
 
   return (
     <MobileContainer className="pb-20" withPadding={false}>
-      {/* Header */}
-      <MobileHeader 
-        title="ניהול משימות"
-        subtitle={`${tasks?.length || 0} משימות פעילות`}
-        className="mb-4"
-      />
+      {/* Header with gradient background */}
+      <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl mx-4 mt-4 p-4 shadow-lg">
+        <h1 className="text-lg font-semibold text-white mb-1 text-right">
+          ניהול משימות
+        </h1>
+        <p className="text-sm text-white/90 text-right">
+          {tasks?.length || 0} משימות פעילות
+        </p>
+      </div>
       
       {/* Content with proper spacing */}
-      <div className="px-4 space-y-4">
+      <div className="px-4 space-y-4 mt-6">
         {/* Mobile Filters and Search */}
         <TaskFiltersAndSearch 
           tasks={tasks || []}
           onTasksFilter={onTasksFilter}
         />
         
-        {/* Mobile View Mode Selector */}
+        {/* Mobile View Mode Selector - Only calendar and cards */}
         <div className="flex gap-2">
           <MobileButton
             variant={viewMode === "calendar" ? "primary" : "outline"}
@@ -99,15 +101,6 @@ export function MobileTasksView({
             className="flex-1 h-10 text-sm font-medium rounded-lg"
           >
             כרטיסים
-          </MobileButton>
-          <MobileButton
-            variant={viewMode === "table" ? "primary" : "outline"}
-            size="md"
-            onClick={() => onViewModeChange("table")}
-            icon={<List className="h-4 w-4" />}
-            className="flex-1 h-10 text-sm font-medium rounded-lg"
-          >
-            טבלה
           </MobileButton>
         </div>
 
@@ -128,18 +121,10 @@ export function MobileTasksView({
               onTaskStatusChange={onTaskStatusChange}
             />
           )}
-
-          {viewMode === "table" && (
-            <TasksTable 
-              tasks={filteredTasks || []}
-              onTaskStatusChange={onTaskStatusChange}
-              onTaskDelete={onTaskDelete}
-            />
-          )}
         </div>
       </div>
 
-      {/* Floating Action Button for Adding Tasks */}
+      {/* Single Floating Action Button for Adding Tasks */}
       <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50">
         <MobileButton
           variant="primary"

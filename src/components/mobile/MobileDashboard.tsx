@@ -97,12 +97,17 @@ export function MobileDashboard() {
 
   return (
     <MobileContainer withPadding={false}>
-      <MobileHeader 
-        title="שלום! מה נעשה היום?"
-        subtitle="הכל מוכן לעוד יום מוצלח של מכירות"
-      />
+      {/* Main header with gradient background */}
+      <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl mx-4 mt-4 p-4 shadow-lg">
+        <h1 className="text-lg font-semibold text-white mb-1 text-right">
+          שלום! מה נעשה היום?
+        </h1>
+        <p className="text-sm text-white/90 text-right">
+          הכל מוכן לעוד יום מוצלח של מכירות
+        </p>
+      </div>
 
-      <div className="px-4 space-y-8">
+      <div className="px-4 space-y-8 mt-6">
         {/* Quick Stats */}
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4 text-right">מבט מהיר</h2>
@@ -153,7 +158,7 @@ export function MobileDashboard() {
                   size="xl"
                   onClick={action.action}
                   icon={<Icon className="h-6 w-6" />}
-                  className="h-20 flex-col gap-2"
+                  className="h-20 flex-col gap-3"
                 >
                   <span className="font-bold">{action.title}</span>
                   <span className="text-sm opacity-80">{action.subtitle}</span>
