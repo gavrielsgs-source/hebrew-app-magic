@@ -16,10 +16,10 @@ export function MobileTaskCalendarHeader({
 }: MobileTaskCalendarHeaderProps) {
   return (
     <div className="space-y-3" dir="rtl">
-      {/* Main header with brand gradient background */}
+      {/* Clean header - NO ADD BUTTONS */}
       <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl p-4 shadow-lg">
         <h1 className="text-lg font-semibold text-white mb-1 text-right">
-          ניהול משימות
+          יומן משימות
         </h1>
         <p className="text-sm text-white/90 text-right">
           {todayCount + upcomingCount} משימות פעילות

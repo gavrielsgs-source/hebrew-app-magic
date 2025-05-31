@@ -4,7 +4,6 @@ import { Calendar, Grid } from "lucide-react";
 import { TaskFiltersAndSearch } from "./TaskFiltersAndSearch";
 import { TasksCardsView } from "./TasksCardsView";
 import { MobileTaskCalendar } from "./MobileTaskCalendar";
-import { AddTaskDialog } from "./AddTaskDialog";
 import { type Task } from "@/types/task";
 import { useState, useEffect } from "react";
 
@@ -32,7 +31,6 @@ export function MobileTasksView({
   onTasksFilter
 }: MobileTasksViewProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 100);
@@ -70,8 +68,8 @@ export function MobileTasksView({
   }
 
   return (
-    <MobileContainer className="pb-20" withPadding={false}>
-      {/* Header with brand gradient background */}
+    <MobileContainer className="pb-24" withPadding={false}>
+      {/* Simple Header - NO ADD BUTTONS */}
       <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl mx-4 mt-4 p-4 shadow-lg">
         <h1 className="text-lg font-semibold text-white mb-1 text-right">
           ניהול משימות
@@ -133,7 +131,7 @@ export function MobileTasksView({
           </button>
         </div>
 
-        {/* Content based on view mode - NO ADD TASK BUTTONS HERE */}
+        {/* Content based on view mode - CLEAN, NO ADD BUTTONS */}
         <div className="min-h-screen">
           {viewMode === "cards" && (
             <TasksCardsView 
@@ -152,13 +150,6 @@ export function MobileTasksView({
           )}
         </div>
       </div>
-
-      {/* Single Add Task Dialog - controlled from external FAB */}
-      <AddTaskDialog
-        open={isAddTaskOpen}
-        onOpenChange={setIsAddTaskOpen}
-        onSuccess={() => setIsAddTaskOpen(false)}
-      />
     </MobileContainer>
   );
 }

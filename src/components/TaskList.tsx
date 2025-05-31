@@ -1,5 +1,4 @@
 
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Clock } from "lucide-react";
 import { useTasks } from "@/hooks/use-tasks";
@@ -124,12 +123,6 @@ export function TaskList({ extended = false }: TaskListProps) {
             </div>
           </div>
         ))
-      )}
-      
-      {!extended && (
-        <Button variant="ghost" className="w-full" size="sm">
-          הצג את כל המשימות
-        </Button>
       )}
     </div>
   );

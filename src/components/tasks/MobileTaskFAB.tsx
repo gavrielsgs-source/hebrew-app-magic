@@ -23,11 +23,11 @@ export function MobileTaskFAB() {
 
   return (
     <>
-      {/* Fixed Floating Action Button */}
+      {/* Single Fixed Floating Action Button */}
       <button
         type="button"
         onClick={handleAddTask}
-        className="fixed bottom-20 right-4 z-40 w-14 h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-95 hover:shadow-xl"
+        className="fixed bottom-20 right-4 z-50 w-16 h-16 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-full shadow-xl flex items-center justify-center transition-all duration-200 active:scale-95 hover:shadow-2xl hover:from-carslead-purple/90 hover:to-carslead-blue/90"
         style={{
           WebkitTapHighlightColor: 'transparent',
           touchAction: 'manipulation',
@@ -35,7 +35,7 @@ export function MobileTaskFAB() {
         }}
         aria-label="הוסף משימה חדשה"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-7 w-7" />
       </button>
 
       {/* Add Task Dialog */}

@@ -4,7 +4,7 @@ import { MobileTaskFAB } from "@/components/tasks/MobileTaskFAB";
 import { Suspense } from "react";
 
 export default function Tasks() {
-  console.log('Tasks page loading - with new FAB');
+  console.log('Tasks page loading - mobile optimized');
   
   return (
     <Suspense fallback={
@@ -17,7 +17,6 @@ export default function Tasks() {
     }>
       <div className="rtl-fix min-h-screen">
         <TasksPage />
-        {/* Single FAB for adding tasks on mobile */}
         <MobileTaskFAB />
       </div>
     </Suspense>

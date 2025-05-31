@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { isSameDay } from "date-fns";
 import { type Task } from "@/types/task";
-import { AddTaskDialog } from "./AddTaskDialog";
 import { EditTaskDialog } from "./EditTaskDialog";
 import { MobileTaskCalendarSection } from "./calendar/MobileTaskCalendarSection";
 
@@ -14,7 +13,6 @@ interface MobileTaskCalendarProps {
 
 export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: MobileTaskCalendarProps) {
   const [viewMode, setViewMode] = useState<"today" | "upcoming">("today");
-  const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -68,26 +66,16 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
 
   return (
     <div className="space-y-6 pb-safe min-h-screen" dir="rtl">
-      {/* Enhanced header with view mode toggle and add button in header */}
+      {/* Clean header with view mode toggle ONLY - NO ADD BUTTONS */}
       <div className="px-4 pt-4 space-y-4">
-        {/* Main header with brand gradient background */}
+        {/* Simple header */}
         <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl p-4 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-white mb-1 text-right">
-                ניהול משימות
-              </h1>
-              <p className="text-sm text-white/90 text-right">
-                {todayTasks.length + upcomingTasks.length} משימות פעילות
-              </p>
-            </div>
-            <button
-              onClick={() => setShowAddDialog(true)}
-              className="bg-white/20 hover:bg-white/30 text-white rounded-full p-3 transition-all duration-200 active:scale-95 flex items-center justify-center"
-            >
-              <span className="text-2xl font-bold">+</span>
-            </button>
-          </div>
+          <h1 className="text-lg font-semibold text-white mb-1 text-right">
+            יומן משימות
+          </h1>
+          <p className="text-sm text-white/90 text-right">
+            {todayTasks.length + upcomingTasks.length} משימות פעילות
+          </p>
         </div>
 
         {/* View Mode Toggle */}
@@ -125,13 +113,6 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
           onEditTask={handleEditTask}
         />
       </div>
-
-      {/* Add Task Dialog */}
-      <AddTaskDialog 
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onSuccess={() => setShowAddDialog(false)}
-      />
 
       {/* Edit Task Dialog */}
       {editingTask && (
