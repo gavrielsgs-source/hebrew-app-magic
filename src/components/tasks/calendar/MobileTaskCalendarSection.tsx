@@ -20,12 +20,12 @@ export function MobileTaskCalendarSection({
   onEditTask
 }: MobileTaskCalendarSectionProps) {
   return (
-    <div className="space-y-4">
-      <div className="text-center py-4">
-        <h3 className="text-xl font-bold text-[#2F3C7E] mb-1">
+    <div className="space-y-4 px-4">
+      <div className="text-center py-6">
+        <h3 className="text-2xl font-bold text-[#2F3C7E] mb-2">
           {viewMode === "today" ? "משימות להיום" : "משימות קרובות"}
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-base text-gray-600">
           {viewMode === "today" 
             ? `${format(new Date(), "dd/MM/yyyy")} - ${tasks.length} משימות`
             : `${tasks.length} משימות עתידיות`
@@ -36,7 +36,7 @@ export function MobileTaskCalendarSection({
       {tasks.length === 0 ? (
         <MobileTaskCalendarEmpty viewMode={viewMode} />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {tasks.map(task => (
             <MobileTaskCalendarCard
               key={task.id}

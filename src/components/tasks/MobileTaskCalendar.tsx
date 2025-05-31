@@ -55,7 +55,7 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
   const upcomingTasks = getUpcomingTasks();
 
   return (
-    <div className="space-y-6 pb-safe">
+    <div className="space-y-8 pb-safe">
       <MobileTaskCalendarHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}

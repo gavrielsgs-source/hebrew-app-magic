@@ -26,20 +26,20 @@ export function MobileTaskCalendarCard({
     const taskDate = task.due_date ? new Date(task.due_date) : null;
     
     if (task.status === 'completed') {
-      return "bg-green-100 border-green-300 text-green-800";
+      return "bg-green-50 border-green-200 text-green-800";
     }
     
-    if (!taskDate) return "bg-gray-100 border-gray-300";
+    if (!taskDate) return "bg-gray-50 border-gray-200";
     
     // Priority takes precedence
     if (task.priority === 'high') {
-      return "bg-red-100 border-red-300 text-red-800";
+      return "bg-red-50 border-red-200 text-red-800";
     }
     
     if (taskDate < now) {
-      return "bg-red-100 border-red-300 text-red-800";
+      return "bg-red-50 border-red-200 text-red-800";
     } else {
-      return "bg-blue-100 border-blue-300 text-blue-800";
+      return "bg-blue-50 border-blue-200 text-blue-800";
     }
   };
 
@@ -49,40 +49,40 @@ export function MobileTaskCalendarCard({
       onClick={() => onTaskClick(task)}
     >
       <MobileCard className={cn(
-        "cursor-pointer hover:shadow-xl mobile-transition",
+        "cursor-pointer hover:shadow-xl mobile-transition min-h-[120px]",
         getTaskTypeColor(task),
         task.status === 'completed' && "opacity-70"
       )}>
-        <div className="p-4 space-y-3">
+        <div className="p-6 space-y-4">
           <div className="flex justify-between items-start">
             <h4 className={cn(
-              "font-medium text-base flex-1",
+              "font-semibold text-lg flex-1 leading-relaxed",
               task.status === 'completed' && "line-through"
             )}>
               {task.title}
             </h4>
-            <div className="flex items-center gap-2 mr-3">
+            <div className="flex items-center gap-3 mr-4">
               {showDate && task.due_date && (
-                <div className="text-sm text-gray-600 flex-shrink-0">
-                  <div className="text-xs text-gray-500 text-left">
+                <div className="text-base text-gray-700 flex-shrink-0 bg-white/80 px-3 py-1 rounded-lg">
+                  <div className="text-sm text-gray-600 text-center">
                     {format(new Date(task.due_date), "dd/MM")}
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <Clock className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-base text-gray-700 bg-white/80 px-3 py-1 rounded-lg">
+                <Clock className="h-5 w-5" />
                 {task.due_date && format(new Date(task.due_date), "HH:mm")}
               </div>
             </div>
           </div>
           
           {task.description && (
-            <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
+            <p className="text-base text-gray-700 line-clamp-2 leading-relaxed">{task.description}</p>
           )}
           
           <div className="flex justify-between items-center">
-            <div className="flex gap-2 flex-wrap">
-              <Badge variant="outline" className="text-xs">
+            <div className="flex gap-3 flex-wrap">
+              <Badge variant="outline" className="text-sm px-3 py-1 bg-white/90">
                 {task.type === 'call' ? 'שיחה' : 
                  task.type === 'meeting' ? 'פגישה' : 
                  task.type === 'follow_up' ? 'מעקב' : 'משימה'}
@@ -90,10 +90,10 @@ export function MobileTaskCalendarCard({
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "text-xs",
-                  task.priority === 'high' ? 'border-red-300 text-red-700' :
-                  task.priority === 'medium' ? 'border-yellow-300 text-yellow-700' :
-                  'border-green-300 text-green-700'
+                  "text-sm px-3 py-1 bg-white/90",
+                  task.priority === 'high' ? 'border-red-400 text-red-700' :
+                  task.priority === 'medium' ? 'border-yellow-400 text-yellow-700' :
+                  'border-green-400 text-green-700'
                 )}
               >
                 {task.priority === 'high' ? 'עדיפות גבוהה' : 
@@ -101,26 +101,26 @@ export function MobileTaskCalendarCard({
               </Badge>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={(e) => onTaskStatusToggle(task, e)}
                 className={cn(
-                  "p-2 rounded-full mobile-touch-target mobile-transition",
+                  "p-3 rounded-full mobile-touch-target mobile-transition shadow-md",
                   task.status === 'completed' 
                     ? "bg-green-100 text-green-600 hover:bg-green-200" 
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-white text-gray-600 hover:bg-gray-100"
                 )}
               >
                 {task.status === 'completed' ? 
-                  <X className="h-4 w-4" /> : 
-                  <Check className="h-4 w-4" />
+                  <X className="h-6 w-6" /> : 
+                  <Check className="h-6 w-6" />
                 }
               </button>
               <button
                 onClick={(e) => onEditTask(task, e)}
-                className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 mobile-touch-target mobile-transition"
+                className="p-3 rounded-full bg-white text-blue-600 hover:bg-blue-50 mobile-touch-target mobile-transition shadow-md"
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-6 w-6" />
               </button>
             </div>
           </div>

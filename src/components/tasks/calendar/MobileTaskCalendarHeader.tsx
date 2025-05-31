@@ -18,22 +18,22 @@ export function MobileTaskCalendarHeader({
   onAddTask
 }: MobileTaskCalendarHeaderProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 px-4">
       {/* View Mode Toggle */}
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <MobileButton
           variant={viewMode === "today" ? "primary" : "outline"}
-          size="sm"
+          size="lg"
           onClick={() => onViewModeChange("today")}
-          className="flex-1"
+          className="flex-1 h-14 text-lg font-semibold rounded-2xl"
         >
           היום ({todayCount})
         </MobileButton>
         <MobileButton
           variant={viewMode === "upcoming" ? "primary" : "outline"}
-          size="sm"
+          size="lg"
           onClick={() => onViewModeChange("upcoming")}
-          className="flex-1"
+          className="flex-1 h-14 text-lg font-semibold rounded-2xl"
         >
           קרובים ({upcomingCount})
         </MobileButton>
@@ -44,8 +44,8 @@ export function MobileTaskCalendarHeader({
         variant="primary"
         size="lg"
         onClick={onAddTask}
-        icon={<Plus className="h-5 w-5" />}
-        className="w-full rounded-full shadow-lg mobile-gradient-primary"
+        icon={<Plus className="h-6 w-6" />}
+        className="w-full h-16 text-xl font-bold rounded-2xl shadow-lg mobile-gradient-primary"
       >
         הוסף משימה חדשה
       </MobileButton>
