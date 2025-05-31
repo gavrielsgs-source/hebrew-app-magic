@@ -11,7 +11,7 @@ import { MobileTasksView } from "./MobileTasksView";
 import { DesktopTasksView } from "./DesktopTasksView";
 import { type Task } from "@/types/task";
 
-type ViewMode = "calendar" | "table" | "cards";
+type ViewMode = "calendar" | "cards";
 
 export function TasksPageContent() {
   const { tasks = [], isLoading, error, refetch, updateTask, deleteTask } = useTasks();
@@ -99,8 +99,8 @@ export function TasksPageContent() {
         <DesktopTasksView
           tasks={tasks || []}
           filteredTasks={filteredTasks || []}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          viewMode={viewMode as "calendar" | "table" | "cards"}
+          onViewModeChange={(mode) => setViewMode(mode as ViewMode)}
           onTaskStatusChange={handleTaskStatusChange}
           onTaskDelete={handleTaskDelete}
           onTaskClick={handleTaskClick}
