@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Subscription, SubscriptionTier, subscriptionFeatures } from '@/types/subscription';
 import { useAuth } from '@/hooks/use-auth';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SubscriptionContextType {
   subscription: Subscription;
