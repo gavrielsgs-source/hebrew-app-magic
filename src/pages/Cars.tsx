@@ -10,29 +10,49 @@ import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/compo
 import { AddCarForm } from "@/components/cars/AddCarForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
-import { LimitAwareButton } from '@/components/subscription/LimitAwareButton';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { CarsMobileHeader } from "@/components/cars/page/CarsMobileHeader";
 import { MobileButton } from "@/components/mobile/MobileButton";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function Cars() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const { cars = [], isLoading, addCar } = useCars();
   const { checkEntitlement } = useSubscription();
+  const { toast } = useToast();
   const canAddCar = checkEntitlement('carLimit', cars.length + 1);
   const isMobile = useIsMobile();
 
   const onCarAdded = () => {
-    // Handled by the hook's internal logic
+    setShowAddDialog(false);
+    toast({
+      title: "רכב נוסף",
+      description: "הרכב נוסף בהצלחה למלאי!",
+    });
   };
 
   const handleAddCar = () => {
-    console.log("Add car clicked");
+    console.log("Add car clicked, can add car:", canAddCar);
+    
+    if (!canAddCar) {
+      toast({
+        title: "הגעת למגבלת המנוי",
+        description: "לא ניתן להוסיף עוד רכבים. אנא שדרג את המנוי שלך.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setShowAddDialog(true);
   };
 
   const handleWhatsApp = () => {
     console.log("WhatsApp clicked");
+    window.open('https://web.whatsapp.com', '_blank');
   };
 
   const handleFilter = () => {
@@ -68,26 +88,15 @@ export default function Cars() {
               {viewMode === 'grid' ? 'טבלה' : 'גריד'}
             </MobileButton>
             
-            <SwipeDialog>
-              <DialogTrigger asChild>
-                <LimitAwareButton
-                  resourceType="car"
-                  currentCount={cars.length}
-                  size="sm"
-                  className="flex-2"
-                  onAction={() => {}}
-                >
-                  <Plus className="h-5 w-5 ml-2" />
-                  הוסף רכב
-                </LimitAwareButton>
-              </DialogTrigger>
-              <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
-                <DialogHeader>
-                  <DialogTitle>הוסף רכב חדש</DialogTitle>
-                </DialogHeader>
-                <AddCarForm onSuccess={onCarAdded} />
-              </DialogContent>
-            </SwipeDialog>
+            <MobileButton
+              variant="outline"
+              size="md"
+              onClick={handleAddCar}
+              icon={<Plus className="h-5 w-5" />}
+              className="flex-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+            >
+              הוסף רכב
+            </MobileButton>
           </div>
 
           {viewMode === "grid" ? (
@@ -96,6 +105,26 @@ export default function Cars() {
             <CarsTable />
           )}
         </div>
+
+        {/* Add Car Dialog for Mobile */}
+        <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="text-right">הוסף רכב חדש</DialogTitle>
+            </DialogHeader>
+            
+            {!canAddCar ? (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-600 text-right">
+                  הגעת למגבלת המנוי. לא ניתן להוסיף עוד רכבים. אנא שדרג את המנוי שלך.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <AddCarForm onSuccess={onCarAdded} />
+            )}
+          </DialogContent>
+        </SwipeDialog>
       </MobileContainer>
     );
   }
@@ -125,36 +154,24 @@ export default function Cars() {
           >
             {viewMode === 'grid' ? (
               <>
-                <TableIcon className="h-4 w-4 ml-1" />
+                <TableIcon className="h-4 w-4 mr-1" />
                 תצוגת טבלה
               </>
             ) : (
               <>
-                <LayoutGridIcon className="h-4 w-4 ml-1" />
+                <LayoutGridIcon className="h-4 w-4 mr-1" />
                 תצוגת גריד
               </>
             )}
           </Button>
-          <SwipeDialog>
-            <DialogTrigger asChild>
-              <LimitAwareButton
-                resourceType="car"
-                currentCount={cars.length}
-                size="sm"
-                className="flex items-center gap-2"
-                onAction={() => {}}
-              >
-                <Plus className="h-4 w-4 ml-1" />
-                הוסף רכב
-              </LimitAwareButton>
-            </DialogTrigger>
-            <DialogContent className="w-[90%] sm:w-[600px] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>הוסף רכב חדש</DialogTitle>
-              </DialogHeader>
-              <AddCarForm onSuccess={onCarAdded} />
-            </DialogContent>
-          </SwipeDialog>
+          <Button
+            onClick={handleAddCar}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            הוסף רכב
+          </Button>
         </div>
       </div>
 
@@ -163,6 +180,26 @@ export default function Cars() {
       ) : (
         <CarsTable />
       )}
+
+      {/* Add Car Dialog for Desktop */}
+      <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="w-[90%] sm:w-[600px] overflow-y-auto" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right">הוסף רכב חדש</DialogTitle>
+          </DialogHeader>
+          
+          {!canAddCar ? (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-600 text-right">
+                הגעת למגבלת המנוי. לא ניתן להוסיף עוד רכבים. אנא שדרג את המנוי שלך.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <AddCarForm onSuccess={onCarAdded} />
+          )}
+        </DialogContent>
+      </SwipeDialog>
     </div>
   );
 }

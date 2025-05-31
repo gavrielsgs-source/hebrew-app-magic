@@ -10,11 +10,17 @@ import { LeadsPageHeader } from "@/components/leads/page/LeadsPageHeader";
 import { LeadsMobileHeader } from "@/components/leads/page/LeadsMobileHeader";
 import { LeadsPageTabs } from "@/components/leads/page/LeadsPageTabs";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AddLeadForm } from "@/components/leads/AddLeadForm";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function Leads() {
   const { toast } = useToast();
   const { checkEntitlement } = useSubscription();
   const [isAddingLead, setIsAddingLead] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("leads");
   const isMobile = useIsMobile();
   
@@ -25,6 +31,7 @@ export default function Leads() {
 
   const onLeadAdded = () => {
     setIsAddingLead(false);
+    setShowAddDialog(false);
     toast({
       title: "ליד נוסף",
       description: "הליד נוסף בהצלחה!",
@@ -32,12 +39,25 @@ export default function Leads() {
   };
 
   const handleAddLead = () => {
-    console.log("Add lead clicked");
+    console.log("Add lead clicked, can add lead:", canAddLead);
+    
+    if (!canAddLead) {
+      // Show subscription limit alert
+      toast({
+        title: "הגעת למגבלת המנוי",
+        description: "לא ניתן להוסיף עוד לקוחות. אנא שדרג את המנוי שלך.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsAddingLead(true);
+    setShowAddDialog(true);
   };
 
   const handleWhatsApp = () => {
     console.log("WhatsApp clicked");
+    window.open('https://web.whatsapp.com', '_blank');
   };
 
   const handleScheduleMeeting = () => {
@@ -48,7 +68,7 @@ export default function Leads() {
   if (error) {
     return (
       <MobileContainer>
-        <div className="bg-red-50 border border-red-200 rounded-3xl p-6 text-center">
+        <div className="bg-red-50 border border-red-200 rounded-3xl p-6 text-center" dir="rtl">
           <h2 className="text-xl font-bold text-red-800 mb-3">שגיאה בטעינת דף הלידים</h2>
           <p className="text-red-600 mb-6 text-base">
             אירעה שגיאה בטעינת דף הלידים: {error.message || 'שגיאה לא מוכרת'}
@@ -113,6 +133,26 @@ export default function Leads() {
             isMobile={true}
           />
         </div>
+
+        {/* Add Lead Dialog for Mobile */}
+        <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
+            </DialogHeader>
+            
+            {!canAddLead ? (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-600 text-right">
+                  הגעת למגבלת המנוי. לא ניתן להוסיף עוד לקוחות. אנא שדרג את המנוי שלך.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <AddLeadForm onSuccess={onLeadAdded} />
+            )}
+          </DialogContent>
+        </SwipeDialog>
       </MobileContainer>
     );
   }

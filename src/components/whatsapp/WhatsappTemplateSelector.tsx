@@ -20,7 +20,9 @@ interface WhatsappTemplateSelectorProps {
 export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelectorProps) {
   const [selectedTemplate, setSelectedTemplate] = useState(whatsappTemplates[0]);
   const [selectedPhone, setSelectedPhone] = useState("");
+  const [selectedLeadName, setSelectedLeadName] = useState("");
   const [customMessage, setCustomMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("templates");
   const isMobile = useIsMobile();
 
   const generateMessage = () => {
@@ -57,8 +59,20 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     
     window.open(whatsappUrl, '_blank');
-    toast.success("נפתח וואטסאפ עם ההודעה");
+    toast.success(`נפתח וואטסאפ עם ההודעה${selectedLeadName ? ` ל${selectedLeadName}` : ''}`);
     onClose();
+  };
+
+  const handleLeadSelect = (leadId: string, phone: string, name: string) => {
+    setSelectedPhone(phone);
+    setSelectedLeadName(name);
+    console.log("Lead selected:", { leadId, phone, name });
+  };
+
+  const handleNewLead = () => {
+    // Switch to manual tab when a new lead is added
+    setActiveTab("manual");
+    console.log("New lead added, switching to manual tab");
   };
 
   const message = generateMessage();
@@ -66,27 +80,17 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
   return (
     <div className={`space-y-6 ${isMobile ? 'space-y-4' : ''}`} dir="rtl">
       <div>
-        <h2 className={`font-semibold mb-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>שליחת פרטי רכב בוואטסאפ</h2>
-        <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>בחר תבנית הודעה ולקוח לשליחה</p>
+        <h2 className={`font-semibold mb-2 text-right ${isMobile ? 'text-lg' : 'text-xl'}`}>שליחת פרטי רכב בוואטסאפ</h2>
+        <p className={`text-gray-600 text-right ${isMobile ? 'text-sm' : ''}`}>בחר תבנית הודעה ולקוח לשליחה</p>
       </div>
 
       <SelectedCarDetails car={car} />
 
-      <Tabs defaultValue="templates" className="w-full">
-        <TabsList className={`w-full ${isMobile ? 'h-auto grid-rows-1' : 'grid grid-cols-3'}`}>
-          {isMobile ? (
-            <>
-              <TabsTrigger value="templates" className="text-xs">תבניות</TabsTrigger>
-              <TabsTrigger value="leads" className="text-xs">לקוחות</TabsTrigger>
-              <TabsTrigger value="manual" className="text-xs">ידנית</TabsTrigger>
-            </>
-          ) : (
-            <>
-              <TabsTrigger value="templates">תבניות</TabsTrigger>
-              <TabsTrigger value="leads">לקוחות</TabsTrigger>
-              <TabsTrigger value="manual">הקלדה ידנית</TabsTrigger>
-            </>
-          )}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
+        <TabsList className={`w-full ${isMobile ? 'h-auto grid-cols-3 text-xs' : 'grid grid-cols-3'}`}>
+          <TabsTrigger value="templates" className={isMobile ? "text-xs" : ""}>תבניות</TabsTrigger>
+          <TabsTrigger value="leads" className={isMobile ? "text-xs" : ""}>לקוחות</TabsTrigger>
+          <TabsTrigger value="manual" className={isMobile ? "text-xs" : ""}>ידנית</TabsTrigger>
         </TabsList>
         
         <TabsContent value="templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
@@ -114,8 +118,9 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
         
         <TabsContent value="leads" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           <WhatsappLeadSelector 
-            onLeadSelect={(leadId, phone, name) => setSelectedPhone(phone)}
-            onNewLead={() => {}}
+            onLeadSelect={handleLeadSelect}
+            onNewLead={handleNewLead}
+            selectedLeadId=""
           />
           
           {selectedPhone && (
@@ -136,7 +141,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
         </TabsContent>
       </Tabs>
 
-      {(selectedPhone || false) && (
+      {(selectedPhone || activeTab === "manual") && activeTab !== "manual" && (
         <>
           <WhatsappTemplatePreview
             template={message}
@@ -149,7 +154,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
                 isMobile ? 'flex-1 order-1' : 'flex-1'
               }`}
             >
-              שלח בוואטסאפ
+              שלח בוואטסאפ{selectedLeadName && ` ל${selectedLeadName}`}
             </Button>
             <Button 
               variant="outline" 
