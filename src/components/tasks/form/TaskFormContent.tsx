@@ -1,7 +1,6 @@
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { MobileButton } from "@/components/mobile/MobileButton";
 import { NotificationCheckbox } from "@/components/notifications/NotificationCheckbox";
 import { TaskBasicDetails } from "./TaskBasicDetails";
 import { TaskDateAndStatus } from "./TaskDateAndStatus";
@@ -26,9 +25,27 @@ export function TaskFormContent(props: TaskFormProps) {
 
   const watchedDueDate = form.watch("due_date");
 
+  console.log('TaskFormContent render:', { 
+    isMobile, 
+    isSubmitting, 
+    watchedDueDate: !!watchedDueDate,
+    formValid: form.formState.isValid
+  });
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('TaskFormContent - Form submitted');
+    onSubmit(e);
+  };
+
+  const handleButtonClick = () => {
+    console.log('TaskFormContent - Submit button clicked');
+    onSubmit();
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <TaskBasicDetails />
         <TaskDateAndStatus />
         <TaskTypeAndPriority />
@@ -49,15 +66,14 @@ export function TaskFormContent(props: TaskFormProps) {
         
         <div className="flex gap-3 pt-6">
           {isMobile ? (
-            <MobileButton
-              variant="primary"
-              size="lg"
-              onClick={onSubmit}
+            <button
+              type="button"
+              onClick={handleButtonClick}
               disabled={isSubmitting}
-              className="w-full"
+              className="w-full h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-2xl font-semibold text-lg shadow-lg touch-manipulation active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
-            </MobileButton>
+            </button>
           ) : (
             <Button 
               type="submit" 

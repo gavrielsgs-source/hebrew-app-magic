@@ -18,7 +18,12 @@ export function TaskForm({
   initialCarId, 
   initialDate 
 }: TaskFormPropsWithDate) {
-  console.log('TaskForm component rendering with props:', { initialLeadId, initialCarId, initialDate });
+  console.log('TaskForm component rendering with props:', { 
+    initialLeadId, 
+    initialCarId, 
+    initialDate,
+    onSuccess: !!onSuccess 
+  });
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -63,24 +68,20 @@ export function TaskForm({
     ? `משימה חדשה ל-${initialDate.toLocaleDateString('he-IL')}`
     : "משימה חדשה";
 
+  // Mobile version - simplified without MobileCard wrapper
   if (isMobile) {
     return (
-      <MobileCard 
-        className="mx-4 my-6" 
-        contentClassName="p-6"
-        dir="rtl"
-        header={
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-[#2F3C7E] mb-2">{headerText}</h2>
-            <p className="text-gray-600">צור משימה חדשה ונהל את הזמן שלך</p>
-          </div>
-        }
-      >
+      <div className="space-y-4" dir="rtl">
+        <div className="text-center pb-4 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-[#2F3C7E] mb-2">{headerText}</h2>
+          <p className="text-gray-600">צור משימה חדשה ונהל את הזמן שלך</p>
+        </div>
         {formContent}
-      </MobileCard>
+      </div>
     );
   }
 
+  // Desktop version
   try {
     return (
       <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border" dir="rtl">

@@ -1,6 +1,5 @@
 
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { MobileButton } from "@/components/mobile/MobileButton";
 import { Calendar, Grid } from "lucide-react";
 import { TaskFiltersAndSearch } from "./TaskFiltersAndSearch";
 import { TasksCardsView } from "./TasksCardsView";
@@ -36,7 +35,6 @@ export function MobileTasksView({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading completion
     const timer = setTimeout(() => setIsLoading(false), 100);
     return () => clearTimeout(timer);
   }, []);
@@ -45,8 +43,24 @@ export function MobileTasksView({
     tasks: tasks?.length || 0, 
     filteredTasks: filteredTasks?.length || 0,
     viewMode,
-    isLoading
+    isLoading,
+    showAddDialog
   });
+
+  const handleAddTaskClick = () => {
+    console.log('MobileTasksView - Add task button clicked');
+    setShowAddDialog(true);
+  };
+
+  const handleAddTaskSuccess = () => {
+    console.log('MobileTasksView - Task added successfully');
+    setShowAddDialog(false);
+  };
+
+  const handleDialogChange = (open: boolean) => {
+    console.log('MobileTasksView - Dialog state change:', open);
+    setShowAddDialog(open);
+  };
 
   if (isLoading) {
     return (
@@ -83,24 +97,32 @@ export function MobileTasksView({
         
         {/* Mobile View Mode Selector - Only calendar and cards */}
         <div className="flex gap-2">
-          <MobileButton
-            variant={viewMode === "calendar" ? "primary" : "outline"}
-            size="md"
+          <button
             onClick={() => onViewModeChange("calendar")}
-            icon={<Calendar className="h-4 w-4" />}
-            className="flex-1 h-10 text-sm font-medium rounded-lg"
+            className={`
+              flex-1 h-10 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors touch-manipulation
+              ${viewMode === "calendar" 
+                ? "bg-[#2F3C7E] text-white" 
+                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white"
+              }
+            `}
           >
+            <Calendar className="h-4 w-4" />
             יומן
-          </MobileButton>
-          <MobileButton
-            variant={viewMode === "cards" ? "primary" : "outline"}
-            size="md"
+          </button>
+          <button
             onClick={() => onViewModeChange("cards")}
-            icon={<Grid className="h-4 w-4" />}
-            className="flex-1 h-10 text-sm font-medium rounded-lg"
+            className={`
+              flex-1 h-10 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors touch-manipulation
+              ${viewMode === "cards" 
+                ? "bg-[#2F3C7E] text-white" 
+                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white"
+              }
+            `}
           >
+            <Grid className="h-4 w-4" />
             כרטיסים
-          </MobileButton>
+          </button>
         </div>
 
         {/* Content based on view mode */}
@@ -109,14 +131,18 @@ export function MobileTasksView({
             <>
               {/* Add Task Button for Cards View */}
               <div className="mb-4">
-                <MobileButton
-                  variant="primary"
-                  size="md"
-                  onClick={() => setShowAddDialog(true)}
-                  className="w-full h-12 text-sm font-medium rounded-lg shadow bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90"
+                <AddTaskDialog 
+                  open={showAddDialog}
+                  onOpenChange={handleDialogChange}
+                  onSuccess={handleAddTaskSuccess}
                 >
-                  + הוסף משימה חדשה
-                </MobileButton>
+                  <button
+                    onClick={handleAddTaskClick}
+                    className="w-full h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-3 touch-manipulation active:scale-95 transition-transform"
+                  >
+                    + הוסף משימה חדשה
+                  </button>
+                </AddTaskDialog>
               </div>
               
               <TasksCardsView 
@@ -136,13 +162,6 @@ export function MobileTasksView({
           )}
         </div>
       </div>
-
-      {/* Add Task Dialog */}
-      <AddTaskDialog 
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onSuccess={() => setShowAddDialog(false)}
-      />
     </MobileContainer>
   );
 }
