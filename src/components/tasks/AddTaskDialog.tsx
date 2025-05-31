@@ -72,13 +72,15 @@ export function AddTaskDialog({
             {trigger}
           </DialogTrigger>
         )}
-        <DialogContent className="h-[90vh] overflow-auto">
-          <TaskForm 
-            onSuccess={handleSuccess}
-            initialLeadId={initialLeadId}
-            initialCarId={initialCarId}
-            initialDate={initialDate}
-          />
+        <DialogContent className="h-[90vh] overflow-auto p-2">
+          <div className="p-4">
+            <TaskForm 
+              onSuccess={handleSuccess}
+              initialLeadId={initialLeadId}
+              initialCarId={initialCarId}
+              initialDate={initialDate}
+            />
+          </div>
         </DialogContent>
       </SwipeDialog>
     );

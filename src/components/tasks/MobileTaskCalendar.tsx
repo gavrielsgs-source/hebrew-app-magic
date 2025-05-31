@@ -68,16 +68,26 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
 
   return (
     <div className="space-y-6 pb-safe min-h-screen" dir="rtl">
-      {/* Enhanced header with view mode toggle and single add button */}
+      {/* Enhanced header with view mode toggle and add button in header */}
       <div className="px-4 pt-4 space-y-4">
         {/* Main header with brand gradient background */}
         <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl p-4 shadow-lg">
-          <h1 className="text-lg font-semibold text-white mb-1 text-right">
-            ניהול משימות
-          </h1>
-          <p className="text-sm text-white/90 text-right">
-            {todayTasks.length + upcomingTasks.length} משימות פעילות
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-lg font-semibold text-white mb-1 text-right">
+                ניהול משימות
+              </h1>
+              <p className="text-sm text-white/90 text-right">
+                {todayTasks.length + upcomingTasks.length} משימות פעילות
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddDialog(true)}
+              className="bg-white/20 hover:bg-white/30 text-white rounded-full p-3 transition-all duration-200 active:scale-95 flex items-center justify-center"
+            >
+              <span className="text-2xl font-bold">+</span>
+            </button>
+          </div>
         </div>
 
         {/* View Mode Toggle */}
@@ -114,17 +124,6 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
           onTaskStatusToggle={handleTaskStatusToggle}
           onEditTask={handleEditTask}
         />
-      </div>
-
-      {/* Single Floating Action Button for Adding Tasks */}
-      <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50">
-        <button
-          onClick={() => setShowAddDialog(true)}
-          className="rounded-full shadow-lg px-6 py-3 border-2 border-white bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90 text-white font-medium text-base flex items-center gap-2 transition-all duration-200 active:scale-95"
-        >
-          <span className="text-xl">+</span>
-          <span>משימה חדשה</span>
-        </button>
       </div>
 
       {/* Add Task Dialog */}

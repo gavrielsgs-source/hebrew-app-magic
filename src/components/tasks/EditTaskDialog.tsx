@@ -62,7 +62,7 @@ export function EditTaskDialog({ task, children, open: controlledOpen, onOpenCha
             {trigger}
           </DialogTrigger>
         )}
-        <DialogContent className="h-[90vh] overflow-auto">
+        <DialogContent className="h-[90vh] overflow-auto p-2">
           <MobileCard 
             className="mx-0 my-0" 
             contentClassName="p-6"
