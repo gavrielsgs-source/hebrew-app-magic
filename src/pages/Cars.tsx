@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useCars } from "@/hooks/use-cars";
 import { CarsTable } from "@/components/CarsTable";
@@ -12,7 +13,7 @@ import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLi
 import { LimitAwareButton } from '@/components/subscription/LimitAwareButton';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { MobileHeader } from "@/components/mobile/MobileHeader";
+import { CarsMobileHeader } from "@/components/cars/page/CarsMobileHeader";
 import { MobileButton } from "@/components/mobile/MobileButton";
 
 export default function Cars() {
@@ -26,59 +27,75 @@ export default function Cars() {
     // Handled by the hook's internal logic
   };
 
+  const handleAddCar = () => {
+    console.log("Add car clicked");
+  };
+
+  const handleWhatsApp = () => {
+    console.log("WhatsApp clicked");
+  };
+
+  const handleFilter = () => {
+    console.log("Filter clicked");
+  };
+
   if (isMobile) {
     return (
-      <MobileContainer>
-        <MobileHeader 
-          title="מלאי רכבים"
-          subtitle={`${cars.length} רכבים במלאי`}
-        />
-        
+      <MobileContainer withPadding={false}>
         <SubscriptionLimitAlert 
           featureKey="carLimit" 
           currentCount={cars.length} 
           entityName="רכבים" 
         />
-        
-        <div className="flex gap-3 mb-6">
-          <MobileButton 
-            variant="outline" 
-            size="md"
-            fullWidth={false}
-            className="flex-1"
-            onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-            icon={viewMode === 'grid' ? <TableIcon className="h-5 w-5" /> : <LayoutGridIcon className="h-5 w-5" />}
-          >
-            {viewMode === 'grid' ? 'טבלה' : 'גריד'}
-          </MobileButton>
-          
-          <SwipeDialog>
-            <DialogTrigger asChild>
-              <LimitAwareButton
-                resourceType="car"
-                currentCount={cars.length}
-                size="sm"
-                className="flex-2"
-                onAction={() => {}}
-              >
-                <Plus className="h-5 w-5 ml-2" />
-                הוסף רכב
-              </LimitAwareButton>
-            </DialogTrigger>
-            <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
-              <DialogHeader>
-                <DialogTitle>הוסף רכב חדש</DialogTitle>
-              </DialogHeader>
-              <AddCarForm onSuccess={onCarAdded} />
-            </DialogContent>
-          </SwipeDialog>
-        </div>
 
-        {viewMode === "grid" ? (
-          <CarGrid cars={cars} isLoading={isLoading} />
-        ) : (
-          <CarsTable />
-        )}
+        <CarsMobileHeader
+          onAddCar={handleAddCar}
+          onWhatsApp={handleWhatsApp}
+          onFilter={handleFilter}
+          carsCount={cars.length}
+        />
+        
+        <div className="px-4 mt-6">
+          <div className="flex gap-3 mb-6">
+            <MobileButton 
+              variant="outline" 
+              size="md"
+              fullWidth={false}
+              className="flex-1"
+              onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+              icon={viewMode === 'grid' ? <TableIcon className="h-5 w-5" /> : <LayoutGridIcon className="h-5 w-5" />}
+            >
+              {viewMode === 'grid' ? 'טבלה' : 'גריד'}
+            </MobileButton>
+            
+            <SwipeDialog>
+              <DialogTrigger asChild>
+                <LimitAwareButton
+                  resourceType="car"
+                  currentCount={cars.length}
+                  size="sm"
+                  className="flex-2"
+                  onAction={() => {}}
+                >
+                  <Plus className="h-5 w-5 ml-2" />
+                  הוסף רכב
+                </LimitAwareButton>
+              </DialogTrigger>
+              <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
+                <DialogHeader>
+                  <DialogTitle>הוסף רכב חדש</DialogTitle>
+                </DialogHeader>
+                <AddCarForm onSuccess={onCarAdded} />
+              </DialogContent>
+            </SwipeDialog>
+          </div>
+
+          {viewMode === "grid" ? (
+            <CarGrid cars={cars} isLoading={isLoading} />
+          ) : (
+            <CarsTable />
+          )}
+        </div>
       </MobileContainer>
     );
   }

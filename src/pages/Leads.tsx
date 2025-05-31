@@ -10,7 +10,6 @@ import { LeadsPageHeader } from "@/components/leads/page/LeadsPageHeader";
 import { LeadsMobileHeader } from "@/components/leads/page/LeadsMobileHeader";
 import { LeadsPageTabs } from "@/components/leads/page/LeadsPageTabs";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { MobileHeader } from "@/components/mobile/MobileHeader";
 
 export default function Leads() {
   const { toast } = useToast();
@@ -30,6 +29,19 @@ export default function Leads() {
       title: "ליד נוסף",
       description: "הליד נוסף בהצלחה!",
     });
+  };
+
+  const handleAddLead = () => {
+    console.log("Add lead clicked");
+    setIsAddingLead(true);
+  };
+
+  const handleWhatsApp = () => {
+    console.log("WhatsApp clicked");
+  };
+
+  const handleScheduleMeeting = () => {
+    console.log("Schedule meeting clicked");
   };
 
   // Error state
@@ -84,9 +96,11 @@ export default function Leads() {
           entityName="לקוחות" 
         />
         
-        <MobileHeader 
-          title="ניהול לידים"
-          subtitle={`${leads.length} לקוחות פוטנציאליים`}
+        <LeadsMobileHeader
+          onAddLead={handleAddLead}
+          onWhatsApp={handleWhatsApp}
+          onScheduleMeeting={handleScheduleMeeting}
+          leadsCount={leads.length}
         />
 
         <div className="px-4">
