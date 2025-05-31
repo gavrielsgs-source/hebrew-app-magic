@@ -35,11 +35,21 @@ export function LeadScoreIndicator({ leadId, className }: LeadScoreIndicatorProp
     );
   }
   
+  // Calculate category based on score
+  let category: 'hot' | 'warm' | 'cold';
+  if (leadScore.score >= 80) {
+    category = 'hot';
+  } else if (leadScore.score >= 60) {
+    category = 'warm';
+  } else {
+    category = 'cold';
+  }
+  
   let icon;
   let colorClass;
   let label;
   
-  switch (leadScore.category) {
+  switch (category) {
     case 'hot':
       icon = <Flame className="h-3 w-3 text-red-500" />;
       colorClass = "bg-red-100 text-red-800 hover:bg-red-200";
@@ -81,19 +91,27 @@ export function LeadScoreIndicator({ leadId, className }: LeadScoreIndicatorProp
           <div className="space-y-2">
             <h5 className="text-sm font-medium">גורמים משפיעים:</h5>
             <div className="space-y-1">
-              {leadScore.factors.map((factor: any, index: number) => (
-                <div key={index} className="flex justify-between text-sm">
-                  <span>{factor.description}</span>
-                  <span className={factor.impact > 0 ? "text-green-600" : factor.impact < 0 ? "text-red-600" : ""}>
-                    {factor.impact > 0 ? '+' : ''}{factor.impact}
-                  </span>
-                </div>
-              ))}
+              <div className="flex justify-between text-sm">
+                <span>מעורבות</span>
+                <span className="text-blue-600">{leadScore.factors.engagement}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>זמני תגובה</span>
+                <span className="text-green-600">{leadScore.factors.timeline}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>תקציב</span>
+                <span className="text-purple-600">{leadScore.factors.budget}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>עניין</span>
+                <span className="text-orange-600">{leadScore.factors.interest}</span>
+              </div>
             </div>
           </div>
           
           <div className="text-xs text-muted-foreground">
-            עודכן ב-{new Date(leadScore.lastUpdated).toLocaleDateString('he-IL')}
+            עודכן ב-{new Date(leadScore.last_calculated).toLocaleDateString('he-IL')}
           </div>
         </div>
       </HoverCardContent>

@@ -12,7 +12,6 @@ export function usePushNotifications() {
     // Permission and subscription
     isSupported: permissionHook.isSupported,
     permission: permissionHook.permission,
-    subscription: permissionHook.subscription,
     requestPermission: permissionHook.requestPermission,
     
     // Preferences
