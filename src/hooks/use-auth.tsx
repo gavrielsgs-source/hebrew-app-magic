@@ -12,9 +12,23 @@ export function useAuth() {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Handle successful OAuth login
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Check if this is a redirect from OAuth
+          const isOAuthRedirect = window.location.href.includes('#access_token') || 
+                                 window.location.href.includes('?code=');
+          
+          if (isOAuthRedirect) {
+            // Clean up URL and redirect to dashboard
+            window.history.replaceState({}, document.title, window.location.pathname);
+            window.location.href = '/dashboard';
+          }
+        }
       }
     );
 
@@ -23,6 +37,7 @@ export function useAuth() {
       if (error) {
         console.error('Error getting session:', error);
       }
+      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -36,10 +51,18 @@ export function useAuth() {
     };
   }, []);
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return {
     user,
     session,
     loading,
-    signOut: () => supabase.auth.signOut(),
+    signOut,
   };
 }
