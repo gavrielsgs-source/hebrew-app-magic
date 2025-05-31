@@ -1,4 +1,3 @@
-
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
@@ -10,10 +9,77 @@ import {
 } from "@/components/whatsapp/whatsapp-templates";
 import { useEffect, useState } from "react";
 
+// Template storage interface for localStorage
+interface StoredTemplate {
+  id: string;
+  name: string;
+  description: string;
+  templateContent: string; // Store the template content instead of function
+}
+
 const templateFormSchema = {
   name: (value: string) => value.length >= 2 ? null : "שם התבנית חייב להיות לפחות 2 תווים.",
   description: (value: string) => value.length >= 10 ? null : "התיאור חייב להכיל לפחות 10 תווים.",
 };
+
+// Helper function to create generateMessage function from template content
+const createGenerateMessageFunction = (templateContent: string) => {
+  return (car: any) => {
+    return templateContent
+      .replace(/\$\{car\.make\}/g, car.make || '')
+      .replace(/\$\{car\.model\}/g, car.model || '')
+      .replace(/\$\{car\.year\}/g, car.year || '')
+      .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 
+               car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה')
+      .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g,
+               car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין')
+      .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, car.exterior_color || 'לא צוין')
+      .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, car.engine_size || 'לא צוין')
+      .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, car.transmission || 'לא צוין')
+      .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, car.fuel_type || 'לא צוין');
+  };
+};
+
+// Helper function to extract template content from generateMessage function
+const extractTemplateContent = (template: WhatsappTemplate): string => {
+  // Try to extract the template from the function if it's a simple return
+  const funcString = template.generateMessage.toString();
+  const match = funcString.match(/return\s*`([^`]*)`/);
+  if (match) {
+    return match[1];
+  }
+  
+  // Fallback: generate with mock data and try to reverse-engineer
+  const mockCar = {
+    make: "טויוטה",
+    model: "קורולה",
+    year: 2022,
+    price: 120000,
+    mileage: 25000,
+    exterior_color: "כסוף",
+    engine_size: "1.6L",
+    transmission: "אוטומטית",
+    fuel_type: "בנזין"
+  };
+  
+  return template.generateMessage(mockCar);
+};
+
+// Convert stored template to full template with function
+const storedToFullTemplate = (stored: StoredTemplate): WhatsappTemplate => ({
+  id: stored.id,
+  name: stored.name,
+  description: stored.description,
+  generateMessage: createGenerateMessageFunction(stored.templateContent)
+});
+
+// Convert full template to stored template
+const fullToStoredTemplate = (template: WhatsappTemplate): StoredTemplate => ({
+  id: template.id,
+  name: template.name,
+  description: template.description,
+  templateContent: extractTemplateContent(template)
+});
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<WhatsappTemplate[]>([]);
@@ -42,7 +108,15 @@ export default function TemplatesPage() {
     // Load templates from local storage on component mount
     const storedTemplates = localStorage.getItem("whatsappTemplates");
     if (storedTemplates) {
-      setTemplates(JSON.parse(storedTemplates));
+      try {
+        const parsedStored: StoredTemplate[] = JSON.parse(storedTemplates);
+        const fullTemplates = parsedStored.map(storedToFullTemplate);
+        setTemplates(fullTemplates);
+      } catch (error) {
+        console.error("Error loading templates from localStorage:", error);
+        // If parsing fails, use default templates
+        setTemplates(defaultWhatsappTemplates);
+      }
     } else {
       // If no templates in local storage, use the default templates
       setTemplates(defaultWhatsappTemplates);
@@ -51,7 +125,12 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     // Save templates to local storage whenever the templates state changes
-    localStorage.setItem("whatsappTemplates", JSON.stringify(templates));
+    try {
+      const storedTemplates = templates.map(fullToStoredTemplate);
+      localStorage.setItem("whatsappTemplates", JSON.stringify(storedTemplates));
+    } catch (error) {
+      console.error("Error saving templates to localStorage:", error);
+    }
   }, [templates]);
 
   const onNewTemplate = () => {
