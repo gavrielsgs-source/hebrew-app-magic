@@ -9,7 +9,7 @@ import { MobileTaskCalendar } from "./MobileTaskCalendar";
 import { TasksTable } from "./TasksTable";
 import { AddTaskDialog } from "./AddTaskDialog";
 import { type Task } from "@/types/task";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type ViewMode = "calendar" | "table" | "cards";
 
@@ -35,17 +35,44 @@ export function MobileTasksView({
   onTasksFilter
 }: MobileTasksViewProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading completion
+    const timer = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  console.log('MobileTasksView rendering:', { 
+    tasks: tasks?.length || 0, 
+    filteredTasks: filteredTasks?.length || 0,
+    viewMode,
+    isLoading
+  });
+
+  if (isLoading) {
+    return (
+      <MobileContainer>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="text-lg font-medium text-gray-600">טוען...</div>
+          </div>
+        </div>
+      </MobileContainer>
+    );
+  }
 
   return (
     <MobileContainer className="pb-20">
       <MobileHeader 
         title="ניהול משימות"
-        subtitle={`${tasks.length} משימות פעילות`}
+        subtitle={`${tasks?.length || 0} משימות פעילות`}
       />
       
       {/* Mobile Filters and Search */}
       <TaskFiltersAndSearch 
-        tasks={tasks}
+        tasks={tasks || []}
         onTasksFilter={onTasksFilter}
       />
       
@@ -83,7 +110,7 @@ export function MobileTasksView({
       {/* Content based on view mode */}
       {viewMode === "cards" && (
         <TasksCardsView 
-          tasks={filteredTasks}
+          tasks={filteredTasks || []}
           onTaskStatusChange={onTaskStatusChange}
           onTaskDelete={onTaskDelete}
         />
@@ -91,7 +118,7 @@ export function MobileTasksView({
 
       {viewMode === "calendar" && (
         <MobileTaskCalendar 
-          tasks={filteredTasks} 
+          tasks={filteredTasks || []} 
           onTaskClick={onTaskClick}
           onTaskStatusChange={onTaskStatusChange}
         />
@@ -99,7 +126,7 @@ export function MobileTasksView({
 
       {viewMode === "table" && (
         <TasksTable 
-          tasks={filteredTasks}
+          tasks={filteredTasks || []}
           onTaskStatusChange={onTaskStatusChange}
           onTaskDelete={onTaskDelete}
         />

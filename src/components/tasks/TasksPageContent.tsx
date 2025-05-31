@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { TaskNotifications } from "./TaskNotifications";
 import { TasksErrorState } from "./TasksErrorState";
@@ -18,8 +18,23 @@ export function TasksPageContent() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("calendar");
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>(tasks);
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const isMobile = useIsMobile();
+
+  // Update filtered tasks when tasks change
+  useEffect(() => {
+    if (tasks) {
+      setFilteredTasks(tasks);
+    }
+  }, [tasks]);
+
+  console.log('TasksPageContent rendering:', { 
+    tasksLength: tasks?.length || 0, 
+    isLoading, 
+    error: !!error, 
+    isMobile,
+    viewMode
+  });
 
   const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
     try {
@@ -68,11 +83,11 @@ export function TasksPageContent() {
   }
 
   return (
-    <>
+    <div className="w-full min-h-screen">
       {isMobile ? (
         <MobileTasksView
-          tasks={tasks}
-          filteredTasks={filteredTasks}
+          tasks={tasks || []}
+          filteredTasks={filteredTasks || []}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onTaskStatusChange={handleTaskStatusChange}
@@ -82,8 +97,8 @@ export function TasksPageContent() {
         />
       ) : (
         <DesktopTasksView
-          tasks={tasks}
-          filteredTasks={filteredTasks}
+          tasks={tasks || []}
+          filteredTasks={filteredTasks || []}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onTaskStatusChange={handleTaskStatusChange}
@@ -105,6 +120,6 @@ export function TasksPageContent() {
           )}
         </DialogContent>
       </SwipeDialog>
-    </>
+    </div>
   );
 }
