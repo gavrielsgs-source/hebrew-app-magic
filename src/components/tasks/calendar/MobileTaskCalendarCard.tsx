@@ -45,35 +45,35 @@ export function MobileTaskCalendarCard({
 
   return (
     <div
-      className="mobile-transition mobile-large-touch-target"
+      className="transition-all duration-200"
       onClick={() => onTaskClick(task)}
       dir="rtl"
     >
       <MobileCard className={cn(
-        "cursor-pointer hover:shadow-xl mobile-transition min-h-[140px] rounded-3xl",
+        "cursor-pointer hover:shadow-lg transition-all duration-200 min-h-[100px] rounded-lg",
         getTaskTypeColor(task),
         task.status === 'completed' && "opacity-70"
       )}>
-        <div className="p-8 space-y-6">
+        <div className="p-4 space-y-3">
           {/* Header section with title and date/time */}
           <div className="flex justify-between items-start">
             <h3 className={cn(
-              "font-bold text-2xl flex-1 leading-relaxed text-right",
+              "font-medium text-base flex-1 leading-relaxed text-right",
               task.status === 'completed' && "line-through"
             )}>
               {task.title}
             </h3>
-            <div className="flex items-center gap-4 mr-6">
+            <div className="flex items-center gap-2 mr-3">
               {showDate && task.due_date && (
-                <div className="text-lg text-gray-700 flex-shrink-0 bg-white/90 px-4 py-2 rounded-2xl">
-                  <div className="text-base text-gray-600 text-center font-medium">
+                <div className="text-sm text-gray-700 flex-shrink-0 bg-white/90 px-2 py-1 rounded-lg">
+                  <div className="text-xs text-gray-600 text-center font-medium">
                     {format(new Date(task.due_date), "dd/MM")}
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-2 text-lg text-gray-700 bg-white/90 px-4 py-2 rounded-2xl">
-                <Clock className="h-6 w-6" />
-                <span className="font-medium">
+              <div className="flex items-center gap-1 text-sm text-gray-700 bg-white/90 px-2 py-1 rounded-lg">
+                <Clock className="h-3 w-3" />
+                <span className="font-medium text-xs">
                   {task.due_date && format(new Date(task.due_date), "HH:mm")}
                 </span>
               </div>
@@ -82,15 +82,15 @@ export function MobileTaskCalendarCard({
           
           {/* Description */}
           {task.description && (
-            <p className="text-lg text-gray-700 line-clamp-2 leading-relaxed text-right">
+            <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed text-right">
               {task.description}
             </p>
           )}
           
           {/* Footer with badges and actions */}
           <div className="flex justify-between items-center">
-            <div className="flex gap-4 flex-wrap">
-              <Badge variant="outline" className="text-base px-4 py-2 bg-white/90 rounded-2xl">
+            <div className="flex gap-2 flex-wrap">
+              <Badge variant="outline" className="text-xs px-2 py-1 bg-white/90 rounded-lg">
                 {task.type === 'call' ? 'שיחה' : 
                  task.type === 'meeting' ? 'פגישה' : 
                  task.type === 'follow_up' ? 'מעקב' : 'משימה'}
@@ -98,38 +98,38 @@ export function MobileTaskCalendarCard({
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "text-base px-4 py-2 bg-white/90 rounded-2xl",
+                  "text-xs px-2 py-1 bg-white/90 rounded-lg",
                   task.priority === 'high' ? 'border-red-400 text-red-700' :
                   task.priority === 'medium' ? 'border-yellow-400 text-yellow-700' :
                   'border-green-400 text-green-700'
                 )}
               >
-                {task.priority === 'high' ? 'עדיפות גבוהה' : 
-                 task.priority === 'medium' ? 'עדיפות בינונית' : 'עדיפות נמוכה'}
+                {task.priority === 'high' ? 'גבוהה' : 
+                 task.priority === 'medium' ? 'בינונית' : 'נמוכה'}
               </Badge>
             </div>
             
-            {/* Action buttons with larger touch targets */}
-            <div className="flex gap-4">
+            {/* Action buttons */}
+            <div className="flex gap-2">
               <button
                 onClick={(e) => onTaskStatusToggle(task, e)}
                 className={cn(
-                  "p-4 rounded-full mobile-large-touch-target mobile-transition shadow-lg",
+                  "p-2 rounded-full transition-all duration-200 shadow",
                   task.status === 'completed' 
                     ? "bg-green-100 text-green-600 hover:bg-green-200" 
                     : "bg-white text-gray-600 hover:bg-gray-100"
                 )}
               >
                 {task.status === 'completed' ? 
-                  <X className="h-8 w-8" /> : 
-                  <Check className="h-8 w-8" />
+                  <X className="h-4 w-4" /> : 
+                  <Check className="h-4 w-4" />
                 }
               </button>
               <button
                 onClick={(e) => onEditTask(task, e)}
-                className="p-4 rounded-full bg-white text-blue-600 hover:bg-blue-50 mobile-large-touch-target mobile-transition shadow-lg"
+                className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow"
               >
-                <Edit className="h-8 w-8" />
+                <Edit className="h-4 w-4" />
               </button>
             </div>
           </div>

@@ -18,7 +18,7 @@ export function MobileButton({
   children, 
   onClick, 
   variant = "primary",
-  size = "lg",
+  size = "md",
   fullWidth = true,
   icon,
   className,
@@ -33,10 +33,10 @@ export function MobileButton({
   };
 
   const sizes = {
-    sm: "h-10 px-4 text-sm",
-    md: "h-12 px-6 text-base",
-    lg: "h-14 px-8 text-lg",
-    xl: "h-16 px-10 text-xl"
+    sm: "h-8 px-3 text-sm",
+    md: "h-10 px-4 text-base",
+    lg: "h-12 px-6 text-lg",
+    xl: "h-14 px-8 text-xl"
   };
 
   return (
@@ -44,12 +44,12 @@ export function MobileButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "rounded-2xl font-semibold transition-all duration-200",
-        "active:scale-95 shadow-lg hover:shadow-xl",
+        "rounded-lg font-medium transition-all duration-200",
+        "active:scale-95 shadow hover:shadow-md",
         variants[variant],
         sizes[size],
         fullWidth && "w-full",
-        "flex items-center justify-center gap-3",
+        "flex items-center justify-center gap-2",
         className
       )}
     >

@@ -55,8 +55,8 @@ export function MobileTasksView({
       <MobileContainer>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-6"></div>
-            <div className="text-xl font-semibold text-gray-600">טוען...</div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="text-base font-medium text-gray-600">טוען...</div>
           </div>
         </div>
       </MobileContainer>
@@ -64,48 +64,48 @@ export function MobileTasksView({
   }
 
   return (
-    <MobileContainer className="pb-24" withPadding={false}>
-      {/* Enhanced header with better RTL alignment */}
+    <MobileContainer className="pb-20" withPadding={false}>
+      {/* Header */}
       <MobileHeader 
         title="ניהול משימות"
         subtitle={`${tasks?.length || 0} משימות פעילות`}
-        className="mb-6"
+        className="mb-4"
       />
       
       {/* Content with proper spacing */}
-      <div className="px-6 space-y-6">
+      <div className="px-4 space-y-4">
         {/* Mobile Filters and Search */}
         <TaskFiltersAndSearch 
           tasks={tasks || []}
           onTasksFilter={onTasksFilter}
         />
         
-        {/* Mobile View Mode Selector - enhanced with larger touch targets */}
-        <div className="flex gap-3">
+        {/* Mobile View Mode Selector */}
+        <div className="flex gap-2">
           <MobileButton
             variant={viewMode === "calendar" ? "primary" : "outline"}
-            size="lg"
+            size="md"
             onClick={() => onViewModeChange("calendar")}
-            icon={<Calendar className="h-6 w-6" />}
-            className="flex-1 h-16 text-lg font-semibold rounded-3xl mobile-touch-target"
+            icon={<Calendar className="h-4 w-4" />}
+            className="flex-1 h-10 text-sm font-medium rounded-lg"
           >
             יומן
           </MobileButton>
           <MobileButton
             variant={viewMode === "cards" ? "primary" : "outline"}
-            size="lg"
+            size="md"
             onClick={() => onViewModeChange("cards")}
-            icon={<Grid className="h-6 w-6" />}
-            className="flex-1 h-16 text-lg font-semibold rounded-3xl mobile-touch-target"
+            icon={<Grid className="h-4 w-4" />}
+            className="flex-1 h-10 text-sm font-medium rounded-lg"
           >
             כרטיסים
           </MobileButton>
           <MobileButton
             variant={viewMode === "table" ? "primary" : "outline"}
-            size="lg"
+            size="md"
             onClick={() => onViewModeChange("table")}
-            icon={<List className="h-6 w-6" />}
-            className="flex-1 h-16 text-lg font-semibold rounded-3xl mobile-touch-target"
+            icon={<List className="h-4 w-4" />}
+            className="flex-1 h-10 text-sm font-medium rounded-lg"
           >
             טבלה
           </MobileButton>
@@ -139,16 +139,16 @@ export function MobileTasksView({
         </div>
       </div>
 
-      {/* Floating Action Button for Adding Tasks - enhanced positioning */}
-      <div className="fixed bottom-28 left-1/2 transform -translate-x-1/2 z-50">
+      {/* Floating Action Button for Adding Tasks */}
+      <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50">
         <MobileButton
           variant="primary"
           size="lg"
           onClick={() => setShowAddDialog(true)}
-          icon={<Plus className="h-8 w-8" />}
-          className="rounded-full shadow-2xl px-8 py-6 mobile-gradient-primary border-4 border-white mobile-large-touch-target"
+          icon={<Plus className="h-5 w-5" />}
+          className="rounded-full shadow-lg px-6 py-3 border-2 border-white"
         >
-          <span className="text-xl font-bold">משימה חדשה</span>
+          <span className="text-base font-medium">משימה חדשה</span>
         </MobileButton>
       </div>
 
