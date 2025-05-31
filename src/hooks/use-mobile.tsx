@@ -51,14 +51,14 @@ export function useIsMobile() {
     try {
       mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
       
-      const handleChange = () => {
+      const handleMediaQueryChange = () => {
         setTimeout(checkMobile, 10); // Small delay for iOS
       };
       
       if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener("change", handleChange);
+        mediaQuery.addEventListener("change", handleMediaQueryChange);
       } else if (mediaQuery.addListener) {
-        mediaQuery.addListener(handleChange);
+        mediaQuery.addListener(handleMediaQueryChange);
       }
     } catch (e) {
       console.warn("MediaQuery not supported, using fallback");
@@ -85,10 +85,14 @@ export function useIsMobile() {
       clearTimeout(resizeTimeout);
       
       if (mediaQuery) {
+        const handleMediaQueryChange = () => {
+          setTimeout(checkMobile, 10);
+        };
+        
         if (mediaQuery.removeEventListener) {
-          mediaQuery.removeEventListener("change", handleChange);
+          mediaQuery.removeEventListener("change", handleMediaQueryChange);
         } else if (mediaQuery.removeListener) {
-          mediaQuery.removeListener(handleChange);
+          mediaQuery.removeListener(handleMediaQueryChange);
         }
       }
       

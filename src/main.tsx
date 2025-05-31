@@ -54,9 +54,10 @@ if (isIOSDevice || isMobileDevice) {
     touchTimeout = setTimeout(setViewportHeight, 200);
   }, { passive: true });
 
-  // iOS specific - prevent bounce scrolling
+  // iOS specific - prevent bounce scrolling and pinch zoom
   document.addEventListener('touchmove', function(e) {
-    if (e.scale !== 1) {
+    // Check if this is a pinch zoom gesture (more than one touch)
+    if (e.touches && e.touches.length > 1) {
       e.preventDefault();
     }
   }, { passive: false });
