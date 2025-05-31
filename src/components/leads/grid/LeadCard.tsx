@@ -27,7 +27,15 @@ export function LeadCard({ lead }: { lead: any }) {
     <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white rounded-2xl group">
       <LeadCardHeader lead={lead} hasActiveReminders={hasActiveReminders} />
       <LeadCardContent lead={lead} />
-      <LeadCardActions lead={lead} canManageLeads={canEdit} />
+      <LeadCardActions 
+        leadId={lead.id}
+        leadName={lead.name}
+        leadPhone={lead.phone}
+        onEdit={() => {/* TODO: implement edit handler */}}
+        onDelete={() => {/* TODO: implement delete handler */}}
+        onWhatsApp={() => {/* TODO: implement WhatsApp handler */}}
+        onSchedule={() => {/* TODO: implement schedule handler */}}
+      />
     </Card>
   );
 }
