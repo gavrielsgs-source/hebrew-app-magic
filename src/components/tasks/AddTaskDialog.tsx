@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { TaskForm } from "./TaskForm";
 
@@ -27,13 +27,6 @@ export function AddTaskDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  console.log('AddTaskDialog render:', { 
-    controlledOpen, 
-    internalOpen, 
-    isMobile,
-    initialDate 
-  });
-
   // Use controlled props if provided, otherwise use internal state
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setIsOpen = controlledOnOpenChange || setInternalOpen;
@@ -41,52 +34,29 @@ export function AddTaskDialog({
   // Auto-open dialog when initialDate is provided (only for uncontrolled mode)
   useEffect(() => {
     if (initialDate && controlledOpen === undefined) {
-      console.log('Auto-opening dialog for initialDate');
       setInternalOpen(true);
     }
   }, [initialDate, controlledOpen]);
 
   const handleSuccess = () => {
-    console.log('AddTaskDialog - Task created successfully');
     setIsOpen(false);
     onSuccess?.();
   };
 
   const handleOpenChange = (open: boolean) => {
-    console.log('AddTaskDialog - Open state change:', open);
     setIsOpen(open);
   };
 
-  // Enhanced mobile-first trigger button with full touch support
-  const handleTriggerClick = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('AddTaskDialog - Trigger button clicked/touched');
-    
-    // Ensure immediate response on mobile
-    requestAnimationFrame(() => {
-      setIsOpen(true);
-    });
-  };
-
-  // Enhanced mobile-friendly trigger button
+  // Default trigger button
   const trigger = children || (
     <button
       type="button"
-      onClick={handleTriggerClick}
-      onTouchStart={handleTriggerClick}
       className={`
         ${isMobile ? 
-          'w-full h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-3 active:scale-98 transition-transform min-h-[56px]' : 
-          'bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 active:bg-[#2F3C7E]/80 text-white rounded-xl px-4 py-2 flex items-center gap-2 min-h-[40px]'
+          'w-full h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-3 transition-transform active:scale-[0.98]' : 
+          'bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl px-4 py-2 flex items-center gap-2'
         }
       `}
-      style={{
-        WebkitTapHighlightColor: 'transparent',
-        touchAction: 'manipulation',
-        userSelect: 'none'
-      }}
     >
       <Plus className="h-5 w-5" />
       {isMobile ? 'הוסף משימה חדשה' : 'משימה חדשה'}
@@ -100,25 +70,25 @@ export function AddTaskDialog({
           {trigger}
         </DialogTrigger>
       )}
-      <DialogContent className={isMobile ? "p-4" : "max-w-2xl"}>
-        <div className="space-y-4" dir="rtl">
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-[#2F3C7E] mb-2">
-              {initialDate 
-                ? `משימה חדשה ל-${initialDate.toLocaleDateString('he-IL')}`
-                : 'משימה חדשה'
-              }
-            </h2>
-            <p className="text-gray-600">צור משימה חדשה ונהל את הזמן שלך</p>
-          </div>
-          
-          <TaskForm 
-            onSuccess={handleSuccess}
-            initialLeadId={initialLeadId}
-            initialCarId={initialCarId}
-            initialDate={initialDate}
-          />
-        </div>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {initialDate 
+              ? `משימה חדשה ל-${initialDate.toLocaleDateString('he-IL')}`
+              : 'משימה חדשה'
+            }
+          </DialogTitle>
+          <DialogDescription>
+            צור משימה חדשה ונהל את הזמן שלך
+          </DialogDescription>
+        </DialogHeader>
+        
+        <TaskForm 
+          onSuccess={handleSuccess}
+          initialLeadId={initialLeadId}
+          initialCarId={initialCarId}
+          initialDate={initialDate}
+        />
       </DialogContent>
     </Dialog>
   );

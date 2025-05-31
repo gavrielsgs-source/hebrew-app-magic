@@ -29,7 +29,7 @@ export function CarDialogs({
     <>
       {/* WhatsApp Dialog */}
       <Dialog open={isWhatsappOpen} onOpenChange={onWhatsappClose}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
           </DialogHeader>
@@ -41,7 +41,7 @@ export function CarDialogs({
 
       {/* Car Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={onDetailsClose}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>פרטי רכב</DialogTitle>
           </DialogHeader>

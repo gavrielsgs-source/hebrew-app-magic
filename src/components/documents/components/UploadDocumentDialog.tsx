@@ -104,10 +104,10 @@ export function UploadDocumentDialog({
           העלאת מסמך
         </Button>
       </DialogTrigger>
-      <DialogContent dir="rtl">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-right">העלאת מסמך חדש</DialogTitle>
-          <DialogDescription className="text-right">
+          <DialogTitle>העלאת מסמך חדש</DialogTitle>
+          <DialogDescription>
             העלה מסמכים כמו חוזים, רישיונות, חשבוניות ועוד.
           </DialogDescription>
         </DialogHeader>
@@ -255,7 +255,7 @@ export function UploadDocumentDialog({
           </div>
         </div>
         
-        <DialogFooter className="flex-row sm:justify-start">
+        <DialogFooter>
           <Button variant="outline" onClick={onReset}>איפוס</Button>
           <Button 
             onClick={handleUpload}

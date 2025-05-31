@@ -123,7 +123,7 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
   const watchedDate = form.watch("date");
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="space-y-4" dir="rtl">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -182,7 +182,7 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
             )}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="date"
@@ -282,13 +282,15 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
             />
           )}
 
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "יוצר..." : "צור פגישה/תזכורת"}
-          </Button>
+          <div className="sticky bottom-0 bg-background border-t p-4 -m-4 mt-6">
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "יוצר..." : "צור פגישה/תזכורת"}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
