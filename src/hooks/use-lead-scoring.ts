@@ -2,117 +2,97 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 
-interface Lead {
+export interface LeadScore {
   id: string;
-  name: string;
-  phone: string;
-  email: string;
-  source: string;
-  status: string;
-  created_at: string;
-}
-
-interface LeadScore {
+  lead_id: string;
   score: number;
-  category: "hot" | "warm" | "cold";
-  factors: Array<{
-    description: string;
-    impact: number;
-  }>;
-  lastUpdated: string;
+  factors: {
+    engagement: number;
+    timeline: number;
+    budget: number;
+    interest: number;
+  };
+  last_calculated: string;
 }
-
-const calculateEngagementScore = (lead: Lead): number => {
-  let score = 0;
-  if (lead.source === "google_ads") {
-    score += 5;
-  } else if (lead.source === "facebook_ads") {
-    score += 3;
-  }
-
-  if (lead.status === "new") {
-    score += 2;
-  }
-
-  return score;
-};
-
-const calculateDemographicScore = (lead: Lead): number => {
-  let score = 0;
-  if (lead.email && lead.email.endsWith("@example.com")) {
-    score += 3;
-  }
-
-  if (lead.phone && lead.phone.startsWith("050")) {
-    score += 2;
-  }
-
-  return score;
-};
-
-const determineCategory = (overallScore: number): "hot" | "warm" | "cold" => {
-  if (overallScore >= 8) {
-    return "hot";
-  } else if (overallScore >= 5) {
-    return "warm";
-  } else {
-    return "cold";
-  }
-};
 
 export function useLeadScoring() {
   const { user } = useAuth();
 
-  const { data: leadScores, isLoading, error } = useQuery({
+  const { data: leadScore, isLoading, error } = useQuery<LeadScore>({
     queryKey: ["lead-scoring", user?.id],
-    queryFn: async (): Promise<Record<string, LeadScore>> => {
-      if (!user) throw new Error("User not authenticated");
-
-      // Mock implementation - in real app, this would fetch from database
-      const mockLeads: Lead[] = [
-        {
-          id: "1",
-          name: "John Doe",
-          phone: "0501234567",
-          email: "john.doe@example.com",
-          source: "google_ads",
-          status: "new",
-          created_at: new Date().toISOString(),
-        }
-      ];
-
-      const scores: Record<string, LeadScore> = {};
-
-      mockLeads.forEach(lead => {
-        const engagementScore = calculateEngagementScore(lead);
-        const demographicScore = calculateDemographicScore(lead);
-        const totalScore = engagementScore + demographicScore;
-
-        scores[lead.id] = {
-          score: Math.min(totalScore * 10, 100), // Scale to 0-100
-          category: determineCategory(totalScore),
-          factors: [
-            { description: "מקור הליד", impact: engagementScore },
-            { description: "נתונים דמוגרפיים", impact: demographicScore }
-          ],
-          lastUpdated: new Date().toISOString()
-        };
-      });
-
-      return scores;
+    queryFn: async () => {
+      // Since lead scoring table doesn't exist, return mock data
+      console.log('Lead scoring table not available, returning mock data for user:', user?.id);
+      
+      const mockScore: LeadScore = {
+        id: "mock-score-1",
+        lead_id: "mock-lead-1", 
+        score: 85,
+        factors: {
+          engagement: 90,
+          timeline: 80,
+          budget: 85,
+          interest: 88
+        },
+        last_calculated: new Date().toISOString()
+      };
+      
+      return mockScore;
     },
     enabled: !!user,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    retry: 1,
   });
 
-  const getLeadScoreById = (leadId: string): LeadScore | null => {
-    return leadScores?.[leadId] || null;
+  const getLeadScoreById = (leadId: string) => {
+    // Return mock score for any lead ID
+    return {
+      id: `score-${leadId}`,
+      lead_id: leadId,
+      score: Math.floor(Math.random() * 40) + 60, // Random score between 60-100
+      factors: {
+        engagement: Math.floor(Math.random() * 40) + 60,
+        timeline: Math.floor(Math.random() * 40) + 60,
+        budget: Math.floor(Math.random() * 40) + 60,
+        interest: Math.floor(Math.random() * 40) + 60
+      },
+      last_calculated: new Date().toISOString()
+    };
+  };
+
+  const calculateLeadScore = (leadData: any) => {
+    // Simple lead scoring algorithm
+    let score = 0;
+    
+    // Status scoring
+    if (leadData.status === 'hot') score += 30;
+    else if (leadData.status === 'warm') score += 20;
+    else if (leadData.status === 'cold') score += 10;
+    
+    // Source scoring
+    if (leadData.source === 'referral') score += 25;
+    else if (leadData.source === 'website') score += 20;
+    else if (leadData.source === 'social') score += 15;
+    
+    // Recency scoring
+    const daysSinceCreated = Math.floor(
+      (Date.now() - new Date(leadData.created_at).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (daysSinceCreated <= 1) score += 20;
+    else if (daysSinceCreated <= 7) score += 15;
+    else if (daysSinceCreated <= 30) score += 10;
+    
+    // Notes/engagement scoring
+    if (leadData.notes && leadData.notes.length > 100) score += 15;
+    else if (leadData.notes && leadData.notes.length > 50) score += 10;
+    
+    return Math.min(100, Math.max(0, score));
   };
 
   return {
-    leadScores,
+    leadScore,
     isLoading,
     error,
-    getLeadScoreById
+    getLeadScoreById,
+    calculateLeadScore
   };
 }
