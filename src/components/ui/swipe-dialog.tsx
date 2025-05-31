@@ -12,66 +12,73 @@ interface SwipeDialogProps {
 export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDialogProps) {
   const isMobile = useIsMobile();
   const [startY, setStartY] = React.useState<number | null>(null);
-  const [currentY, setCurrentY] = React.useState<number | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [dragOffset, setDragOffset] = React.useState(0);
   const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleTouchStart = React.useCallback((e: TouchEvent) => {
-    if (!isMobile) return;
+    if (!isMobile || !e.touches.length) return;
+    
+    // Prevent default scrolling behavior on iOS
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    
     const touch = e.touches[0];
     setStartY(touch.clientY);
-    setCurrentY(touch.clientY);
     setIsDragging(true);
   }, [isMobile]);
 
   const handleTouchMove = React.useCallback((e: TouchEvent) => {
-    if (!isMobile || !isDragging || startY === null) return;
+    if (!isMobile || !isDragging || startY === null || !e.touches.length) return;
     
     const touch = e.touches[0];
     const deltaY = touch.clientY - startY;
     
-    // Only allow dragging down
+    // Only allow dragging down and add resistance
     if (deltaY > 0) {
-      setCurrentY(touch.clientY);
-      setDragOffset(deltaY);
-      
-      // Add some resistance to the drag
       const resistance = Math.min(1, deltaY / 200);
       if (contentRef.current) {
-        contentRef.current.style.transform = `translateY(${deltaY * resistance}px)`;
+        // Use transform3d for better iOS performance
+        contentRef.current.style.transform = `translate3d(0, ${deltaY * resistance}px, 0)`;
         contentRef.current.style.opacity = `${1 - resistance * 0.3}`;
       }
     }
   }, [isMobile, isDragging, startY]);
 
-  const handleTouchEnd = React.useCallback(() => {
-    if (!isMobile || !isDragging || startY === null || currentY === null) {
+  const handleTouchEnd = React.useCallback((e: TouchEvent) => {
+    if (!isMobile || !isDragging || startY === null) {
       setIsDragging(false);
       setStartY(null);
-      setCurrentY(null);
-      setDragOffset(0);
       return;
     }
 
-    const deltaY = currentY - startY;
+    const touch = e.changedTouches?.[0];
+    if (!touch) return;
+
+    const deltaY = touch.clientY - startY;
     
-    // Reset transform
+    // Reset transform with transition
     if (contentRef.current) {
+      contentRef.current.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
       contentRef.current.style.transform = '';
       contentRef.current.style.opacity = '';
+      
+      // Remove transition after animation
+      setTimeout(() => {
+        if (contentRef.current) {
+          contentRef.current.style.transition = '';
+        }
+      }, 300);
     }
     
-    // If dragged down more than 100px, close the dialog
+    // Close dialog if dragged down enough
     if (deltaY > 100) {
       onOpenChange?.(false);
     }
 
     setIsDragging(false);
     setStartY(null);
-    setCurrentY(null);
-    setDragOffset(0);
-  }, [isMobile, isDragging, startY, currentY, onOpenChange]);
+  }, [isMobile, isDragging, startY, onOpenChange]);
 
   React.useEffect(() => {
     if (!isMobile || !open) return;
@@ -79,8 +86,11 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
     const dialogContent = contentRef.current;
     if (!dialogContent) return;
 
-    dialogContent.addEventListener('touchstart', handleTouchStart, { passive: true });
-    dialogContent.addEventListener('touchmove', handleTouchMove, { passive: false });
+    // Use passive: true for better iOS performance
+    const options = { passive: false };
+    
+    dialogContent.addEventListener('touchstart', handleTouchStart, options);
+    dialogContent.addEventListener('touchmove', handleTouchMove, options);
     dialogContent.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
@@ -94,10 +104,14 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
     <Dialog open={open} onOpenChange={onOpenChange} {...props}>
       <DialogContent 
         ref={contentRef}
-        className={isMobile ? "transition-transform duration-200 mobile-scroll max-h-[90vh] overflow-y-auto" : ""}
+        className={isMobile ? "transition-none mobile-scroll max-h-[90vh] overflow-y-auto safe-area-inset" : ""}
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain'
+        }}
       >
         {isMobile && (
-          <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 flex-shrink-0 mobile-touch-target" />
+          <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 flex-shrink-0" />
         )}
         {children}
       </DialogContent>
