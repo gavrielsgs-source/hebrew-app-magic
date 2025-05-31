@@ -65,6 +65,7 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
         registration_year: formData.registration_year ? parseInt(formData.registration_year) : null,
         last_test_date: formData.last_test_date || null,
         ownership_history: formData.ownership_history || null,
+        status: "available",
         agency_id: null
       };
 
