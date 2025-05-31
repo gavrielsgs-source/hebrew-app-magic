@@ -4,7 +4,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useLeads } from "@/hooks/use-leads";
 import { UserPlus } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SwipeDialog } from "@/components/ui/swipe-dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
 
 interface WhatsappLeadSelectorProps {
@@ -84,14 +85,14 @@ export function WhatsappLeadSelector({ onLeadSelect, onNewLead, selectedLeadId }
         )}
       </div>
 
-      <Dialog open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
-        <DialogContent className="w-[400px]" dir="rtl">
+      <SwipeDialog open={isAddLeadOpen} onOpenChange={setIsAddLeadOpen}>
+        <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" dir="rtl">
           <DialogHeader>
             <DialogTitle>הוסף לקוח חדש</DialogTitle>
           </DialogHeader>
-          <AddLeadForm />
+          <AddLeadForm onSuccess={handleNewLeadSuccess} />
         </DialogContent>
-      </Dialog>
+      </SwipeDialog>
     </>
   );
 }
