@@ -3,6 +3,8 @@ import { TasksPage } from "@/components/tasks/TasksPage";
 import { Suspense } from "react";
 
 export default function Tasks() {
+  console.log('Tasks page loading');
+  
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -12,7 +14,7 @@ export default function Tasks() {
         </div>
       </div>
     }>
-      <div className="rtl-fix min-h-screen">
+      <div className="rtl-fix min-h-screen" style={{ touchAction: 'manipulation' }}>
         <TasksPage />
       </div>
     </Suspense>

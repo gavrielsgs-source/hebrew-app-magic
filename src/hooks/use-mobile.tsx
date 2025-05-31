@@ -7,49 +7,91 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
-    // iOS/Safari detection
-    const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    
     const checkMobile = () => {
-      const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-      const newIsMobile = width < MOBILE_BREAKPOINT || isIOSSafari;
-      setIsMobile(newIsMobile);
+      try {
+        // Primary check - screen width
+        const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        const isSmallScreen = width < MOBILE_BREAKPOINT;
+        
+        // Secondary check - iOS/mobile detection with multiple fallbacks
+        const userAgent = navigator.userAgent || '';
+        const isIOSDevice = /iPad|iPhone|iPod/i.test(userAgent);
+        const isMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+        
+        // Touch capability check
+        const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Combine all checks for robust mobile detection
+        const finalMobileState = isSmallScreen || isIOSDevice || (isMobileUserAgent && hasTouchSupport);
+        
+        console.log('Mobile detection:', {
+          width,
+          isSmallScreen,
+          isIOSDevice,
+          isMobileUserAgent,
+          hasTouchSupport,
+          finalMobileState,
+          userAgent: userAgent.substring(0, 50)
+        });
+        
+        setIsMobile(finalMobileState);
+      } catch (error) {
+        console.error('Error in mobile detection:', error);
+        // Fallback - if we can't detect, assume mobile if screen is small
+        const width = window.innerWidth || 800;
+        setIsMobile(width < MOBILE_BREAKPOINT);
+      }
     };
 
-    // Initial check
-    checkMobile();
+    // Initial check with small delay for iOS
+    const initialTimeout = setTimeout(checkMobile, 50);
 
-    // Create media query with fallback for older browsers
-    let mql: MediaQueryList | null = null;
+    // Media query listener as primary method
+    let mediaQuery: MediaQueryList | null = null;
     try {
-      mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+      mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
       
-      if (mql.addEventListener) {
-        mql.addEventListener("change", checkMobile);
-      } else if (mql.addListener) {
-        // Fallback for older Safari versions
-        mql.addListener(checkMobile);
+      const handleChange = () => {
+        setTimeout(checkMobile, 10); // Small delay for iOS
+      };
+      
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener("change", handleChange);
+      } else if (mediaQuery.addListener) {
+        mediaQuery.addListener(handleChange);
       }
     } catch (e) {
-      console.warn("MediaQuery not supported, falling back to resize listener");
+      console.warn("MediaQuery not supported, using fallback");
     }
 
-    // Fallback resize listener for problematic browsers
+    // Resize and orientation listeners for iOS
     const handleResize = () => {
-      setTimeout(checkMobile, 100); // Debounce for performance
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(checkMobile, 100);
     };
     
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", handleResize);
+    let resizeTimeout: NodeJS.Timeout;
+    
+    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("orientationchange", handleResize, { passive: true });
+
+    // iOS specific - check after load
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', checkMobile, { once: true });
+    }
 
     return () => {
-      if (mql) {
-        if (mql.removeEventListener) {
-          mql.removeEventListener("change", checkMobile);
-        } else if (mql.removeListener) {
-          mql.removeListener(checkMobile);
+      clearTimeout(initialTimeout);
+      clearTimeout(resizeTimeout);
+      
+      if (mediaQuery) {
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener("change", handleChange);
+        } else if (mediaQuery.removeListener) {
+          mediaQuery.removeListener(handleChange);
         }
       }
+      
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
     };

@@ -18,11 +18,7 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
   const handleTouchStart = React.useCallback((e: TouchEvent) => {
     if (!isMobile || !e.touches.length) return;
     
-    // Prevent default scrolling behavior on iOS
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-    
+    console.log('Touch start on mobile dialog');
     const touch = e.touches[0];
     setStartY(touch.clientY);
     setIsDragging(true);
@@ -34,13 +30,12 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
     const touch = e.touches[0];
     const deltaY = touch.clientY - startY;
     
-    // Only allow dragging down and add resistance
+    // Only allow dragging down
     if (deltaY > 0) {
-      const resistance = Math.min(1, deltaY / 200);
+      const resistance = Math.min(1, deltaY / 150);
       if (contentRef.current) {
-        // Use transform3d for better iOS performance
-        contentRef.current.style.transform = `translate3d(0, ${deltaY * resistance}px, 0)`;
-        contentRef.current.style.opacity = `${1 - resistance * 0.3}`;
+        contentRef.current.style.transform = `translateY(${deltaY * resistance}px)`;
+        contentRef.current.style.opacity = `${1 - resistance * 0.2}`;
       }
     }
   }, [isMobile, isDragging, startY]);
@@ -57,22 +52,22 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
 
     const deltaY = touch.clientY - startY;
     
-    // Reset transform with transition
+    // Reset transform
     if (contentRef.current) {
-      contentRef.current.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+      contentRef.current.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
       contentRef.current.style.transform = '';
       contentRef.current.style.opacity = '';
       
-      // Remove transition after animation
       setTimeout(() => {
         if (contentRef.current) {
           contentRef.current.style.transition = '';
         }
-      }, 300);
+      }, 200);
     }
     
-    // Close dialog if dragged down enough
-    if (deltaY > 100) {
+    // Close if dragged down enough
+    if (deltaY > 80) {
+      console.log('Closing dialog via swipe');
       onOpenChange?.(false);
     }
 
@@ -81,22 +76,21 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
   }, [isMobile, isDragging, startY, onOpenChange]);
 
   React.useEffect(() => {
-    if (!isMobile || !open) return;
+    if (!isMobile || !open || !contentRef.current) return;
 
-    const dialogContent = contentRef.current;
-    if (!dialogContent) return;
-
-    // Use passive: true for better iOS performance
-    const options = { passive: false };
+    const element = contentRef.current;
     
-    dialogContent.addEventListener('touchstart', handleTouchStart, options);
-    dialogContent.addEventListener('touchmove', handleTouchMove, options);
-    dialogContent.addEventListener('touchend', handleTouchEnd, { passive: true });
+    // Use passive listeners and proper cleanup
+    const options = { passive: true };
+    
+    element.addEventListener('touchstart', handleTouchStart, options);
+    element.addEventListener('touchmove', handleTouchMove, options);
+    element.addEventListener('touchend', handleTouchEnd, options);
 
     return () => {
-      dialogContent.removeEventListener('touchstart', handleTouchStart);
-      dialogContent.removeEventListener('touchmove', handleTouchMove);
-      dialogContent.removeEventListener('touchend', handleTouchEnd);
+      element.removeEventListener('touchstart', handleTouchStart);
+      element.removeEventListener('touchmove', handleTouchMove);
+      element.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isMobile, open, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
@@ -104,14 +98,15 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
     <Dialog open={open} onOpenChange={onOpenChange} {...props}>
       <DialogContent 
         ref={contentRef}
-        className={isMobile ? "transition-none mobile-scroll max-h-[90vh] overflow-y-auto safe-area-inset" : ""}
-        style={{
+        className={isMobile ? "transition-none mobile-scroll max-h-[90vh] overflow-y-auto safe-area-inset touch-action-manipulation" : ""}
+        style={isMobile ? {
           WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain'
-        }}
+          overscrollBehavior: 'contain',
+          touchAction: 'manipulation'
+        } : {}}
       >
         {isMobile && (
-          <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 flex-shrink-0" />
+          <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 flex-shrink-0 touch-none" />
         )}
         {children}
       </DialogContent>

@@ -25,12 +25,15 @@ export default function Leads() {
   const [activeTab, setActiveTab] = useState<string>("leads");
   const isMobile = useIsMobile();
   
+  console.log('Leads page - isMobile:', isMobile);
+  
   // Initialize leads hook
   const { leads = [], isLoading, error } = useLeads();
 
   const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
 
   const onLeadAdded = () => {
+    console.log('Lead added successfully');
     setIsAddingLead(false);
     setShowAddDialog(false);
     toast({
@@ -40,10 +43,9 @@ export default function Leads() {
   };
 
   const handleAddLead = () => {
-    console.log("Add lead clicked, can add lead:", canAddLead);
+    console.log("Add lead clicked, can add lead:", canAddLead, "isMobile:", isMobile);
     
     if (!canAddLead) {
-      // Show subscription limit alert
       toast({
         title: "הגעת למגבלת המנוי",
         description: "לא ניתן להוסיף עוד לקוחות. אנא שדרג את המנוי שלך.",
@@ -58,7 +60,13 @@ export default function Leads() {
 
   const handleWhatsApp = () => {
     console.log("WhatsApp clicked");
-    window.open('https://web.whatsapp.com', '_blank');
+    try {
+      window.open('https://web.whatsapp.com', '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Error opening WhatsApp:', error);
+      // Fallback for mobile
+      window.location.href = 'https://web.whatsapp.com';
+    }
   };
 
   const handleScheduleMeeting = () => {
@@ -78,12 +86,14 @@ export default function Leads() {
             <button 
               onClick={() => window.location.reload()} 
               className="w-full bg-red-600 text-white px-6 py-4 rounded-2xl hover:bg-red-700 font-semibold text-lg"
+              style={{ touchAction: 'manipulation' }}
             >
               רענן דף
             </button>
             <button 
               onClick={() => window.location.href = '/dashboard'} 
               className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl hover:bg-blue-700 font-semibold text-lg"
+              style={{ touchAction: 'manipulation' }}
             >
               חזור לדשבורד
             </button>
@@ -135,9 +145,13 @@ export default function Leads() {
           />
         </div>
 
-        {/* Add Lead Dialog for Mobile */}
+        {/* Add Lead Dialog for Mobile - Enhanced for iOS */}
         <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" dir="rtl">
+          <DialogContent 
+            className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" 
+            dir="rtl"
+            style={{ touchAction: 'manipulation' }}
+          >
             <DialogHeader>
               <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
             </DialogHeader>
