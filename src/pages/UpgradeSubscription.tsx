@@ -7,7 +7,7 @@ import { useSubscription } from "@/contexts/subscription-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionPlanCards } from "@/components/subscription/SubscriptionPlanCards";
 import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";

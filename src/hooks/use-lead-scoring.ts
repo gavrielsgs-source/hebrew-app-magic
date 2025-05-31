@@ -1,169 +1,98 @@
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
-
-export interface LeadScore {
-  leadId: string;
-  score: number; // ציון בין 0-100
-  factors: {
-    type: string;
-    impact: number; // השפעה חיובית או שלילית על הציון
-    description: string;
-  }[];
-  category: 'hot' | 'warm' | 'cold';
-  lastUpdated: string;
+interface Lead {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  source: string;
+  status: string;
+  created_at: string;
 }
 
-// חישוב קטגוריית הליד על פי הציון
-const calculateCategory = (score: number): 'hot' | 'warm' | 'cold' => {
-  if (score >= 70) return 'hot';
-  if (score >= 40) return 'warm';
-  return 'cold';
+interface LeadScore {
+  engagementScore: number;
+  demographicScore: number;
+  overallScore: number;
+  priority: "high" | "medium" | "low";
+}
+
+const calculateEngagementScore = (lead: Lead): number => {
+  // Example: Score based on lead source
+  let score = 0;
+  if (lead.source === "google_ads") {
+    score += 5;
+  } else if (lead.source === "facebook_ads") {
+    score += 3;
+  }
+
+  // Example: Score based on lead status
+  if (lead.status === "new") {
+    score += 2;
+  }
+
+  return score;
 };
 
-// פונקציה לחישוב ציון הליד
-const calculateLeadScore = (lead: any): LeadScore => {
-  const factors: LeadScore['factors'] = [];
-  let score = 50; // ציון התחלתי
-
-  // גורמי השפעה על הציון
-  // מקור הליד
-  if (lead.source) {
-    const sourceImpact = lead.source === 'פייסבוק' ? 10 : 
-                         lead.source === 'אתר' ? 15 :
-                         lead.source === 'המלצה' ? 20 : 5;
-    
-    factors.push({
-      type: 'source',
-      impact: sourceImpact,
-      description: `מקור: ${lead.source}`
-    });
-    
-    score += sourceImpact;
+const calculateDemographicScore = (lead: Lead): number => {
+  // Example: Score based on email domain
+  let score = 0;
+  if (lead.email.endsWith("@example.com")) {
+    score += 3;
   }
-  
-  // האם ישנן שיחות או מעקב אחרי הליד
-  if (lead.follow_up_notes && lead.follow_up_notes.length > 0) {
-    const followUpImpact = Math.min(lead.follow_up_notes.length * 5, 15);
-    factors.push({
-      type: 'follow_up',
-      impact: followUpImpact,
-      description: `${lead.follow_up_notes.length} פעולות מעקב`
-    });
-    
-    score += followUpImpact;
+
+  // Example: Score based on phone number
+  if (lead.phone.startsWith("050")) {
+    score += 2;
+  }
+
+  return score;
+};
+
+const determinePriority = (overallScore: number): "high" | "medium" | "low" => {
+  if (overallScore >= 8) {
+    return "high";
+  } else if (overallScore >= 5) {
+    return "medium";
   } else {
-    factors.push({
-      type: 'follow_up',
-      impact: -10,
-      description: 'אין פעולות מעקב'
-    });
-    
-    score -= 10;
+    return "low";
   }
-  
-  // האם הליד מתעניין ברכב ספציפי
-  if (lead.car_id) {
-    factors.push({
-      type: 'car_interest',
-      impact: 15,
-      description: 'התעניינות ברכב ספציפי'
-    });
-    
-    score += 15;
-  }
-  
-  // כמה זמן הליד במערכת ללא התקדמות
-  const createdAt = new Date(lead.created_at);
-  const now = new Date();
-  const daysSinceCreation = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
-  
-  if (lead.status === 'new' && daysSinceCreation > 14) {
-    const ageImpact = Math.min(-5 * Math.floor(daysSinceCreation / 7), -15);
-    factors.push({
-      type: 'age',
-      impact: ageImpact,
-      description: `ליד לא פעיל מעל ${daysSinceCreation} ימים`
-    });
-    
-    score += ageImpact;
-  }
-  
-  // סטטוס הליד
-  if (lead.status) {
-    const statusImpact = lead.status === 'in_progress' ? 10 : 
-                         lead.status === 'waiting' ? 0 : -5;
-    
-    factors.push({
-      type: 'status',
-      impact: statusImpact,
-      description: `סטטוס: ${lead.status}`
-    });
-    
-    score += statusImpact;
-  }
-  
-  // וודא שהציון בטווח 0-100
-  score = Math.max(0, Math.min(100, score));
-  
-  return {
-    leadId: lead.id,
-    score,
-    factors,
-    category: calculateCategory(score),
-    lastUpdated: new Date().toISOString(),
-  };
 };
 
-// Hook לשליפת ציוני לידים
 export function useLeadScoring() {
-  const queryClient = useQueryClient();
-  
-  // שליפת כל הלידים וחישוב הציונים שלהם
-  const { data: leadScores, isLoading, error } = useQuery({
-    queryKey: ["lead-scores"],
-    queryFn: async () => {
-      try {
-        // שליפת כל הלידים
-        const { data: leads, error } = await supabase
-          .from("leads")
-          .select("*");
-        
-        if (error) throw error;
-        
-        // חישוב ציון לכל ליד
-        const scores = leads.map((lead) => calculateLeadScore(lead));
-        
-        return scores;
-      } catch (error) {
-        console.error("שגיאה בטעינת ציוני לידים:", error);
-        toast.error("שגיאה בטעינת ציוני לידים");
-        return [];
-      }
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["lead-scoring", user?.id],
+    queryFn: async (): Promise<LeadScore> => {
+      if (!user) throw new Error("User not authenticated");
+
+      // Mock lead data for demonstration
+      const mockLead: Lead = {
+        id: "1",
+        name: "John Doe",
+        phone: "0501234567",
+        email: "john.doe@example.com",
+        source: "google_ads",
+        status: "new",
+        created_at: new Date().toISOString(),
+      };
+
+      const engagementScore = calculateEngagementScore(mockLead);
+      const demographicScore = calculateDemographicScore(mockLead);
+      const overallScore = engagementScore + demographicScore;
+      const priority = determinePriority(overallScore);
+
+      return {
+        engagementScore,
+        demographicScore,
+        overallScore,
+        priority,
+      };
     },
+    enabled: !!user,
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
-  
-  // שליפת ציון של ליד ספציפי לפי ID
-  const getLeadScoreById = (leadId: string): LeadScore | undefined => {
-    if (!leadScores) return undefined;
-    return leadScores.find(score => score.leadId === leadId);
-  };
-  
-  // פילטור לידים לפי קטגוריה
-  const filterByCategory = (category: 'hot' | 'warm' | 'cold') => {
-    if (!leadScores) return [];
-    return leadScores.filter(score => score.category === category);
-  };
-  
-  return {
-    leadScores,
-    isLoading,
-    error,
-    getLeadScoreById,
-    filterByCategory,
-    hotLeads: leadScores ? filterByCategory('hot') : [],
-    warmLeads: leadScores ? filterByCategory('warm') : [],
-    coldLeads: leadScores ? filterByCategory('cold') : [],
-  };
 }

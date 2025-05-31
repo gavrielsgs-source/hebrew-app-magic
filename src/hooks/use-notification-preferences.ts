@@ -32,7 +32,9 @@ export function useNotificationPreferences() {
 
       if (error) throw error;
       if (data?.notification_preferences) {
-        setPreferences(data.notification_preferences as NotificationPreferences);
+        // Type assertion to ensure proper typing
+        const prefs = data.notification_preferences as unknown as NotificationPreferences;
+        setPreferences(prefs);
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
@@ -46,7 +48,7 @@ export function useNotificationPreferences() {
       await supabase
         .from("profiles")
         .update({ 
-          notification_preferences: newPreferences
+          notification_preferences: newPreferences as any
         })
         .eq("id", user.id);
 

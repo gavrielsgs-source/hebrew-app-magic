@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
-import { urlBase64ToUint8Array, VAPID_KEY } from "@/utils/notification-utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useNotificationPermission() {
   const { user } = useAuth();

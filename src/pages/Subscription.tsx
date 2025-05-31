@@ -1,417 +1,202 @@
-
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PricingPlans } from "@/components/subscription/PricingPlans";
-import { Crown, CreditCard, History, ArrowUpRight, Info, BarChart3, Users, Car, FileText, MessageSquare, Activity } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ArrowRight, Crown, Star, Zap, Check, X } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Link } from "react-router-dom";
-import { UsageBar } from "@/components/subscription/UsageBar";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { useSubscriptionLimits } from "@/hooks/use-subscription-limits";
+
+const subscriptionTiers = [
+  {
+    id: "free",
+    name: "חינם",
+    description: "התחילו עם תכונות בסיסיות בחינם",
+    features: [
+      "עד 3 משתמשים",
+      "ניהול לידים בסיסי",
+      "5GB אחסון",
+    ],
+    limitations: {
+      users: 3,
+      storage: 5,
+    },
+    price: "חינם",
+    mostPopular: false,
+  },
+  {
+    id: "premium",
+    name: "פרימיום",
+    description: "תכונות מתקדמות לעסקים קטנים",
+    features: [
+      "עד 10 משתמשים",
+      "ניהול לידים מתקדם",
+      "25GB אחסון",
+      "תמיכה טכנית",
+    ],
+    limitations: {
+      users: 10,
+      storage: 25,
+    },
+    price: "199 ₪",
+    mostPopular: true,
+  },
+  {
+    id: "business",
+    name: "ביזנס",
+    description: "פתרון מלא לעסקים בינוניים",
+    features: [
+      "עד 25 משתמשים",
+      "ניהול לידים מתקדם",
+      "100GB אחסון",
+      "תמיכה טכנית 24/7",
+      "אינטגרציות API",
+    ],
+    limitations: {
+      users: 25,
+      storage: 100,
+    },
+    price: "349 ₪",
+    mostPopular: false,
+  },
+  {
+    id: "enterprise",
+    name: "אנטרפרייז",
+    description: "פתרון מותאם אישית לעסקים גדולים",
+    features: [
+      "מספר משתמשים ללא הגבלה",
+      "ניהול לידים מתקדם",
+      "אחסון ללא הגבלה",
+      "תמיכה טכנית VIP",
+      "אינטגרציות API מתקדמות",
+      "הדרכה מותאמת אישית",
+    ],
+    limitations: {
+      users: Infinity,
+      storage: Infinity,
+    },
+    price: "599 ₪",
+    mostPopular: false,
+  },
+];
 
 export default function Subscription() {
-  const { subscription } = useSubscription();
-  const { getTierLabel } = useSubscriptionLimits();
+  const { subscription, isLoading, error } = useSubscription();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [usageCounts, setUsageCounts] = useState({
-    cars: 0,
-    leads: 0,
-    users: 0,
-    templates: 0,
-    tasks: 0,
-    whatsappMessages: 0
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isYearly, setIsYearly] = useState(false);
 
-  // פונקציה לשליפת נתוני שימוש עדכניים
   useEffect(() => {
-    const fetchUsageCounts = async () => {
-      try {
-        setIsLoading(true);
-        
-        // שליפת מספר הרכבים
-        const { count: carsCount, error: carsError } = await supabase
-          .from('cars')
-          .select('*', { count: 'exact', head: true });
-          
-        if (carsError) throw carsError;
-        
-        // שליפת מספר הלידים
-        const { count: leadsCount, error: leadsError } = await supabase
-          .from('leads')
-          .select('*', { count: 'exact', head: true });
-          
-        if (leadsError) throw leadsError;
-        
-        // שליפת מספר המשתמשים
-        const { count: usersCount, error: usersError } = await supabase
-          .from('user_roles')
-          .select('user_id', { count: 'exact', head: true })
-          .is('agency_id', null);
-          
-        if (usersError) throw usersError;
-        
-        // שליפת מספר המשימות
-        const { count: tasksCount, error: tasksError } = await supabase
-          .from('tasks')
-          .select('*', { count: 'exact', head: true });
-          
-        if (tasksError) throw tasksError;
-        
-        // עדכון המדדים
-        setUsageCounts({
-          cars: carsCount || 0,
-          leads: leadsCount || 0,
-          users: usersCount || 0,
-          templates: 2, // לדוגמה בלבד - צריך לעדכן לשליפה אמיתית
-          tasks: tasksCount || 0,
-          whatsappMessages: 0 // לדוגמה בלבד - צריך לעדכן לשליפה אמיתית
-        });
-        
-      } catch (error) {
-        console.error("Error fetching usage counts:", error);
-        toast.error("שגיאה בטעינת נתוני שימוש");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUsageCounts();
+    setIsMounted(true);
   }, []);
 
+  if (!isMounted) {
+    return null;
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("התנתקת בהצלחה!");
+      navigate('/login');
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+      toast.error("אירעה שגיאה בעת התנתקות");
+    }
+  };
+
+  const getSubscriptionTier = () => {
+    const tier = subscriptionTiers.find((tier) => tier.id === subscription.tier);
+    return tier || subscriptionTiers[0];
+  };
+
+  const currentTier = getSubscriptionTier();
+
   return (
-    <div className={`min-h-screen bg-gray-50 p-6 ${isMobile ? 'p-2 pb-24' : ''}`} dir="rtl">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple p-8">
-            <div className={`flex gap-6 ${
-              isMobile 
-                ? 'flex-col' 
-                : 'flex-col md:flex-row md:items-center md:justify-between'
-            }`}>
-              <div className="text-white">
-                <h1 className={`font-bold mb-3 flex items-center gap-3 ${
-                  isMobile ? 'text-2xl' : 'text-3xl'
-                }`}>
-                  <Crown className={`text-carslead-lightblue ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-                  ניהול מנוי
-                </h1>
-                <div className="space-y-2">
-                  <p className={isMobile ? 'text-lg' : 'text-xl'}>
-                    <span className="text-carslead-lightblue">המנוי הנוכחי שלך: </span>
-                    <span className="font-bold">{getTierLabel(subscription.tier)}</span>
-                  </p>
-                  {subscription.expiresAt && (
-                    <p className={`text-carslead-lightblue opacity-90 ${isMobile ? 'text-sm' : ''}`}>
-                      בתוקף עד: {new Date(subscription.expiresAt).toLocaleDateString('he-IL')}
-                    </p>
-                  )}
-                </div>
+    <div className={`container mx-auto py-10 px-4 ${isMobile ? 'pb-24' : ''}`}>
+      <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'} mb-8`}>
+        <div>
+          <h1 className={`font-bold ${isMobile ? 'text-2xl' : 'text-3xl'}`}>ניהול מנוי</h1>
+          <p className={`text-muted-foreground mt-2 ${isMobile ? 'text-sm' : ''}`}>
+            בדוק את פרטי המנוי שלך ושדרג במידת הצורך
+          </p>
+        </div>
+        <Button variant="outline" onClick={handleSignOut} className={isMobile ? 'self-start' : ''}>
+          התנתקות
+        </Button>
+      </div>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold">
+              {currentTier.name === "חינם" ? "חבילה בסיסית" : `חבילת ${currentTier.name}`}
+              {currentTier.mostPopular && <Badge className="ml-2">מומלץ</Badge>}
+            </CardTitle>
+            {currentTier.name !== "חינם" && <Crown className="h-4 w-4 text-yellow-500" />}
+          </div>
+          <CardDescription>{currentTier.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="flex items-center">
+            <Zap className="h-4 w-4 mr-2 text-blue-500" />
+            תכונות עיקריות:
+          </div>
+          <ul className="list-disc pl-5 space-y-1">
+            {currentTier.features.map((feature, index) => (
+              <li key={index} className="text-sm">
+                {feature}
+              </li>
+            ))}
+          </ul>
+          <div className="flex items-center">
+            <Star className="h-4 w-4 mr-2 text-green-500" />
+            מגבלות שימוש:
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">מספר משתמשים:</span>
+              <div className="flex items-center">
+                <Progress value={
+                  currentTier.limitations.users === Infinity ? 100 :
+                    (subscription.users / currentTier.limitations.users) * 100
+                } className="w-24 mr-2" />
+                <span className="text-xs text-muted-foreground">
+                  {subscription.users} / {currentTier.limitations.users === Infinity ? "ללא הגבלה" : currentTier.limitations.users}
+                </span>
               </div>
-              <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
-                <Button 
-                  variant="outline" 
-                  className={`bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm ${
-                    isMobile ? 'w-full text-sm' : ''
-                  }`}
-                >
-                  <History className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                  היסטוריית חיובים
-                </Button>
-                <Button className={`bg-white text-carslead-purple hover:bg-gray-100 ${
-                  isMobile ? 'w-full text-sm' : ''
-                }`}>
-                  <CreditCard className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                  נהל פרטי תשלום
-                </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">נפח אחסון:</span>
+              <div className="flex items-center">
+                <Progress value={
+                  currentTier.limitations.storage === Infinity ? 100 :
+                    (subscription.storage / currentTier.limitations.storage) * 100
+                } className="w-24 mr-2" />
+                <span className="text-xs text-muted-foreground">
+                  {subscription.storage}GB / {currentTier.limitations.storage === Infinity ? "ללא הגבלה" : currentTier.limitations.storage}GB
+                </span>
               </div>
             </div>
           </div>
-        </div>
-        
-        {/* Quick Actions */}
-        <div className="flex justify-end">
-          <Button 
-            asChild 
-            className={`bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white rounded-lg font-medium ${
-              isMobile ? 'w-full h-10 px-4 text-sm' : 'h-12 px-6'
-            }`}
-          >
-            <Link to="/subscription/upgrade">
-              <ArrowUpRight className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-              שדרג מנוי
-            </Link>
+        </CardContent>
+      </Card>
+
+      <div className="text-center">
+        {currentTier.id === "enterprise" ? (
+          <p className="text-sm text-muted-foreground">
+            יצרנו איתך קשר לגבי תוכנית האנטרפרייז שלך.
+          </p>
+        ) : (
+          <Button onClick={() => navigate("/subscription/upgrade")}>
+            שדרג מנוי <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-        </div>
-        
-        {/* Tabs Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <Tabs defaultValue="plans" dir="rtl" className={isMobile ? 'p-4' : 'p-6'}>
-            <TabsList className={`bg-gray-50 p-1 ${
-              isMobile 
-                ? 'grid w-full grid-cols-3 h-auto' 
-                : 'grid w-full grid-cols-3'
-            }`}>
-              <TabsTrigger 
-                value="plans"
-                className={`data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm ${
-                  isMobile ? 'text-xs py-2' : ''
-                }`}
-              >
-                <Crown className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                {isMobile ? 'חבילות' : 'חבילות'}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="usage"
-                className={`data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm ${
-                  isMobile ? 'text-xs py-2' : ''
-                }`}
-              >
-                <BarChart3 className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                שימוש
-              </TabsTrigger>
-              <TabsTrigger 
-                value="limits"
-                className={`data-[state=active]:bg-white data-[state=active]:text-carslead-purple data-[state=active]:shadow-sm ${
-                  isMobile ? 'text-xs py-2' : ''
-                }`}
-              >
-                <Info className={`ml-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                מגבלות
-              </TabsTrigger>
-            </TabsList>
-            
-            <div className={isMobile ? 'mt-4' : 'mt-8'}>
-              <TabsContent value="plans" className="mt-0">
-                <PricingPlans />
-              </TabsContent>
-              
-              <TabsContent value="usage" className="mt-0">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className={`font-semibold text-gray-900 mb-4 ${
-                      isMobile ? 'text-lg' : 'text-xl'
-                    }`}>סקירת שימוש נוכחי</h3>
-                    <div className={`grid gap-6 ${
-                      isMobile 
-                        ? 'grid-cols-1' 
-                        : 'md:grid-cols-2 lg:grid-cols-4'
-                    }`}>
-                      <UsageCard 
-                        title="רכבים" 
-                        icon={Car}
-                        limit={subscription.carLimit} 
-                        used={usageCounts.cars} 
-                        isLoading={isLoading}
-                      />
-                      <UsageCard 
-                        title="לקוחות" 
-                        icon={Users}
-                        limit={subscription.leadLimit} 
-                        used={usageCounts.leads}
-                        isLoading={isLoading}
-                      />
-                      <UsageCard 
-                        title="תבניות" 
-                        icon={MessageSquare}
-                        limit={subscription.templateLimit} 
-                        used={usageCounts.templates}
-                        isLoading={isLoading}
-                      />
-                      <UsageCard 
-                        title="משתמשים" 
-                        icon={Users}
-                        limit={subscription.userLimit} 
-                        used={usageCounts.users}
-                        isLoading={isLoading}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="limits" className="mt-0">
-                <div className="space-y-8">
-                  <div className={`bg-gradient-to-l from-gray-50 to-white border border-gray-200 rounded-xl ${
-                    isMobile ? 'p-6' : 'p-8'
-                  }`}>
-                    <h3 className={`font-semibold mb-6 flex items-center gap-3 text-gray-900 ${
-                      isMobile ? 'text-lg' : 'text-xl'
-                    }`}>
-                      <Info className={`text-carslead-purple ${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
-                      מגבלות תכנית {getTierLabel(subscription.tier)}
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      <UsageBar 
-                        label="רכבים במלאי" 
-                        used={usageCounts.cars} 
-                        limit={subscription.carLimit || Infinity}
-                      />
-                      
-                      <UsageBar 
-                        label="לקוחות פוטנציאליים" 
-                        used={usageCounts.leads} 
-                        limit={subscription.leadLimit || Infinity}
-                      />
-                      
-                      <UsageBar 
-                        label="משתמשים במערכת" 
-                        used={usageCounts.users} 
-                        limit={subscription.userLimit || Infinity}
-                      />
-                      
-                      <UsageBar 
-                        label="תבניות מותאמות אישית" 
-                        used={usageCounts.templates} 
-                        limit={subscription.templateLimit || Infinity}
-                      />
-                      
-                      <UsageBar 
-                        label="משימות אקטיביות" 
-                        used={usageCounts.tasks} 
-                        limit={subscription.taskLimit || Infinity}
-                      />
-                      
-                      <UsageBar 
-                        label="הודעות וואטסאפ בחודש" 
-                        used={usageCounts.whatsappMessages} 
-                        limit={subscription.whatsappMessageLimit || Infinity}
-                      />
-                    </div>
-                    
-                    <div className={`mt-8 p-6 bg-white rounded-xl border border-gray-200 ${
-                      isMobile ? 'p-4' : ''
-                    }`}>
-                      <h4 className={`font-semibold mb-4 text-gray-900 ${
-                        isMobile ? 'text-sm' : ''
-                      }`}>תכונות מתקדמות:</h4>
-                      <div className={`grid gap-4 ${
-                        isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'
-                      }`}>
-                        <FeatureListItem 
-                          feature="אנליטיקה מתקדמת" 
-                          available={subscription.analyticsLevel !== 'basic'} 
-                        />
-                        <FeatureListItem 
-                          feature="דוחות מותאמים אישית" 
-                          available={subscription.analyticsLevel === 'custom'} 
-                        />
-                        <FeatureListItem 
-                          feature="תהליכי עבודה אוטומטיים" 
-                          available={subscription.tier !== 'free' && subscription.tier !== 'premium'} 
-                        />
-                        <FeatureListItem 
-                          feature="גישה ל-API" 
-                          available={subscription.tier === 'enterprise'} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <Button 
-                      asChild 
-                      size={isMobile ? 'default' : 'lg'} 
-                      className={`bg-gradient-to-l from-carslead-purple to-carslead-lightpurple hover:from-carslead-lightpurple hover:to-carslead-purple text-white rounded-xl font-medium ${
-                        isMobile ? 'w-full h-12 px-6' : 'h-14 px-8'
-                      }`}
-                    >
-                      <Link to="/subscription/upgrade">
-                        <ArrowUpRight className={`ml-2 ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
-                        שדרג את המנוי שלך לקבלת יותר משאבים
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface UsageCardProps {
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  limit?: number;
-  used: number;
-  isLoading?: boolean;
-}
-
-function UsageCard({ title, icon: Icon, limit = Infinity, used, isLoading = false }: UsageCardProps) {
-  const isMobile = useIsMobile();
-  const percentage = limit === Infinity ? 0 : Math.min(Math.round((used / limit) * 100), 100);
-  const isNearLimit = percentage >= 80;
-  const isAtLimit = percentage >= 100;
-  
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`rounded-lg flex items-center justify-center ${
-            isAtLimit ? 'bg-red-100' : isNearLimit ? 'bg-orange-100' : 'bg-carslead-purple/10'
-          } ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}>
-            <Icon className={`${
-              isAtLimit ? 'text-red-600' : isNearLimit ? 'text-orange-600' : 'text-carslead-purple'
-            } ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
-          </div>
-          <h3 className={`font-medium text-gray-900 ${isMobile ? 'text-sm' : ''}`}>{title}</h3>
-        </div>
-      </div>
-      
-      {isLoading ? (
-        <div className="space-y-3">
-          <div className={`bg-gray-200 rounded animate-pulse ${isMobile ? 'h-6' : 'h-8'}`}></div>
-          <div className="h-2 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-      ) : (
-        <>
-          <div className={`font-bold mb-3 text-gray-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
-            {used} <span className={`font-normal text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>/ {limit === Infinity ? '∞' : limit}</span>
-          </div>
-          
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-300 ${
-                isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-orange-500' : 'bg-gradient-to-l from-carslead-purple to-carslead-lightpurple'
-              }`}
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-interface FeatureListItemProps {
-  feature: string;
-  available: boolean;
-}
-
-function FeatureListItem({ feature, available }: FeatureListItemProps) {
-  const isMobile = useIsMobile();
-  
-  return (
-    <div className={`flex items-center gap-3 p-3 rounded-lg bg-gray-50 ${isMobile ? 'p-2' : ''}`}>
-      <div className={`rounded-full flex items-center justify-center font-medium ${
-        available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-      } ${isMobile ? 'h-5 w-5 text-xs' : 'h-6 w-6 text-sm'}`}>
-        {available ? '✓' : '✗'}
-      </div>
-      <div className="flex-1">
-        <span className={`text-gray-900 ${isMobile ? 'text-sm' : ''}`}>{feature}</span>
-        {!available && (
-          <span className={`text-gray-500 block ${isMobile ? 'text-xs' : 'text-sm'}`}>
-            (זמין במנויים מתקדמים)
-          </span>
         )}
       </div>
     </div>

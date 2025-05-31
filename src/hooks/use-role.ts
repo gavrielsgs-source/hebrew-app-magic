@@ -1,43 +1,35 @@
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+interface Role {
+  id: string;
+  name: string;
+}
 
-export function useRole(userId?: string) {
-  const [role, setRole] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export function useRole() {
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (!userId) {
-      setRole(null);
-      setIsLoading(false);
-      return;
-    }
-
-    async function fetchUserRole() {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .single();
-
-        if (error) {
-          console.error("Error fetching user role:", error);
-          setRole(null);
-        } else {
-          setRole((data?.role as string) || null);
-        }
-      } catch (error) {
-        console.error("Error in useRole hook:", error);
-        setRole(null);
-      } finally {
-        setIsLoading(false);
+  return useQuery({
+    queryKey: ["role", user?.id],
+    queryFn: async (): Promise<Role | null> => {
+      if (!user) {
+        return null;
       }
-    }
 
-    fetchUserRole();
-  }, [userId]);
+      const { data, error } = await supabase
+        .from("roles")
+        .select("*")
+        .eq("id", user.role_id)
+        .single();
 
-  return { role, isLoading };
+      if (error) {
+        console.error("Error fetching role:", error);
+        return null;
+      }
+
+      return data || null;
+    },
+    enabled: !!user?.role_id,
+  });
 }
