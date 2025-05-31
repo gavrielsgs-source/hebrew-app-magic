@@ -1,21 +1,18 @@
 
 import { MobileButton } from "@/components/mobile/MobileButton";
-import { Plus } from "lucide-react";
 
 interface MobileTaskCalendarHeaderProps {
   viewMode: "today" | "upcoming";
   onViewModeChange: (mode: "today" | "upcoming") => void;
   todayCount: number;
   upcomingCount: number;
-  onAddTask: () => void;
 }
 
 export function MobileTaskCalendarHeader({
   viewMode,
   onViewModeChange,
   todayCount,
-  upcomingCount,
-  onAddTask
+  upcomingCount
 }: MobileTaskCalendarHeaderProps) {
   return (
     <div className="space-y-3" dir="rtl">
@@ -48,17 +45,6 @@ export function MobileTaskCalendarHeader({
           קרובים ({upcomingCount})
         </MobileButton>
       </div>
-
-      {/* Quick Add Task Button */}
-      <MobileButton
-        variant="primary"
-        size="md"
-        onClick={onAddTask}
-        icon={<Plus className="h-4 w-4" />}
-        className="w-full h-10 text-sm font-medium rounded-lg shadow bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90"
-      >
-        הוסף משימה חדשה
-      </MobileButton>
     </div>
   );
 }

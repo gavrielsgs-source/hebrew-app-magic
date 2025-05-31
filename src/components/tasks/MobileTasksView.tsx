@@ -1,6 +1,6 @@
 
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { Calendar, Grid, Plus } from "lucide-react";
+import { Calendar, Grid } from "lucide-react";
 import { TaskFiltersAndSearch } from "./TaskFiltersAndSearch";
 import { TasksCardsView } from "./TasksCardsView";
 import { MobileTaskCalendar } from "./MobileTaskCalendar";
@@ -46,25 +46,6 @@ export function MobileTasksView({
     isLoading
   });
 
-  // Enhanced mobile-first add task handler
-  const handleAddTask = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('MobileTasksView - Add task clicked/touched');
-    
-    // Ensure immediate response on mobile
-    requestAnimationFrame(() => {
-      setIsAddTaskOpen(true);
-    });
-  };
-
-  const handleAddTaskSuccess = () => {
-    console.log('MobileTasksView - Task added successfully');
-    setIsAddTaskOpen(false);
-  };
-
-  // Enhanced mobile view mode handlers
   const handleViewModeChange = (mode: ViewMode, e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -108,7 +89,7 @@ export function MobileTasksView({
           onTasksFilter={onTasksFilter}
         />
         
-        {/* Mobile View Mode Selector with enhanced touch support */}
+        {/* Mobile View Mode Selector */}
         <div className="flex gap-2">
           <button
             type="button"
@@ -152,34 +133,14 @@ export function MobileTasksView({
           </button>
         </div>
 
-        {/* Content based on view mode */}
+        {/* Content based on view mode - NO ADD TASK BUTTONS HERE */}
         <div className="min-h-screen">
           {viewMode === "cards" && (
-            <>
-              {/* Enhanced Add Task Button for Cards View with full mobile support */}
-              <div className="mb-4">
-                <button
-                  type="button"
-                  onClick={handleAddTask}
-                  onTouchStart={handleAddTask}
-                  className="w-full h-14 bg-gradient-to-r from-carslead-purple to-carslead-blue text-white rounded-2xl font-semibold text-lg shadow-lg flex items-center justify-center gap-3 active:scale-98 transition-transform min-h-[56px]"
-                  style={{
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation',
-                    userSelect: 'none'
-                  }}
-                >
-                  <Plus className="h-5 w-5" />
-                  הוסף משימה חדשה
-                </button>
-              </div>
-              
-              <TasksCardsView 
-                tasks={filteredTasks || []}
-                onTaskStatusChange={onTaskStatusChange}
-                onTaskDelete={onTaskDelete}
-              />
-            </>
+            <TasksCardsView 
+              tasks={filteredTasks || []}
+              onTaskStatusChange={onTaskStatusChange}
+              onTaskDelete={onTaskDelete}
+            />
           )}
 
           {viewMode === "calendar" && (
@@ -192,11 +153,11 @@ export function MobileTasksView({
         </div>
       </div>
 
-      {/* Enhanced Add Task Dialog with mobile optimization */}
+      {/* Single Add Task Dialog - controlled from external FAB */}
       <AddTaskDialog
         open={isAddTaskOpen}
         onOpenChange={setIsAddTaskOpen}
-        onSuccess={handleAddTaskSuccess}
+        onSuccess={() => setIsAddTaskOpen(false)}
       />
     </MobileContainer>
   );

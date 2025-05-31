@@ -4,11 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Clock } from "lucide-react";
 import { useTasks } from "@/hooks/use-tasks";
 import { format, isValid } from "date-fns";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { TaskForm } from "./tasks/TaskForm";
 
 interface TaskListProps {
   extended?: boolean;
@@ -16,7 +12,6 @@ interface TaskListProps {
 
 export function TaskList({ extended = false }: TaskListProps) {
   const { tasks, isLoading, updateTask } = useTasks();
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   
   const today = new Date().toISOString().split('T')[0];
   
@@ -34,7 +29,7 @@ export function TaskList({ extended = false }: TaskListProps) {
         return (taskDateStr <= today && task.status !== 'completed');
       } catch (error) {
         console.error("Error filtering task:", error);
-        return true; // Include task if there's an error
+        return true;
       }
     })
     .slice(0, extended ? tasks.length : 5);
@@ -66,7 +61,6 @@ export function TaskList({ extended = false }: TaskListProps) {
     }
   };
   
-  // Safely format a date
   const safeFormatDate = (dateString: string | null | undefined, formatPattern: string): string => {
     if (!dateString) return "ללא תאריך";
     
@@ -132,19 +126,11 @@ export function TaskList({ extended = false }: TaskListProps) {
         ))
       )}
       
-      <SwipeDialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-        <DialogTrigger asChild>
-          <Button variant="ghost" className="w-full" size="sm">
-            {extended ? "הוסף משימה חדשה" : "הצג את כל המשימות"}
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="w-[400px]">
-          <DialogHeader>
-            <DialogTitle>הוסף משימה חדשה</DialogTitle>
-          </DialogHeader>
-          <TaskForm onSuccess={() => setIsAddTaskOpen(false)} />
-        </DialogContent>
-      </SwipeDialog>
+      {!extended && (
+        <Button variant="ghost" className="w-full" size="sm">
+          הצג את כל המשימות
+        </Button>
+      )}
     </div>
   );
 }
