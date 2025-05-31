@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +13,18 @@ export interface Document {
   entity_type: string;
   entity_id: string;
   user_id: string;
+  type: string;
+  file_type?: string;
+  file_path?: string;
+  is_template?: boolean;
+}
+
+export interface UploadDocumentParams {
+  file: File;
+  name: string;
+  type: string;
+  entityId?: string;
+  entityType?: 'lead' | 'car' | 'agency';
 }
 
 export function useDocuments(entityType?: string, entityId?: string) {
@@ -45,13 +58,13 @@ export function useDocuments(entityType?: string, entityId?: string) {
     enabled: !!user && !!entityType && !!entityId,
   });
 
-  const uploadDocumentMutation = useMutation(
-    async ({ file, name }: { file: File; name: string }) => {
-      if (!user || !entityType || !entityId) {
-        throw new Error("User, entityType, and entityId are required.");
+  const uploadDocumentMutation = useMutation({
+    mutationFn: async ({ file, name, type, entityId, entityType }: UploadDocumentParams) => {
+      if (!user) {
+        throw new Error("User is required.");
       }
 
-      const filePath = `documents/${user.id}/${entityType}/${entityId}/${name}`;
+      const filePath = `documents/${user.id}/${entityType || 'general'}/${entityId || 'unlinked'}/${name}`;
 
       const { data, error } = await supabase.storage
         .from("documents")
@@ -65,14 +78,17 @@ export function useDocuments(entityType?: string, entityId?: string) {
         throw error;
       }
 
-      const url = `${supabase.storageUrl}/documents/${filePath}`;
+      const url = `https://zjmkdmmnajzevoupgfhg.supabase.co/storage/v1/object/public/documents/${filePath}`;
 
       const { error: dbError } = await supabase.from("documents").insert({
         name: name,
         url: url,
-        entity_type: entityType,
-        entity_id: entityId,
+        type: type,
+        entity_type: entityType || null,
+        entity_id: entityId || null,
         user_id: user.id,
+        file_type: file.type,
+        file_path: filePath,
       });
 
       if (dbError) {
@@ -82,19 +98,17 @@ export function useDocuments(entityType?: string, entityId?: string) {
 
       return data;
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["documents", user?.id, entityType, entityId]);
-        toast.success("Document uploaded successfully!");
-      },
-      onError: (error: any) => {
-        toast.error(`Failed to upload document: ${error.message}`);
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", user?.id, entityType, entityId] });
+      toast.success("Document uploaded successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to upload document: ${error.message}`);
+    },
+  });
 
-  const deleteDocumentMutation = useMutation(
-    async (documentId: string) => {
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (documentId: string) => {
       if (!user) {
         throw new Error("User is required.");
       }
@@ -102,7 +116,7 @@ export function useDocuments(entityType?: string, entityId?: string) {
       // Get the document URL from the database
       const { data: documentData, error: selectError } = await supabase
         .from("documents")
-        .select("url")
+        .select("url, file_path")
         .eq("id", documentId)
         .single();
 
@@ -111,21 +125,19 @@ export function useDocuments(entityType?: string, entityId?: string) {
         throw selectError;
       }
 
-      if (!documentData || !documentData.url) {
-        throw new Error("Document not found or URL is missing.");
+      if (!documentData) {
+        throw new Error("Document not found.");
       }
 
-      // Extract the path from the URL
-      const path = documentData.url.replace(`${supabase.storageUrl}/documents/`, "");
+      // Delete the document from storage if file_path exists
+      if (documentData.file_path) {
+        const { error: storageError } = await supabase.storage
+          .from("documents")
+          .remove([documentData.file_path]);
 
-      // Delete the document from storage
-      const { error: storageError } = await supabase.storage
-        .from("documents")
-        .remove([path]);
-
-      if (storageError) {
-        console.error("Error deleting document from storage:", storageError);
-        throw storageError;
+        if (storageError) {
+          console.error("Error deleting document from storage:", storageError);
+        }
       }
 
       // Delete the document from the database
@@ -141,24 +153,50 @@ export function useDocuments(entityType?: string, entityId?: string) {
 
       return documentId;
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["documents", user?.id, entityType, entityId]);
-        toast.success("Document deleted successfully!");
-      },
-      onError: (error: any) => {
-        toast.error(`Failed to delete document: ${error.message}`);
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", user?.id, entityType, entityId] });
+      toast.success("Document deleted successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to delete document: ${error.message}`);
+    },
+  });
+
+  const toggleTemplateMutation = useMutation({
+    mutationFn: async ({ documentId, isTemplate }: { documentId: string; isTemplate: boolean }) => {
+      if (!user) {
+        throw new Error("User is required.");
+      }
+
+      const { error } = await supabase
+        .from("documents")
+        .update({ is_template: isTemplate })
+        .eq("id", documentId);
+
+      if (error) {
+        console.error("Error updating template status:", error);
+        throw error;
+      }
+
+      return { documentId, isTemplate };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", user?.id, entityType, entityId] });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update template status: ${error.message}`);
+    },
+  });
 
   return {
     documents,
     isLoading,
     error,
     uploadDocument: uploadDocumentMutation.mutateAsync,
-    isUploading: uploadDocumentMutation.isLoading,
+    isUploading: uploadDocumentMutation.isPending,
     deleteDocument: deleteDocumentMutation.mutateAsync,
-    isDeleting: deleteDocumentMutation.isLoading,
+    isDeleting: deleteDocumentMutation.isPending,
+    toggleTemplate: toggleTemplateMutation.mutateAsync,
+    isTogglingTemplate: toggleTemplateMutation.isPending,
   };
 }

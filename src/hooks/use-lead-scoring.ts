@@ -1,6 +1,6 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Lead {
   id: string;
@@ -13,14 +13,16 @@ interface Lead {
 }
 
 interface LeadScore {
-  engagementScore: number;
-  demographicScore: number;
-  overallScore: number;
-  priority: "high" | "medium" | "low";
+  score: number;
+  category: "hot" | "warm" | "cold";
+  factors: Array<{
+    description: string;
+    impact: number;
+  }>;
+  lastUpdated: string;
 }
 
 const calculateEngagementScore = (lead: Lead): number => {
-  // Example: Score based on lead source
   let score = 0;
   if (lead.source === "google_ads") {
     score += 5;
@@ -28,7 +30,6 @@ const calculateEngagementScore = (lead: Lead): number => {
     score += 3;
   }
 
-  // Example: Score based on lead status
   if (lead.status === "new") {
     score += 2;
   }
@@ -37,62 +38,81 @@ const calculateEngagementScore = (lead: Lead): number => {
 };
 
 const calculateDemographicScore = (lead: Lead): number => {
-  // Example: Score based on email domain
   let score = 0;
-  if (lead.email.endsWith("@example.com")) {
+  if (lead.email && lead.email.endsWith("@example.com")) {
     score += 3;
   }
 
-  // Example: Score based on phone number
-  if (lead.phone.startsWith("050")) {
+  if (lead.phone && lead.phone.startsWith("050")) {
     score += 2;
   }
 
   return score;
 };
 
-const determinePriority = (overallScore: number): "high" | "medium" | "low" => {
+const determineCategory = (overallScore: number): "hot" | "warm" | "cold" => {
   if (overallScore >= 8) {
-    return "high";
+    return "hot";
   } else if (overallScore >= 5) {
-    return "medium";
+    return "warm";
   } else {
-    return "low";
+    return "cold";
   }
 };
 
 export function useLeadScoring() {
   const { user } = useAuth();
 
-  return useQuery({
+  const { data: leadScores, isLoading, error } = useQuery({
     queryKey: ["lead-scoring", user?.id],
-    queryFn: async (): Promise<LeadScore> => {
+    queryFn: async (): Promise<Record<string, LeadScore>> => {
       if (!user) throw new Error("User not authenticated");
 
-      // Mock lead data for demonstration
-      const mockLead: Lead = {
-        id: "1",
-        name: "John Doe",
-        phone: "0501234567",
-        email: "john.doe@example.com",
-        source: "google_ads",
-        status: "new",
-        created_at: new Date().toISOString(),
-      };
+      // Mock implementation - in real app, this would fetch from database
+      const mockLeads: Lead[] = [
+        {
+          id: "1",
+          name: "John Doe",
+          phone: "0501234567",
+          email: "john.doe@example.com",
+          source: "google_ads",
+          status: "new",
+          created_at: new Date().toISOString(),
+        }
+      ];
 
-      const engagementScore = calculateEngagementScore(mockLead);
-      const demographicScore = calculateDemographicScore(mockLead);
-      const overallScore = engagementScore + demographicScore;
-      const priority = determinePriority(overallScore);
+      const scores: Record<string, LeadScore> = {};
 
-      return {
-        engagementScore,
-        demographicScore,
-        overallScore,
-        priority,
-      };
+      mockLeads.forEach(lead => {
+        const engagementScore = calculateEngagementScore(lead);
+        const demographicScore = calculateDemographicScore(lead);
+        const totalScore = engagementScore + demographicScore;
+
+        scores[lead.id] = {
+          score: Math.min(totalScore * 10, 100), // Scale to 0-100
+          category: determineCategory(totalScore),
+          factors: [
+            { description: "מקור הליד", impact: engagementScore },
+            { description: "נתונים דמוגרפיים", impact: demographicScore }
+          ],
+          lastUpdated: new Date().toISOString()
+        };
+      });
+
+      return scores;
     },
     enabled: !!user,
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
+
+  const getLeadScoreById = (leadId: string): LeadScore | null => {
+    return leadScores?.[leadId] || null;
+  };
+
+  return {
+    leadScores,
+    isLoading,
+    error,
+    getLeadScoreById
+  };
 }

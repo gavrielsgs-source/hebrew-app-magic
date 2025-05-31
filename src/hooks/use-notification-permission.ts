@@ -1,7 +1,23 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Placeholder VAPID key - should be replaced with actual key
+const VAPID_KEY = 'BNXaKhLt8xNrpIyPgJJ7JHQ4L7CqK_NM_Zr6KJ8HPl9YKK7IKZ4LnxKq7wWZe_1Nz8FN7xMnKq7wWZe_1Nz8FN7xM';
 
 export function useNotificationPermission() {
   const { user } = useAuth();
@@ -98,7 +114,7 @@ export function useNotificationPermission() {
       const { error } = await supabase
         .from("profiles")
         .update({ 
-          push_subscription: sub.toJSON()
+          push_subscription: sub.toJSON() as any
         })
         .eq("id", user.id);
 

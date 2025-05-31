@@ -1,6 +1,6 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Role {
   id: string;
@@ -17,19 +17,13 @@ export function useRole() {
         return null;
       }
 
-      const { data, error } = await supabase
-        .from("roles")
-        .select("*")
-        .eq("id", user.role_id)
-        .single();
-
-      if (error) {
-        console.error("Error fetching role:", error);
-        return null;
-      }
-
-      return data || null;
+      // Since there's no roles table or role_id in user, return a default role
+      // This can be updated when proper role system is implemented
+      return {
+        id: "default",
+        name: "user"
+      };
     },
-    enabled: !!user?.role_id,
+    enabled: !!user,
   });
 }
