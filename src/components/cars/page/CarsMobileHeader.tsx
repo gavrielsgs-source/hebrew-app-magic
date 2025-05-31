@@ -1,43 +1,42 @@
 
-import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { MobileButton } from "@/components/mobile/MobileButton";
-import { Plus, MessageCircle, Calendar } from "lucide-react";
+import { Plus, MessageCircle, Filter } from "lucide-react";
 
-interface LeadsMobileHeaderProps {
-  onAddLead: () => void;
+interface CarsMobileHeaderProps {
+  onAddCar: () => void;
   onWhatsApp: () => void;
-  onScheduleMeeting: () => void;
-  leadsCount: number;
+  onFilter: () => void;
+  carsCount: number;
 }
 
-export function LeadsMobileHeader({
-  onAddLead,
+export function CarsMobileHeader({
+  onAddCar,
   onWhatsApp,
-  onScheduleMeeting,
-  leadsCount
-}: LeadsMobileHeaderProps) {
+  onFilter,
+  carsCount
+}: CarsMobileHeaderProps) {
   return (
     <div className="space-y-4" dir="rtl">
       {/* Main header with brand gradient background */}
       <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl p-4 shadow-lg">
         <h1 className="text-lg font-semibold text-white mb-1 text-right">
-          ניהול לידים
+          ניהול רכבים
         </h1>
         <p className="text-sm text-white/90 text-right">
-          {leadsCount} לידים פעילים
+          {carsCount} רכבים במלאי
         </p>
       </div>
 
-      {/* Action buttons with smaller text for mobile */}
+      {/* Action buttons */}
       <div className="grid grid-cols-3 gap-2">
         <MobileButton
           variant="primary"
           size="md"
-          onClick={onAddLead}
+          onClick={onAddCar}
           icon={<Plus className="h-4 w-4" />}
           className="h-12 text-sm font-medium rounded-lg shadow bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90"
         >
-          ליד חדש
+          רכב חדש
         </MobileButton>
         
         <MobileButton
@@ -45,19 +44,19 @@ export function LeadsMobileHeader({
           size="md"
           onClick={onWhatsApp}
           icon={<MessageCircle className="h-4 w-4" />}
-          className="h-12 text-xs font-medium rounded-lg"
+          className="h-12 text-sm font-medium rounded-lg"
         >
-          WhatsApp
+          שלח WhatsApp
         </MobileButton>
         
         <MobileButton
-          variant="secondary"
+          variant="outline"
           size="md"
-          onClick={onScheduleMeeting}
-          icon={<Calendar className="h-4 w-4" />}
-          className="h-12 text-xs font-medium rounded-lg"
+          onClick={onFilter}
+          icon={<Filter className="h-4 w-4" />}
+          className="h-12 text-sm font-medium rounded-lg"
         >
-          פגישה
+          סינון
         </MobileButton>
       </div>
     </div>

@@ -1,8 +1,7 @@
 
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { MobileHeader } from "@/components/mobile/MobileHeader";
 import { MobileButton } from "@/components/mobile/MobileButton";
-import { Calendar, Grid, Plus } from "lucide-react";
+import { Calendar, Grid } from "lucide-react";
 import { TaskFiltersAndSearch } from "./TaskFiltersAndSearch";
 import { TasksCardsView } from "./TasksCardsView";
 import { MobileTaskCalendar } from "./MobileTaskCalendar";
@@ -107,11 +106,25 @@ export function MobileTasksView({
         {/* Content based on view mode */}
         <div className="min-h-screen">
           {viewMode === "cards" && (
-            <TasksCardsView 
-              tasks={filteredTasks || []}
-              onTaskStatusChange={onTaskStatusChange}
-              onTaskDelete={onTaskDelete}
-            />
+            <>
+              {/* Add Task Button for Cards View */}
+              <div className="mb-4">
+                <MobileButton
+                  variant="primary"
+                  size="md"
+                  onClick={() => setShowAddDialog(true)}
+                  className="w-full h-12 text-sm font-medium rounded-lg shadow bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90"
+                >
+                  + הוסף משימה חדשה
+                </MobileButton>
+              </div>
+              
+              <TasksCardsView 
+                tasks={filteredTasks || []}
+                onTaskStatusChange={onTaskStatusChange}
+                onTaskDelete={onTaskDelete}
+              />
+            </>
           )}
 
           {viewMode === "calendar" && (
@@ -122,19 +135,6 @@ export function MobileTasksView({
             />
           )}
         </div>
-      </div>
-
-      {/* Single Floating Action Button for Adding Tasks */}
-      <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50">
-        <MobileButton
-          variant="primary"
-          size="lg"
-          onClick={() => setShowAddDialog(true)}
-          icon={<Plus className="h-5 w-5" />}
-          className="rounded-full shadow-lg px-6 py-3 border-2 border-white bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90"
-        >
-          <span className="text-base font-medium">משימה חדשה</span>
-        </MobileButton>
       </div>
 
       {/* Add Task Dialog */}
