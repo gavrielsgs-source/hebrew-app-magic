@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useCars } from "@/hooks/use-cars";
 import { CarsTable } from "@/components/CarsTable";
@@ -7,6 +8,7 @@ import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon } from "lucide-r
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AddCarForm } from "@/components/cars/AddCarForm";
+import { MobileAddCarForm } from "@/components/cars/MobileAddCarForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
 import { useIsMobile } from "@/hooks/use-mobile";

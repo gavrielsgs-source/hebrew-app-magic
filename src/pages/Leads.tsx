@@ -13,6 +13,7 @@ import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
+import { MobileAddLeadForm } from "@/components/leads/MobileAddLeadForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 

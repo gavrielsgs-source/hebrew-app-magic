@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCars } from "@/hooks/use-cars";
+import { useAddCar } from "@/hooks/cars/use-add-car";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Car, Calendar, Fuel, Palette, Settings } from "lucide-react";
+import { NewCar } from "@/types/car";
 
 interface MobileAddCarFormProps {
   onSuccess?: () => void;
@@ -16,7 +17,7 @@ interface MobileAddCarFormProps {
 
 export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
   const { user } = useAuth();
-  const { addCar } = useCars();
+  const addCar = useAddCar();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -24,12 +25,16 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
     model: "",
     year: new Date().getFullYear(),
     price: "",
-    mileage: "",
+    kilometers: "",
     exterior_color: "",
+    interior_color: "",
     transmission: "אוטומטית",
     fuel_type: "בנזין",
     engine_size: "",
-    description: ""
+    description: "",
+    registration_year: "",
+    last_test_date: "",
+    ownership_history: ""
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,18 +50,22 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
     }
 
     try {
-      const carData = {
+      const carData: NewCar = {
         make: formData.make,
         model: formData.model,
         year: formData.year,
-        price: formData.price ? parseInt(formData.price) : null,
-        mileage: formData.mileage ? parseInt(formData.mileage) : null,
+        price: formData.price ? parseInt(formData.price) : 0,
+        kilometers: formData.kilometers ? parseInt(formData.kilometers) : 0,
         exterior_color: formData.exterior_color || null,
-        transmission: formData.transmission,
-        fuel_type: formData.fuel_type,
+        interior_color: formData.interior_color || null,
+        transmission: formData.transmission || null,
+        fuel_type: formData.fuel_type || null,
         engine_size: formData.engine_size || null,
         description: formData.description || null,
-        user_id: user?.id || null
+        registration_year: formData.registration_year ? parseInt(formData.registration_year) : null,
+        last_test_date: formData.last_test_date || null,
+        ownership_history: formData.ownership_history || null,
+        agency_id: null
       };
 
       await addCar.mutateAsync(carData);
@@ -148,29 +157,29 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
         </div>
       </div>
 
-      {/* Mileage & Color */}
+      {/* Kilometers & Exterior Color */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="mileage" className="text-sm font-medium">
+          <Label htmlFor="kilometers" className="text-sm font-medium">
             קילומטראז'
           </Label>
           <Input
-            id="mileage"
+            id="kilometers"
             type="number"
-            value={formData.mileage}
-            onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
+            value={formData.kilometers}
+            onChange={(e) => setFormData({ ...formData, kilometers: e.target.value })}
             placeholder="50000"
             className="h-11 text-right"
             dir="rtl"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="color" className="text-sm font-medium flex items-center gap-2">
+          <Label htmlFor="exterior_color" className="text-sm font-medium flex items-center gap-2">
             <Palette className="h-4 w-4" />
-            צבע
+            צבע חיצוני
           </Label>
           <Input
-            id="color"
+            id="exterior_color"
             value={formData.exterior_color}
             onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })}
             placeholder="שחור"
