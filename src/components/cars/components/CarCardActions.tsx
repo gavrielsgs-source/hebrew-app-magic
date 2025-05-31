@@ -72,7 +72,7 @@ export function CarCardActions({ car, onSendWhatsapp, onViewDetails }: CarCardAc
           <DialogHeader>
             <DialogTitle>פרטי הרכב</DialogTitle>
           </DialogHeader>
-          <CarDetails carId={car.id} />
+          <CarDetails car={car} />
         </DialogContent>
       </SwipeDialog>
     </>
