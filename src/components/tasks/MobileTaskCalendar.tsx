@@ -19,19 +19,32 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
+  // Helper function to safely filter tasks
   const getTasksForToday = () => {
+    if (!tasks || !Array.isArray(tasks)) return [];
     return tasks.filter(task => {
-      if (!task.due_date) return false;
-      return isSameDay(new Date(task.due_date), new Date());
+      if (!task || !task.due_date) return false;
+      try {
+        return isSameDay(new Date(task.due_date), new Date());
+      } catch (error) {
+        console.error("Error checking task date:", error);
+        return false;
+      }
     });
   };
 
   const getUpcomingTasks = () => {
+    if (!tasks || !Array.isArray(tasks)) return [];
     return tasks
       .filter(task => {
-        if (!task.due_date) return false;
-        const taskDate = new Date(task.due_date);
-        return taskDate > new Date() && !isSameDay(taskDate, new Date());
+        if (!task || !task.due_date) return false;
+        try {
+          const taskDate = new Date(task.due_date);
+          return taskDate > new Date() && !isSameDay(taskDate, new Date());
+        } catch (error) {
+          console.error("Error checking task date:", error);
+          return false;
+        }
       })
       .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
       .slice(0, 10);
@@ -39,9 +52,9 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
 
   const handleTaskStatusToggle = (task: Task, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onTaskStatusChange) {
-      const newStatus = task.status === 'completed';
-      onTaskStatusChange(task.id, !newStatus);
+    if (onTaskStatusChange && task) {
+      const newStatus = task.status !== 'completed';
+      onTaskStatusChange(task.id, newStatus);
     }
   };
 
@@ -55,22 +68,28 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
   const upcomingTasks = getUpcomingTasks();
 
   return (
-    <div className="space-y-8 pb-safe">
-      <MobileTaskCalendarHeader
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        todayCount={todayTasks.length}
-        upcomingCount={upcomingTasks.length}
-        onAddTask={() => setShowAddDialog(true)}
-      />
+    <div className="space-y-6 pb-safe min-h-screen" dir="rtl">
+      {/* Enhanced header with better mobile spacing */}
+      <div className="px-6 pt-4">
+        <MobileTaskCalendarHeader
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          todayCount={todayTasks.length}
+          upcomingCount={upcomingTasks.length}
+          onAddTask={() => setShowAddDialog(true)}
+        />
+      </div>
 
-      <MobileTaskCalendarSection
-        viewMode={viewMode}
-        tasks={viewMode === "today" ? todayTasks : upcomingTasks}
-        onTaskClick={onTaskClick}
-        onTaskStatusToggle={handleTaskStatusToggle}
-        onEditTask={handleEditTask}
-      />
+      {/* Main content section */}
+      <div className="px-4">
+        <MobileTaskCalendarSection
+          viewMode={viewMode}
+          tasks={viewMode === "today" ? todayTasks : upcomingTasks}
+          onTaskClick={onTaskClick}
+          onTaskStatusToggle={handleTaskStatusToggle}
+          onEditTask={handleEditTask}
+        />
+      </div>
 
       {/* Add Task Dialog */}
       <AddTaskDialog 

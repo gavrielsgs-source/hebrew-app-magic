@@ -45,44 +45,52 @@ export function MobileTaskCalendarCard({
 
   return (
     <div
-      className="mobile-transition mobile-touch-target"
+      className="mobile-transition mobile-large-touch-target"
       onClick={() => onTaskClick(task)}
+      dir="rtl"
     >
       <MobileCard className={cn(
-        "cursor-pointer hover:shadow-xl mobile-transition min-h-[120px]",
+        "cursor-pointer hover:shadow-xl mobile-transition min-h-[140px] rounded-3xl",
         getTaskTypeColor(task),
         task.status === 'completed' && "opacity-70"
       )}>
-        <div className="p-6 space-y-4">
+        <div className="p-8 space-y-6">
+          {/* Header section with title and date/time */}
           <div className="flex justify-between items-start">
-            <h4 className={cn(
-              "font-semibold text-lg flex-1 leading-relaxed",
+            <h3 className={cn(
+              "font-bold text-2xl flex-1 leading-relaxed text-right",
               task.status === 'completed' && "line-through"
             )}>
               {task.title}
-            </h4>
-            <div className="flex items-center gap-3 mr-4">
+            </h3>
+            <div className="flex items-center gap-4 mr-6">
               {showDate && task.due_date && (
-                <div className="text-base text-gray-700 flex-shrink-0 bg-white/80 px-3 py-1 rounded-lg">
-                  <div className="text-sm text-gray-600 text-center">
+                <div className="text-lg text-gray-700 flex-shrink-0 bg-white/90 px-4 py-2 rounded-2xl">
+                  <div className="text-base text-gray-600 text-center font-medium">
                     {format(new Date(task.due_date), "dd/MM")}
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-2 text-base text-gray-700 bg-white/80 px-3 py-1 rounded-lg">
-                <Clock className="h-5 w-5" />
-                {task.due_date && format(new Date(task.due_date), "HH:mm")}
+              <div className="flex items-center gap-2 text-lg text-gray-700 bg-white/90 px-4 py-2 rounded-2xl">
+                <Clock className="h-6 w-6" />
+                <span className="font-medium">
+                  {task.due_date && format(new Date(task.due_date), "HH:mm")}
+                </span>
               </div>
             </div>
           </div>
           
+          {/* Description */}
           {task.description && (
-            <p className="text-base text-gray-700 line-clamp-2 leading-relaxed">{task.description}</p>
+            <p className="text-lg text-gray-700 line-clamp-2 leading-relaxed text-right">
+              {task.description}
+            </p>
           )}
           
+          {/* Footer with badges and actions */}
           <div className="flex justify-between items-center">
-            <div className="flex gap-3 flex-wrap">
-              <Badge variant="outline" className="text-sm px-3 py-1 bg-white/90">
+            <div className="flex gap-4 flex-wrap">
+              <Badge variant="outline" className="text-base px-4 py-2 bg-white/90 rounded-2xl">
                 {task.type === 'call' ? 'שיחה' : 
                  task.type === 'meeting' ? 'פגישה' : 
                  task.type === 'follow_up' ? 'מעקב' : 'משימה'}
@@ -90,7 +98,7 @@ export function MobileTaskCalendarCard({
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "text-sm px-3 py-1 bg-white/90",
+                  "text-base px-4 py-2 bg-white/90 rounded-2xl",
                   task.priority === 'high' ? 'border-red-400 text-red-700' :
                   task.priority === 'medium' ? 'border-yellow-400 text-yellow-700' :
                   'border-green-400 text-green-700'
@@ -101,26 +109,27 @@ export function MobileTaskCalendarCard({
               </Badge>
             </div>
             
-            <div className="flex gap-3">
+            {/* Action buttons with larger touch targets */}
+            <div className="flex gap-4">
               <button
                 onClick={(e) => onTaskStatusToggle(task, e)}
                 className={cn(
-                  "p-3 rounded-full mobile-touch-target mobile-transition shadow-md",
+                  "p-4 rounded-full mobile-large-touch-target mobile-transition shadow-lg",
                   task.status === 'completed' 
                     ? "bg-green-100 text-green-600 hover:bg-green-200" 
                     : "bg-white text-gray-600 hover:bg-gray-100"
                 )}
               >
                 {task.status === 'completed' ? 
-                  <X className="h-6 w-6" /> : 
-                  <Check className="h-6 w-6" />
+                  <X className="h-8 w-8" /> : 
+                  <Check className="h-8 w-8" />
                 }
               </button>
               <button
                 onClick={(e) => onEditTask(task, e)}
-                className="p-3 rounded-full bg-white text-blue-600 hover:bg-blue-50 mobile-touch-target mobile-transition shadow-md"
+                className="p-4 rounded-full bg-white text-blue-600 hover:bg-blue-50 mobile-large-touch-target mobile-transition shadow-lg"
               >
-                <Edit className="h-6 w-6" />
+                <Edit className="h-8 w-8" />
               </button>
             </div>
           </div>

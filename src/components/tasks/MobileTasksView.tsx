@@ -55,8 +55,8 @@ export function MobileTasksView({
       <MobileContainer>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <div className="text-lg font-medium text-gray-600">טוען...</div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-6"></div>
+            <div className="text-xl font-semibold text-gray-600">טוען...</div>
           </div>
         </div>
       </MobileContainer>
@@ -64,84 +64,91 @@ export function MobileTasksView({
   }
 
   return (
-    <MobileContainer className="pb-20">
+    <MobileContainer className="pb-24" withPadding={false}>
+      {/* Enhanced header with better RTL alignment */}
       <MobileHeader 
         title="ניהול משימות"
         subtitle={`${tasks?.length || 0} משימות פעילות`}
+        className="mb-6"
       />
       
-      {/* Mobile Filters and Search */}
-      <TaskFiltersAndSearch 
-        tasks={tasks || []}
-        onTasksFilter={onTasksFilter}
-      />
-      
-      {/* Mobile View Mode Selector */}
-      <div className="flex gap-2 mb-6">
-        <MobileButton
-          variant={viewMode === "calendar" ? "primary" : "outline"}
-          size="sm"
-          onClick={() => onViewModeChange("calendar")}
-          icon={<Calendar className="h-4 w-4" />}
-          className="flex-1"
-        >
-          יומן
-        </MobileButton>
-        <MobileButton
-          variant={viewMode === "cards" ? "primary" : "outline"}
-          size="sm"
-          onClick={() => onViewModeChange("cards")}
-          icon={<Grid className="h-4 w-4" />}
-          className="flex-1"
-        >
-          כרטיסים
-        </MobileButton>
-        <MobileButton
-          variant={viewMode === "table" ? "primary" : "outline"}
-          size="sm"
-          onClick={() => onViewModeChange("table")}
-          icon={<List className="h-4 w-4" />}
-          className="flex-1"
-        >
-          טבלה
-        </MobileButton>
+      {/* Content with proper spacing */}
+      <div className="px-6 space-y-6">
+        {/* Mobile Filters and Search */}
+        <TaskFiltersAndSearch 
+          tasks={tasks || []}
+          onTasksFilter={onTasksFilter}
+        />
+        
+        {/* Mobile View Mode Selector - enhanced with larger touch targets */}
+        <div className="flex gap-3">
+          <MobileButton
+            variant={viewMode === "calendar" ? "primary" : "outline"}
+            size="lg"
+            onClick={() => onViewModeChange("calendar")}
+            icon={<Calendar className="h-6 w-6" />}
+            className="flex-1 h-16 text-lg font-semibold rounded-3xl mobile-touch-target"
+          >
+            יומן
+          </MobileButton>
+          <MobileButton
+            variant={viewMode === "cards" ? "primary" : "outline"}
+            size="lg"
+            onClick={() => onViewModeChange("cards")}
+            icon={<Grid className="h-6 w-6" />}
+            className="flex-1 h-16 text-lg font-semibold rounded-3xl mobile-touch-target"
+          >
+            כרטיסים
+          </MobileButton>
+          <MobileButton
+            variant={viewMode === "table" ? "primary" : "outline"}
+            size="lg"
+            onClick={() => onViewModeChange("table")}
+            icon={<List className="h-6 w-6" />}
+            className="flex-1 h-16 text-lg font-semibold rounded-3xl mobile-touch-target"
+          >
+            טבלה
+          </MobileButton>
+        </div>
+
+        {/* Content based on view mode */}
+        <div className="min-h-screen">
+          {viewMode === "cards" && (
+            <TasksCardsView 
+              tasks={filteredTasks || []}
+              onTaskStatusChange={onTaskStatusChange}
+              onTaskDelete={onTaskDelete}
+            />
+          )}
+
+          {viewMode === "calendar" && (
+            <MobileTaskCalendar 
+              tasks={filteredTasks || []} 
+              onTaskClick={onTaskClick}
+              onTaskStatusChange={onTaskStatusChange}
+            />
+          )}
+
+          {viewMode === "table" && (
+            <TasksTable 
+              tasks={filteredTasks || []}
+              onTaskStatusChange={onTaskStatusChange}
+              onTaskDelete={onTaskDelete}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Content based on view mode */}
-      {viewMode === "cards" && (
-        <TasksCardsView 
-          tasks={filteredTasks || []}
-          onTaskStatusChange={onTaskStatusChange}
-          onTaskDelete={onTaskDelete}
-        />
-      )}
-
-      {viewMode === "calendar" && (
-        <MobileTaskCalendar 
-          tasks={filteredTasks || []} 
-          onTaskClick={onTaskClick}
-          onTaskStatusChange={onTaskStatusChange}
-        />
-      )}
-
-      {viewMode === "table" && (
-        <TasksTable 
-          tasks={filteredTasks || []}
-          onTaskStatusChange={onTaskStatusChange}
-          onTaskDelete={onTaskDelete}
-        />
-      )}
-
-      {/* Floating Action Button for Adding Tasks */}
-      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
+      {/* Floating Action Button for Adding Tasks - enhanced positioning */}
+      <div className="fixed bottom-28 left-1/2 transform -translate-x-1/2 z-50">
         <MobileButton
           variant="primary"
           size="lg"
           onClick={() => setShowAddDialog(true)}
-          icon={<Plus className="h-6 w-6" />}
-          className="rounded-full shadow-2xl px-6 py-4 mobile-gradient-primary border-2 border-white"
+          icon={<Plus className="h-8 w-8" />}
+          className="rounded-full shadow-2xl px-8 py-6 mobile-gradient-primary border-4 border-white mobile-large-touch-target"
         >
-          משימה חדשה
+          <span className="text-xl font-bold">משימה חדשה</span>
         </MobileButton>
       </div>
 

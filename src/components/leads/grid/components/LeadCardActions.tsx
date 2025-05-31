@@ -1,140 +1,166 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Edit, Phone, MessageSquare, Calendar, Plus, MessageCircle } from "lucide-react";
-import { EditLeadForm } from "../../EditLeadForm";
-import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
-import { LeadReminders } from "../LeadReminders";
-import { ScheduleMeetingForm } from "../../ScheduleMeetingForm";
+import { MobileButton } from "@/components/mobile/MobileButton";
+import { Edit, MessageSquare, Calendar, Phone, Trash2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { AddTaskDialog } from "@/components/tasks/AddTaskDialog";
 
 interface LeadCardActionsProps {
-  lead: any;
-  canManageLeads: boolean;
+  leadId: string;
+  leadName: string;
+  leadPhone?: string;
+  onEdit: () => void;
+  onDelete: () => void;
+  onWhatsApp: () => void;
+  onSchedule: () => void;
 }
 
-export function LeadCardActions({ lead, canManageLeads }: LeadCardActionsProps) {
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
-  const [isRemindersOpen, setIsRemindersOpen] = useState(false);
-  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+export function LeadCardActions({ 
+  leadId, 
+  leadName, 
+  leadPhone, 
+  onEdit, 
+  onDelete, 
+  onWhatsApp, 
+  onSchedule 
+}: LeadCardActionsProps) {
+  const [showAddTask, setShowAddTask] = useState(false);
+  const isMobile = useIsMobile();
 
-  const handlePhoneCall = () => {
-    if (lead.phone) {
-      window.open(`tel:${lead.phone}`, '_blank');
+  // Create WhatsApp link with the lead's phone number
+  const handleWhatsAppClick = () => {
+    if (leadPhone) {
+      // Remove any non-digit characters and ensure proper format
+      const cleanPhone = leadPhone.replace(/\D/g, '');
+      const phoneNumber = cleanPhone.startsWith('972') ? cleanPhone : `972${cleanPhone.replace(/^0/, '')}`;
+      const message = encodeURIComponent(`שלום ${leadName}, אני פונה אליך מחברת המכוניות שלנו.`);
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+      window.open(whatsappUrl, '_blank');
     }
+    onWhatsApp();
   };
 
-  return (
-    <div className="p-6 bg-gradient-to-l from-gray-50 to-white border-t border-gray-100" dir="rtl">
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        {/* Phone Call Button */}
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handlePhoneCall}
-          disabled={!lead.phone}
-          className="flex items-center gap-2 h-12 bg-white hover:bg-blue-50 border-blue-200 text-[#2F3C7E] hover:border-blue-300 font-semibold shadow-sm transition-all duration-200"
-        >
-          <Phone className="h-4 w-4" />
-          התקשר
-        </Button>
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3 w-full">
+        {/* Primary actions row */}
+        <div className="flex gap-3">
+          <MobileButton
+            variant="outline"
+            size="sm"
+            onClick={handleWhatsAppClick}
+            icon={<MessageSquare className="h-5 w-5" />}
+            className="flex-1 h-14 text-lg rounded-2xl bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+          >
+            וואטסאפ
+          </MobileButton>
+          <MobileButton
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAddTask(true)}
+            icon={<Calendar className="h-5 w-5" />}
+            className="flex-1 h-14 text-lg rounded-2xl bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+          >
+            משימה
+          </MobileButton>
+        </div>
 
-        {/* Schedule Meeting Button */}
-        <Dialog open={isScheduleOpen} onOpenChange={setIsScheduleOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="flex items-center gap-2 h-12 bg-white hover:bg-green-50 border-green-200 text-green-700 hover:border-green-300 font-semibold shadow-sm transition-all duration-200"
-            >
-              <Calendar className="h-4 w-4" />
-              פגישה
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]" dir="rtl">
-            <DialogHeader>
-              <DialogTitle>קבע פגישה/תזכורת - {lead.name}</DialogTitle>
-            </DialogHeader>
-            <ScheduleMeetingForm 
-              lead={lead} 
-              onSuccess={() => setIsScheduleOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        {/* Secondary actions row */}
+        <div className="flex gap-3">
+          <MobileButton
+            variant="outline"
+            size="sm"
+            onClick={onSchedule}
+            icon={<Phone className="h-5 w-5" />}
+            className="flex-1 h-12 rounded-2xl"
+          >
+            פגישה
+          </MobileButton>
+          <MobileButton
+            variant="outline"
+            size="sm"
+            onClick={onEdit}
+            icon={<Edit className="h-5 w-5" />}
+            className="flex-1 h-12 rounded-2xl"
+          >
+            עריכה
+          </MobileButton>
+          <MobileButton
+            variant="outline"
+            size="sm"
+            onClick={onDelete}
+            icon={<Trash2 className="h-5 w-5" />}
+            className="flex-1 h-12 rounded-2xl text-red-600 border-red-200 hover:bg-red-50"
+          >
+            מחק
+          </MobileButton>
+        </div>
 
-        {/* WhatsApp Button */}
-        <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={!lead.cars}
-              className="flex items-center gap-2 h-12 bg-white hover:bg-green-50 border-green-200 text-green-700 hover:border-green-300 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-300 font-semibold shadow-sm transition-all duration-200"
-            >
-              <MessageCircle className="h-4 w-4" />
-              וואטסאפ
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]" dir="rtl">
-            <DialogHeader>
-              <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
-            </DialogHeader>
-            {lead.cars && (
-              <WhatsappTemplateSelector 
-                car={lead.cars} 
-                onClose={() => setIsWhatsappOpen(false)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Reminders Button */}
-        <Sheet open={isRemindersOpen} onOpenChange={setIsRemindersOpen}>
-          <SheetTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="flex items-center gap-2 h-12 bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:border-orange-300 font-semibold shadow-sm transition-all duration-200"
-            >
-              <Plus className="h-4 w-4" />
-              תזכורות
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-[400px]" dir="rtl">
-            <SheetHeader>
-              <SheetTitle>תזכורות ללקוח - {lead.name}</SheetTitle>
-            </SheetHeader>
-            <LeadReminders lead={lead} canAddReminder={canManageLeads} />
-          </SheetContent>
-        </Sheet>
+        {/* Add Task Dialog */}
+        <AddTaskDialog
+          open={showAddTask}
+          onOpenChange={setShowAddTask}
+          initialLeadId={leadId}
+          onSuccess={() => setShowAddTask(false)}
+        />
       </div>
+    );
+  }
 
-      {/* Edit Button - Full Width */}
-      {canManageLeads && (
-        <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <SheetTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="w-full h-12 flex items-center gap-2 hover:bg-blue-50 text-[#2F3C7E] font-semibold rounded-xl border border-blue-100 bg-white/50 transition-all duration-200"
-            >
-              <Edit className="h-4 w-4" />
-              ערוך פרטי לקוח
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-[400px]" dir="rtl">
-            <SheetHeader>
-              <SheetTitle>עריכת לקוח</SheetTitle>
-            </SheetHeader>
-            <EditLeadForm 
-              lead={lead} 
-              onSuccess={() => setIsEditOpen(false)}
-            />
-          </SheetContent>
-        </Sheet>
-      )}
+  return (
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleWhatsAppClick}
+        className="text-green-600 border-green-200 hover:bg-green-50"
+      >
+        <MessageSquare className="h-4 w-4 mr-1" />
+        וואטסאפ
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowAddTask(true)}
+        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+      >
+        <Calendar className="h-4 w-4 mr-1" />
+        משימה
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onSchedule}
+      >
+        <Phone className="h-4 w-4 mr-1" />
+        פגישה
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onEdit}
+      >
+        <Edit className="h-4 w-4 mr-1" />
+        עריכה
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onDelete}
+        className="text-red-600 border-red-200 hover:bg-red-50"
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        מחק
+      </Button>
+
+      {/* Add Task Dialog */}
+      <AddTaskDialog
+        open={showAddTask}
+        onOpenChange={setShowAddTask}
+        initialLeadId={leadId}
+        onSuccess={() => setShowAddTask(false)}
+      />
     </div>
   );
 }
