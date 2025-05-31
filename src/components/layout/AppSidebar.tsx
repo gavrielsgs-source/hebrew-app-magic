@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
@@ -36,10 +37,10 @@ const CarSleadLogoSVG = () => (
 export function AppSidebar() {
   const { pathname } = useLocation();
   const { user } = useAuth();
-  const { role } = useRole(user?.id);
+  const { data: roleData } = useRole();
   const navigate = useNavigate();
 
-  const isAdmin = role === "admin";
+  const isAdmin = roleData?.name === "admin";
 
   return (
     <Sidebar className="border-l z-40">
