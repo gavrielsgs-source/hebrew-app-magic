@@ -18,13 +18,13 @@ export function MobileTaskCalendarHeader({
   onAddTask
 }: MobileTaskCalendarHeaderProps) {
   return (
-    <div className="space-y-4" dir="rtl">
-      {/* Main header */}
-      <div className="text-center py-2">
-        <h1 className="text-xl font-semibold text-gray-900 mb-1 text-right">
+    <div className="space-y-3" dir="rtl">
+      {/* Main header with gradient background */}
+      <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl p-4 shadow-lg">
+        <h1 className="text-lg font-semibold text-white mb-1 text-right">
           ניהול משימות
         </h1>
-        <p className="text-sm text-gray-600 text-right">
+        <p className="text-sm text-white/90 text-right">
           {todayCount + upcomingCount} משימות פעילות
         </p>
       </div>
@@ -33,17 +33,17 @@ export function MobileTaskCalendarHeader({
       <div className="flex gap-2">
         <MobileButton
           variant={viewMode === "today" ? "primary" : "outline"}
-          size="md"
+          size="sm"
           onClick={() => onViewModeChange("today")}
-          className="flex-1 h-10 text-sm font-medium rounded-lg"
+          className="flex-1 h-9 text-sm font-medium rounded-lg"
         >
           היום ({todayCount})
         </MobileButton>
         <MobileButton
           variant={viewMode === "upcoming" ? "primary" : "outline"}
-          size="md"
+          size="sm"
           onClick={() => onViewModeChange("upcoming")}
-          className="flex-1 h-10 text-sm font-medium rounded-lg"
+          className="flex-1 h-9 text-sm font-medium rounded-lg"
         >
           קרובים ({upcomingCount})
         </MobileButton>
@@ -52,10 +52,10 @@ export function MobileTaskCalendarHeader({
       {/* Quick Add Task Button */}
       <MobileButton
         variant="primary"
-        size="lg"
+        size="md"
         onClick={onAddTask}
-        icon={<Plus className="h-5 w-5" />}
-        className="w-full h-12 text-base font-medium rounded-lg shadow"
+        icon={<Plus className="h-4 w-4" />}
+        className="w-full h-10 text-sm font-medium rounded-lg shadow"
       >
         הוסף משימה חדשה
       </MobileButton>
