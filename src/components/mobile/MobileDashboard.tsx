@@ -97,7 +97,7 @@ export function MobileDashboard() {
 
   return (
     <MobileContainer withPadding={false}>
-      {/* Main header with gradient background */}
+      {/* Main header with brand gradient background */}
       <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl mx-4 mt-4 p-4 shadow-lg">
         <h1 className="text-lg font-semibold text-white mb-1 text-right">
           שלום! מה נעשה היום?
@@ -147,7 +147,7 @@ export function MobileDashboard() {
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 text-right">פעולות מהירות</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6 text-right">פעולות מהירות</h2>
           <MobileGrid spacing="md">
             {quickActions.map((action, index) => {
               const Icon = action.icon;
@@ -158,7 +158,7 @@ export function MobileDashboard() {
                   size="xl"
                   onClick={action.action}
                   icon={<Icon className="h-6 w-6" />}
-                  className="h-20 flex-col gap-3"
+                  className="h-20 flex-col gap-2"
                 >
                   <span className="font-bold">{action.title}</span>
                   <span className="text-sm opacity-80">{action.subtitle}</span>

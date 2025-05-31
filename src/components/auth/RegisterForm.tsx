@@ -14,6 +14,7 @@ export default function RegisterForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,6 +36,11 @@ export default function RegisterForm() {
       });
 
       if (error) throw error;
+
+      // Store remember me preference
+      if (rememberMe) {
+        localStorage.setItem('carslead_remember_device', 'true');
+      }
 
       toast({
         title: "נרשמת בהצלחה!",
@@ -88,7 +94,7 @@ export default function RegisterForm() {
               placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pr-12 h-12 border-gray-200 rounded-xl focus:border-[#2F3C7E] focus:ring-[#2F3C7E]"
+              className="pr-12 h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
               required
             />
           </div>
@@ -104,11 +110,25 @@ export default function RegisterForm() {
               placeholder="בחר סיסמה חזקה"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pr-12 h-12 border-gray-200 rounded-xl focus:border-[#2F3C7E] focus:ring-[#2F3C7E]"
+              className="pr-12 h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
               required
             />
           </div>
           <p className="text-xs text-gray-500 mr-1">הסיסמה חייבת להכיל לפחות 6 תווים</p>
+        </div>
+
+        {/* Remember Me Checkbox */}
+        <div className="flex items-center space-x-2 space-x-reverse">
+          <input
+            id="remember"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="h-4 w-4 text-carslead-purple focus:ring-carslead-purple border-gray-300 rounded"
+          />
+          <Label htmlFor="remember" className="text-sm text-gray-600">
+            זכור אותי במכשיר זה
+          </Label>
         </div>
 
         {errorMsg && (
@@ -119,7 +139,7 @@ export default function RegisterForm() {
 
         <Button 
           type="submit" 
-          className="w-full h-12 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
+          className="w-full h-12 bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90 rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
           disabled={loading}
         >
           <UserPlus className="ml-2 h-5 w-5" />

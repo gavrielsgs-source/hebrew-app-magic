@@ -55,7 +55,7 @@ export function MobileTaskCalendarHeader({
         size="md"
         onClick={onAddTask}
         icon={<Plus className="h-4 w-4" />}
-        className="w-full h-10 text-sm font-medium rounded-lg shadow"
+        className="w-full h-10 text-sm font-medium rounded-lg shadow bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90"
       >
         הוסף משימה חדשה
       </MobileButton>

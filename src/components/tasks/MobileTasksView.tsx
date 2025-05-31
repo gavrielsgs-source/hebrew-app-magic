@@ -64,7 +64,7 @@ export function MobileTasksView({
 
   return (
     <MobileContainer className="pb-20" withPadding={false}>
-      {/* Header with gradient background */}
+      {/* Header with brand gradient background */}
       <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl mx-4 mt-4 p-4 shadow-lg">
         <h1 className="text-lg font-semibold text-white mb-1 text-right">
           ניהול משימות
@@ -131,7 +131,7 @@ export function MobileTasksView({
           size="lg"
           onClick={() => setShowAddDialog(true)}
           icon={<Plus className="h-5 w-5" />}
-          className="rounded-full shadow-lg px-6 py-3 border-2 border-white"
+          className="rounded-full shadow-lg px-6 py-3 border-2 border-white bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90"
         >
           <span className="text-base font-medium">משימה חדשה</span>
         </MobileButton>
