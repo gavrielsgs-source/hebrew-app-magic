@@ -33,8 +33,12 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
   });
   const [shouldScheduleMeeting, setShouldScheduleMeeting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Enhanced mobile-first submit handler
+  const handleSubmit = async (e: React.FormEvent | React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('MobileAddLeadForm - Submit handler called');
     
     if (!formData.name || !formData.phone) {
       toast({
@@ -78,6 +82,19 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     }
   };
 
+  // Enhanced mobile button handler
+  const handleSubmitClick = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('MobileAddLeadForm - Submit button clicked/touched');
+    
+    // Ensure immediate response on mobile
+    requestAnimationFrame(() => {
+      handleSubmit(e);
+    });
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
       {/* Name */}
@@ -94,6 +111,10 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
           className="h-12 text-right"
           dir="rtl"
           required
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation'
+          }}
         />
       </div>
 
@@ -111,6 +132,10 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
           className="h-12 text-right"
           dir="rtl"
           required
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation'
+          }}
         />
       </div>
 
@@ -128,6 +153,10 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
           placeholder="example@email.com"
           className="h-12 text-right"
           dir="rtl"
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation'
+          }}
         />
       </div>
 
@@ -186,6 +215,10 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
           placeholder="הערות נוספות..."
           className="min-h-[80px] text-right"
           dir="rtl"
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation'
+          }}
         />
       </div>
 
@@ -201,11 +234,18 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         </Label>
       </div>
 
-      {/* Submit Button */}
+      {/* Enhanced Submit Button with full mobile support */}
       <Button 
         type="submit" 
-        className="w-full h-12 bg-blue-600 hover:bg-blue-700" 
+        onClick={handleSubmitClick}
+        onTouchStart={handleSubmitClick}
+        className="w-full h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-lg font-semibold min-h-[56px] transition-colors" 
         disabled={addLead.isPending}
+        style={{
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation',
+          userSelect: 'none'
+        }}
       >
         {addLead.isPending ? "מוסיף..." : "הוסף ליד"}
       </Button>

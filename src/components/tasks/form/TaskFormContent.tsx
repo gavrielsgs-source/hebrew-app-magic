@@ -32,10 +32,28 @@ export function TaskFormContent(props: TaskFormProps) {
     formValid: form.formState.isValid
   });
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
+  // Enhanced mobile-first submit handler
+  const handleSubmit = (e?: React.FormEvent | React.TouchEvent | React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     console.log('TaskFormContent - Form submitted');
-    onSubmit();
+    
+    // Ensure immediate response on mobile
+    requestAnimationFrame(() => {
+      onSubmit();
+    });
+  };
+
+  // Enhanced mobile button click handler
+  const handleButtonClick = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('TaskFormContent - Submit button clicked/touched');
+    handleSubmit(e);
   };
 
   return (
@@ -63,8 +81,14 @@ export function TaskFormContent(props: TaskFormProps) {
           <Button 
             type="submit" 
             disabled={isSubmitting}
-            className={`w-full ${isMobile ? 'h-12 text-base' : 'h-10 text-sm'} bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl font-medium`}
-            onClick={() => handleSubmit()}
+            onClick={handleButtonClick}
+            onTouchStart={handleButtonClick}
+            className={`w-full ${isMobile ? 'h-14 text-lg min-h-[56px]' : 'h-10 text-sm'} bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 active:bg-[#2F3C7E]/80 text-white rounded-xl font-medium transition-colors`}
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              userSelect: 'none'
+            }}
           >
             {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
           </Button>

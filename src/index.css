@@ -66,13 +66,15 @@
   }
   
   html {
-    /* Enhanced iOS/Safari support */
+    /* Enhanced iOS/Safari support with better mobile optimization */
     -webkit-text-size-adjust: 100%;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
     -webkit-user-select: none;
     user-select: none;
     touch-action: manipulation;
+    /* Prevent zoom on input focus - iOS specific */
+    -webkit-appearance: none;
   }
   
   body {
@@ -87,6 +89,8 @@
     touch-action: manipulation;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Prevent elastic scrolling */
+    overflow-x: hidden;
   }
   
   /* Enhanced iOS Safari specific height fix */
@@ -147,6 +151,8 @@ button, input, select, textarea {
   border-radius: 0;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  /* Prevent zoom on input focus */
+  font-size: 16px;
 }
 
 /* Enhanced clickable elements for iOS */
@@ -154,6 +160,8 @@ button, input, select, textarea {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Fix for iOS zoom on input focus */
@@ -162,6 +170,9 @@ button, input, select, textarea {
     font-size: 16px !important;
     -webkit-appearance: none;
     border-radius: 0;
+    /* Prevent iOS zoom */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 }
 
@@ -172,6 +183,10 @@ button, input, select, textarea {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     min-height: 44px; /* iOS minimum touch target */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Prevent button highlight */
+    -webkit-touch-callout: none;
   }
 }
 
@@ -180,5 +195,45 @@ button, input, select, textarea {
   [role="dialog"] {
     touch-action: manipulation;
     -webkit-overflow-scrolling: touch;
+    /* Ensure proper viewport behavior */
+    position: fixed;
+    max-height: 100vh;
+    max-height: -webkit-fill-available;
+  }
+}
+
+/* Enhanced mobile-specific utilities */
+@media (max-width: 768px) {
+  .active\:scale-98:active {
+    transform: scale(0.98);
+  }
+  
+  .active\:scale-95:active {
+    transform: scale(0.95);
+  }
+  
+  /* Enhanced touch feedback */
+  .mobile-button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: transform 0.1s ease-in-out;
+  }
+  
+  .mobile-button:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Prevent text selection on mobile */
+@media (max-width: 768px) {
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
 }
