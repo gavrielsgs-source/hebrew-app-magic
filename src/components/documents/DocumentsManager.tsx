@@ -65,7 +65,7 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
 
   const handleToggleTemplate = async (documentId: string, isTemplate: boolean) => {
     try {
-      await toggleTemplate(documentId, isTemplate);
+      await toggleTemplate({ documentId, isTemplate });
       toast.success(isTemplate ? "המסמך נשמר כתבנית" : "המסמך הוסר מהתבניות");
     } catch (error) {
       toast.error("שגיאה בעדכון סטטוס התבנית");

@@ -1,7 +1,9 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { UserRole, UserRoleAssignment } from "@/types/user";
 
 interface UserWithEmail {
   id: string;

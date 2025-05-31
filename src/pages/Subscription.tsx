@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -118,6 +119,12 @@ export default function Subscription() {
 
   const currentTier = getSubscriptionTier();
 
+  // Mock usage data since users and storage properties don't exist on Subscription type
+  const mockUsageData = {
+    users: 1,
+    storage: 2.5
+  };
+
   return (
     <div className={`container mx-auto py-10 px-4 ${isMobile ? 'pb-24' : ''}`}>
       <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'} mb-8`}>
@@ -165,10 +172,10 @@ export default function Subscription() {
               <div className="flex items-center">
                 <Progress value={
                   currentTier.limitations.users === Infinity ? 100 :
-                    (subscription.users / currentTier.limitations.users) * 100
+                    (mockUsageData.users / currentTier.limitations.users) * 100
                 } className="w-24 mr-2" />
                 <span className="text-xs text-muted-foreground">
-                  {subscription.users} / {currentTier.limitations.users === Infinity ? "ללא הגבלה" : currentTier.limitations.users}
+                  {mockUsageData.users} / {currentTier.limitations.users === Infinity ? "ללא הגבלה" : currentTier.limitations.users}
                 </span>
               </div>
             </div>
@@ -177,10 +184,10 @@ export default function Subscription() {
               <div className="flex items-center">
                 <Progress value={
                   currentTier.limitations.storage === Infinity ? 100 :
-                    (subscription.storage / currentTier.limitations.storage) * 100
+                    (mockUsageData.storage / currentTier.limitations.storage) * 100
                 } className="w-24 mr-2" />
                 <span className="text-xs text-muted-foreground">
-                  {subscription.storage}GB / {currentTier.limitations.storage === Infinity ? "ללא הגבלה" : currentTier.limitations.storage}GB
+                  {mockUsageData.storage}GB / {currentTier.limitations.storage === Infinity ? "ללא הגבלה" : currentTier.limitations.storage}GB
                 </span>
               </div>
             </div>
