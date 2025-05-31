@@ -1,15 +1,18 @@
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { MobileButton } from "@/components/mobile/MobileButton";
 import { NotificationCheckbox } from "@/components/notifications/NotificationCheckbox";
 import { TaskBasicDetails } from "./TaskBasicDetails";
 import { TaskDateAndStatus } from "./TaskDateAndStatus";
 import { TaskTypeAndPriority } from "./TaskTypeAndPriority";
 import { TaskRelations } from "./TaskRelations";
 import { useTaskForm } from "./useTaskForm";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { TaskFormProps } from "./TaskFormTypes";
 
 export function TaskFormContent(props: TaskFormProps) {
+  const isMobile = useIsMobile();
   const {
     form,
     isSubmitting,
@@ -45,13 +48,25 @@ export function TaskFormContent(props: TaskFormProps) {
         )}
         
         <div className="flex gap-3 pt-6">
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl h-12 text-base font-medium"
-          >
-            {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
-          </Button>
+          {isMobile ? (
+            <MobileButton
+              variant="primary"
+              size="lg"
+              onClick={onSubmit}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
+            </MobileButton>
+          ) : (
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="flex-1 bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white rounded-xl h-12 text-base font-medium"
+            >
+              {isSubmitting ? "יוצר משימה..." : "צור משימה חדשה"}
+            </Button>
+          )}
         </div>
       </form>
     </Form>

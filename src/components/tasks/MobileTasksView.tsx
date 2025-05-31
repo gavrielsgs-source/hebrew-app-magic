@@ -2,12 +2,14 @@
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { MobileHeader } from "@/components/mobile/MobileHeader";
 import { MobileButton } from "@/components/mobile/MobileButton";
-import { Calendar, List, Grid } from "lucide-react";
+import { Calendar, List, Grid, Plus } from "lucide-react";
 import { TaskFiltersAndSearch } from "./TaskFiltersAndSearch";
 import { TasksCardsView } from "./TasksCardsView";
 import { MobileTaskCalendar } from "./MobileTaskCalendar";
 import { TasksTable } from "./TasksTable";
+import { AddTaskDialog } from "./AddTaskDialog";
 import { type Task } from "@/types/task";
+import { useState } from "react";
 
 type ViewMode = "calendar" | "table" | "cards";
 
@@ -32,8 +34,10 @@ export function MobileTasksView({
   onTaskClick,
   onTasksFilter
 }: MobileTasksViewProps) {
+  const [showAddDialog, setShowAddDialog] = useState(false);
+
   return (
-    <MobileContainer>
+    <MobileContainer className="pb-20">
       <MobileHeader 
         title="ניהול משימות"
         subtitle={`${tasks.length} משימות פעילות`}
@@ -100,6 +104,26 @@ export function MobileTasksView({
           onTaskDelete={onTaskDelete}
         />
       )}
+
+      {/* Floating Action Button for Adding Tasks */}
+      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
+        <MobileButton
+          variant="primary"
+          size="lg"
+          onClick={() => setShowAddDialog(true)}
+          icon={<Plus className="h-6 w-6" />}
+          className="rounded-full shadow-2xl px-6 py-4 mobile-gradient-primary border-2 border-white"
+        >
+          משימה חדשה
+        </MobileButton>
+      </div>
+
+      {/* Add Task Dialog */}
+      <AddTaskDialog 
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSuccess={() => setShowAddDialog(false)}
+      />
     </MobileContainer>
   );
 }

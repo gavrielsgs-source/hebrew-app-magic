@@ -94,7 +94,7 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
     <Dialog open={open} onOpenChange={onOpenChange} {...props}>
       <DialogContent 
         ref={contentRef}
-        className={isMobile ? "transition-transform duration-200 mobile-scroll" : ""}
+        className={isMobile ? "transition-transform duration-200 mobile-scroll max-h-[90vh] overflow-y-auto" : ""}
       >
         {isMobile && (
           <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4 flex-shrink-0 mobile-touch-target" />
