@@ -10,32 +10,18 @@ document.documentElement.lang = 'he';
 // Add support classes for RTL layout
 document.body.classList.add('rtl-support', 'rtl-fix');
 
-// Enhanced iOS/Mobile specific improvements
-const isIOSDevice = /iPad|iPhone|iPod/i.test(navigator.userAgent);
-const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+// Simplified iOS/Mobile specific improvements
+const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/.test(navigator.userAgent);
 
 if (isIOSDevice || isMobileDevice) {
-  console.log('Mobile device detected, applying optimizations');
+  console.log('Mobile device detected - applying simplified optimizations');
   
-  // Disable zoom on double tap - Enhanced for iOS
-  let lastTouchEnd = 0;
-  let touchTimeout: NodeJS.Timeout;
-  
-  document.addEventListener('touchend', function (event) {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    lastTouchEnd = now;
-  }, { passive: false });
-
-  // Enhanced viewport height fixes for iOS
+  // Simple viewport height fix
   const setViewportHeight = () => {
     try {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
-      console.log('Viewport height set:', vh);
     } catch (error) {
       console.error('Error setting viewport height:', error);
     }
@@ -43,46 +29,25 @@ if (isIOSDevice || isMobileDevice) {
   
   setViewportHeight();
   
-  // Enhanced event listeners for iOS
-  window.addEventListener('resize', () => {
-    clearTimeout(touchTimeout);
-    touchTimeout = setTimeout(setViewportHeight, 100);
-  }, { passive: true });
-  
-  window.addEventListener('orientationchange', () => {
-    clearTimeout(touchTimeout);
-    touchTimeout = setTimeout(setViewportHeight, 200);
-  }, { passive: true });
+  // Simple event listeners
+  window.addEventListener('resize', setViewportHeight);
+  window.addEventListener('orientationchange', setViewportHeight);
 
-  // iOS specific - prevent bounce scrolling and pinch zoom
-  document.addEventListener('touchmove', function(e) {
-    // Check if this is a pinch zoom gesture (more than one touch)
-    if (e.touches && e.touches.length > 1) {
-      e.preventDefault();
+  // Prevent double-tap zoom - simplified
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function (event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
     }
-  }, { passive: false });
+    lastTouchEnd = now;
+  }, false);
 }
 
-// Enhanced prevention of default touch behaviors
-document.addEventListener('touchstart', function(e) {
-  if (e.touches.length > 1) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-}, { passive: false });
-
-// Enhanced gesture prevention for iOS
-document.addEventListener('gesturestart', function(e) {
-  e.preventDefault();
-  e.stopPropagation();
-}, { passive: false });
-
-console.log('Main.tsx loaded, device detection:', {
+console.log('Main.tsx loaded - simplified version:', {
   isIOSDevice,
   isMobileDevice,
-  userAgent: navigator.userAgent.substring(0, 50),
-  viewportWidth: window.innerWidth,
-  viewportHeight: window.innerHeight
+  userAgent: navigator.userAgent.substring(0, 50)
 });
 
 createRoot(document.getElementById("root")!).render(<App />);

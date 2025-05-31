@@ -39,17 +39,12 @@ export function MobileButton({
     xl: "h-14 px-8 text-xl"
   };
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('MobileButton clicked');
+  // Simple click handler - no delays or complex logic
+  const handleClick = () => {
+    console.log('MobileButton clicked - simple handler');
     
     if (onClick && !disabled) {
-      // Small delay for iOS touch feedback
-      setTimeout(() => {
-        onClick();
-      }, 50);
+      onClick();
     }
   };
 
@@ -58,19 +53,14 @@ export function MobileButton({
       onClick={handleClick}
       disabled={disabled}
       className={cn(
-        "rounded-lg font-medium transition-all duration-200",
-        "active:scale-95 shadow hover:shadow-md",
-        "touch-manipulation cursor-pointer",
+        "rounded-lg font-medium transition-colors",
+        "active:scale-95",
         variants[variant],
         sizes[size],
         fullWidth && "w-full",
         "flex items-center justify-center gap-2",
         className
       )}
-      style={{
-        touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'transparent'
-      }}
     >
       {icon && <span className="flex-shrink-0">{icon}</span>}
       <span>{children}</span>

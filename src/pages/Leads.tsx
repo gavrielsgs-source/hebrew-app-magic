@@ -10,8 +10,7 @@ import { LeadsPageHeader } from "@/components/leads/page/LeadsPageHeader";
 import { LeadsMobileHeader } from "@/components/leads/page/LeadsMobileHeader";
 import { LeadsPageTabs } from "@/components/leads/page/LeadsPageTabs";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddLeadForm } from "@/components/leads/AddLeadForm";
 import { MobileAddLeadForm } from "@/components/leads/MobileAddLeadForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -43,7 +42,7 @@ export default function Leads() {
   };
 
   const handleAddLead = () => {
-    console.log("Add lead clicked, can add lead:", canAddLead, "isMobile:", isMobile);
+    console.log("Add lead clicked - simplified handler", { canAddLead, isMobile });
     
     if (!canAddLead) {
       toast({
@@ -64,7 +63,6 @@ export default function Leads() {
       window.open('https://web.whatsapp.com', '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Error opening WhatsApp:', error);
-      // Fallback for mobile
       window.location.href = 'https://web.whatsapp.com';
     }
   };
@@ -86,14 +84,12 @@ export default function Leads() {
             <button 
               onClick={() => window.location.reload()} 
               className="w-full bg-red-600 text-white px-6 py-4 rounded-2xl hover:bg-red-700 font-semibold text-lg"
-              style={{ touchAction: 'manipulation' }}
             >
               רענן דף
             </button>
             <button 
               onClick={() => window.location.href = '/dashboard'} 
               className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl hover:bg-blue-700 font-semibold text-lg"
-              style={{ touchAction: 'manipulation' }}
             >
               חזור לדשבורד
             </button>
@@ -117,7 +113,7 @@ export default function Leads() {
     );
   }
 
-  // Mobile view
+  // Mobile view - simplified dialog management
   if (isMobile) {
     return (
       <MobileContainer withPadding={false}>
@@ -145,13 +141,9 @@ export default function Leads() {
           />
         </div>
 
-        {/* Add Lead Dialog for Mobile - Enhanced for iOS */}
-        <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogContent 
-            className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" 
-            dir="rtl"
-            style={{ touchAction: 'manipulation' }}
-          >
+        {/* Simple Add Lead Dialog for Mobile */}
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" dir="rtl">
             <DialogHeader>
               <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
             </DialogHeader>
@@ -167,7 +159,7 @@ export default function Leads() {
               <MobileAddLeadForm onSuccess={onLeadAdded} />
             )}
           </DialogContent>
-        </SwipeDialog>
+        </Dialog>
       </MobileContainer>
     );
   }
