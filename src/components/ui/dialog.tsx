@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
@@ -58,8 +57,9 @@ const DialogContent = React.forwardRef<
           className
         )}
         onOpenAutoFocus={(e) => {
-          // Focus management for accessibility
-          const firstInput = e.currentTarget.querySelector('input, textarea, select, button');
+          // Focus management for accessibility - fixed TypeScript error
+          const target = e.currentTarget as HTMLElement;
+          const firstInput = target.querySelector('input, textarea, select, button');
           if (firstInput) {
             e.preventDefault();
             (firstInput as HTMLElement).focus();
