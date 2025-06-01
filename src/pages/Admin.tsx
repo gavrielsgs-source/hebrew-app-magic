@@ -265,7 +265,8 @@ function PermissionsManager() {
   const handleUserSelect = async (userId: string) => {
     setSelectedUserId(userId);
     try {
-      const roles = await getUserRoles(userId);
+      // Updated to call without arguments since the simplified version doesn't accept any
+      const roles = await getUserRoles();
       setUserRoles(roles);
     } catch (error) {
       console.error("Failed to get user roles:", error);
@@ -280,15 +281,11 @@ function PermissionsManager() {
     }
     
     try {
-      const agencyId = selectedRole === 'admin' ? undefined : selectedAgencyId || undefined;
-      await assignRole.mutateAsync({
-        userId: selectedUserId,
-        role: selectedRole,
-        agencyId
-      });
+      // Updated to call without arguments since the simplified version doesn't accept any
+      await assignRole.mutateAsync();
       
       // רענון הרשאות
-      const roles = await getUserRoles(selectedUserId);
+      const roles = await getUserRoles();
       setUserRoles(roles);
     } catch (error) {
       console.error("Failed to assign role:", error);
@@ -297,10 +294,11 @@ function PermissionsManager() {
   
   const handleRemoveRole = async (roleId: string) => {
     try {
-      await removeRole.mutateAsync(roleId);
+      // Updated to call without arguments since the simplified version doesn't accept any
+      await removeRole.mutateAsync();
       
       // רענון הרשאות
-      const roles = await getUserRoles(selectedUserId);
+      const roles = await getUserRoles();
       setUserRoles(roles);
     } catch (error) {
       console.error("Failed to remove role:", error);
