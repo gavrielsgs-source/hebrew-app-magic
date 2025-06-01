@@ -26,10 +26,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(authLoading);
   }, [authLoading]);
 
-  // Simplified implementation to prevent errors
+  // Simplified implementation - no role checking
   const contextValue = {
-    isAdmin: false, // Default to false for now to prevent errors
-    hasRole: () => false, // Default implementation
+    isAdmin: false,
+    hasRole: () => false,
     isLoading,
     agencies: [],
     agenciesLoading: false,

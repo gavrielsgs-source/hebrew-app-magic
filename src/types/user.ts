@@ -1,4 +1,5 @@
 
+// Simplified user types
 export type UserRole = 'admin' | 'agency_manager' | 'sales_agent' | 'viewer';
 
 export interface UserRoleAssignment {
