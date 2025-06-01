@@ -48,31 +48,37 @@ export function useNotificationPermission() {
       if (result === 'granted') {
         toast.success('הרשאת התראות אושרה בהצלחה');
         
-        // Register service worker and push subscription
+        // Register service worker and push subscription only if available
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            console.log('Service Worker registered successfully');
-            
-            const subscription = await registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
-            });
-
-            // Save subscription to database
-            if (user && subscription) {
-              const subscriptionJson = subscription.toJSON() as any;
+            // Check if service worker file exists before registering
+            const swResponse = await fetch('/sw.js', { method: 'HEAD' });
+            if (swResponse.ok) {
+              const registration = await navigator.serviceWorker.register('/sw.js');
+              console.log('Service Worker registered successfully');
               
-              const { error } = await supabase
-                .from('profiles')
-                .update({ 
-                  push_subscription: subscriptionJson
-                })
-                .eq('id', user.id);
+              const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
+              });
 
-              if (error) {
-                console.error('Error saving push subscription:', error);
+              // Save subscription to database
+              if (user && subscription) {
+                const subscriptionJson = subscription.toJSON() as any;
+                
+                const { error } = await supabase
+                  .from('profiles')
+                  .update({ 
+                    push_subscription: subscriptionJson
+                  })
+                  .eq('id', user.id);
+
+                if (error) {
+                  console.error('Error saving push subscription:', error);
+                }
               }
+            } else {
+              console.log('Service worker file not found, skipping registration');
             }
           } catch (swError) {
             console.error('Service Worker registration failed:', swError);

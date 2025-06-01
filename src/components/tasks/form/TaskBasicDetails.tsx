@@ -15,9 +15,14 @@ export function TaskBasicDetails() {
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>כותרת</FormLabel>
+            <FormLabel htmlFor="task-title">כותרת</FormLabel>
             <FormControl>
-              <Input placeholder="שיחת טלפון עם לקוח" {...field} />
+              <Input 
+                id="task-title"
+                name="title"
+                placeholder="שיחת טלפון עם לקוח" 
+                {...field} 
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -29,9 +34,14 @@ export function TaskBasicDetails() {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>תיאור</FormLabel>
+            <FormLabel htmlFor="task-description">תיאור</FormLabel>
             <FormControl>
-              <Textarea placeholder="פרטים נוספים..." {...field} />
+              <Textarea 
+                id="task-description"
+                name="description"
+                placeholder="פרטים נוספים..." 
+                {...field} 
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

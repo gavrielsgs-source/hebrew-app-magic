@@ -4,7 +4,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { TaskNotifications } from "./TaskNotifications";
 import { TasksErrorState } from "./TasksErrorState";
 import { TasksLoadingState } from "./TasksLoadingState";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTasksView } from "./MobileTasksView";
 import { DesktopTasksView } from "./DesktopTasksView";
@@ -110,7 +110,13 @@ export function TasksPageContent() {
 
       {/* Task Notifications Dialog */}
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
-        <DialogContent>
+        <DialogContent aria-describedby="task-notifications-description">
+          <DialogHeader>
+            <DialogTitle>התראות משימה</DialogTitle>
+            <DialogDescription id="task-notifications-description">
+              נהל התראות עבור המשימה הנבחרת
+            </DialogDescription>
+          </DialogHeader>
           {selectedTask && (
             <TaskNotifications
               task={selectedTask}
