@@ -10,6 +10,7 @@ import { SidebarInset } from "@/components/ui/sidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { SubscriptionProvider } from "@/contexts/subscription-context";
 import { AuthProvider } from "@/contexts/auth-context";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -58,11 +59,13 @@ const App = () => {
               path="/*"
               element={
                 <ProtectedRoute>
-                  <SubscriptionProvider>
-                    <AuthProvider>
-                      <AppLayout />
-                    </AuthProvider>
-                  </SubscriptionProvider>
+                  <ErrorBoundary>
+                    <SubscriptionProvider>
+                      <AuthProvider>
+                        <AppLayout />
+                      </AuthProvider>
+                    </SubscriptionProvider>
+                  </ErrorBoundary>
                 </ProtectedRoute>
               }
             />
@@ -82,22 +85,24 @@ function AppLayout() {
         {!isMobile && <AppSidebar />}
         <SidebarInset className={isMobile ? "mr-0" : ""}>
           <div className={isMobile ? "w-full" : ""}>
-            <Routes>
-              <Route path="/dashboard" element={<Index />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/cars" element={<Cars />} />
-              <Route path="/leads" element={<Leads />} />
-              <Route path="/templates" element={<Templates />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/subscription" element={<Subscription />} />
-              <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
-              <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
-              <Route path="/subscription/payment-error" element={<PaymentError />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/dashboard" element={<Index />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/cars" element={<Cars />} />
+                <Route path="/leads" element={<Leads />} />
+                <Route path="/templates" element={<Templates />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/subscription" element={<Subscription />} />
+                <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
+                <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
+                <Route path="/subscription/payment-error" element={<PaymentError />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ErrorBoundary>
           </div>
         </SidebarInset>
         {isMobile && <MobileBottomNav />}
