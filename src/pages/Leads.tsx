@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
@@ -64,10 +65,6 @@ export default function Leads() {
       console.error('Error opening WhatsApp:', error);
       window.location.href = 'https://web.whatsapp.com';
     }
-  };
-
-  const handleScheduleMeeting = () => {
-    console.log("Schedule meeting clicked");
   };
 
   // Error state
