@@ -1,14 +1,15 @@
 
-import { Button } from "@/components/ui/button";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Settings } from "lucide-react";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddLeadForm } from "../AddLeadForm";
-import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface LeadsPageHeaderProps {
   isAddingLead: boolean;
-  setIsAddingLead: (open: boolean) => void;
+  setIsAddingLead: (adding: boolean) => void;
   canAddLead: boolean;
   onLeadAdded: () => void;
   setActiveTab: (tab: string) => void;
@@ -22,43 +23,39 @@ export function LeadsPageHeader({
   setActiveTab
 }: LeadsPageHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-      <div className="text-right">
-        <h1 className="text-2xl font-bold tracking-tight">לקוחות פוטנציאליים</h1>
-        <p className="text-muted-foreground mt-1">
-          ניהול ומעקב אחר לידים פוטנציאליים
-        </p>
+    <div className="flex justify-between items-center mb-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">ניהול לקוחות</h1>
+        <p className="text-gray-600 mt-1">נהל את כל הלקוחות והלידים שלך במקום אחד</p>
       </div>
-      <div className="flex gap-2 mt-4 sm:mt-0 w-full sm:w-auto">
-        <NotificationsPopover />
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={() => setActiveTab("settings")}
-        >
-          <Settings className="h-4 w-4 ml-1.5" />
-          הגדרות
-        </Button>
-        <SwipeDialog open={isAddingLead} onOpenChange={setIsAddingLead}>
-          <DialogTrigger asChild>
-            <Button 
-              size="sm" 
-              className="flex items-center gap-2 flex-1"
-              disabled={!canAddLead}
-              onClick={() => setIsAddingLead(true)}
-            >
-              <Plus className="h-4 w-4 ml-1.5" />
-              לקוח חדש
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-full sm:w-[400px]">
+      
+      <div className="flex items-center gap-3">
+        <Dialog open={isAddingLead} onOpenChange={setIsAddingLead}>
+          <Button 
+            onClick={() => setIsAddingLead(true)}
+            disabled={!canAddLead}
+            className="bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90 text-white shadow-lg"
+          >
+            <Plus className="ml-2 h-4 w-4" />
+            הוסף לקוח חדש
+          </Button>
+          <DialogContent className="w-[400px]" dir="rtl">
             <DialogHeader>
-              <DialogTitle className="text-right">הוסף לקוח חדש</DialogTitle>
+              <DialogTitle>הוסף לקוח חדש</DialogTitle>
             </DialogHeader>
-            <AddLeadForm onSuccess={onLeadAdded} />
+            
+            {!canAddLead ? (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-600 text-right">
+                  הגעת למגבלת המנוי. לא ניתן להוסיף עוד לקוחות. אנא שדרג את המנוי שלך.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <AddLeadForm onSuccess={onLeadAdded} />
+            )}
           </DialogContent>
-        </SwipeDialog>
+        </Dialog>
       </div>
     </div>
   );
