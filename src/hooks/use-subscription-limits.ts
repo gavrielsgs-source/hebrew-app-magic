@@ -39,7 +39,7 @@ export function useSubscriptionLimits() {
       if (currentCount >= limit) {
         const resourceNames: Record<ResourceType, string> = {
           car: 'רכבים',
-          lead: 'לידים',
+          lead: 'לקוחות פוטנציאליים',
           user: 'משתמשים',
           template: 'תבניות',
           whatsappMessage: 'הודעות וואטסאפ',
@@ -93,7 +93,7 @@ export function useSubscriptionLimits() {
       if (percentUsed >= 80) {
         const resourceNames: Record<ResourceType, string> = {
           car: 'רכבים',
-          lead: 'לידים',
+          lead: 'לקוחות פוטנציאליים',
           user: 'משתמשים',
           template: 'תבניות',
           whatsappMessage: 'הודעות וואטסאפ',

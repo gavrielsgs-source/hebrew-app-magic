@@ -4,13 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { ArrowRight, Crown, Star, Zap, Check, X } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { useLeads } from "@/hooks/use-leads";
+import { useCars } from "@/hooks/use-cars";
+import { useTasks } from "@/hooks/use-tasks";
+import { UsageBar } from "@/components/subscription/UsageBar";
 
 const subscriptionTiers = [
   {
@@ -18,14 +21,12 @@ const subscriptionTiers = [
     name: "חינם",
     description: "התחילו עם תכונות בסיסיות בחינם",
     features: [
-      "עד 3 משתמשים",
-      "ניהול לידים בסיסי",
-      "5GB אחסון",
+      "עד 10 לקוחות פוטנציאליים",
+      "עד 5 רכבים במלאי",
+      "עד 10 משימות",
+      "תבנית הודעה אחת",
+      "50 הודעות וואטסאפ לחודש"
     ],
-    limitations: {
-      users: 3,
-      storage: 5,
-    },
     price: "חינם",
     mostPopular: false,
   },
@@ -34,15 +35,13 @@ const subscriptionTiers = [
     name: "פרימיום",
     description: "תכונות מתקדמות לעסקים קטנים",
     features: [
-      "עד 10 משתמשים",
-      "ניהול לידים מתקדם",
-      "25GB אחסון",
-      "תמיכה טכנית",
+      "עד 50 לקוחות פוטנציאליים",
+      "עד 20 רכבים במלאי",
+      "עד 20 משימות",
+      "3 תבניות הודעות",
+      "100 הודעות וואטסאפ לחודש",
+      "תמיכה טכנית"
     ],
-    limitations: {
-      users: 10,
-      storage: 25,
-    },
     price: "199 ₪",
     mostPopular: true,
   },
@@ -51,16 +50,14 @@ const subscriptionTiers = [
     name: "ביזנס",
     description: "פתרון מלא לעסקים בינוניים",
     features: [
-      "עד 25 משתמשים",
-      "ניהול לידים מתקדם",
-      "100GB אחסון",
-      "תמיכה טכנית 24/7",
-      "אינטגרציות API",
+      "עד 200 לקוחות פוטנציאליים",
+      "עד 50 רכבים במלאי",
+      "עד 100 משימות",
+      "10 תבניות הודעות",
+      "500 הודעות וואטסאפ לחודש",
+      "אנליטיקה מתקדמת",
+      "תמיכה טכנית 24/7"
     ],
-    limitations: {
-      users: 25,
-      storage: 100,
-    },
     price: "349 ₪",
     mostPopular: false,
   },
@@ -69,17 +66,15 @@ const subscriptionTiers = [
     name: "אנטרפרייז",
     description: "פתרון מותאם אישית לעסקים גדולים",
     features: [
-      "מספר משתמשים ללא הגבלה",
-      "ניהול לידים מתקדם",
-      "אחסון ללא הגבלה",
-      "תמיכה טכנית VIP",
-      "אינטגרציות API מתקדמות",
-      "הדרכה מותאמת אישית",
+      "לקוחות ללא הגבלה",
+      "רכבים ללא הגבלה",
+      "משימות ללא הגבלה",
+      "תבניות הודעות ללא הגבלה",
+      "2000 הודעות וואטסאפ לחודש",
+      "אנליטיקה מותאמת אישית",
+      "תמיכה VIP 24/7",
+      "גישה ל-API"
     ],
-    limitations: {
-      users: Infinity,
-      storage: Infinity,
-    },
     price: "599 ₪",
     mostPopular: false,
   },
@@ -88,10 +83,12 @@ const subscriptionTiers = [
 export default function Subscription() {
   const { subscription, isLoading, error } = useSubscription();
   const { user, signOut } = useAuth();
+  const { leads } = useLeads();
+  const { cars } = useCars();
+  const { tasks } = useTasks();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isMounted, setIsMounted] = useState(false);
-  const [isYearly, setIsYearly] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -119,10 +116,11 @@ export default function Subscription() {
 
   const currentTier = getSubscriptionTier();
 
-  // Mock usage data since users and storage properties don't exist on Subscription type
-  const mockUsageData = {
-    users: 1,
-    storage: 2.5
+  // שימוש בנתונים אמיתיים
+  const currentUsage = {
+    leads: leads?.length || 0,
+    cars: cars?.length || 0,
+    tasks: tasks?.length || 0
   };
 
   return (
@@ -150,7 +148,7 @@ export default function Subscription() {
           </div>
           <CardDescription>{currentTier.description}</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
+        <CardContent className="grid gap-6">
           <div className="flex items-center">
             <Zap className="h-4 w-4 mr-2 text-blue-500" />
             תכונות עיקריות:
@@ -162,35 +160,27 @@ export default function Subscription() {
               </li>
             ))}
           </ul>
+          
           <div className="flex items-center">
             <Star className="h-4 w-4 mr-2 text-green-500" />
-            מגבלות שימוש:
+            שימוש נוכחי:
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">מספר משתמשים:</span>
-              <div className="flex items-center">
-                <Progress value={
-                  currentTier.limitations.users === Infinity ? 100 :
-                    (mockUsageData.users / currentTier.limitations.users) * 100
-                } className="w-24 mr-2" />
-                <span className="text-xs text-muted-foreground">
-                  {mockUsageData.users} / {currentTier.limitations.users === Infinity ? "ללא הגבלה" : currentTier.limitations.users}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">נפח אחסון:</span>
-              <div className="flex items-center">
-                <Progress value={
-                  currentTier.limitations.storage === Infinity ? 100 :
-                    (mockUsageData.storage / currentTier.limitations.storage) * 100
-                } className="w-24 mr-2" />
-                <span className="text-xs text-muted-foreground">
-                  {mockUsageData.storage}GB / {currentTier.limitations.storage === Infinity ? "ללא הגבלה" : currentTier.limitations.storage}GB
-                </span>
-              </div>
-            </div>
+          <div className="space-y-4">
+            <UsageBar 
+              used={currentUsage.leads}
+              limit={subscription.leadLimit || 0}
+              label="לקוחות פוטנציאליים"
+            />
+            <UsageBar 
+              used={currentUsage.cars}
+              limit={subscription.carLimit || 0}
+              label="רכבים במלאי"
+            />
+            <UsageBar 
+              used={currentUsage.tasks}
+              limit={subscription.taskLimit || 0}
+              label="משימות"
+            />
           </div>
         </CardContent>
       </Card>

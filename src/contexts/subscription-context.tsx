@@ -21,18 +21,51 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [error, setError] = useState<Error | null>(null);
 
   const fetchSubscription = async () => {
-    if (!user) return;
+    if (!user) {
+      setSubscription(subscriptionFeatures.free);
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
     
     try {
-      // For now, just use free tier since subscription_tier column doesn't exist
-      console.log('Using free subscription tier for user:', user.id);
-      setSubscription(subscriptionFeatures.free);
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from('subscriptions')
+        .select('subscription_tier, active, expires_at')
+        .eq('user_id', user.id)
+        .single();
+
+      if (subscriptionError) {
+        if (subscriptionError.code === 'PGRST116') {
+          // אין מנוי עדיין, ניצור אחד חדש
+          const { error: insertError } = await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: user.id,
+              subscription_tier: 'free',
+              active: true
+            });
+          
+          if (insertError) {
+            console.error("Error creating subscription:", insertError);
+          }
+          setSubscription(subscriptionFeatures.free);
+        } else {
+          throw subscriptionError;
+        }
+      } else {
+        // בדיקה אם המנוי פעיל ולא פג
+        const isActive = subscriptionData.active && 
+          (!subscriptionData.expires_at || new Date(subscriptionData.expires_at) > new Date());
+        
+        const tier = isActive ? subscriptionData.subscription_tier as SubscriptionTier : 'free';
+        setSubscription(subscriptionFeatures[tier] || subscriptionFeatures.free);
+      }
     } catch (err) {
-      console.error("Error with subscription:", err);
-      // Always fallback to free tier
+      console.error("Error fetching subscription:", err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch subscription'));
+      // תמיד נחזור לרמה הבסיסית במקרה של שגיאה
       setSubscription(subscriptionFeatures.free);
     } finally {
       setIsLoading(false);
