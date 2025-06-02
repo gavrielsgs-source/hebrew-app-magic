@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MobileButton } from "@/components/mobile/MobileButton";
-import { Edit, MessageSquare, Calendar, Phone, Trash2 } from "lucide-react";
+import { Edit, MessageSquare, Phone, Trash2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AddTaskDialog } from "@/components/tasks/AddTaskDialog";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScheduleMeetingForm } from "@/components/leads/ScheduleMeetingForm";
@@ -28,7 +27,6 @@ export function LeadCardActions({
   onWhatsApp, 
   onSchedule 
 }: LeadCardActionsProps) {
-  const [showAddTask, setShowAddTask] = useState(false);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const isMobile = useIsMobile();
 
@@ -71,25 +69,16 @@ export function LeadCardActions({
             <MobileButton
               variant="outline"
               size="sm"
-              onClick={() => setShowAddTask(true)}
-              icon={<Calendar className="h-5 w-5" />}
+              onClick={handleScheduleClick}
+              icon={<Phone className="h-5 w-5" />}
               className="flex-1 h-14 text-lg rounded-2xl bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
             >
-              משימה
+              פגישה
             </MobileButton>
           </div>
 
           {/* Secondary actions row */}
           <div className="flex gap-3">
-            <MobileButton
-              variant="outline"
-              size="sm"
-              onClick={handleScheduleClick}
-              icon={<Phone className="h-5 w-5" />}
-              className="flex-1 h-12 rounded-2xl"
-            >
-              פגישה
-            </MobileButton>
             <MobileButton
               variant="outline"
               size="sm"
@@ -110,14 +99,6 @@ export function LeadCardActions({
             </MobileButton>
           </div>
         </div>
-
-        {/* Add Task Dialog */}
-        <AddTaskDialog
-          open={showAddTask}
-          onOpenChange={setShowAddTask}
-          initialLeadId={leadId}
-          onSuccess={() => setShowAddTask(false)}
-        />
 
         {/* Schedule Meeting Dialog */}
         <SwipeDialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
@@ -150,15 +131,6 @@ export function LeadCardActions({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setShowAddTask(true)}
-          className="text-blue-600 border-blue-200 hover:bg-blue-50"
-        >
-          <Calendar className="h-4 w-4 mr-1" />
-          משימה
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
           onClick={handleScheduleClick}
         >
           <Phone className="h-4 w-4 mr-1" />
@@ -182,14 +154,6 @@ export function LeadCardActions({
           מחק
         </Button>
       </div>
-
-      {/* Add Task Dialog */}
-      <AddTaskDialog
-        open={showAddTask}
-        onOpenChange={setShowAddTask}
-        initialLeadId={leadId}
-        onSuccess={() => setShowAddTask(false)}
-      />
 
       {/* Schedule Meeting Dialog */}
       <SwipeDialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>

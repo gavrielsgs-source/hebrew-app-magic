@@ -4,10 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Phone, MessageSquare, Calendar, Edit, Plus, Trash2, Users, CheckCircle } from "lucide-react";
+import { Phone, MessageSquare, Edit, Plus, Trash2, Users, CheckCircle } from "lucide-react";
 import { EditLeadForm } from "./EditLeadForm";
 import { getStatusBadgeColor, getStatusText } from "./grid/utils/lead-status";
-import { TaskForm } from "@/components/tasks/TaskForm";
 import { useDeleteLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -17,7 +16,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
   console.log('LeadsMobileView rendered with:', { leads: leads?.length, isLoading, error });
   
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [activeDialog, setActiveDialog] = useState<"edit" | "task" | "clients" | null>(null);
+  const [activeDialog, setActiveDialog] = useState<"edit" | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   
@@ -234,37 +233,9 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                   </Button>
 
                   <Button 
-                    size="lg"
-                    className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] hover:from-[#1F2C5E] hover:to-[#3A4A7C] text-white rounded-2xl py-4 h-16 shadow-lg font-bold text-lg"
-                    onClick={() => {
-                      setSelectedLeadId(lead.id as string);
-                      setActiveDialog("task");
-                    }}
-                  >
-                    <Calendar className="h-6 w-6 ml-2" />
-                    קבע פגישה
-                  </Button>
-                </div>
-
-                {/* שורה שנייה - פעולות משניות */}
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
                     variant="outline" 
                     size="lg"
-                    className="border-2 border-orange-300 text-orange-700 hover:bg-orange-50 rounded-2xl py-4 h-14 font-semibold"
-                    onClick={() => {
-                      setSelectedLeadId(lead.id as string);
-                      setActiveDialog("clients");
-                    }}
-                  >
-                    <Users className="h-5 w-5 ml-2" />
-                    שתף ליד
-                  </Button>
-
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="border-2 border-red-300 text-red-600 hover:bg-red-50 rounded-2xl py-4 h-14 font-semibold"
+                    className="border-2 border-red-300 text-red-600 hover:bg-red-50 rounded-2xl py-4 h-16 font-semibold"
                     onClick={() => {
                       setLeadToDelete(lead.id as string);
                       setIsDeleteDialogOpen(true);
@@ -287,21 +258,6 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
             <DialogTitle>עריכת לקוח</DialogTitle>
           </DialogHeader>
           {selectedLead && <EditLeadForm lead={selectedLead} />}
-        </DialogContent>
-      </Dialog>
-
-      {/* Task Dialog */}
-      <Dialog open={activeDialog === "task"} onOpenChange={(open) => !open && setActiveDialog(null)}>
-        <DialogContent className="sm:max-w-[500px]" dir="rtl">
-          <DialogHeader>
-            <DialogTitle>קבע פגישה/תזכורת - {selectedLead?.name as string}</DialogTitle>
-          </DialogHeader>
-          {selectedLead && (
-            <TaskForm 
-              initialLeadId={selectedLead.id as string}
-              onSuccess={() => setActiveDialog(null)}
-            />
-          )}
         </DialogContent>
       </Dialog>
 
