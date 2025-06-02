@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
@@ -41,12 +42,12 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={cn(
           "fixed z-50 bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          // Mobile optimized styles - smaller and better scrolling
+          // Mobile optimized styles with enhanced scrolling
           isMobile ? [
-            "inset-x-3 top-[8%] bottom-[8%]",
-            "max-h-[84vh] w-[calc(100vw-1.5rem)]",
-            "overflow-hidden rounded-xl",
-            "data-[state=closed]:slide-out-to-bottom-[8%] data-[state=open]:slide-in-from-bottom-[8%]",
+            "inset-x-2 top-[5%] bottom-[5%]",
+            "max-h-[90vh] w-[calc(100vw-1rem)]",
+            "overflow-hidden rounded-2xl",
+            "data-[state=closed]:slide-out-to-bottom-[5%] data-[state=open]:slide-in-from-bottom-[5%]",
             "flex flex-col"
           ] : [
             "left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]",
@@ -56,8 +57,13 @@ const DialogContent = React.forwardRef<
           ],
           className
         )}
+        style={isMobile ? {
+          touchAction: 'manipulation',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain'
+        } : {}}
         onOpenAutoFocus={(e) => {
-          // Focus management for accessibility - fixed TypeScript error
+          // Focus management for accessibility
           const target = e.currentTarget as HTMLElement;
           const firstInput = target.querySelector('input, textarea, select, button');
           if (firstInput) {
@@ -67,23 +73,30 @@ const DialogContent = React.forwardRef<
         }}
         {...props}
       >
-        {/* Header with close button */}
-        <div className="relative flex-shrink-0 p-4 pb-2">
+        {/* Header with close button - fixed at top */}
+        <div className="relative flex-shrink-0 p-4 pb-2 border-b border-gray-100">
           <DialogPrimitive.Close className={cn(
             "absolute opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none rounded-sm",
-            "left-3 top-3 h-8 w-8 flex items-center justify-center hover:bg-accent"
+            "right-3 top-3 h-8 w-8 flex items-center justify-center hover:bg-accent"
           )} aria-label="Close">
             <X className="h-4 w-4" />
             <span className="sr-only">סגור</span>
           </DialogPrimitive.Close>
         </div>
         
-        {/* Scrollable content area with better mobile scrolling */}
+        {/* Enhanced scrollable content area */}
         <div className={cn(
           "flex-1 overflow-y-auto px-4 pb-4 -mt-2",
-          isMobile && "scrollbar-thin scrollbar-thumb-gray-300"
-        )}>
-          <div className="min-h-0 space-y-1">
+          isMobile && [
+            "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent",
+            "overscroll-behavior-contain",
+            "touch-action-manipulation"
+          ]
+        )} style={isMobile ? {
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'thin'
+        } : {}}>
+          <div className="min-h-0 space-y-1 py-2">
             {children}
           </div>
         </div>
@@ -113,7 +126,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "sticky bottom-0 bg-background border-t p-4 mt-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 space-y-reverse sm:space-y-0",
+      "sticky bottom-0 bg-background border-t p-4 mt-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 space-y-reverse sm:space-y-0 z-10",
       className
     )}
     {...props}
