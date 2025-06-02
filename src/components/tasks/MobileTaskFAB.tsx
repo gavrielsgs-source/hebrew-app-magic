@@ -3,13 +3,15 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AddTaskDialog } from "./AddTaskDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocation } from "react-router-dom";
 
 export function MobileTaskFAB() {
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const isMobile = useIsMobile();
+  const location = useLocation();
 
-  // Only show on mobile
-  if (!isMobile) return null;
+  // Only show on mobile and only on the Tasks page
+  if (!isMobile || location.pathname !== '/tasks') return null;
 
   const handleAddTask = () => {
     console.log('MobileTaskFAB - Opening add task dialog');
