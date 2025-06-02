@@ -27,6 +27,8 @@ export function LeadsPageHeader({
   const { leads } = useLeads();
   const currentLeadCount = leads?.length || 0;
 
+  console.log('LeadsPageHeader rendered - only Add Lead button should be visible');
+
   return (
     <>
       <SubscriptionLimitAlert 
