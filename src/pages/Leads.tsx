@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
@@ -126,7 +125,6 @@ export default function Leads() {
         <LeadsMobileHeader
           onAddLead={handleAddLead}
           onWhatsApp={handleWhatsApp}
-          onScheduleMeeting={handleScheduleMeeting}
           leadsCount={leads.length}
         />
 

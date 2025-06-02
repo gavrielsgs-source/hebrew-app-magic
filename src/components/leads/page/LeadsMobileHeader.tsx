@@ -1,117 +1,47 @@
 
-import { Plus, MessageSquare, Calendar } from "lucide-react";
+import { useState } from "react";
+import { Plus, MessageSquare } from "lucide-react";
+import { MobileButton } from "@/components/mobile/MobileButton";
 
 interface LeadsMobileHeaderProps {
   onAddLead: () => void;
   onWhatsApp: () => void;
-  onScheduleMeeting: () => void;
   leadsCount: number;
 }
 
-export function LeadsMobileHeader({ 
-  onAddLead, 
-  onWhatsApp, 
-  onScheduleMeeting, 
-  leadsCount 
+export function LeadsMobileHeader({
+  onAddLead,
+  onWhatsApp,
+  leadsCount
 }: LeadsMobileHeaderProps) {
-
-  // Enhanced mobile-first event handler with touch support
-  const handleAddLeadMobile = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('LeadsMobileHeader - Add lead clicked/touched');
-    
-    // Ensure immediate response on mobile
-    requestAnimationFrame(() => {
-      onAddLead();
-    });
-  };
-
-  const handleWhatsApp = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('LeadsMobileHeader - WhatsApp clicked/touched');
-    try {
-      window.open('https://web.whatsapp.com', '_blank', 'noopener,noreferrer');
-      onWhatsApp();
-    } catch (error) {
-      console.error('Error opening WhatsApp:', error);
-      // Fallback for mobile browsers
-      window.location.href = 'https://web.whatsapp.com';
-    }
-  };
-
-  const handleScheduleMeeting = (e: React.TouchEvent | React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('LeadsMobileHeader - Schedule meeting clicked/touched');
-    alert('פונקציונליות קביעת פגישה תתווסף בקרוב');
-    onScheduleMeeting();
-  };
-
   return (
-    <div className="px-4 pt-4 space-y-4">
-      {/* Enhanced header with brand gradient background */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-white mb-1 text-right">
-              ניהול לידים
-            </h1>
-            <p className="text-sm text-white/90 text-right">
-              {leadsCount} לקוחות רשומים
-            </p>
-          </div>
-          {/* Enhanced mobile-first button with touch support */}
-          <button
-            type="button"
-            onClick={handleAddLeadMobile}
-            onTouchStart={handleAddLeadMobile}
-            className="bg-white/20 hover:bg-white/30 active:bg-white/40 text-white rounded-full p-3 transition-all duration-200 active:scale-95 flex items-center justify-center min-h-[48px] min-w-[48px]"
-            style={{
-              WebkitTapHighlightColor: 'transparent',
-              touchAction: 'manipulation',
-              userSelect: 'none'
-            }}
-          >
-            <Plus className="h-6 w-6" />
-          </button>
+    <div className="sticky top-0 z-10 bg-gradient-to-l from-[#2F3C7E] via-[#4A5A8C] to-[#2F3C7E] text-white p-6 rounded-b-3xl shadow-lg" dir="rtl">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">ניהול לקוחות</h1>
+          <p className="text-blue-100 text-lg mt-2">
+            {leadsCount > 0 ? `${leadsCount} לקוחות פוטנציאליים` : 'אין לקוחות עדיין'}
+          </p>
         </div>
       </div>
-
-      {/* Action buttons with enhanced mobile support */}
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={handleWhatsApp}
-          onTouchStart={handleWhatsApp}
-          className="flex-1 h-12 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100 active:bg-green-200 min-h-[48px]"
-          style={{
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            userSelect: 'none'
-          }}
+      
+      {/* כפתורי פעולה */}
+      <div className="grid grid-cols-2 gap-4">
+        <MobileButton
+          onClick={onAddLead}
+          className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 h-16 rounded-2xl font-bold text-lg shadow-lg"
+          icon={<Plus className="h-6 w-6" />}
         >
-          <MessageSquare className="h-5 w-5" />
-          וואטסאפ
-        </button>
-        <button
-          type="button"
-          onClick={handleScheduleMeeting}
-          onTouchStart={handleScheduleMeeting}
-          className="flex-1 h-12 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 active:bg-blue-200 min-h-[48px]"
-          style={{
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            userSelect: 'none'
-          }}
+          הוסף לקוח חדש
+        </MobileButton>
+        
+        <MobileButton
+          onClick={onWhatsApp}
+          className="bg-green-500/90 backdrop-blur-sm border-green-400/30 text-white hover:bg-green-600/90 h-16 rounded-2xl font-bold text-lg shadow-lg"
+          icon={<MessageSquare className="h-6 w-6" />}
         >
-          <Calendar className="h-5 w-5" />
-          פגישה
-        </button>
+          וואטסאפ ווב
+        </MobileButton>
       </div>
     </div>
   );
