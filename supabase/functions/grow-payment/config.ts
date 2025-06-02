@@ -4,10 +4,9 @@ export const GROW_USER_ID = Deno.env.get('GROW_USER_ID') || '3bdaec1d6c7e9ef7';
 export const GROW_PAGE_CODE = Deno.env.get('GROW_PAGE_CODE') || 'f8dc02a4a03d';
 export const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || '3bdaec1d6c7e9ef7';
 export const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || 'f8dc02a4a03d';
-//change this accordingly when it changes
-export const SITE_URL = 'https://fb9cfd38-7a13-46ea-b988-44577bd53611.lovableproject.com/tasks';
+export const SITE_URL = 'https://fb9cfd38-7a13-46ea-b988-44577bd53611.lovableproject.com';
 export const SUCCESS_URL = `${SITE_URL}/subscription/payment-success`;
-export const CANCEL_URL = `${SITE_URL}/subscription/upgrade`;
+export const CANCEL_URL = `${SITE_URL}/payment`;
 export const NOTIFY_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/grow-webhook`;
 
 console.log(Deno.env.get('SUPABASE_URL'))

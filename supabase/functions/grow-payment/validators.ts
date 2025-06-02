@@ -1,90 +1,34 @@
 
 export interface PaymentPayload {
-  // Direct debit required fields
-  userId?: string;
-  transactionToken?: string;
-  transactionId?: string;
-  asmachta?: string;
+  fullName?: string;
+  phone?: string;
   sum?: number | string;
-  
-  // Optional user identity fields
-  customerName?: string;
-  customerPhone?: string;
-  customerEmail?: string;
-  
-  // Optional payment configuration fields
-  description?: string;
-  successUrl?: string;
-  errorUrl?: string;
-  maxPayments?: string | number;
-  language?: string;
-  
-  // Additional optional fields for updateDirectDebit
-  chargeDay?: string;
-  changeStatus?: string;
-  updateCard?: string;
-  
-  action?: string; // To distinguish between create and update operations
+  planId?: string;
 }
 
-export function validatePayload(payload: PaymentPayload, action: string = 'create'): string | null {
-  if (!payload) {
-    return 'Missing payload';
+export function validatePayload(payload: PaymentPayload, action: string): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return 'Invalid payload: must be an object';
   }
 
-  if (action === 'createPaymentProcess') {
-    // For direct debit structure, validate required fields
-    
-    if (payload.sum === undefined) {
-      return 'sum is required for creating payment process';
-    }
-    
-    // Positive sum validation
-    const sumValue = typeof payload.sum === 'string' ? parseFloat(payload.sum) : payload.sum;
-    if (isNaN(sumValue) || sumValue <= 0) {
-      return 'Sum must be a positive number';
-    }
-    
-    // Additional identity validation if provided
-    if (payload.customerPhone && !payload.customerPhone.match(/^05\d{8}$/)) {
-      return 'Phone must be an Israeli mobile number';
+  if (action === 'createPaymentProcess' || action === 'updateDirectDebit') {
+    if (!payload.fullName || typeof payload.fullName !== 'string' || payload.fullName.trim().length === 0) {
+      return 'fullName is required and must be a non-empty string';
     }
 
-    if (payload.customerName && !payload.customerName.includes(' ')) {
-      return 'Name must include first and last name';
+    if (!payload.phone || typeof payload.phone !== 'string' || payload.phone.trim().length === 0) {
+      return 'phone is required and must be a non-empty string';
     }
-  } 
-  else if (action === 'updateDirectDebit') {
-    // Same validation as createPaymentProcess for direct debit fields
-    if (!payload.userId) {
-      return 'userId is required for updating direct debit';
+
+    if (payload.sum !== undefined) {
+      const sumValue = typeof payload.sum === 'string' ? parseFloat(payload.sum) : payload.sum;
+      if (isNaN(sumValue) || sumValue <= 0) {
+        return 'sum must be a positive number';
+      }
     }
-    
-    if (!payload.transactionToken) {
-      return 'transactionToken is required for updating direct debit';
-    }
-    
-    if (!payload.transactionId) {
-      return 'transactionId is required for updating direct debit';
-    }
-    
-    if (!payload.asmachta) {
-      return 'asmachta is required for updating direct debit';
-    }
-    
-    // Charge day validation if provided
-    if (payload.chargeDay && (isNaN(parseInt(payload.chargeDay)) || parseInt(payload.chargeDay) < 1 || parseInt(payload.chargeDay) > 31)) {
-      return 'chargeDay must be between 1 and 31';
-    }
-  }
-  
-  // Payment number validation if provided
-  if (payload.maxPayments) {
-    const maxPaymentsNum = typeof payload.maxPayments === 'string' ? 
-      parseInt(payload.maxPayments) : payload.maxPayments;
-    
-    if (isNaN(maxPaymentsNum) || maxPaymentsNum < 1) {
-      return 'Maximum payments must be at least 1';
+
+    if (payload.planId && typeof payload.planId !== 'string') {
+      return 'planId must be a string';
     }
   }
 

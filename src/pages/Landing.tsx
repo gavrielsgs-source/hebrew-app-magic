@@ -27,13 +27,8 @@ export default function Landing() {
   const { user, loading } = useAuth();
 
   const handlePricingSelect = (plan: string) => {
-    if (user) {
-      // If user is logged in, redirect to subscription upgrade
-      window.location.href = '/subscription/upgrade';
-    } else {
-      // If not logged in, redirect to auth
-      window.location.href = '/auth';
-    }
+    // Always redirect to payment page for plan selection
+    window.location.href = `/payment?plan=${plan}`;
   };
 
   return (
