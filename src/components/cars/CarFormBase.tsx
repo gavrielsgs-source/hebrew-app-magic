@@ -88,18 +88,7 @@ export function CarFormBase({
     }
   };
 
-  const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("CarFormBase - Submit button clicked manually!");
-    console.log("CarFormBase - Button event:", e);
-    console.log("CarFormBase - Current form state:", {
-      isValid: form.formState.isValid,
-      errors: form.formState.errors,
-      isSubmitting: form.formState.isSubmitting || isSubmitting
-    });
-    
-    // Force form submission
-    form.handleSubmit(internalOnSubmit)();
-  };
+  const handleFormSubmit = form.handleSubmit(internalOnSubmit);
 
   return (
     <Form {...form}>
@@ -107,7 +96,8 @@ export function CarFormBase({
         onSubmit={(e) => {
           console.log("CarFormBase - Form onSubmit event triggered");
           e.preventDefault();
-          form.handleSubmit(internalOnSubmit)(e);
+          e.stopPropagation();
+          handleFormSubmit();
         }} 
         className="space-y-4 mt-4"
       >
@@ -120,7 +110,8 @@ export function CarFormBase({
                 <FormLabel>סוכנות</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
-                  defaultValue={field.value}
+                  defaultValue={field.value || ""}
+                  value={field.value || ""}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -334,10 +325,9 @@ export function CarFormBase({
             </Button>
           )}
           <Button 
-            type="button"
+            type="submit"
             disabled={isSubmitting || form.formState.isSubmitting}
             className="min-w-[120px]"
-            onClick={handleSubmitClick}
           >
             {(isSubmitting || form.formState.isSubmitting) ? "שומר..." : submitLabel}
           </Button>

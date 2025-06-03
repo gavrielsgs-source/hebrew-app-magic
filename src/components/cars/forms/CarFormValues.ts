@@ -1,16 +1,16 @@
 
+import { Car } from "@/types/car";
 import { CarFormValues } from "../car-form-schema";
 
-/**
- * Helper function to create default form values from a car object
- */
-export function createDefaultFormValues(car: any): CarFormValues {
-  return {
-    make: car.make,
-    model: car.model,
-    year: car.year.toString(),
-    kilometers: car.kilometers.toString(),
-    price: car.price.toString(),
+export function createDefaultFormValues(car: Car): CarFormValues {
+  console.log("createDefaultFormValues - Input car:", car);
+  
+  const defaultValues: CarFormValues = {
+    make: car.make || "",
+    model: car.model || "",
+    year: car.year?.toString() || "",
+    kilometers: car.kilometers?.toString() || "",
+    price: car.price?.toString() || "",
     description: car.description || "",
     interior_color: car.interior_color || "",
     exterior_color: car.exterior_color || "",
@@ -20,6 +20,9 @@ export function createDefaultFormValues(car: any): CarFormValues {
     registration_year: car.registration_year?.toString() || "",
     last_test_date: car.last_test_date || "",
     ownership_history: car.ownership_history || "",
-    agency_id: car.agency_id,
+    agency_id: car.agency_id || "", // Convert null to empty string
   };
+
+  console.log("createDefaultFormValues - Output defaultValues:", defaultValues);
+  return defaultValues;
 }

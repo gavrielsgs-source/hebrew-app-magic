@@ -27,7 +27,7 @@ export const carFormSchema = z.object({
     .or(z.literal("")), // Allow empty string
   last_test_date: z.string().optional().or(z.literal("")), // Allow empty string
   ownership_history: z.string().optional().or(z.literal("")), // Allow empty string
-  agency_id: z.string().optional().or(z.literal("")), // New field for agency_id
+  agency_id: z.string().optional().nullable().or(z.literal("")), // Allow null, empty string, or undefined
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;

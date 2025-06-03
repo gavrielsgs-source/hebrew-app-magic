@@ -16,7 +16,6 @@ interface EditCarFormProps {
 export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   const updateCar = useUpdateCar();
   const { agencies } = useAuthContext();
-  const [initialImages] = useState<File[]>([]);
   const defaultValues = createDefaultFormValues(car);
 
   console.log("EditCarForm - Rendering with car:", car.id);
@@ -53,7 +52,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         ownership_history: values.ownership_history || null,
         status: car.status,
         agency_id: values.agency_id || null,
-        images: images && images.length > 0 ? images : undefined // Only include images if they exist
+        images: images && images.length > 0 ? images : undefined
       };
 
       console.log("EditCarForm - About to call updateCar.mutateAsync with data:", updateData);
@@ -63,14 +62,12 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
       console.log("EditCarForm - Update successful, result:", result);
       toast.success("הרכב עודכן בהצלחה");
       
-      // Call onCancel to close the edit form
       console.log("EditCarForm - Calling onCancel to close form");
       onCancel();
       
     } catch (error) {
       console.error("EditCarForm - Error updating car:", error);
       
-      // More specific error messages
       if (error instanceof Error) {
         if (error.message.includes('auth')) {
           toast.error("שגיאת הזדהות - אנא התחבר מחדש");
@@ -83,7 +80,6 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         toast.error("אירעה שגיאה בעדכון הרכב");
       }
       
-      // Don't close the form on error so user can try again
       throw error;
     }
   };
