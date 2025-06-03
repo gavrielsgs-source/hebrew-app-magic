@@ -38,6 +38,7 @@ export function LeadCard({ lead }: LeadCardProps) {
             leadId={lead.id as string}
             leadName={lead.name as string}
             leadPhone={lead.phone as string}
+            leadSource={lead.source as string}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onWhatsApp={handleWhatsApp}

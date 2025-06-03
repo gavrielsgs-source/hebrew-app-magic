@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,12 +10,13 @@ import { useDeleteLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { QuickStatusChange } from "./QuickStatusChange";
+import { WhatsappLeadTemplateSelector } from "@/components/whatsapp/WhatsappLeadTemplateSelector";
 
 export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isLoading: boolean; error?: Error | null }) {
   console.log('LeadsMobileView rendered with:', { leads: leads?.length, isLoading, error });
   
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [activeDialog, setActiveDialog] = useState<"edit" | null>(null);
+  const [activeDialog, setActiveDialog] = useState<"edit" | "whatsapp" | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   
@@ -53,32 +53,9 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
     }
   };
 
-  const formatPhoneForWhatsApp = (phone: string) => {
-    if (!phone) return '';
-    
-    // Remove all non-numeric characters
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    
-    // If already starts with 972, return as is
-    if (cleanPhone.startsWith('972')) {
-      return cleanPhone;
-    }
-    
-    // If starts with 0, replace with 972
-    if (cleanPhone.startsWith('0')) {
-      return '972' + cleanPhone.substring(1);
-    }
-    
-    // If doesn't start with 972 or 0, add 972 prefix
-    return '972' + cleanPhone;
-  };
-
-  const handleWhatsAppMessage = (phone: string, name: string) => {
-    if (phone) {
-      const message = `שלום ${name}, איך אתה? אני מעוניין לדבר איתך על רכב`;
-      const formattedPhone = formatPhoneForWhatsApp(phone);
-      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
-    }
+  const handleWhatsAppMessage = (leadId: string) => {
+    setSelectedLeadId(leadId);
+    setActiveDialog("whatsapp");
   };
 
   // Loading state
@@ -226,7 +203,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                     size="lg"
                     className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl py-4 h-16 shadow-lg font-bold text-lg"
                     disabled={!lead.phone}
-                    onClick={() => handleWhatsAppMessage(lead.phone as string, lead.name as string)}
+                    onClick={() => handleWhatsAppMessage(lead.id as string)}
                   >
                     <MessageSquare className="h-6 w-6 ml-2" />
                     וואטסאפ
@@ -258,6 +235,23 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
             <DialogTitle>עריכת לקוח</DialogTitle>
           </DialogHeader>
           {selectedLead && <EditLeadForm lead={selectedLead} />}
+        </DialogContent>
+      </Dialog>
+
+      {/* WhatsApp Template Dialog */}
+      <Dialog open={activeDialog === "whatsapp"} onOpenChange={(open) => !open && setActiveDialog(null)}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>שליחת הודעה בוואטסאפ</DialogTitle>
+          </DialogHeader>
+          {selectedLead && selectedLead.phone && (
+            <WhatsappLeadTemplateSelector
+              leadName={selectedLead.name as string}
+              leadPhone={selectedLead.phone as string}
+              leadSource={selectedLead.source as string}
+              onClose={() => setActiveDialog(null)}
+            />
+          )}
         </DialogContent>
       </Dialog>
 

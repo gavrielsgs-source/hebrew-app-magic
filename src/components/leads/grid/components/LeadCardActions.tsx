@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MobileButton } from "@/components/mobile/MobileButton";
@@ -10,6 +9,7 @@ import { ScheduleMeetingForm } from "@/components/leads/ScheduleMeetingForm";
 import { EditLeadForm } from "@/components/leads/EditLeadForm";
 import { useDeleteLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
+import { WhatsappLeadTemplateSelector } from "@/components/whatsapp/WhatsappLeadTemplateSelector";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -25,6 +25,7 @@ interface LeadCardActionsProps {
   leadId: string;
   leadName: string;
   leadPhone?: string;
+  leadSource?: string;
   onEdit: () => void;
   onDelete: () => void;
   onWhatsApp: () => void;
@@ -35,6 +36,7 @@ export function LeadCardActions({
   leadId, 
   leadName, 
   leadPhone, 
+  leadSource,
   onEdit, 
   onDelete, 
   onWhatsApp, 
@@ -43,23 +45,17 @@ export function LeadCardActions({
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showWhatsappDialog, setShowWhatsappDialog] = useState(false);
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const deleteLead = useDeleteLead();
 
-  // Create WhatsApp link with the lead's phone number
   const handleWhatsAppClick = () => {
-    if (leadPhone) {
-      // Remove any non-digit characters and ensure proper format
-      const cleanPhone = leadPhone.replace(/\D/g, '');
-      const phoneNumber = cleanPhone.startsWith('972') ? cleanPhone : `972${cleanPhone.replace(/^0/, '')}`;
-      const message = encodeURIComponent(`שלום ${leadName}, אני פונה אליך מחברת המכוניות שלנו.`);
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-      window.open(whatsappUrl, '_blank');
-    } else {
-      // אם אין מספר טלפון, פתח WhatsApp Web
-      window.open('https://web.whatsapp.com', '_blank');
+    if (!leadPhone) {
+      toast.error("לא נמצא מספר טלפון עבור הליד");
+      return;
     }
+    setShowWhatsappDialog(true);
     onWhatsApp();
   };
 
@@ -147,6 +143,23 @@ export function LeadCardActions({
             </MobileButton>
           </div>
         </div>
+
+        {/* WhatsApp Template Dialog */}
+        <SwipeDialog open={showWhatsappDialog} onOpenChange={setShowWhatsappDialog}>
+          <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>שליחת הודעה בוואטסאפ</DialogTitle>
+            </DialogHeader>
+            {leadPhone && (
+              <WhatsappLeadTemplateSelector
+                leadName={leadName}
+                leadPhone={leadPhone}
+                leadSource={leadSource}
+                onClose={() => setShowWhatsappDialog(false)}
+              />
+            )}
+          </DialogContent>
+        </SwipeDialog>
 
         {/* Schedule Meeting Dialog */}
         <SwipeDialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
@@ -236,6 +249,23 @@ export function LeadCardActions({
           מחק
         </Button>
       </div>
+
+      {/* WhatsApp Template Dialog */}
+      <SwipeDialog open={showWhatsappDialog} onOpenChange={setShowWhatsappDialog}>
+        <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>שליחת הודעה בוואטסאפ</DialogTitle>
+          </DialogHeader>
+          {leadPhone && (
+            <WhatsappLeadTemplateSelector
+              leadName={leadName}
+              leadPhone={leadPhone}
+              leadSource={leadSource}
+              onClose={() => setShowWhatsappDialog(false)}
+            />
+          )}
+        </DialogContent>
+      </SwipeDialog>
 
       {/* Schedule Meeting Dialog */}
       <SwipeDialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
