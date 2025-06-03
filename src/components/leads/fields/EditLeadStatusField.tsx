@@ -24,6 +24,8 @@ export function EditLeadStatusField({ control }: Props) {
               <SelectItem value="in_treatment">בטיפול</SelectItem>
               <SelectItem value="waiting">ממתין</SelectItem>
               <SelectItem value="meeting_scheduled">נקבעה פגישה</SelectItem>
+              <SelectItem value="handled">טופל</SelectItem>
+              <SelectItem value="not_relevant">לא רלוונטי</SelectItem>
             </SelectContent>
           </Select>
           <FormMessage />

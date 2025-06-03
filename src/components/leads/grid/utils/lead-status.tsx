@@ -7,6 +7,8 @@ export const getStatusBadgeColor = (status: string | null) => {
     case "in_treatment": return "bg-yellow-500 hover:bg-yellow-600";
     case "waiting": return "bg-purple-500 hover:bg-purple-600";
     case "meeting_scheduled": return "bg-green-500 hover:bg-green-600";
+    case "handled": return "bg-green-600 hover:bg-green-700";
+    case "not_relevant": return "bg-red-500 hover:bg-red-600";
     default: return "bg-gray-500 hover:bg-gray-600";
   }
 };
@@ -17,6 +19,8 @@ export const getStatusText = (status: string | null) => {
     case "in_treatment": return "בטיפול";
     case "waiting": return "ממתין";
     case "meeting_scheduled": return "נקבעה פגישה";
+    case "handled": return "טופל";
+    case "not_relevant": return "לא רלוונטי";
     default: return "לא ידוע";
   }
 };

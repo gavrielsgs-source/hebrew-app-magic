@@ -1,5 +1,4 @@
 
-
 export const getStatusBadgeColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'new':
@@ -10,6 +9,10 @@ export const getStatusBadgeColor = (status: string) => {
       return 'bg-purple-500 text-white hover:bg-purple-600';
     case 'meeting_scheduled':
       return 'bg-green-500 text-white hover:bg-green-600';
+    case 'handled':
+      return 'bg-green-600 text-white hover:bg-green-700';
+    case 'not_relevant':
+      return 'bg-red-500 text-white hover:bg-red-600';
     default:
       return 'bg-blue-500 text-white hover:bg-blue-600';
   }
@@ -25,8 +28,11 @@ export const getStatusText = (status: string) => {
       return 'ממתין';
     case 'meeting_scheduled':
       return 'נקבעה פגישה';
+    case 'handled':
+      return 'טופל';
+    case 'not_relevant':
+      return 'לא רלוונטי';
     default:
       return 'חדש';
   }
 };
-
