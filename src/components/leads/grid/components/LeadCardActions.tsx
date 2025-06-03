@@ -52,7 +52,11 @@ export function LeadCardActions({
 
   const handleWhatsAppClick = () => {
     if (!leadPhone) {
-      toast.error("לא נמצא מספר טלפון עבור הליד");
+      toast({
+        title: "שגיאה",
+        description: "לא נמצא מספר טלפון עבור הליד",
+        variant: "destructive",
+      });
       return;
     }
     setShowWhatsappDialog(true);
