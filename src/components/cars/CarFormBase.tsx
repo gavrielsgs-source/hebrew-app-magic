@@ -53,7 +53,15 @@ export function CarFormBase({
     }
   };
 
-  const internalOnSubmit = async (values: CarFormValues) => onSubmit(values, images);
+  const internalOnSubmit = async (values: CarFormValues) => {
+    console.log("CarFormBase - Form submitted with values:", values);
+    console.log("CarFormBase - Images:", images);
+    try {
+      await onSubmit(values, images);
+    } catch (error) {
+      console.error("CarFormBase - Error in form submission:", error);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -273,7 +281,7 @@ export function CarFormBase({
             </Button>
           )}
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "טוען..." : submitLabel}
+            {isSubmitting ? "שומר..." : submitLabel}
           </Button>
         </div>
       </form>

@@ -12,18 +12,17 @@ export function useUpdateCar() {
 
   return useMutation({
     mutationFn: async ({ id, ...car }: NewCar & { id: string }) => {
-      console.log("Starting car update with data:", { id, ...car });
+      console.log("useUpdateCar - Starting car update with data:", { id, ...car });
       
       try {
         const { data: userData, error: userError } = await supabase.auth.getUser();
         
         if (userError || !userData.user) {
           console.error("User authentication error:", userError);
-          toast.error("לא ניתן לעדכן רכב", {
-            description: "המשתמש אינו מחובר"
-          });
           throw userError || new Error("User not authenticated");
         }
+
+        console.log("useUpdateCar - User authenticated:", userData.user.id);
 
         const updateData = {
           make: car.make,
@@ -45,7 +44,7 @@ export function useUpdateCar() {
           updated_at: new Date().toISOString()
         };
 
-        console.log("Updating car with data:", updateData);
+        console.log("useUpdateCar - Updating car with data:", updateData);
 
         const { data, error: carError } = await supabase
           .from("cars")
@@ -56,17 +55,14 @@ export function useUpdateCar() {
 
         if (carError) {
           console.error("Car update error:", carError);
-          toast.error("שגיאה בעדכון הרכב", {
-            description: carError.message
-          });
           throw carError;
         }
 
-        console.log("Car updated successfully:", data);
+        console.log("useUpdateCar - Car updated successfully:", data);
 
         // Handle image uploads if provided
         if (car.images && car.images.length > 0) {
-          console.log(`Uploading ${car.images.length} images for car ${id}`);
+          console.log(`useUpdateCar - Uploading ${car.images.length} images for car ${id}`);
           const uploadPromises = car.images.map(async (image, index) => {
             const fileExt = image.name.split('.').pop();
             const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
@@ -80,9 +76,6 @@ export function useUpdateCar() {
               
             if (uploadError) {
               console.error(`Image upload error for image ${index}:`, uploadError);
-              toast.error(`שגיאה בהעלאת תמונה ${index + 1}`, {
-                description: uploadError.message
-              });
               return { success: false, error: uploadError };
             }
             
@@ -94,13 +87,12 @@ export function useUpdateCar() {
           const failedUploads = uploadResults.filter(result => !result.success).length;
           
           if (failedUploads > 0) {
-            toast.error(`${failedUploads} תמונות לא הועלו בהצלחה`);
+            console.log(`${failedUploads} images failed to upload`);
           } else if (uploadResults.length > 0) {
-            toast.success(`הועלו ${uploadResults.length} תמונות בהצלחה`);
+            console.log(`${uploadResults.length} images uploaded successfully`);
           }
         }
 
-        toast.success("הרכב עודכן בהצלחה");
         return data;
       } catch (error) {
         console.error("Error updating car:", error);
@@ -108,14 +100,11 @@ export function useUpdateCar() {
       }
     },
     onSuccess: () => {
-      console.log("Car update mutation successful, invalidating queries");
+      console.log("useUpdateCar - Car update mutation successful, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ["cars"] });
     },
     onError: (error) => {
-      console.error("Car update mutation error:", error);
-      toast.error("שגיאה בעדכון הרכב", {
-        description: error instanceof Error ? error.message : "Unknown error"
-      });
+      console.error("useUpdateCar - Car update mutation error:", error);
     }
   });
 }

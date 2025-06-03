@@ -41,14 +41,15 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         last_test_date: values.last_test_date || null,
         ownership_history: values.ownership_history || null,
         status: car.status,
-        agency_id: values.agency_id,
+        agency_id: values.agency_id || null,
         images
       };
 
       console.log("EditCarForm - Calling updateCar.mutateAsync with:", updateData);
       await updateCar.mutateAsync(updateData);
       
-      console.log("EditCarForm - Update successful, calling onCancel");
+      console.log("EditCarForm - Update successful, showing success message");
+      toast.success("הרכב עודכן בהצלחה");
       onCancel();
     } catch (error) {
       console.error("EditCarForm - Error updating car:", error);
