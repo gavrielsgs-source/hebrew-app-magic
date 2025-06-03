@@ -1,41 +1,50 @@
 
-import { Card } from "@/components/ui/card";
-import { useState, useEffect } from "react";
-import { useRoles } from "@/hooks/use-roles";
-import { isAfter } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
 import { LeadCardHeader } from "./components/LeadCardHeader";
 import { LeadCardContent } from "./components/LeadCardContent";
 import { LeadCardActions } from "./components/LeadCardActions";
+import { useToast } from "@/hooks/use-toast";
 
-export function LeadCard({ lead }: { lead: any }) {
-  const { canManageLeads } = useRoles();
-  const [hasActiveReminders, setHasActiveReminders] = useState(false);
+interface LeadCardProps {
+  lead: any;
+}
 
-  useEffect(() => {
-    if (lead.follow_up_notes && Array.isArray(lead.follow_up_notes) && lead.follow_up_notes.length > 0) {
-      const activeReminders = lead.follow_up_notes.filter((reminder: any) => 
-        !reminder.completed && 
-        isAfter(new Date(reminder.date), new Date())
-      );
-      setHasActiveReminders(activeReminders.length > 0);
-    }
-  }, [lead.follow_up_notes]);
+export function LeadCard({ lead }: LeadCardProps) {
+  const { toast } = useToast();
 
-  const canEdit = canManageLeads();
+  const handleEdit = () => {
+    console.log('Edit action triggered for lead:', lead.id);
+  };
+
+  const handleDelete = () => {
+    console.log('Delete action triggered for lead:', lead.id);
+  };
+
+  const handleWhatsApp = () => {
+    console.log('WhatsApp action triggered for lead:', lead.id);
+  };
+
+  const handleSchedule = () => {
+    console.log('Schedule action triggered for lead:', lead.id);
+  };
 
   return (
-    <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white rounded-2xl group">
-      <LeadCardHeader lead={lead} hasActiveReminders={hasActiveReminders} />
-      <LeadCardContent lead={lead} />
-      <LeadCardActions 
-        leadId={lead.id}
-        leadName={lead.name}
-        leadPhone={lead.phone}
-        onEdit={() => {/* TODO: implement edit handler */}}
-        onDelete={() => {/* TODO: implement delete handler */}}
-        onWhatsApp={() => {/* TODO: implement WhatsApp handler */}}
-        onSchedule={() => {/* TODO: implement schedule handler */}}
-      />
+    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 rounded-3xl border-0 bg-white">
+      <LeadCardHeader lead={lead} />
+      <CardContent className="p-6">
+        <LeadCardContent lead={lead} />
+        <div className="mt-6">
+          <LeadCardActions
+            leadId={lead.id as string}
+            leadName={lead.name as string}
+            leadPhone={lead.phone as string}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onWhatsApp={handleWhatsApp}
+            onSchedule={handleSchedule}
+          />
+        </div>
+      </CardContent>
     </Card>
   );
 }

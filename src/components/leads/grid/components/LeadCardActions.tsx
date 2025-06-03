@@ -7,6 +7,19 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScheduleMeetingForm } from "@/components/leads/ScheduleMeetingForm";
+import { EditLeadForm } from "@/components/leads/EditLeadForm";
+import { useDeleteLead } from "@/hooks/use-leads";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 
 interface LeadCardActionsProps {
   leadId: string;
@@ -28,7 +41,11 @@ export function LeadCardActions({
   onSchedule 
 }: LeadCardActionsProps) {
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const deleteLead = useDeleteLead();
 
   // Create WhatsApp link with the lead's phone number
   const handleWhatsAppClick = () => {
@@ -49,6 +66,37 @@ export function LeadCardActions({
   const handleScheduleClick = () => {
     setShowScheduleDialog(true);
     onSchedule();
+  };
+
+  const handleEditClick = () => {
+    console.log('Edit button clicked for lead:', leadId);
+    setShowEditDialog(true);
+    onEdit();
+  };
+
+  const handleDeleteClick = () => {
+    console.log('Delete button clicked for lead:', leadId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      console.log('Deleting lead:', leadId);
+      await deleteLead.mutateAsync(leadId);
+      toast({
+        title: "ליד נמחק",
+        description: "הליד נמחק בהצלחה מהמערכת",
+      });
+      setShowDeleteDialog(false);
+      onDelete();
+    } catch (error) {
+      console.error('Error deleting lead:', error);
+      toast({
+        title: "שגיאה במחיקת ליד",
+        description: "לא ניתן למחוק את הליד. נסה שנית.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isMobile) {
@@ -82,7 +130,7 @@ export function LeadCardActions({
             <MobileButton
               variant="outline"
               size="sm"
-              onClick={onEdit}
+              onClick={handleEditClick}
               icon={<Edit className="h-5 w-5" />}
               className="flex-1 h-12 rounded-2xl"
             >
@@ -91,7 +139,7 @@ export function LeadCardActions({
             <MobileButton
               variant="outline"
               size="sm"
-              onClick={onDelete}
+              onClick={handleDeleteClick}
               icon={<Trash2 className="h-5 w-5" />}
               className="flex-1 h-12 rounded-2xl text-red-600 border-red-200 hover:bg-red-50"
             >
@@ -112,6 +160,40 @@ export function LeadCardActions({
             />
           </DialogContent>
         </SwipeDialog>
+
+        {/* Edit Lead Dialog */}
+        <SwipeDialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="w-[95%] sm:w-[500px] overflow-y-auto max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>עריכת ליד - {leadName}</DialogTitle>
+            </DialogHeader>
+            <EditLeadForm 
+              lead={{ id: leadId, name: leadName, phone: leadPhone }}
+              onSuccess={() => setShowEditDialog(false)}
+            />
+          </DialogContent>
+        </SwipeDialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent dir="rtl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>מחיקת ליד</AlertDialogTitle>
+              <AlertDialogDescription>
+                האם אתה בטוח שברצונך למחוק את הליד "{leadName}"? פעולה זו לא ניתנת לביטול.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>ביטול</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleConfirmDelete}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                מחק
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </>
     );
   }
@@ -139,7 +221,7 @@ export function LeadCardActions({
         <Button
           variant="outline"
           size="sm"
-          onClick={onEdit}
+          onClick={handleEditClick}
         >
           <Edit className="h-4 w-4 mr-1" />
           עריכה
@@ -147,7 +229,7 @@ export function LeadCardActions({
         <Button
           variant="outline"
           size="sm"
-          onClick={onDelete}
+          onClick={handleDeleteClick}
           className="text-red-600 border-red-200 hover:bg-red-50"
         >
           <Trash2 className="h-4 w-4 mr-1" />
@@ -167,6 +249,40 @@ export function LeadCardActions({
           />
         </DialogContent>
       </SwipeDialog>
+
+      {/* Edit Lead Dialog */}
+      <SwipeDialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="w-[95%] sm:w-[500px] overflow-y-auto max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>עריכת ליד - {leadName}</DialogTitle>
+          </DialogHeader>
+          <EditLeadForm 
+            lead={{ id: leadId, name: leadName, phone: leadPhone }}
+            onSuccess={() => setShowEditDialog(false)}
+          />
+        </DialogContent>
+      </SwipeDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>מחיקת ליד</AlertDialogTitle>
+            <AlertDialogDescription>
+              האם אתה בטוח שברצונך למחוק את הליד "{leadName}"? פעולה זו לא ניתנת לביטול.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              מחק
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
