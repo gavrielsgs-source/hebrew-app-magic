@@ -38,6 +38,13 @@ export function CarFormBase({
   const { agencies, isAdmin, hasRole } = useAuthContext();
   const canSelectAgency = isAdmin || hasRole('agency_manager');
 
+  console.log("CarFormBase - Rendering with props:", {
+    submitLabel,
+    isSubmitting,
+    hasOnCancel: !!onCancel,
+    defaultValues
+  });
+
   const form = useForm<CarFormValues>({
     resolver: zodResolver(carFormSchema),
     defaultValues,
@@ -54,13 +61,27 @@ export function CarFormBase({
   };
 
   const internalOnSubmit = async (values: CarFormValues) => {
-    console.log("CarFormBase - Form submitted with values:", values);
-    console.log("CarFormBase - Images:", images);
+    console.log("CarFormBase - Form submission started with values:", values);
+    console.log("CarFormBase - Images count:", images.length);
+    console.log("CarFormBase - isSubmitting:", isSubmitting);
+    
     try {
+      console.log("CarFormBase - Calling onSubmit prop");
       await onSubmit(values, images);
+      console.log("CarFormBase - onSubmit completed successfully");
     } catch (error) {
       console.error("CarFormBase - Error in form submission:", error);
+      throw error; // Re-throw to maintain error handling
     }
+  };
+
+  const handleButtonClick = () => {
+    console.log("CarFormBase - Submit button clicked!");
+    console.log("CarFormBase - Form state:", {
+      isValid: form.formState.isValid,
+      errors: form.formState.errors,
+      isSubmitting: form.formState.isSubmitting
+    });
   };
 
   return (
@@ -284,6 +305,7 @@ export function CarFormBase({
             type="submit" 
             disabled={isSubmitting}
             className="min-w-[120px]"
+            onClick={handleButtonClick}
           >
             {isSubmitting ? "שומר..." : submitLabel}
           </Button>

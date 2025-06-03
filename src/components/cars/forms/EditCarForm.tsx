@@ -19,9 +19,17 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   const [initialImages] = useState<File[]>([]);
   const defaultValues = createDefaultFormValues(car);
 
+  console.log("EditCarForm - Rendering with car:", car.id);
+  console.log("EditCarForm - updateCar.isPending:", updateCar.isPending);
+
   const onSubmit = async (values: CarFormValues, images: File[]) => {
-    console.log("EditCarForm - Starting submission with values:", values);
+    console.log("EditCarForm - onSubmit called with values:", values);
     console.log("EditCarForm - Images provided:", images?.length || 0);
+    
+    if (updateCar.isPending) {
+      console.log("EditCarForm - Already submitting, ignoring request");
+      return;
+    }
     
     try {
       const updateData = {
@@ -45,10 +53,10 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         images
       };
 
-      console.log("EditCarForm - Calling updateCar.mutateAsync with:", updateData);
+      console.log("EditCarForm - About to call updateCar.mutateAsync");
       await updateCar.mutateAsync(updateData);
       
-      console.log("EditCarForm - Update successful, showing success message");
+      console.log("EditCarForm - Update successful");
       toast.success("הרכב עודכן בהצלחה");
       onCancel();
     } catch (error) {
@@ -58,12 +66,14 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   };
 
   return (
-    <CarFormBase
-      defaultValues={defaultValues}
-      onSubmit={onSubmit}
-      isSubmitting={updateCar.isPending}
-      submitLabel="שמור שינויים"
-      onCancel={onCancel}
-    />
+    <div>
+      <CarFormBase
+        defaultValues={defaultValues}
+        onSubmit={onSubmit}
+        isSubmitting={updateCar.isPending}
+        submitLabel="שמור שינויים"
+        onCancel={onCancel}
+      />
+    </div>
   );
 }
