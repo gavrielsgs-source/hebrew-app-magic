@@ -1,12 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { whatsappLeadTemplates } from "./lead-templates";
 import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
+import { WhatsappLeadTemplate } from "./lead-templates";
 
 interface WhatsappLeadTemplateSelectorProps {
   leadName: string;
@@ -21,17 +21,49 @@ export function WhatsappLeadTemplateSelector({
   leadSource,
   onClose 
 }: WhatsappLeadTemplateSelectorProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState(whatsappLeadTemplates[0]);
+  const [templates, setTemplates] = useState<WhatsappLeadTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<WhatsappLeadTemplate | null>(null);
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("templates");
   const isMobile = useIsMobile();
+
+  // Load templates from localStorage
+  useEffect(() => {
+    const storedTemplates = localStorage.getItem("whatsappTemplates");
+    if (storedTemplates) {
+      try {
+        const parsedTemplates = JSON.parse(storedTemplates);
+        const leadTemplates = parsedTemplates.filter((t: any) => t.type === 'lead').map((stored: any) => ({
+          id: stored.id,
+          name: stored.name,
+          description: stored.description,
+          generateMessage: (leadName: string, leadSource?: string) => {
+            return stored.templateContent
+              .replace(/\$\{leadName\}/g, leadName || '')
+              .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+                       leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
+          }
+        }));
+        setTemplates(leadTemplates);
+        if (leadTemplates.length > 0) {
+          setSelectedTemplate(leadTemplates[0]);
+        }
+      } catch (error) {
+        console.error("Error loading templates:", error);
+      }
+    }
+  }, []);
 
   const generateMessage = () => {
     if (activeTab === "custom" && customMessage.trim()) {
       return customMessage;
     }
     
-    return selectedTemplate.generateMessage(leadName, leadSource);
+    if (selectedTemplate) {
+      return selectedTemplate.generateMessage(leadName, leadSource);
+    }
+
+    return "";
   };
 
   const formatPhoneForWhatsApp = (phone: string) => {
@@ -54,7 +86,7 @@ export function WhatsappLeadTemplateSelector({
     const message = generateMessage();
     
     if (!message.trim()) {
-      toast.error("אנא כתב הודעה לפני השליחה");
+      toast.error("אנא בחר תבנית או כתוב הודעה לפני השליחה");
       return;
     }
 
@@ -92,13 +124,13 @@ export function WhatsappLeadTemplateSelector({
         
         <TabsContent value="templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           <div className="grid gap-3">
-            {whatsappLeadTemplates.filter(t => t.id !== 'custom').map((template) => (
+            {templates.map((template) => (
               <div
                 key={template.id}
                 className={`border rounded-lg cursor-pointer transition-colors ${
                   isMobile ? 'p-3' : 'p-4'
                 } ${
-                  selectedTemplate.id === template.id
+                  selectedTemplate?.id === template.id
                     ? "border-blue-500 bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}

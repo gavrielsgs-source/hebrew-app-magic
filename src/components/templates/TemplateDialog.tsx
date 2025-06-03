@@ -7,22 +7,22 @@ import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, Car, User } from "lucide-react";
+import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 
 interface TemplateDialogProps {
   isOpen: boolean;
   isNew: boolean;
-  newTemplate: WhatsappTemplate;
+  newTemplate: UnifiedTemplate;
   setIsOpen: (open: boolean) => void;
   onSave: () => void;
-  onTemplateChange: (template: WhatsappTemplate) => void;
+  onTemplateChange: (template: UnifiedTemplate) => void;
   templateTags: string[];
 }
 
-// Mock car data for preview
+// Mock data for preview
 const mockCar = {
   make: "טויוטה",
   model: "קורולה", 
@@ -34,6 +34,9 @@ const mockCar = {
   transmission: "אוטומטית",
   fuel_type: "בנזין"
 };
+
+const mockLeadName = "יואב כהן";
+const mockLeadSource = "פייסבוק";
 
 export function TemplateDialog({
   isOpen,
@@ -58,32 +61,49 @@ export function TemplateDialog({
         setTemplateContent(match[1]);
       } else {
         // Fallback: generate with mock data
-        setTemplateContent(newTemplate.generateMessage(mockCar));
+        if (newTemplate.type === 'car') {
+          setTemplateContent(newTemplate.generateMessage(mockCar));
+        } else {
+          setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
+        }
       }
     }
   }, [newTemplate]);
 
   const handleTemplateContentChange = (content: string) => {
     setTemplateContent(content);
-    // Create a new generateMessage function
-    onTemplateChange({
-      ...newTemplate,
-      generateMessage: (car: any) => {
-        // Simple template variable replacement
-        return content
-          .replace(/\$\{car\.make\}/g, car.make || '')
-          .replace(/\$\{car\.model\}/g, car.model || '')
-          .replace(/\$\{car\.year\}/g, car.year || '')
-          .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 
-                   car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה')
-          .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g,
-                   car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין')
-          .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, car.exterior_color || 'לא צוין')
-          .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, car.engine_size || 'לא צוין')
-          .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, car.transmission || 'לא צוין')
-          .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, car.fuel_type || 'לא צוין');
-      }
-    });
+    // Create a new generateMessage function based on template type
+    if (newTemplate.type === 'car') {
+      onTemplateChange({
+        ...newTemplate,
+        generateMessage: (car: any) => {
+          // Simple template variable replacement for cars
+          return content
+            .replace(/\$\{car\.make\}/g, car.make || '')
+            .replace(/\$\{car\.model\}/g, car.model || '')
+            .replace(/\$\{car\.year\}/g, car.year || '')
+            .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 
+                     car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה')
+            .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g,
+                     car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין')
+            .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, car.exterior_color || 'לא צוין')
+            .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, car.engine_size || 'לא צוין')
+            .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, car.transmission || 'לא צוין')
+            .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, car.fuel_type || 'לא צוין');
+        }
+      });
+    } else {
+      onTemplateChange({
+        ...newTemplate,
+        generateMessage: (leadName: string, leadSource?: string) => {
+          // Simple template variable replacement for leads
+          return content
+            .replace(/\$\{leadName\}/g, leadName || '')
+            .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+                     leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
+        }
+      });
+    }
   };
 
   const handleSave = () => {
@@ -108,10 +128,27 @@ export function TemplateDialog({
         <DialogHeader className="text-right">
           <DialogTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} flex items-center justify-end gap-2`}>
             {isNew ? 'תבנית חדשה' : 'עריכת תבנית'}
+            <Badge variant={newTemplate.type === 'car' ? 'default' : 'secondary'} className="text-xs">
+              {newTemplate.type === 'car' ? (
+                <>
+                  <Car className="h-3 w-3 mr-1" />
+                  רכב
+                </>
+              ) : (
+                <>
+                  <User className="h-3 w-3 mr-1" />
+                  לקוח
+                </>
+              )}
+            </Badge>
             <Sparkles className="h-6 w-6 text-carslead-purple" />
           </DialogTitle>
           <DialogDescription className={`text-right ${isMobile ? 'text-sm' : 'text-base'}`}>
-            צור תבנית מותאמת אישית לשליחת הודעות. השתמש במשתנים כמו {"{"}car.make{"}"}, {"{"}car.model{"}"} וכו' כדי לכלול פרטים דינמיים מהרכב.
+            {newTemplate.type === 'car' ? (
+              <>צור תבנית מותאמת אישית לשליחת הודעות רכבים. השתמש במשתנים כמו {"{"}car.make{"}"}, {"{"}car.model{"}"} וכו' כדי לכלול פרטים דינמיים מהרכב.</>
+            ) : (
+              <>צור תבנית מותאמת אישית לשליחת הודעות ללקוחות. השתמש במשתנים כמו {"{"}leadName{"}"}, {"{"}leadSource{"}"} וכו' כדי לכלול פרטים דינמיים מהלקוח.</>
+            )}
           </DialogDescription>
         </DialogHeader>
         
@@ -155,7 +192,10 @@ export function TemplateDialog({
               className={`text-right font-mono text-sm leading-relaxed ${
                 isMobile ? 'min-h-[150px]' : 'min-h-[200px]'
               }`}
-              placeholder="שלום,&#10;&#10;רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:&#10;&#10;*${car.make} ${car.model} ${car.year}*&#10;מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}&#10;..."
+              placeholder={newTemplate.type === 'car' ? 
+                "שלום,&#10;&#10;רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:&#10;&#10;*${car.make} ${car.model} ${car.year}*&#10;מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}&#10;..." :
+                "שלום ${leadName},&#10;&#10;[ערוך כאן את ההודעה שלך]&#10;&#10;בברכה,&#10;צוות המכירות"
+              }
               dir="rtl"
             />
           </div>
@@ -174,9 +214,15 @@ export function TemplateDialog({
                     isMobile ? 'text-xs px-2 py-1' : ''
                   }`}
                   onClick={() => {
-                    const carVar = tag.replace(/{{|}}/g, '').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-                    const templateVar = `\${car.${carVar}}`;
-                    handleTemplateContentChange(templateContent + templateVar);
+                    if (newTemplate.type === 'car') {
+                      const carVar = tag.replace(/{{|}}/g, '').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+                      const templateVar = `\${car.${carVar}}`;
+                      handleTemplateContentChange(templateContent + templateVar);
+                    } else {
+                      const leadVar = tag.replace(/{{|}}/g, '');
+                      const templateVar = `\${${leadVar}}`;
+                      handleTemplateContentChange(templateContent + templateVar);
+                    }
                   }}
                 >
                   {tag}

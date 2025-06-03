@@ -3,17 +3,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
-import { FileText, Edit, Trash2, Eye } from "lucide-react";
+import { FileText, Edit, Trash2, Eye, Car, User } from "lucide-react";
+import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
+import { Badge } from "@/components/ui/badge";
 
 interface TemplateCardProps {
-  template: WhatsappTemplate;
-  onEdit: (template: WhatsappTemplate) => void;
+  template: UnifiedTemplate;
+  onEdit: (template: UnifiedTemplate) => void;
   onDelete: (id: string) => void;
 }
 
-// Mock car data for preview
+// Mock data for preview
 const mockCar = {
   make: "טויוטה",
   model: "קורולה",
@@ -26,16 +27,34 @@ const mockCar = {
   fuel_type: "בנזין"
 };
 
+const mockLeadName = "יואב כהן";
+const mockLeadSource = "פייסבוק";
+
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
-  const previewMessage = template.generateMessage(mockCar);
+  const previewMessage = template.type === 'car' 
+    ? template.generateMessage(mockCar)
+    : template.generateMessage(mockLeadName, mockLeadSource);
   
   return (
     <Card className="hover:shadow-lg transition-all duration-200 border-border">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between w-full">
           {/* כותרת ותיאור - צד ימין */}
-          <div className="text-right order-2">
+          <div className="text-right order-2 flex-1">
             <CardTitle className="text-lg font-semibold flex items-center gap-2 justify-end">
+              <Badge variant={template.type === 'car' ? 'default' : 'secondary'} className="text-xs">
+                {template.type === 'car' ? (
+                  <>
+                    <Car className="h-3 w-3 mr-1" />
+                    רכב
+                  </>
+                ) : (
+                  <>
+                    <User className="h-3 w-3 mr-1" />
+                    לקוח
+                  </>
+                )}
+              </Badge>
               <FileText className="h-4 w-4 text-muted-foreground" />
               {template.name}
             </CardTitle>

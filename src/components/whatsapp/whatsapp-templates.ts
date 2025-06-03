@@ -3,89 +3,90 @@ export interface WhatsappTemplate {
   id: string;
   name: string;
   description: string;
+  type: 'car';
   generateMessage: (car: any) => string;
 }
 
 export const whatsappTemplates: WhatsappTemplate[] = [
   {
-    id: "basic",
-    name: "תבנית בסיסית",
-    description: "הודעה פשוטה עם פרטי הרכב הבסיסיים",
-    generateMessage: (car: any) => `שלום,
+    id: "car_details",
+    name: "פרטי רכב בסיסיים",
+    description: "הודעה פשוטה עם פרטי הרכב העיקריים",
+    type: 'car' as const,
+    generateMessage: (car) => `שלום! 👋
 
-רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:
+רציתי לשתף אותך בפרטים על הרכב הזה:
 
-*${car.make} ${car.model} ${car.year}*
-מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
-קילומטראז': ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין'}
-צבע: ${car.exterior_color || 'לא צוין'}
-מנוע: ${car.engine_size || 'לא צוין'}
-תיבת הילוכים: ${car.transmission || 'לא צוין'}
-סוג דלק: ${car.fuel_type || 'לא צוין'}
+🚗 *${car.make} ${car.model} ${car.year}*
+💰 מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
+📏 קילומטר: ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין'}
 
-נשמח לתאם לך ביקור ונסיעת מבחן!
+מעוניין לשמוע עוד פרטים או לתאם צפייה?
 
 בברכה,
 צוות המכירות`
   },
   {
-    id: "detailed",
-    name: "תבנית מפורטת",
-    description: "הודעה מפורטת עם כל הפרטים והמלצות",
-    generateMessage: (car: any) => `שלום רב,
+    id: "detailed_specs",
+    name: "מפרט מפורט",
+    description: "הודעה מפורטת עם כל המפרטים הטכניים",
+    type: 'car' as const,
+    generateMessage: (car) => `🚗 *${car.make} ${car.model} ${car.year}*
 
-בהמשך לפנייתך, להלן פרטי הרכב המלאים:
+📋 *פרטים טכניים:*
+💰 מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
+📏 קילומטר: ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין'}
+🎨 צבע: ${car.exterior_color || 'לא צוין'}
+⚙️ נפח מנוע: ${car.engine_size || 'לא צוין'}
+🔧 תיבת הילוכים: ${car.transmission || 'לא צוין'}
+⛽ סוג דלק: ${car.fuel_type || 'לא צוין'}
 
-🚗 *${car.make} ${car.model} שנת ${car.year}*
+${car.description ? `📝 *תיאור נוסף:*\n${car.description}\n\n` : ''}האם תרצה לתאם נסיעת מבחן או יש שאלות נוספות?
 
-💰 *מחיר:* ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
-🛣️ *ק"מ:* ${car.mileage ? `${car.mileage.toLocaleString()}` : 'לא צוין'}
-🎨 *צבע:* ${car.exterior_color || 'לא צוין'}
-🔧 *מנוע:* ${car.engine_size || 'לא צוין'}
-⚙️ *תיבת הילוכים:* ${car.transmission || 'לא צוין'}
-⛽ *סוג דלק:* ${car.fuel_type || 'לא צוין'}
+צוות המכירות 📞`
+  },
+  {
+    id: "urgent_sale",
+    name: "מכירה דחופה",
+    description: "הודעה עם דחיפות למכירה מהירה",
+    type: 'car' as const,
+    generateMessage: (car) => `🔥 *הזדמנות לזמן מוגבל!* 🔥
 
-✅ הרכב נמצא במצב מצוין ועבר את כל הבדיקות הנדרשות
-✅ טסט לשנה
-✅ טיפול אחרון בוצע לפני 5,000 ק"מ
-✅ ספר טיפולים מלא
-✅ ללא תאונות בעבר
+🚗 ${car.make} ${car.model} ${car.year}
+💰 מחיר מיוחד: ${car.price ? `₪${car.price.toLocaleString()}` : 'התקשר לפרטים'}
+📏 ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'מצב מעולה'}
 
-אשמח לתאם לך ביקור לראות את הרכב ולצאת לנסיעת מבחן.
-מה השעה שנוחה לך?
+⚡ *למה לחטוף עכשיו:*
+✅ מחיר מוזל לתקופה קצרה
+✅ רכב באיכות גבוהה
+✅ אחריות מלאה
+✅ אפשרות למימון נוח
+
+📞 התקשר עכשיו - הרכב לא יחכה!
 
 בברכה,
 צוות המכירות`
   },
   {
-    id: "promotion",
-    name: "מבצע מיוחד",
-    description: "הודעה עם הדגשת מבצע והנחה",
-    generateMessage: (car: any) => `🔥 *הצעה מיוחדת* 🔥
+    id: "test_drive_invitation",
+    name: "הזמנה לנסיעת מבחן",
+    description: "הודעה המזמינה לנסיעת מבחן",
+    type: 'car' as const,
+    generateMessage: (car) => `שלום! 🚗
 
-שלום!
+מעוניין לחוות נסיעה ב${car.make} ${car.model} ${car.year}?
 
-רצינו לעדכן אותך על מבצע מיוחד על הרכב שהתעניינת בו:
+🔑 *נסיעת מבחן חינם:*
+📅 נוכל לתאם לך מועד נוח
+⏰ הנסיעה אורכת כ-30 דקות
+📍 ניתן לצאת ישירות מהמכירות שלנו
 
-*${car.make} ${car.model} ${car.year}*
-מחיר רגיל: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
-*מחיר מבצע: לפי פנייה* (הנחה מיוחדת!)
+💰 מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
+📏 קילומטר: ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'מצב מעולה'}
 
-הרכב כולל:
-✓ ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'קילומטראז נמוך'} בלבד
-✓ צבע ${car.exterior_color || 'מעולה'}
-✓ מנוע ${car.engine_size || 'חזק ויעיל'}
-✓ ${car.transmission || 'תיבת הילוכים מעולה'}
-✓ ${car.fuel_type || 'חסכוני בדלק'}
-✓ אחריות יצרן בתוקף
-
-המבצע בתוקף לזמן מוגבל!
-נשמח לתאם לך ביקור ונסיעת מבחן.
+מתי נוח לך להגיע? 📞
 
 בברכה,
 צוות המכירות`
   }
 ];
-
-// מייצא את התבניות הדיפולטיביות
-export const defaultWhatsappTemplates = whatsappTemplates;

@@ -1,3 +1,4 @@
+
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
@@ -7,13 +8,20 @@ import {
   WhatsappTemplate,
   whatsappTemplates as defaultWhatsappTemplates,
 } from "@/components/whatsapp/whatsapp-templates";
+import {
+  WhatsappLeadTemplate,
+  whatsappLeadTemplates as defaultWhatsappLeadTemplates,
+  UnifiedTemplate
+} from "@/components/whatsapp/lead-templates";
 import { useEffect, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Template storage interface for localStorage
 interface StoredTemplate {
   id: string;
   name: string;
   description: string;
+  type: 'car' | 'lead';
   templateContent: string; // Store the template content instead of function
 }
 
@@ -22,8 +30,8 @@ const templateFormSchema = {
   description: (value: string) => value.length >= 10 ? null : "התיאור חייב להכיל לפחות 10 תווים.",
 };
 
-// Helper function to create generateMessage function from template content
-const createGenerateMessageFunction = (templateContent: string) => {
+// Helper function to create generateMessage function from template content for cars
+const createCarGenerateMessageFunction = (templateContent: string) => {
   return (car: any) => {
     return templateContent
       .replace(/\$\{car\.make\}/g, car.make || '')
@@ -40,8 +48,18 @@ const createGenerateMessageFunction = (templateContent: string) => {
   };
 };
 
+// Helper function to create generateMessage function from template content for leads
+const createLeadGenerateMessageFunction = (templateContent: string) => {
+  return (leadName: string, leadSource?: string) => {
+    return templateContent
+      .replace(/\$\{leadName\}/g, leadName || '')
+      .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+               leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
+  };
+};
+
 // Helper function to extract template content from generateMessage function
-const extractTemplateContent = (template: WhatsappTemplate): string => {
+const extractTemplateContent = (template: UnifiedTemplate): string => {
   // Try to extract the template from the function if it's a simple return
   const funcString = template.generateMessage.toString();
   const match = funcString.match(/return\s*`([^`]*)`/);
@@ -50,58 +68,82 @@ const extractTemplateContent = (template: WhatsappTemplate): string => {
   }
   
   // Fallback: generate with mock data and try to reverse-engineer
-  const mockCar = {
-    make: "טויוטה",
-    model: "קורולה",
-    year: 2022,
-    price: 120000,
-    mileage: 25000,
-    exterior_color: "כסוף",
-    engine_size: "1.6L",
-    transmission: "אוטומטית",
-    fuel_type: "בנזין"
-  };
-  
-  return template.generateMessage(mockCar);
+  if (template.type === 'car') {
+    const mockCar = {
+      make: "טויוטה",
+      model: "קורולה",
+      year: 2022,
+      price: 120000,
+      mileage: 25000,
+      exterior_color: "כסוף",
+      engine_size: "1.6L",
+      transmission: "אוטומטית",
+      fuel_type: "בנזין"
+    };
+    return template.generateMessage(mockCar);
+  } else {
+    return template.generateMessage("שם הלקוח", "פייסבוק");
+  }
 };
 
 // Convert stored template to full template with function
-const storedToFullTemplate = (stored: StoredTemplate): WhatsappTemplate => ({
-  id: stored.id,
-  name: stored.name,
-  description: stored.description,
-  generateMessage: createGenerateMessageFunction(stored.templateContent)
-});
+const storedToFullTemplate = (stored: StoredTemplate): UnifiedTemplate => {
+  if (stored.type === 'car') {
+    return {
+      id: stored.id,
+      name: stored.name,
+      description: stored.description,
+      type: 'car',
+      generateMessage: createCarGenerateMessageFunction(stored.templateContent)
+    } as WhatsappTemplate;
+  } else {
+    return {
+      id: stored.id,
+      name: stored.name,
+      description: stored.description,
+      type: 'lead',
+      generateMessage: createLeadGenerateMessageFunction(stored.templateContent)
+    } as WhatsappLeadTemplate;
+  }
+};
 
 // Convert full template to stored template
-const fullToStoredTemplate = (template: WhatsappTemplate): StoredTemplate => ({
+const fullToStoredTemplate = (template: UnifiedTemplate): StoredTemplate => ({
   id: template.id,
   name: template.name,
   description: template.description,
+  type: template.type,
   templateContent: extractTemplateContent(template)
 });
 
 export default function TemplatesPage() {
-  const [templates, setTemplates] = useState<WhatsappTemplate[]>([]);
+  const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNewTemplate, setIsNewTemplate] = useState(true);
-  const [selectedTemplate, setSelectedTemplate] = useState<WhatsappTemplate>(
+  const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate>(
     defaultWhatsappTemplates[0]
   );
+  const [activeTab, setActiveTab] = useState<'car' | 'lead'>('car');
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  const templateTags = [
+  const carTemplateTags = [
     "{{make}}",
     "{{model}}",
     "{{year}}",
     "{{price}}",
-    "{{name}}",
     "{{kilometers}}",
     "{{color}}",
     "{{engine}}",
     "{{transmission}}",
     "{{fuel}}",
+  ];
+
+  const leadTemplateTags = [
+    "{{leadName}}",
+    "{{leadSource}}",
+    "{{companyName}}",
+    "{{agentName}}",
   ];
 
   useEffect(() => {
@@ -115,11 +157,11 @@ export default function TemplatesPage() {
       } catch (error) {
         console.error("Error loading templates from localStorage:", error);
         // If parsing fails, use default templates
-        setTemplates(defaultWhatsappTemplates);
+        setTemplates([...defaultWhatsappTemplates, ...defaultWhatsappLeadTemplates]);
       }
     } else {
       // If no templates in local storage, use the default templates
-      setTemplates(defaultWhatsappTemplates);
+      setTemplates([...defaultWhatsappTemplates, ...defaultWhatsappLeadTemplates]);
     }
   }, []);
 
@@ -128,29 +170,47 @@ export default function TemplatesPage() {
     try {
       const storedTemplates = templates.map(fullToStoredTemplate);
       localStorage.setItem("whatsappTemplates", JSON.stringify(storedTemplates));
+      
+      // Also update the lead templates in their separate storage for backwards compatibility
+      const leadTemplates = templates.filter(t => t.type === 'lead') as WhatsappLeadTemplate[];
+      localStorage.setItem("whatsappLeadTemplates", JSON.stringify(leadTemplates.map(fullToStoredTemplate)));
     } catch (error) {
       console.error("Error saving templates to localStorage:", error);
     }
   }, [templates]);
 
+  const carTemplates = templates.filter(t => t.type === 'car') as WhatsappTemplate[];
+  const leadTemplates = templates.filter(t => t.type === 'lead') as WhatsappLeadTemplate[];
+
   const onNewTemplate = () => {
     setIsNewTemplate(true);
-    setSelectedTemplate({
-      id: Date.now().toString(),
-      name: "",
-      description: "",
-      generateMessage: () => "",
-    });
+    if (activeTab === 'car') {
+      setSelectedTemplate({
+        id: Date.now().toString(),
+        name: "",
+        description: "",
+        type: 'car',
+        generateMessage: () => "",
+      } as WhatsappTemplate);
+    } else {
+      setSelectedTemplate({
+        id: Date.now().toString(),
+        name: "",
+        description: "",
+        type: 'lead',
+        generateMessage: () => "",
+      } as WhatsappLeadTemplate);
+    }
     setIsDialogOpen(true);
   };
 
-  const onEditTemplate = (template: WhatsappTemplate) => {
+  const onEditTemplate = (template: UnifiedTemplate) => {
     setIsNewTemplate(false);
     setSelectedTemplate(template);
     setIsDialogOpen(true);
   };
 
-  const onTemplateChange = (template: WhatsappTemplate) => {
+  const onTemplateChange = (template: UnifiedTemplate) => {
     setSelectedTemplate(template);
   };
 
@@ -194,12 +254,14 @@ export default function TemplatesPage() {
   };
 
   const onResetDefaults = () => {
-    setTemplates([...defaultWhatsappTemplates]);
+    setTemplates([...defaultWhatsappTemplates, ...defaultWhatsappLeadTemplates]);
     toast({
       title: "תבניות ברירת מחדל שוחזרו",
       description: "תבניות ברירת המחדל שוחזרו בהצלחה.",
     });
   };
+
+  const currentTemplates = activeTab === 'car' ? carTemplates : leadTemplates;
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 ${isMobile ? 'pb-24' : ''}`} dir="rtl">
@@ -209,7 +271,14 @@ export default function TemplatesPage() {
           onResetDefaults={onResetDefaults}
         />
 
-        {templates.length === 0 ? (
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'car' | 'lead')} className="w-full mb-8" dir="rtl">
+          <TabsList className={`w-full max-w-md mx-auto ${isMobile ? 'h-auto grid-cols-2 text-xs' : 'grid grid-cols-2'}`}>
+            <TabsTrigger value="car" className={isMobile ? "text-xs" : ""}>תבניות רכבים</TabsTrigger>
+            <TabsTrigger value="lead" className={isMobile ? "text-xs" : ""}>תבניות לקוחות</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {currentTemplates.length === 0 ? (
           <div className="text-center py-12">
             <div className={`bg-white rounded-lg shadow-sm border p-8 max-w-md mx-auto ${isMobile ? 'p-6' : ''}`}>
               <div className="text-muted-foreground mb-4">
@@ -217,9 +286,11 @@ export default function TemplatesPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className={`font-medium text-gray-900 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>אין תבניות</h3>
+              <h3 className={`font-medium text-gray-900 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
+                אין תבניות {activeTab === 'car' ? 'רכבים' : 'לקוחות'}
+              </h3>
               <p className={`text-muted-foreground mb-4 ${isMobile ? 'text-sm' : ''}`}>
-                התחל בצרת התבנית הראשונה שלך לשליחת הודעות ללקוחות
+                התחל ביצירת התבנית הראשונה שלך לשליחת הודעות {activeTab === 'car' ? 'עבור רכבים' : 'ללקוחות'}
               </p>
             </div>
           </div>
@@ -229,7 +300,7 @@ export default function TemplatesPage() {
               ? 'grid-cols-1' 
               : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
           }`}>
-            {templates.map((template) => (
+            {currentTemplates.map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}
@@ -247,7 +318,7 @@ export default function TemplatesPage() {
           setIsOpen={setIsDialogOpen}
           onSave={onSaveTemplate}
           onTemplateChange={onTemplateChange}
-          templateTags={templateTags}
+          templateTags={selectedTemplate.type === 'car' ? carTemplateTags : leadTemplateTags}
         />
       </div>
     </div>
