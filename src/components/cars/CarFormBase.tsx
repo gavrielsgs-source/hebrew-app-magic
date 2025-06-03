@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +29,7 @@ interface CarFormBaseProps {
 export function CarFormBase({
   defaultValues,
   onSubmit,
-  isSubmitting,
+  isSubmitting = false,
   submitLabel,
   onCancel,
 }: CarFormBaseProps) {
@@ -42,7 +41,8 @@ export function CarFormBase({
     submitLabel,
     isSubmitting,
     hasOnCancel: !!onCancel,
-    defaultValues
+    defaultValues,
+    canSelectAgency
   });
 
   const form = useForm<CarFormValues>({
@@ -50,7 +50,15 @@ export function CarFormBase({
     defaultValues,
   });
 
+  console.log("CarFormBase - Form state:", {
+    isValid: form.formState.isValid,
+    isDirty: form.formState.isDirty,
+    isSubmitting: form.formState.isSubmitting,
+    errors: form.formState.errors
+  });
+
   const handleImageChange = (files: FileList | null | File[]) => {
+    console.log("CarFormBase - Image change:", files);
     if (Array.isArray(files)) {
       setImages(files);
     } else if (files) {
@@ -61,9 +69,8 @@ export function CarFormBase({
   };
 
   const internalOnSubmit = async (values: CarFormValues) => {
-    console.log("CarFormBase - Form submission started with values:", values);
-    console.log("CarFormBase - Images count:", images.length);
-    console.log("CarFormBase - isSubmitting:", isSubmitting);
+    console.log("CarFormBase - Internal submit called with values:", values);
+    console.log("CarFormBase - Current state:", { isSubmitting, images: images.length });
     
     // Prevent multiple submissions
     if (isSubmitting) {
@@ -72,30 +79,38 @@ export function CarFormBase({
     }
     
     try {
-      console.log("CarFormBase - Calling onSubmit prop");
+      console.log("CarFormBase - About to call parent onSubmit");
       await onSubmit(values, images);
-      console.log("CarFormBase - onSubmit completed successfully");
+      console.log("CarFormBase - Parent onSubmit completed successfully");
     } catch (error) {
       console.error("CarFormBase - Error in form submission:", error);
       // Don't re-throw, let the parent handle the error
     }
   };
 
-  const handleButtonClick = (e: React.MouseEvent) => {
-    console.log("CarFormBase - Submit button clicked!");
-    console.log("CarFormBase - Form state:", {
+  const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    console.log("CarFormBase - Submit button clicked manually!");
+    console.log("CarFormBase - Button event:", e);
+    console.log("CarFormBase - Current form state:", {
       isValid: form.formState.isValid,
       errors: form.formState.errors,
-      isSubmitting: form.formState.isSubmitting,
-      isDirty: form.formState.isDirty
+      isSubmitting: form.formState.isSubmitting || isSubmitting
     });
     
-    // Let the form handle the submission, don't prevent default
+    // Force form submission
+    form.handleSubmit(internalOnSubmit)();
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(internalOnSubmit)} className="space-y-4 mt-4">
+      <form 
+        onSubmit={(e) => {
+          console.log("CarFormBase - Form onSubmit event triggered");
+          e.preventDefault();
+          form.handleSubmit(internalOnSubmit)(e);
+        }} 
+        className="space-y-4 mt-4"
+      >
         {canSelectAgency && agencies && agencies.length > 0 && (
           <FormField
             control={form.control}
@@ -306,17 +321,25 @@ export function CarFormBase({
 
         <div className="flex justify-end gap-2 pt-4">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={(e) => {
+                console.log("CarFormBase - Cancel button clicked");
+                e.preventDefault();
+                onCancel();
+              }}
+            >
               ביטול
             </Button>
           )}
           <Button 
-            type="submit" 
-            disabled={isSubmitting}
+            type="button"
+            disabled={isSubmitting || form.formState.isSubmitting}
             className="min-w-[120px]"
-            onClick={handleButtonClick}
+            onClick={handleSubmitClick}
           >
-            {isSubmitting ? "שומר..." : submitLabel}
+            {(isSubmitting || form.formState.isSubmitting) ? "שומר..." : submitLabel}
           </Button>
         </div>
       </form>

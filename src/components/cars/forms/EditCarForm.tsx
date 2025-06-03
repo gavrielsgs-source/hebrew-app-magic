@@ -25,6 +25,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   const onSubmit = async (values: CarFormValues, images: File[]) => {
     console.log("EditCarForm - onSubmit called with values:", values);
     console.log("EditCarForm - Images provided:", images?.length || 0);
+    console.log("EditCarForm - Current isPending state:", updateCar.isPending);
     
     if (updateCar.isPending) {
       console.log("EditCarForm - Already submitting, ignoring request");
@@ -32,6 +33,8 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
     }
     
     try {
+      console.log("EditCarForm - Preparing update data...");
+      
       const updateData = {
         id: car.id,
         make: values.make,
@@ -53,12 +56,17 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         images: images && images.length > 0 ? images : undefined // Only include images if they exist
       };
 
-      console.log("EditCarForm - About to call updateCar.mutateAsync");
-      await updateCar.mutateAsync(updateData);
+      console.log("EditCarForm - About to call updateCar.mutateAsync with data:", updateData);
       
-      console.log("EditCarForm - Update successful");
+      const result = await updateCar.mutateAsync(updateData);
+      
+      console.log("EditCarForm - Update successful, result:", result);
       toast.success("הרכב עודכן בהצלחה");
+      
+      // Call onCancel to close the edit form
+      console.log("EditCarForm - Calling onCancel to close form");
       onCancel();
+      
     } catch (error) {
       console.error("EditCarForm - Error updating car:", error);
       
@@ -74,8 +82,17 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
       } else {
         toast.error("אירעה שגיאה בעדכון הרכב");
       }
+      
+      // Don't close the form on error so user can try again
+      throw error;
     }
   };
+
+  console.log("EditCarForm - About to render CarFormBase with props:", {
+    submitLabel: "שמור שינויים",
+    isSubmitting: updateCar.isPending,
+    hasOnCancel: !!onCancel
+  });
 
   return (
     <div>
