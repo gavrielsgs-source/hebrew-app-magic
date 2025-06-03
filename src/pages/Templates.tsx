@@ -1,3 +1,4 @@
+
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
@@ -120,9 +121,9 @@ export default function TemplatesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNewTemplate, setIsNewTemplate] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate>(
-    defaultWhatsappLeadTemplates[0] // Changed to lead templates as default
+    defaultWhatsappTemplates[0] // Changed back to car templates as default
   );
-  const [activeTab, setActiveTab] = useState<'car' | 'lead'>('lead'); // Changed default to lead
+  const [activeTab, setActiveTab] = useState<'car' | 'lead'>('car'); // Changed default back to car
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -155,12 +156,12 @@ export default function TemplatesPage() {
         setTemplates(fullTemplates);
       } catch (error) {
         console.error("Error loading templates from localStorage:", error);
-        // If parsing fails, use default templates with lead templates first
-        setTemplates([...defaultWhatsappLeadTemplates, ...defaultWhatsappTemplates]);
+        // If parsing fails, use default templates with car templates first
+        setTemplates([...defaultWhatsappTemplates, ...defaultWhatsappLeadTemplates]);
       }
     } else {
-      // If no templates in local storage, use the default templates with lead templates first
-      setTemplates([...defaultWhatsappLeadTemplates, ...defaultWhatsappTemplates]);
+      // If no templates in local storage, use the default templates with car templates first
+      setTemplates([...defaultWhatsappTemplates, ...defaultWhatsappLeadTemplates]);
     }
   }, []);
 
@@ -253,7 +254,7 @@ export default function TemplatesPage() {
   };
 
   const onResetDefaults = () => {
-    setTemplates([...defaultWhatsappLeadTemplates, ...defaultWhatsappTemplates]);
+    setTemplates([...defaultWhatsappTemplates, ...defaultWhatsappLeadTemplates]);
     toast({
       title: "תבניות ברירת מחדל שוחזרו",
       description: "תבניות ברירת המחדל שוחזרו בהצלחה.",
@@ -272,8 +273,8 @@ export default function TemplatesPage() {
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'car' | 'lead')} className="w-full mb-8" dir="rtl">
           <TabsList className={`w-full max-w-md mx-auto ${isMobile ? 'h-auto grid-cols-2 text-xs' : 'grid grid-cols-2'}`}>
-            <TabsTrigger value="lead" className={isMobile ? "text-xs" : ""}>תבניות לקוחות</TabsTrigger>
             <TabsTrigger value="car" className={isMobile ? "text-xs" : ""}>תבניות רכבים</TabsTrigger>
+            <TabsTrigger value="lead" className={isMobile ? "text-xs" : ""}>תבניות לקוחות</TabsTrigger>
           </TabsList>
         </Tabs>
 

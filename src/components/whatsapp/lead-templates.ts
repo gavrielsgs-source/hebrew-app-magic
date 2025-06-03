@@ -11,85 +11,17 @@ export interface WhatsappLeadTemplate {
 
 export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
   {
-    id: "friendly_intro",
-    name: "הכרות ידידותית",
-    description: "הודעה חמה ופתוחה לפתיחת שיחה",
+    id: "client_intro",
+    name: "הכרות עם לקוח פוטנציאלי",
+    description: "הודעת היכרות ראשונית עם לקוח שפנה אלינו",
     type: 'lead' as const,
-    generateMessage: (leadName: string, leadSource?: string) => `שלום ${leadName}! 😊
+    generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
 
-איך שלומך? אני ${leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו'} ורציתי ליצור איתך קשר.
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
 
-האם זה זמן נוח לשיחה קצרה על המכונית שאתה מחפש?
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
 
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך! 🚗
-
-בברכה,
-צוות המכירות`
-  },
-  {
-    id: "professional_intro",
-    name: "הצגה מקצועית",
-    description: "הודעה עסקית ופרקטית",
-    type: 'lead' as const,
-    generateMessage: (leadName: string, leadSource?: string) => `שלום ${leadName},
-
-אני פונה אליך מצוות המכירות של חברת הרכב שלנו.
-${leadSource ? `קיבלנו את פרטיך דרך ${leadSource}` : 'אנו מעוניינים לעזור לך'} ורצינו לברר איך נוכל לסייע לך.
-
-נשמח לשמוע מה המפרט שאתה מחפש ולהציע לך את הפתרונות הטובים ביותר.
-
-האם נוח לך שנתקשר או שאתה מעדיף לתאם פגישה?
-
-בברכה,
-צוות המכירות`
-  },
-  {
-    id: "special_offer",
-    name: "הצעה מיוחדת",
-    description: "הודעה עם דגש על מבצעים וייתרונות",
-    type: 'lead' as const,
-    generateMessage: (leadName: string, leadSource?: string) => `שלום ${leadName}! 🎉
-
-יש לנו חדשות נהדרות בשבילך!
-
-כרגע יש לנו מבצע מיוחד על מגוון רכבים איכותיים שחושבים שיכולים לעניין אותך מאוד.
-
-🔹 מחירים מיוחדים לתקופה מוגבלת
-🔹 אחריות מורחבת
-🔹 אפשרות למימון נוח
-🔹 נסיעת מבחן ללא התחייבות
-
-האם תרצה לשמוע עוד פרטים או לתאם ביקור במכירות?
-
-בברכה,
-צוות המכירות`
-  },
-  {
-    id: "follow_up",
-    name: "מעקב אחר פנייה",
-    description: "הודעה לטיפול בפנייה קיימת",
-    type: 'lead' as const,
-    generateMessage: (leadName: string, leadSource?: string) => `שלום ${leadName},
-
-אני חוזר אליך בנושא ${leadSource ? `הפנייה שלך ב${leadSource}` : 'הפנייה שלך אלינו'}.
-
-רציתי לוודא שקיבלת את כל המידע שחיפשת ולראות אם יש עוד שאלות או דברים שאוכל לעזור לך איתם.
-
-האם יש רכב ספציפי שמעניין אותך או שתרצה לשמוע על האפשרויות הזמינות אצלנו?
-
-אני כאן לכל שאלה! 😊
-
-בברכה,
-צוות המכירות`
-  },
-  {
-    id: "custom_lead",
-    name: "הודעה מותאמת אישית ללקוח",
-    description: "תבנית ריקה לעריכה חופשית ללקוחות",
-    type: 'lead' as const,
-    generateMessage: (leadName: string, leadSource?: string) => `שלום ${leadName},
-
-[ערוך כאן את ההודעה שלך]
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
 בברכה,
 צוות המכירות`
