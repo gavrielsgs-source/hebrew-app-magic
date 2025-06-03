@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,48 +32,49 @@ import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
 import Payment from "./pages/Payment";
 import "./components/ui/mobile-responsive.css";
-
-// Create QueryClient with simple configuration
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 1,
-    },
-  },
-});
+import { useMemo } from "react";
 
 const App = () => {
+  // Create QueryClient with useMemo to ensure stability
+  const queryClient = useMemo(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 2,
+        refetchOnWindowFocus: false,
+      },
+      mutations: {
+        retry: 1,
+      },
+    },
+  }), []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthRoute />} />
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<AuthRoute />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
                     <SubscriptionProvider>
                       <AuthProvider>
                         <AppLayout />
                       </AuthProvider>
                     </SubscriptionProvider>
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

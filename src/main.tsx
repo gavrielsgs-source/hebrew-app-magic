@@ -2,6 +2,7 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import React from 'react';
 
 // הגדרת RTL לתמיכה בעברית
 document.documentElement.dir = 'rtl';
@@ -50,4 +51,5 @@ console.log('Main.tsx loaded - simplified version:', {
   userAgent: navigator.userAgent.substring(0, 50)
 });
 
-createRoot(document.getElementById("root")!).render(<App />);
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
