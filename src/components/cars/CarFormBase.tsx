@@ -274,13 +274,17 @@ export function CarFormBase({
           )}
         />
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 pt-4">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel}>
               ביטול
             </Button>
           )}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="min-w-[120px]"
+          >
             {isSubmitting ? "שומר..." : submitLabel}
           </Button>
         </div>
