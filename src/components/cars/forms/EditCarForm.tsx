@@ -50,7 +50,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         ownership_history: values.ownership_history || null,
         status: car.status,
         agency_id: values.agency_id || null,
-        images
+        images: images && images.length > 0 ? images : undefined // Only include images if they exist
       };
 
       console.log("EditCarForm - About to call updateCar.mutateAsync");
@@ -61,7 +61,19 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
       onCancel();
     } catch (error) {
       console.error("EditCarForm - Error updating car:", error);
-      toast.error("אירעה שגיאה בעדכון הרכב");
+      
+      // More specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('auth')) {
+          toast.error("שגיאת הזדהות - אנא התחבר מחדש");
+        } else if (error.message.includes('network')) {
+          toast.error("שגיאת רשת - בדוק את החיבור לאינטרנט");
+        } else {
+          toast.error(`שגיאה בעדכון הרכב: ${error.message}`);
+        }
+      } else {
+        toast.error("אירעה שגיאה בעדכון הרכב");
+      }
     }
   };
 

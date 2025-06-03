@@ -65,23 +65,32 @@ export function CarFormBase({
     console.log("CarFormBase - Images count:", images.length);
     console.log("CarFormBase - isSubmitting:", isSubmitting);
     
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      console.log("CarFormBase - Already submitting, preventing double submission");
+      return;
+    }
+    
     try {
       console.log("CarFormBase - Calling onSubmit prop");
       await onSubmit(values, images);
       console.log("CarFormBase - onSubmit completed successfully");
     } catch (error) {
       console.error("CarFormBase - Error in form submission:", error);
-      throw error; // Re-throw to maintain error handling
+      // Don't re-throw, let the parent handle the error
     }
   };
 
-  const handleButtonClick = () => {
+  const handleButtonClick = (e: React.MouseEvent) => {
     console.log("CarFormBase - Submit button clicked!");
     console.log("CarFormBase - Form state:", {
       isValid: form.formState.isValid,
       errors: form.formState.errors,
-      isSubmitting: form.formState.isSubmitting
+      isSubmitting: form.formState.isSubmitting,
+      isDirty: form.formState.isDirty
     });
+    
+    // Let the form handle the submission, don't prevent default
   };
 
   return (

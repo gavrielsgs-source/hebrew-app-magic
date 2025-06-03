@@ -60,36 +60,45 @@ export function useUpdateCar() {
 
         console.log("useUpdateCar - Car updated successfully:", data);
 
-        // Handle image uploads if provided
+        // Handle image uploads if provided - with better error handling
         if (car.images && car.images.length > 0) {
           console.log(`useUpdateCar - Uploading ${car.images.length} images for car ${id}`);
-          const uploadPromises = car.images.map(async (image, index) => {
-            const fileExt = image.name.split('.').pop();
-            const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
-            
-            const { error: uploadError } = await supabase.storage
-              .from('cars')
-              .upload(filePath, image, {
-                cacheControl: '3600',
-                upsert: false
-              });
+          
+          try {
+            const uploadPromises = car.images.map(async (image, index) => {
+              const fileExt = image.name.split('.').pop();
+              const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
               
-            if (uploadError) {
-              console.error(`Image upload error for image ${index}:`, uploadError);
-              return { success: false, error: uploadError };
-            }
+              console.log(`Uploading image ${index}:`, filePath);
+              
+              const { error: uploadError } = await supabase.storage
+                .from('cars')
+                .upload(filePath, image, {
+                  cacheControl: '3600',
+                  upsert: false
+                });
+                
+              if (uploadError) {
+                console.error(`Image upload error for image ${index}:`, uploadError);
+                return { success: false, error: uploadError, index };
+              }
+              
+              console.log(`Image ${index} uploaded successfully:`, filePath);
+              return { success: true, path: filePath, index };
+            });
             
-            console.log(`Image ${index} uploaded successfully:`, filePath);
-            return { success: true, path: filePath };
-          });
-          
-          const uploadResults = await Promise.all(uploadPromises);
-          const failedUploads = uploadResults.filter(result => !result.success).length;
-          
-          if (failedUploads > 0) {
-            console.log(`${failedUploads} images failed to upload`);
-          } else if (uploadResults.length > 0) {
-            console.log(`${uploadResults.length} images uploaded successfully`);
+            const uploadResults = await Promise.all(uploadPromises);
+            const failedUploads = uploadResults.filter(result => !result.success);
+            
+            if (failedUploads.length > 0) {
+              console.warn(`${failedUploads.length} images failed to upload:`, failedUploads);
+              // Don't throw error for image upload failures, just log them
+            } else if (uploadResults.length > 0) {
+              console.log(`${uploadResults.length} images uploaded successfully`);
+            }
+          } catch (imageError) {
+            console.error("Error during image upload process:", imageError);
+            // Continue with car update even if images fail
           }
         }
 
