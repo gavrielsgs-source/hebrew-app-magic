@@ -141,6 +141,11 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
               </div>
             ))}
           </div>
+          
+          {/* הוספת תצוגה מקדימה תחת תבניות */}
+          <WhatsappTemplatePreview
+            template={message}
+          />
         </TabsContent>
         
         <TabsContent value="leads" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>

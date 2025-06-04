@@ -75,11 +75,11 @@ const DialogContent = React.forwardRef<
         {/* Header with close button - fixed at top */}
         <div className="relative flex-shrink-0 p-4 pb-2 border-b border-gray-100">
           <DialogPrimitive.Close className={cn(
-            "absolute opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none rounded-sm",
-            "right-3 top-3 flex items-center justify-center hover:bg-accent",
-            isMobile ? "h-12 w-12" : "h-8 w-8"
+            "absolute opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none rounded-full bg-gray-200 hover:bg-gray-300",
+            "left-3 top-3 flex items-center justify-center",
+            isMobile ? "h-12 w-12" : "h-10 w-10"
           )} aria-label="Close">
-            <X className={isMobile ? "h-6 w-6" : "h-4 w-4"} />
+            <X className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
             <span className="sr-only">סגור</span>
           </DialogPrimitive.Close>
         </div>
