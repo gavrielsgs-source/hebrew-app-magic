@@ -159,6 +159,7 @@ export function LeadCardActions({
                 leadName={leadName}
                 leadPhone={leadPhone}
                 leadSource={leadSource}
+                leadId={leadId}
                 onClose={() => setShowWhatsappDialog(false)}
               />
             )}
@@ -265,6 +266,7 @@ export function LeadCardActions({
               leadName={leadName}
               leadPhone={leadPhone}
               leadSource={leadSource}
+              leadId={leadId}
               onClose={() => setShowWhatsappDialog(false)}
             />
           )}

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
 import { WhatsappLeadTemplate } from "./lead-templates";
 
@@ -12,6 +13,7 @@ interface WhatsappLeadTemplateSelectorProps {
   leadName: string;
   leadPhone: string;
   leadSource?: string;
+  leadId?: string;
   onClose: () => void;
 }
 
@@ -19,6 +21,7 @@ export function WhatsappLeadTemplateSelector({
   leadName, 
   leadPhone, 
   leadSource,
+  leadId,
   onClose 
 }: WhatsappLeadTemplateSelectorProps) {
   const [templates, setTemplates] = useState<WhatsappLeadTemplate[]>([]);
@@ -26,6 +29,7 @@ export function WhatsappLeadTemplateSelector({
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("templates");
   const isMobile = useIsMobile();
+  const updateLead = useUpdateLead();
 
   // Load templates from localStorage
   useEffect(() => {
@@ -82,7 +86,24 @@ export function WhatsappLeadTemplateSelector({
     return '972' + cleanPhone;
   };
 
-  const handleSendMessage = () => {
+  const updateLeadStatus = async () => {
+    if (!leadId) return;
+    
+    try {
+      await updateLead.mutateAsync({ 
+        id: leadId, 
+        data: { 
+          status: 'in_treatment',
+          updated_at: new Date().toISOString()
+        } 
+      });
+      console.log(`Lead ${leadId} status updated to 'in_treatment'`);
+    } catch (error) {
+      console.error("Error updating lead status:", error);
+    }
+  };
+
+  const handleSendMessage = async () => {
     const message = generateMessage();
     
     if (!message.trim()) {
@@ -94,7 +115,13 @@ export function WhatsappLeadTemplateSelector({
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     
     window.open(whatsappUrl, '_blank');
-    toast.success(`נפתח וואטסאפ עם ההודעה ל${leadName}`);
+    
+    // Update lead status to 'in_treatment' after sending WhatsApp message
+    if (leadId) {
+      await updateLeadStatus();
+    }
+    
+    toast.success(`נפתח וואטסאפ עם ההודעה ל${leadName}${leadId ? ' והליד עבר לסטטוס "בטיפול"' : ''}`);
     onClose();
   };
 

@@ -10,6 +10,7 @@ import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { SelectedCarDetails } from "./components/SelectedCarDetails";
 import { whatsappTemplates } from "./whatsapp-templates";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
 
 interface WhatsappTemplateSelectorProps {
@@ -21,9 +22,11 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
   const [selectedTemplate, setSelectedTemplate] = useState(whatsappTemplates[0]);
   const [selectedPhone, setSelectedPhone] = useState("");
   const [selectedLeadName, setSelectedLeadName] = useState("");
+  const [selectedLeadId, setSelectedLeadId] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("templates");
   const isMobile = useIsMobile();
+  const updateLead = useUpdateLead();
 
   const generateMessage = () => {
     if (customMessage.trim()) {
@@ -49,7 +52,24 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     return '972' + cleanPhone;
   };
 
-  const handleSendMessage = (phone: string, message: string) => {
+  const updateLeadStatus = async (leadId: string) => {
+    if (!leadId) return;
+    
+    try {
+      await updateLead.mutateAsync({ 
+        id: leadId, 
+        data: { 
+          status: 'in_treatment',
+          updated_at: new Date().toISOString()
+        } 
+      });
+      console.log(`Lead ${leadId} status updated to 'in_treatment'`);
+    } catch (error) {
+      console.error("Error updating lead status:", error);
+    }
+  };
+
+  const handleSendMessage = async (phone: string, message: string) => {
     if (!phone || !message) {
       toast.error("אנא בחר מספר טלפון והודעה");
       return;
@@ -59,13 +79,20 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     
     window.open(whatsappUrl, '_blank');
-    toast.success(`נפתח וואטסאפ עם ההודעה${selectedLeadName ? ` ל${selectedLeadName}` : ''}`);
+    
+    // Update lead status to 'in_treatment' after sending WhatsApp message
+    if (selectedLeadId) {
+      await updateLeadStatus(selectedLeadId);
+    }
+    
+    toast.success(`נפתח וואטסאפ עם ההודעה${selectedLeadName ? ` ל${selectedLeadName}` : ''}${selectedLeadId ? ' והליד עבר לסטטוס "בטיפול"' : ''}`);
     onClose();
   };
 
   const handleLeadSelect = (leadId: string, phone: string, name: string) => {
     setSelectedPhone(phone);
     setSelectedLeadName(name);
+    setSelectedLeadId(leadId);
     console.log("Lead selected:", { leadId, phone, name });
   };
 
@@ -120,7 +147,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
           <WhatsappLeadSelector 
             onLeadSelect={handleLeadSelect}
             onNewLead={handleNewLead}
-            selectedLeadId=""
+            selectedLeadId={selectedLeadId}
           />
           
           {selectedPhone && (

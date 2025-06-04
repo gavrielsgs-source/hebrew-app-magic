@@ -4,7 +4,7 @@ import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Phone, Send, Calendar, Edit } from "lucide-react";
 import { EditLeadForm } from "../EditLeadForm";
-import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
+import { WhatsappLeadTemplateSelector } from "@/components/whatsapp/WhatsappLeadTemplateSelector";
 import { ScheduleMeetingForm } from "../ScheduleMeetingForm";
 
 interface LeadsTableActionsProps {
@@ -57,7 +57,6 @@ export function LeadsTableActions({
             variant="ghost" 
             size="icon"
             className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600 transition-colors"
-            disabled={!lead.cars}
             onClick={() => setSelectedLeadId(lead.id as string)}
           >
             <Send className="h-4 w-4" />
@@ -65,11 +64,14 @@ export function LeadsTableActions({
         </DialogTrigger>
         <DialogContent className="sm:max-w-[600px]" dir="rtl">
           <DialogHeader>
-            <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
+            <DialogTitle>שליחת הודעה בוואטסאפ</DialogTitle>
           </DialogHeader>
-          {lead.cars && (
-            <WhatsappTemplateSelector 
-              car={lead.cars} 
+          {lead.phone && (
+            <WhatsappLeadTemplateSelector
+              leadName={lead.name as string}
+              leadPhone={lead.phone as string}
+              leadSource={lead.source as string}
+              leadId={lead.id as string}
               onClose={() => setIsWhatsappOpen(false)}
             />
           )}
