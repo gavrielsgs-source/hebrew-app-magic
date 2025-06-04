@@ -1,44 +1,58 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { whatsappTemplates, WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
+import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 
 export default function Templates() {
-  const [templates, setTemplates] = useState<WhatsappTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<WhatsappTemplate | null>(null);
+  const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [isNew, setIsNew] = useState(false);
+  const [newTemplate, setNewTemplate] = useState<UnifiedTemplate>({
+    id: '',
+    name: '',
+    description: '',
+    type: 'car',
+    generateMessage: () => ''
+  });
   const isMobile = useIsMobile();
+
+  // Combine all default templates
+  const allDefaultTemplates: UnifiedTemplate[] = [
+    ...whatsappTemplates,
+    ...whatsappLeadTemplates
+  ];
 
   useEffect(() => {
     const savedTemplates = localStorage.getItem('whatsapp-templates');
     if (savedTemplates) {
       const parsed = JSON.parse(savedTemplates);
-      // If saved templates exist but are empty, load defaults
-      if (parsed.length === 0) {
-        setTemplates(whatsappTemplates);
-        localStorage.setItem('whatsapp-templates', JSON.stringify(whatsappTemplates));
+      // Always load default templates if saved templates are empty or don't exist
+      if (!parsed || parsed.length === 0) {
+        setTemplates(allDefaultTemplates);
+        localStorage.setItem('whatsapp-templates', JSON.stringify(allDefaultTemplates));
       } else {
         setTemplates(parsed);
       }
     } else {
       // No saved templates, load defaults
-      setTemplates(whatsappTemplates);
-      localStorage.setItem('whatsapp-templates', JSON.stringify(whatsappTemplates));
+      setTemplates(allDefaultTemplates);
+      localStorage.setItem('whatsapp-templates', JSON.stringify(allDefaultTemplates));
     }
   }, []);
 
-  const saveTemplates = (newTemplates: WhatsappTemplate[]) => {
+  const saveTemplates = (newTemplates: UnifiedTemplate[]) => {
     setTemplates(newTemplates);
     localStorage.setItem('whatsapp-templates', JSON.stringify(newTemplates));
   };
 
-  const addTemplate = (template: Omit<WhatsappTemplate, 'id'>) => {
+  const addTemplate = (template: Omit<UnifiedTemplate, 'id'>) => {
     const newTemplate = {
       ...template,
       id: Date.now().toString()
@@ -46,7 +60,7 @@ export default function Templates() {
     saveTemplates([...templates, newTemplate]);
   };
 
-  const updateTemplate = (updatedTemplate: WhatsappTemplate) => {
+  const updateTemplate = (updatedTemplate: UnifiedTemplate) => {
     const newTemplates = templates.map(t => 
       t.id === updatedTemplate.id ? updatedTemplate : t
     );
@@ -59,61 +73,77 @@ export default function Templates() {
   };
 
   const resetToDefaults = () => {
-    saveTemplates(whatsappTemplates);
-    setFilterCategory("all");
-    setSearchTerm("");
+    saveTemplates(allDefaultTemplates);
   };
 
-  const filteredTemplates = templates.filter(template => {
-    const matchesCategory = filterCategory === "all" || template.category === filterCategory;
-    const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         template.content.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const categories = ["all", ...Array.from(new Set(templates.map(t => t.category)))];
-
-  const handleTemplateSelect = (template: WhatsappTemplate) => {
+  const handleTemplateSelect = (template: UnifiedTemplate) => {
     setSelectedTemplate(template);
+    setNewTemplate(template);
+    setIsNew(false);
     setIsDialogOpen(true);
   };
+
+  const handleNewTemplate = () => {
+    setSelectedTemplate(null);
+    setNewTemplate({
+      id: '',
+      name: '',
+      description: '',
+      type: 'car',
+      generateMessage: () => ''
+    });
+    setIsNew(true);
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    if (isNew) {
+      addTemplate(newTemplate);
+    } else {
+      updateTemplate(newTemplate);
+    }
+    setIsDialogOpen(false);
+  };
+
+  // Template tags for the dialog
+  const templateTags = [
+    // Car tags
+    '{{car.make}}', '{{car.model}}', '{{car.year}}', '{{car.price}}', 
+    '{{car.mileage}}', '{{car.exteriorColor}}', '{{car.engineSize}}', 
+    '{{car.transmission}}', '{{car.fuelType}}',
+    // Lead tags
+    '{{leadName}}', '{{leadSource}}'
+  ];
 
   if (isMobile) {
     return (
       <MobileContainer>
         <div className="space-y-6" dir="rtl">
           <TemplateHeader
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
-            categories={categories}
-            onAddTemplate={() => {
-              setSelectedTemplate(null);
-              setIsDialogOpen(true);
-            }}
+            onNewTemplate={handleNewTemplate}
             onResetDefaults={resetToDefaults}
-            templatesCount={filteredTemplates.length}
-            isMobile={true}
+            canAddTemplate={true}
           />
 
           <div className="space-y-4">
-            {filteredTemplates.map((template) => (
+            {templates.map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}
                 onEdit={() => handleTemplateSelect(template)}
                 onDelete={() => deleteTemplate(template.id)}
-                isMobile={true}
               />
             ))}
           </div>
 
           <TemplateDialog
             isOpen={isDialogOpen}
-            onClose={() => setIsDialogOpen(false)}
-            template={selectedTemplate}
-            onSave={selectedTemplate ? updateTemplate : addTemplate}
+            isNew={isNew}
+            newTemplate={newTemplate}
+            setIsOpen={setIsDialogOpen}
+            onSave={handleSave}
+            onTemplateChange={setNewTemplate}
+            templateTags={templateTags}
           />
         </div>
       </MobileContainer>
@@ -131,37 +161,30 @@ export default function Templates() {
         </CardHeader>
         <CardContent>
           <TemplateHeader
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
-            categories={categories}
-            onAddTemplate={() => {
-              setSelectedTemplate(null);
-              setIsDialogOpen(true);
-            }}
+            onNewTemplate={handleNewTemplate}
             onResetDefaults={resetToDefaults}
-            templatesCount={filteredTemplates.length}
-            isMobile={false}
+            canAddTemplate={true}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTemplates.map((template) => (
+            {templates.map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}
                 onEdit={() => handleTemplateSelect(template)}
                 onDelete={() => deleteTemplate(template.id)}
-                isMobile={false}
               />
             ))}
           </div>
 
           <TemplateDialog
             isOpen={isDialogOpen}
-            onClose={() => setIsDialogOpen(false)}
-            template={selectedTemplate}
-            onSave={selectedTemplate ? updateTemplate : addTemplate}
+            isNew={isNew}
+            newTemplate={newTemplate}
+            setIsOpen={setIsDialogOpen}
+            onSave={handleSave}
+            onTemplateChange={setNewTemplate}
+            templateTags={templateTags}
           />
         </CardContent>
       </Card>
