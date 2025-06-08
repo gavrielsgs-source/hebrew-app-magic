@@ -47,7 +47,7 @@ const App = () => {
       },
     },
   }), []);
-  console.log("url:",window.location.url)
+  console.log("url:",window.location.href)
 
   return (
     <ErrorBoundary>
