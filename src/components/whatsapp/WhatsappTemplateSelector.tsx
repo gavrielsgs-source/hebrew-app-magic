@@ -34,9 +34,19 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     
     // Safe check for selectedTemplate and its generateMessage function
     if (selectedTemplate && typeof selectedTemplate.generateMessage === 'function') {
-      return selectedTemplate.generateMessage(car);
+      try {
+        return selectedTemplate.generateMessage(car);
+      } catch (error) {
+        console.error("Error generating message from template:", error);
+        // Fallback to default message
+        return generateDefaultMessage();
+      }
     }
     
+    return generateDefaultMessage();
+  };
+
+  const generateDefaultMessage = () => {
     return `שלום! אני רוצה להציע לך רכב מעולה:
 ${car.make} ${car.model} ${car.year}
 מחיר: ${car.price ? `${car.price.toLocaleString()}₪` : 'לא צוין'}
@@ -137,7 +147,7 @@ ${car.description ? `פרטים נוספים: ${car.description}` : ''}
                 className={`border rounded-lg cursor-pointer transition-colors ${
                   isMobile ? 'p-3' : 'p-4'
                 } ${
-                  selectedTemplate.id === template.id
+                  selectedTemplate?.id === template.id
                     ? "border-blue-500 bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}

@@ -16,10 +16,13 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
     setLoading(true);
     
     try {
+      // Get the current origin dynamically
+      const currentOrigin = window.location.origin;
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${currentOrigin}/dashboard`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -27,7 +30,26 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Google OAuth error:', error);
+        
+        // Show user-friendly error message
+        if (error.message.includes('connection refused') || error.message.includes('ERR_CONNECTION_REFUSED')) {
+          toast({
+            variant: "destructive",
+            title: "שגיאת תצורה",
+            description: "יש בעיה בהגדרות Google OAuth. אנא פנה למנהל המערכת או נסה להתחבר עם אימייל וסיסמה.",
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "שגיאה בהתחברות Google",
+            description: error.message || 'אירעה שגיאה בהתחברות',
+          });
+        }
+        
+        throw error;
+      }
 
       toast({
         title: "מתחבר דרך Google...",
@@ -35,11 +57,7 @@ export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
       });
     } catch (error: any) {
       console.error('Error with Google auth:', error);
-      toast({
-        variant: "destructive",
-        title: "שגיאה בהתחברות Google",
-        description: error.message || 'אירעה שגיאה בהתחברות',
-      });
+      // Error handling is done above
     } finally {
       setLoading(false);
     }
