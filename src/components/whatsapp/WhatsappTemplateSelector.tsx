@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,7 +40,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
     return `שלום! אני רוצה להציע לך רכב מעולה:
 ${car.make} ${car.model} ${car.year}
 מחיר: ${car.price ? `${car.price.toLocaleString()}₪` : 'לא צוין'}
-${car.mileage ? `קילומטרים: ${car.mileage.toLocaleString()}` : ''}
+${car.kilometers ? `קילומטרים: ${car.kilometers.toLocaleString()}` : ''}
 ${car.description ? `פרטים נוספים: ${car.description}` : ''}
 אשמח לשמוע מהך!`;
   };
