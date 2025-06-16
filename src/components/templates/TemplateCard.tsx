@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
@@ -31,9 +32,23 @@ const mockLeadName = "יואב כהן";
 const mockLeadSource = "פייסבוק";
 
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
-  const previewMessage = template.type === 'car' 
-    ? template.generateMessage(mockCar)
-    : template.generateMessage(mockLeadName, mockLeadSource);
+  // Generate preview message based on template type
+  const generatePreviewMessage = () => {
+    try {
+      if (template.type === 'car') {
+        return template.generateMessage(mockCar);
+      } else if (template.type === 'lead') {
+        return template.generateMessage(mockLeadName, mockLeadSource);
+      } else {
+        return "לא ניתן ליצור תצוגה מקדימה עבור תבנית זו";
+      }
+    } catch (error) {
+      console.error("Error generating preview message:", error);
+      return "שגיאה ביצירת תצוגה מקדימה";
+    }
+  };
+
+  const previewMessage = generatePreviewMessage();
   
   return (
     <Card className="hover:shadow-lg transition-all duration-200 border-border">
@@ -114,3 +129,4 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
     </Card>
   );
 }
+
