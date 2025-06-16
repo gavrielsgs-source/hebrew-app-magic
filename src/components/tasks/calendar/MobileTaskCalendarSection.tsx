@@ -21,9 +21,9 @@ export function MobileTaskCalendarSection({
 }: MobileTaskCalendarSectionProps) {
   return (
     <div className="space-y-4" dir="rtl">
-      {/* Section header with brand gradient and modern design */}
-      <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl p-4 shadow-md border border-white/20">
-        <h2 className="text-base font-semibold text-white mb-1 text-right">
+      {/* Section header with unified brand gradient */}
+      <div className="bg-carslead-gradient rounded-2xl p-5 shadow-lg border border-white/20">
+        <h2 className="text-lg font-bold text-white mb-1 text-right">
           {viewMode === "today" ? "משימות להיום" : "משימות קרובות"}
         </h2>
         <p className="text-sm text-white/90 text-right">

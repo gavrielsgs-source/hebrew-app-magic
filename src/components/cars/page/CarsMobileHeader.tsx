@@ -1,8 +1,6 @@
 
-import { useState } from "react";
-import { Plus, MessageSquare, Filter } from "lucide-react";
-import { AddCarForm } from "@/components/cars/AddCarForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Filter, MessageSquare, Plus } from "lucide-react";
+import { MobileButton } from "@/components/mobile/MobileButton";
 
 interface CarsMobileHeaderProps {
   onAddCar: () => void;
@@ -11,80 +9,49 @@ interface CarsMobileHeaderProps {
   carsCount: number;
 }
 
-export function CarsMobileHeader({ 
-  onAddCar, 
-  onWhatsApp, 
-  onFilter, 
-  carsCount 
+export function CarsMobileHeader({
+  onAddCar,
+  onWhatsApp,
+  onFilter,
+  carsCount
 }: CarsMobileHeaderProps) {
-  const [showAddDialog, setShowAddDialog] = useState(false);
-
-  const handleAddCar = () => {
-    setShowAddDialog(true);
-    onAddCar();
-  };
-
-  const handleWhatsApp = () => {
-    window.open('https://web.whatsapp.com', '_blank');
-    onWhatsApp();
-  };
-
-  const handleFilter = () => {
-    alert('פונקציונליות סינון תתווסף בקרוב');
-    onFilter();
-  };
-
   return (
-    <>
-      <div className="px-4 pt-4 space-y-4">
-        {/* Enhanced header with brand gradient background */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-white mb-1 text-right">
-                מלאי רכבים
-              </h1>
-              <p className="text-sm text-white/90 text-right">
-                {carsCount} רכבים במלאי
-              </p>
-            </div>
-            <button
-              onClick={handleAddCar}
-              className="bg-white/20 hover:bg-white/30 text-white rounded-full p-3 transition-all duration-200 active:scale-95 flex items-center justify-center"
-            >
-              <Plus className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={handleWhatsApp}
-            className="flex-1 h-10 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100"
-          >
-            <MessageSquare className="h-5 w-5" />
-            וואטסאפ
-          </button>
-          <button
-            onClick={handleFilter}
-            className="flex-1 h-10 px-4 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100"
-          >
-            <Filter className="h-5 w-5" />
-            סינון
-          </button>
+    <div className="sticky top-0 z-10 bg-carslead-gradient text-white p-6 rounded-b-3xl shadow-xl border-b border-white/20" dir="rtl">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">מלאי רכבים</h1>
+          <p className="text-blue-100 text-base mt-1">
+            {carsCount > 0 ? `${carsCount} רכבים במלאי` : 'אין רכבים במלאי'}
+          </p>
         </div>
       </div>
+      
+      {/* כפתורי פעולה */}
+      <div className="grid grid-cols-3 gap-3">
+        <MobileButton
+          onClick={onAddCar}
+          className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 h-14 rounded-2xl font-bold text-base shadow-lg transition-all duration-300"
+          icon={<Plus className="h-5 w-5" />}
+        >
+          הוסף רכב
+        </MobileButton>
+        
+        <MobileButton
+          onClick={onWhatsApp}
+          className="bg-green-500/90 backdrop-blur-sm border-green-400/30 text-white hover:bg-green-600/90 h-14 rounded-2xl font-bold text-base shadow-lg transition-all duration-300"
+          icon={<MessageSquare className="h-5 w-5" />}
+        >
+          וואטסאפ
+        </MobileButton>
 
-      {/* Add Car Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>הוסף רכב חדש</DialogTitle>
-          </DialogHeader>
-          <AddCarForm onSuccess={() => setShowAddDialog(false)} />
-        </DialogContent>
-      </Dialog>
-    </>
+        <MobileButton
+          onClick={onFilter}
+          className="bg-orange-500/90 backdrop-blur-sm border-orange-400/30 text-white hover:bg-orange-600/90 h-14 rounded-2xl font-bold text-base shadow-lg transition-all duration-300"
+          icon={<Filter className="h-5 w-5" />}
+        >
+          סינון
+        </MobileButton>
+      </div>
+    </div>
   );
 }
