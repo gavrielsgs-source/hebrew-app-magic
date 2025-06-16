@@ -11,6 +11,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -24,10 +25,22 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    this.setState({
+      error,
+      errorInfo
+    });
   }
 
   private handleRetry = () => {
-    this.setState({ hasError: false, error: undefined });
+    this.setState({ 
+      hasError: false, 
+      error: undefined, 
+      errorInfo: undefined 
+    });
+  };
+
+  private handleReload = () => {
+    window.location.reload();
   };
 
   public render() {
@@ -59,7 +72,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </Button>
                 <Button 
                   variant="outline"
-                  onClick={() => window.location.reload()}
+                  onClick={this.handleReload}
                   className="w-full"
                 >
                   רענן דף
@@ -70,8 +83,14 @@ export class ErrorBoundary extends Component<Props, State> {
                   <summary className="text-sm text-gray-500 cursor-pointer">
                     פרטי שגיאה טכניים
                   </summary>
-                  <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
+                  <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
                     {this.state.error.message}
+                    {this.state.errorInfo && (
+                      <>
+                        {'\n\nComponent Stack:'}
+                        {this.state.errorInfo.componentStack}
+                      </>
+                    )}
                   </pre>
                 </details>
               )}

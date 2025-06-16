@@ -33,7 +33,17 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
       return customMessage;
     }
     
-    return selectedTemplate.generateMessage(car);
+    // Safe check for selectedTemplate and its generateMessage function
+    if (selectedTemplate && typeof selectedTemplate.generateMessage === 'function') {
+      return selectedTemplate.generateMessage(car);
+    }
+    
+    return `שלום! אני רוצה להציע לך רכב מעולה:
+${car.make} ${car.model} ${car.year}
+מחיר: ${car.price ? `${car.price.toLocaleString()}₪` : 'לא צוין'}
+${car.mileage ? `קילומטרים: ${car.mileage.toLocaleString()}` : ''}
+${car.description ? `פרטים נוספים: ${car.description}` : ''}
+אשמח לשמוע מהך!`;
   };
 
   const formatPhoneForWhatsApp = (phone: string) => {
@@ -142,7 +152,7 @@ export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelec
             ))}
           </div>
           
-          {/* הוספת תצוגה מקדימה תחת תבניות */}
+          {/* Template preview under templates section */}
           <WhatsappTemplatePreview
             template={message}
           />
