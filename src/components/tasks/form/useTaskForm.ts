@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +8,7 @@ import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { taskFormSchema, type TaskFormValues } from "@/types/task";
 import { type TaskFormProps } from "./TaskFormTypes";
 
-export function useTaskForm({ onSuccess, initialLeadId, initialCarId }: TaskFormProps) {
+export function useTaskForm({ onSuccess, initialLeadId, initialCarId, initialDate }: TaskFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shouldCreateNotification, setShouldCreateNotification] = useState(false);
   const [selectedNotificationOptions, setSelectedNotificationOptions] = useState<string[]>([]);
@@ -26,12 +27,14 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId }: TaskForm
       status: "pending",
       lead_id: initialLeadId || "",
       car_id: initialCarId || "",
+      due_date: initialDate || undefined,
     },
   });
 
   const getMinutesFromOption = (option: string): number => {
     switch (option) {
       case "5_minutes": return 5;
+      case "30_minutes": return 30;
       case "1_hour": return 60;
       case "24_hours": return 1440;
       default: return 30;
@@ -43,29 +46,30 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId }: TaskForm
     setIsSubmitting(true);
     
     try {
+      // Ensure status is one of the valid values
+      const validStatuses = ['pending', 'in_progress', 'completed', 'cancelled'];
+      const taskStatus = validStatuses.includes(data.status) ? data.status : 'pending';
+      
       const taskData = {
         title: data.title,
         description: data.description || null,
-        status: data.status,
+        status: taskStatus,
         priority: data.priority,
         type: data.type,
         due_date: data.due_date ? data.due_date.toISOString() : null,
-        lead_id: data.lead_id === "none" || !data.lead_id ? null : data.lead_id,
-        car_id: data.car_id === "none" || !data.car_id ? null : data.car_id,
+        lead_id: (data.lead_id && data.lead_id !== "none" && data.lead_id !== "") ? data.lead_id : null,
+        car_id: (data.car_id && data.car_id !== "none" && data.car_id !== "") ? data.car_id : null,
       };
 
       console.log("Submitting task data:", taskData);
-
-      if (!addTask) {
-        throw new Error("addTask function not available");
-      }
 
       const newTask = await addTask.mutateAsync(taskData);
       console.log("Task created successfully:", newTask);
       
       // Create notifications if requested and due date is set
-      if (shouldCreateNotification && data.due_date && newTask && selectedNotificationOptions.length > 0 && scheduleNotification) {
+      if (shouldCreateNotification && data.due_date && newTask && selectedNotificationOptions.length > 0) {
         console.log("Creating notifications for task:", newTask.id || 'unknown');
+        
         for (const option of selectedNotificationOptions) {
           const minutesBefore = getMinutesFromOption(option);
           const reminderTime = new Date(data.due_date.getTime() - minutesBefore * 60 * 1000);
@@ -73,7 +77,7 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId }: TaskForm
           try {
             await scheduleNotification(
               `תזכורת למשימה: ${data.title}`,
-              `המשימה מתחילה בעוד ${option === "5_minutes" ? "5 דקות" : option === "1_hour" ? "שעה" : "24 שעות"}`,
+              `המשימה מתחילה בעוד ${getNotificationTimeText(option)}`,
               reminderTime,
               data.type,
               "task",
@@ -106,12 +110,22 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId }: TaskForm
     } catch (error) {
       console.error("Error creating task:", error);
       toast({
-        title: "שגיאה ביצירת מששמה",
+        title: "שגיאה ביצירת משימה",
         description: "לא ניתן ליצור את המשימה. נסה שנית.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const getNotificationTimeText = (option: string): string => {
+    switch (option) {
+      case "5_minutes": return "5 דקות";
+      case "30_minutes": return "30 דקות";
+      case "1_hour": return "שעה";
+      case "24_hours": return "24 שעות";
+      default: return "30 דקות";
     }
   };
 
