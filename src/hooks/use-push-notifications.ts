@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './use-auth';
 import { toast } from 'sonner';
+import { NotificationPreferences } from '@/types/notification';
 
 // VAPID key for development - should be replaced in production
 const VAPID_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa40HI8YlOU2jKqbNI10oIBABwNLR5n_qrCKJI4ZEtZ7FKZ_PD_WiKoaFa5cHE';
@@ -26,6 +27,12 @@ const urlBase64ToUint8Array = (base64String: string) => {
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSupported, setIsSupported] = useState(false);
+  const [preferences, setPreferences] = useState<NotificationPreferences>({
+    tasks: true,
+    leads: true,
+    reminders: true,
+    meetings: true
+  });
   const { user } = useAuth();
 
   useEffect(() => {
@@ -35,6 +42,54 @@ export function usePushNotifications() {
       setPermission(Notification.permission);
     }
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadPreferences();
+    }
+  }, [user]);
+
+  const loadPreferences = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("notification_preferences")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      if (data?.notification_preferences) {
+        // Type assertion to ensure proper typing
+        const prefs = data.notification_preferences as unknown as NotificationPreferences;
+        setPreferences(prefs);
+      }
+    } catch (error) {
+      console.error("Error loading preferences:", error);
+    }
+  };
+
+  const updatePreferences = async (newPreferences: NotificationPreferences) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ 
+          notification_preferences: newPreferences as any
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setPreferences(newPreferences);
+      toast.success("העדפות התראות עודכנו!");
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+      toast.error("שגיאה בעדכון העדפות");
+    }
+  };
 
   const requestPermission = async () => {
     if (!isSupported) {
@@ -68,16 +123,11 @@ export function usePushNotifications() {
               
               const { error } = await supabase
                 .from('profiles')
-                .upsert({ 
-                  id: user.id,
-                  push_subscription: subscriptionJson,
-                  notification_preferences: {
-                    tasks: true,
-                    leads: true,
-                    reminders: true,
-                    meetings: true
-                  }
-                });
+                .update({ 
+                  push_subscription: subscriptionJson as any,
+                  notification_preferences: preferences as any
+                })
+                .eq('id', user.id);
 
               if (error) {
                 console.error('Error saving push subscription:', error);
@@ -188,12 +238,17 @@ export function usePushNotifications() {
     }
   };
 
+  const sendTestNotification = showTestNotification;
+
   return {
     permission,
     isSupported,
+    preferences,
     requestPermission,
+    updatePreferences,
     scheduleNotification,
     showTestNotification,
+    sendTestNotification,
     isGranted: permission === 'granted',
     isDenied: permission === 'denied'
   };
