@@ -4,9 +4,9 @@ import { z } from "zod";
 export const taskFormSchema = z.object({
   title: z.string().min(2, "נדרשות לפחות 2 אותיות"),
   description: z.string().optional().or(z.literal("")),
-  priority: z.string(),
-  status: z.string(),
-  type: z.string(),
+  priority: z.enum(["low", "medium", "high"]),
+  status: z.enum(["pending", "in_progress", "completed", "cancelled"]),
+  type: z.enum(["task", "call", "meeting", "follow_up"]),
   due_date: z.date().optional(),
   car_id: z.string().uuid("נא לבחור רכב").optional().or(z.literal("")),
   lead_id: z.string().uuid("נא לבחור ליד").optional().or(z.literal("")),

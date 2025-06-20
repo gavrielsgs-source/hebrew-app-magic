@@ -48,14 +48,17 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId, initialDat
     try {
       // Ensure status is one of the valid values
       const validStatuses = ['pending', 'in_progress', 'completed', 'cancelled'];
+      const validTypes = ['task', 'call', 'meeting', 'follow_up'];
+      
       const taskStatus = validStatuses.includes(data.status) ? data.status : 'pending';
+      const taskType = validTypes.includes(data.type) ? data.type : 'task';
       
       const taskData = {
         title: data.title,
         description: data.description || null,
         status: taskStatus,
         priority: data.priority,
-        type: data.type,
+        type: taskType,
         due_date: data.due_date ? data.due_date.toISOString() : null,
         lead_id: (data.lead_id && data.lead_id !== "none" && data.lead_id !== "") ? data.lead_id : null,
         car_id: (data.car_id && data.car_id !== "none" && data.car_id !== "") ? data.car_id : null,
@@ -79,7 +82,7 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId, initialDat
               `תזכורת למשימה: ${data.title}`,
               `המשימה מתחילה בעוד ${getNotificationTimeText(option)}`,
               reminderTime,
-              data.type,
+              taskType,
               "task",
               newTask.id || ''
             );
