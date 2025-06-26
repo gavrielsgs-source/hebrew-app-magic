@@ -3,7 +3,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { uploadCarImages } from "@/hooks/cars/use-upload-car-images";
 
 export interface Document {
   id: string;
@@ -83,39 +82,9 @@ export function useDocuments(entityType?: string, entityId?: string) {
         // Create a unique file path
         const fileExt = params.file.name.split('.').pop() || 'bin';
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `documents/${user.id}/${fileName}`;
+        const filePath = `${user.id}/${fileName}`;
 
         console.log('Upload file path:', filePath);
-
-        // First, ensure the documents storage bucket exists
-        let { data: buckets } = await supabase.storage.listBuckets();
-        console.log('Existing buckets:', buckets);
-        
-        const documentsBucket = buckets?.find(bucket => bucket.name === 'documents');
-        if (!documentsBucket) {
-          console.log('Creating documents bucket...');
-          const { error: bucketError } = await supabase.storage.createBucket('documents', {
-            public: true,
-            allowedMimeTypes: [
-              'application/pdf',
-              'image/jpeg',
-              'image/png',
-              'image/gif',
-              'image/webp',
-              'application/msword',
-              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              'application/vnd.ms-excel',
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              'text/plain'
-            ],
-            fileSizeLimit: 10485760 // 10MB
-          });
-
-          if (bucketError) {
-            console.error('Error creating bucket:', bucketError);
-            throw new Error(`Failed to create storage bucket: ${bucketError.message}`);
-          }
-        }
 
         // Upload the file to Supabase Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
