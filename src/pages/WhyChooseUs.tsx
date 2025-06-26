@@ -163,9 +163,11 @@ export default function WhyChooseUs() {
             הצטרפו לאלפי סוחרי הרכב שכבר משתמשים ב-CarsLead
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-[#2F3C7E] px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors">
-              התחל ניסיון חינם
-            </button>
+            <a href="/payment?plan=business">
+              <button className="bg-white text-[#2F3C7E] px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors">
+                התחל ניסיון חינם
+              </button>
+            </a>
             <button className="border-2 border-white text-white px-8 py-3 rounded-xl font-bold hover:bg-white/10 transition-colors">
               צפה בהדגמה
             </button>
