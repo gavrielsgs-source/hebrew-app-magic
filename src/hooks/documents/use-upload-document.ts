@@ -83,9 +83,36 @@ export function useUploadDocument() {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (newDocument) => {
       console.log('Document upload successful, invalidating queries');
+      
+      // Invalidate all document queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      
+      // Also update specific queries with the new document for immediate feedback
+      const entityType = newDocument.entity_type;
+      const entityId = newDocument.entity_id;
+      
+      if (entityType && entityId) {
+        // Update the specific entity documents query
+        const specificQueryKey = ['documents', entityType, entityId, user?.id];
+        queryClient.setQueryData(specificQueryKey, (oldData: any) => {
+          if (oldData) {
+            return [newDocument, ...oldData];
+          }
+          return [newDocument];
+        });
+      }
+      
+      // Update the "all documents" query
+      const allDocsQueryKey = ['documents', undefined, undefined, user?.id];
+      queryClient.setQueryData(allDocsQueryKey, (oldData: any) => {
+        if (oldData) {
+          return [newDocument, ...oldData];
+        }
+        return [newDocument];
+      });
+      
       toast.success('המסמך הועלה בהצלחה');
     },
     onError: (error: Error) => {
