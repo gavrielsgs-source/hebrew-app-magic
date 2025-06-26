@@ -15,6 +15,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
+import WhyChooseUs from "./pages/WhyChooseUs";
+import Features from "./pages/Features";
+import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
 import Tasks from "./pages/Tasks";
 import Cars from "./pages/Cars";
@@ -58,6 +61,9 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/why-choose-us" element={<WhyChooseUs />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<AuthRoute />} />
               <Route
                 path="/*"

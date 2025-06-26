@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { LandingHeader } from '@/components/landing/LandingHeader';
+import { NavigationHeader } from '@/components/landing/NavigationHeader';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { BenefitsSection } from '@/components/landing/BenefitsSection';
 import { PricingSection } from '@/components/landing/PricingSection';
@@ -23,7 +23,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 w-full overflow-x-hidden" dir="rtl">
-      <LandingHeader user={user} loading={loading} />
+      <NavigationHeader user={user} loading={loading} />
       
       <HeroSection 
         user={user} 
