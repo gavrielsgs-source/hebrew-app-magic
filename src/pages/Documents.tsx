@@ -80,7 +80,7 @@ export default function Documents() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <DocumentsManager />
+                <DocumentsManager filterTemplates={true} />
               </CardContent>
             </Card>
           </TabsContent>

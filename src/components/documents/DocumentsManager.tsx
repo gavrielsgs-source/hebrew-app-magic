@@ -12,7 +12,7 @@ import { DocumentWhatsAppDialog } from "./components/DocumentWhatsAppDialog";
 import type { DocumentsManagerProps, DocumentFormData } from "./types";
 import type { Document } from "@/hooks/use-documents";
 
-export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps) {
+export function DocumentsManager({ entityId, entityType, filterTemplates = false }: DocumentsManagerProps & { filterTemplates?: boolean }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
@@ -39,18 +39,20 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
     isDeleting,
     isTogglingTemplate
   } = useDocuments(
-    formData.selectedEntityType || entityType, 
-    formData.selectedEntityId || entityId
+    // For "all documents" tab, don't filter by entity
+    entityType, 
+    entityId
   );
   
   const { leads, isLoading: isLeadsLoading } = useLeads();
   const { cars, isLoading: isCarsLoading } = useCars();
   
-  // סינון מסמכים לפי החיפוש והסוג
+  // סינון מסמכים לפי החיפוש, הסוג ותבניות
   const filteredDocuments = documents?.filter(doc => {
     const matchesSearch = !searchQuery || doc.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = !documentTypeFilter || doc.type === documentTypeFilter;
-    return matchesSearch && matchesType;
+    const matchesTemplate = !filterTemplates || doc.is_template === true;
+    return matchesSearch && matchesType && matchesTemplate;
   });
   
   const handleDelete = async (documentId: string) => {

@@ -48,12 +48,11 @@ export function useDocuments(entityType?: string, entityId?: string) {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+      // Only filter by entity if both entityType and entityId are provided
       if (entityType && entityId) {
         query = query
           .eq('entity_type', entityType)
           .eq('entity_id', entityId);
-      } else if (entityType) {
-        query = query.eq('entity_type', entityType);
       }
 
       const { data, error } = await query;
