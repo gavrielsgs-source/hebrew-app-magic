@@ -6,15 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, UserPlus } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  isTrialIntent?: boolean;
+}
+
+export default function RegisterForm({ isTrialIntent = false }: RegisterFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -23,36 +27,46 @@ export default function RegisterForm() {
     setLoading(true);
     setErrorMsg('');
 
-    if (password.length < 6) {
-      setErrorMsg('הסיסמה חייבת להכיל לפחות 6 תווים');
-      setLoading(false);
-      return;
-    }
-
     try {
+      const redirectUrl = isTrialIntent 
+        ? `${window.location.origin}/welcome`
+        : `${window.location.origin}/dashboard`;
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+            trial_intent: isTrialIntent
+          }
+        }
       });
 
       if (error) throw error;
 
-      // Store remember me preference
-      if (rememberMe) {
-        localStorage.setItem('carslead_remember_device', 'true');
-      }
-
       toast({
-        title: "נרשמת בהצלחה!",
-        description: "אם דרוש אישור אימייל, אנא בדוק את תיבת הדואר שלך.",
+        title: isTrialIntent ? "ברוך הבא לניסיון החינם!" : "נרשמת בהצלחה",
+        description: isTrialIntent 
+          ? "החשבון שלך נוצר והניסיון החינם התחל" 
+          : "נא לבדוק את האימייל שלך לאישור החשבון",
       });
+
+      // If email confirmation is disabled, redirect immediately
+      if (isTrialIntent) {
+        navigate('/welcome');
+      } else {
+        navigate('/dashboard');
+      }
       
-      navigate('/dashboard');
     } catch (error: any) {
       console.error('Error registering:', error);
       
-      if (error.message.includes('already registered')) {
-        setErrorMsg('האימייל כבר רשום במערכת');
+      if (error.message.includes('User already registered')) {
+        setErrorMsg('משתמש עם האימייל הזה כבר קיים');
+      } else if (error.message.includes('Password should be at least')) {
+        setErrorMsg('הסיסמה חייבת להכיל לפחות 6 תווים');
       } else {
         setErrorMsg(error.message || 'אירעה שגיאה בהרשמה');
       }
@@ -69,8 +83,8 @@ export default function RegisterForm() {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Google Login Button */}
-      <GoogleAuthButton mode="signup" />
+      {/* Google Registration Button */}
+      <GoogleAuthButton mode="register" />
       
       {/* Divider */}
       <div className="relative">
@@ -84,6 +98,22 @@ export default function RegisterForm() {
 
       {/* Email/Password Form */}
       <form onSubmit={handleRegister} className="space-y-6 w-full">
+        <div className="space-y-2">
+          <Label htmlFor="fullName" className="text-gray-700 font-medium">שם מלא</Label>
+          <div className="relative">
+            <User className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
+            <Input
+              id="fullName"
+              type="text"
+              placeholder="השם המלא שלך"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="pr-12 h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
+              required
+            />
+          </div>
+        </div>
+        
         <div className="space-y-2">
           <Label htmlFor="email" className="text-gray-700 font-medium">אימייל</Label>
           <div className="relative">
@@ -107,28 +137,14 @@ export default function RegisterForm() {
             <Input
               id="password"
               type="password"
-              placeholder="בחר סיסמה חזקה"
+              placeholder="בחר סיסמה חזקה (לפחות 6 תווים)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pr-12 h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
               required
+              minLength={6}
             />
           </div>
-          <p className="text-xs text-gray-500 mr-1">הסיסמה חייבת להכיל לפחות 6 תווים</p>
-        </div>
-
-        {/* Remember Me Checkbox */}
-        <div className="flex items-center space-x-2 space-x-reverse">
-          <input
-            id="remember"
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 text-carslead-purple focus:ring-carslead-purple border-gray-300 rounded"
-          />
-          <Label htmlFor="remember" className="text-sm text-gray-600">
-            זכור אותי במכשיר זה
-          </Label>
         </div>
 
         {errorMsg && (
@@ -142,8 +158,7 @@ export default function RegisterForm() {
           className="w-full h-12 bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90 rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
           disabled={loading}
         >
-          <UserPlus className="ml-2 h-5 w-5" />
-          {loading ? 'יוצר חשבון...' : 'הירשם עכשיו'}
+          {loading ? 'נרשם...' : isTrialIntent ? 'התחל ניסיון חינם' : 'הירשם למערכת'}
         </Button>
       </form>
     </div>

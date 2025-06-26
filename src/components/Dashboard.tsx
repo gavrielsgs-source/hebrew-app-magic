@@ -1,4 +1,3 @@
-
 import { AppHeader } from "@/components/layout/AppHeader";
 import { SmartInsights } from "@/components/analytics/SmartInsights";
 import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
@@ -14,6 +13,7 @@ import { DashboardAnalytics } from "./dashboard/DashboardAnalytics";
 import { DashboardDetailedTables } from "./dashboard/DashboardDetailedTables";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { TrialBanner } from "@/components/subscription/TrialBanner";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -71,6 +71,8 @@ export default function Dashboard() {
       <div className="max-w-[1440px] mx-auto px-4 md:px-8 lg:px-8 xl:px-8">
         <div className="space-y-8 py-6">
           <AppHeader />
+
+          <TrialBanner />
 
           <DashboardHeader />
 

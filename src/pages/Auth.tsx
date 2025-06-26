@@ -1,12 +1,15 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Car, ArrowLeft } from 'lucide-react';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const intent = searchParams.get('intent');
+  const isTrialIntent = intent === 'trial';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" dir="rtl">
@@ -34,24 +37,39 @@ export default function Auth() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
+          {/* Trial Intent Banner */}
+          {isTrialIntent && (
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-2xl p-4 mb-6 text-center">
+              <div className="text-green-700 font-bold text-lg mb-2">
+                🎉 ברוך הבא לניסיון החינם!
+              </div>
+              <div className="text-sm text-gray-600">
+                14 ימים מלאים לנסות את כל האפשרויות - ללא כרטיס אשראי
+              </div>
+            </div>
+          )}
+
           {/* Card */}
           <div className="bg-white rounded-3xl shadow-2xl p-8">
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {isLogin ? 'ברוך הבא בחזרה' : 'הצטרף למערכת'}
+                {isLogin ? 'ברוך הבא בחזרה' : 
+                 isTrialIntent ? 'התחל את הניסיון החינם שלך' : 'הצטרף למערכת'}
               </h1>
               <p className="text-gray-600">
                 {isLogin 
                   ? 'התחבר לחשבון שלך' 
-                  : 'צור חשבון חדש והתחל לנהל את הלידים שלך'
+                  : isTrialIntent 
+                    ? 'צור חשבון והתחל לנהל את הלידים שלך תוך דקות'
+                    : 'צור חשבון חדש והתחל לנהל את הלידים שלך'
                 }
               </p>
             </div>
 
             {/* Form */}
             <div className="space-y-6">
-              {isLogin ? <LoginForm /> : <RegisterForm />}
+              {isLogin ? <LoginForm /> : <RegisterForm isTrialIntent={isTrialIntent} />}
             </div>
 
             {/* Toggle */}
@@ -86,10 +104,10 @@ export default function Auth() {
               <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl">
                 <div className="text-center space-y-2">
                   <div className="flex items-center justify-center space-x-reverse space-x-4 text-sm text-gray-600">
-                    <span>✓ אין צורך בכרטיס אשראי</span>
+                    <span>✓ {isTrialIntent ? "14 ימי ניסיון חינם מלא" : "אין צורך בכרטיס אשראי"}</span>
                   </div>
                   <div className="flex items-center justify-center space-x-reverse space-x-4 text-sm text-gray-600">
-                    <span>✓ אפשר לבטל בכל רגע</span>
+                    <span>✓ {isTrialIntent ? "גישה לכל התכונות" : "אפשר לבטל בכל רגע"}</span>
                   </div>
                   <div className="flex items-center justify-center space-x-reverse space-x-4 text-sm text-gray-600">
                     <span>✓ תמיכה מלאה בעברית</span>

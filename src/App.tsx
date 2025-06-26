@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,6 +33,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
 import Payment from "./pages/Payment";
+import Welcome from "./pages/Welcome";
 import "./components/ui/mobile-responsive.css";
 import { useMemo } from "react";
 
@@ -65,6 +65,11 @@ const App = () => {
               <Route path="/features" element={<Features />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/welcome" element={
+                <ProtectedRoute>
+                  <Welcome />
+                </ProtectedRoute>
+              } />
               <Route
                 path="/*"
                 element={

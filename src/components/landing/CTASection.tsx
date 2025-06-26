@@ -32,7 +32,7 @@ export function CTASection() {
                 placeholder="בחר סיסמה" 
                 className="bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-2xl h-12"
               />
-              <Link to="/auth">
+              <Link to="/auth?intent=trial">
                 <Button 
                   size="lg" 
                   className="w-full bg-white text-[#2F3C7E] hover:bg-gray-100 font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"

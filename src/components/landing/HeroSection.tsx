@@ -33,7 +33,7 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
                 </Button>
               </Link>
             ) : (
-              <Link to="/auth">
+              <Link to="/auth?intent=trial">
                 <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all min-h-[48px]">
                   התחל בחינם
                 </Button>
