@@ -19,7 +19,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
 import { DocumentIcon } from "./DocumentIcon";
 import type { DocumentFormData } from "../types";
@@ -68,32 +67,23 @@ export function UploadDocumentDialog({
 
   const handleUpload = async () => {
     if (!formData.file) {
-      toast.error("יש לבחור קובץ");
       return;
     }
     
     if (!formData.documentName) {
-      toast.error("יש להזין שם למסמך");
       return;
     }
     
-    try {
-      const params: UploadDocumentParams = {
-        file: formData.file,
-        name: formData.documentName,
-        type: formData.documentType,
-        entityId: formData.selectedEntityId || entityId,
-        entityType: formData.selectedEntityType || entityType,
-      };
-      
-      await onUpload(params);
-      toast.success("המסמך הועלה בהצלחה");
-      onOpenChange(false);
-      onReset();
-    } catch (error) {
-      toast.error("שגיאה בהעלאת המסמך");
-      console.error(error);
-    }
+    const params: UploadDocumentParams = {
+      file: formData.file,
+      name: formData.documentName,
+      type: formData.documentType,
+      entityId: formData.selectedEntityId || entityId,
+      entityType: formData.selectedEntityType || entityType,
+    };
+    
+    // העלאה תטופל ב-DocumentsManager
+    await onUpload(params);
   };
 
   return (

@@ -95,7 +95,16 @@ export function DocumentsManager({ entityId, entityType, filterTemplates = false
   };
 
   const handleUpload = async (params: UploadDocumentParams) => {
-    await uploadDocument(params);
+    try {
+      await uploadDocument(params);
+      // הסגירה של הדיאלוג והאיפוס של הטופס יקרו רק אחרי העלאה מוצלחת
+      setIsDialogOpen(false);
+      resetForm();
+      toast.success("המסמך הועלה בהצלחה");
+    } catch (error) {
+      toast.error("שגיאה בהעלאת המסמך");
+      console.error(error);
+    }
   };
   
   if (error) {
