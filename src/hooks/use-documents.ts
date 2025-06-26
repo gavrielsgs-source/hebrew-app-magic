@@ -212,13 +212,40 @@ export function useDocuments(entityType?: string, entityId?: string) {
     },
   });
 
+  // Toggle template mutation
+  const toggleTemplateMutation = useMutation({
+    mutationFn: async (params: { documentId: string; isTemplate: boolean }) => {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Toggling template status:', params);
+
+      const { error } = await supabase
+        .from('documents')
+        .update({ is_template: params.isTemplate })
+        .eq('id', params.documentId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Template toggle error:', error);
+        throw new Error(`Failed to update template status: ${error.message}`);
+      }
+
+      return params;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+    onError: (error: Error) => {
+      console.error('Toggle template mutation error:', error);
+      throw error;
+    },
+  });
+
   const uploadDocument = uploadDocumentMutation.mutateAsync;
   const deleteDocument = deleteDocumentMutation.mutateAsync;
-
-  const toggleTemplate = async (params: { documentId: string; isTemplate: boolean }) => {
-    console.log('Template toggle not implemented yet');
-    throw new Error('Document template functionality not available yet');
-  };
+  const toggleTemplate = toggleTemplateMutation.mutateAsync;
 
   return {
     documents,
@@ -229,6 +256,6 @@ export function useDocuments(entityType?: string, entityId?: string) {
     deleteDocument,
     isDeleting: deleteDocumentMutation.isPending,
     toggleTemplate,
-    isTogglingTemplate: false,
+    isTogglingTemplate: toggleTemplateMutation.isPending,
   };
 }

@@ -154,6 +154,7 @@ export type Database = {
           file_path: string | null
           file_type: string | null
           id: string
+          is_template: boolean | null
           name: string
           type: string
           updated_at: string
@@ -167,6 +168,7 @@ export type Database = {
           file_path?: string | null
           file_type?: string | null
           id?: string
+          is_template?: boolean | null
           name: string
           type: string
           updated_at?: string
@@ -180,6 +182,7 @@ export type Database = {
           file_path?: string | null
           file_type?: string | null
           id?: string
+          is_template?: boolean | null
           name?: string
           type?: string
           updated_at?: string
