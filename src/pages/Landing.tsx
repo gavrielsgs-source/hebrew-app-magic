@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -202,11 +203,26 @@ export default function Landing() {
               מחירים שקופים לכל סוחר
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-              בחר את החבילה שמתאימה לעסק שלך
+              בחר את החבילה שמתאימה לעסק שלך - מחינם ועד פתרון מתקדם
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-6 max-w-7xl mx-auto">
+            <PricingCard
+              title="חינם לתמיד"
+              price={0}
+              description="מתאים להתחלה"
+              features={[
+                "עד 5 רכבים",
+                "עד 10 לידים",
+                "משתמש אחד",
+                "עד 50 הודעות וואטסאפ",
+                "10 משימות",
+                "דשבורד בסיסי"
+              ]}
+              onSelect={() => user ? window.location.href = '/dashboard' : window.location.href = '/auth'}
+            />
+
             <PricingCard
               title="פרימיום"
               price={199}
@@ -214,8 +230,9 @@ export default function Landing() {
               features={[
                 "עד 20 רכבים",
                 "עד 50 לידים",
-                "משתמש אחד",
-                "עד 100 הודעות וואטסאפ BETA",
+                "עד 2 משתמשים",
+                "עד 100 הודעות וואטסאפ",
+                "20 משימות",
                 "דשבורד בסיסי",
                 "תמיכה בוואטסאפ"
               ]}
@@ -230,7 +247,8 @@ export default function Landing() {
                 "עד 50 רכבים",
                 "עד 200 לידים",
                 "עד 5 משתמשים",
-                "עד 500 הודעות וואטסאפ BETA",
+                "עד 500 הודעות וואטסאפ",
+                "100 משימות",
                 "דשבורד מתקדם",
                 "אנליטיקה מלאה",
                 "תמיכה מועדפת"
@@ -246,7 +264,8 @@ export default function Landing() {
               features={[
                 "ללא הגבלה על רכבים ולידים",
                 "עד 10 משתמשים",
-                "עד 2000 הודעות וואטסאפ BETA",
+                "עד 2000 הודעות וואטסאפ",
+                "משימות ללא הגבלה",
                 "אנליטיקה מותאמת אישית",
                 "API מלא",
                 "תמיכה VIP",
@@ -258,10 +277,10 @@ export default function Landing() {
 
           <div className="text-center mt-8 md:mt-12 px-4">
             <p className="text-gray-600 mb-4 text-sm md:text-base">
-              💡 כל החבילות כוללות תקופת ניסיון של 14 יום ללא עלות
+              💡 התחל עם החבילה החינמית - ללא מחויבות ולכל החיים
             </p>
             <p className="text-xs md:text-sm text-gray-500">
-              אין דמי הפעלה • אפשר לבטל בכל עת • תמיכה בעברית
+              אין דמי הפעלה • אפשר לשדרג בכל עת • תמיכה בעברית
             </p>
           </div>
         </div>
@@ -391,11 +410,23 @@ export default function Landing() {
               <Card className="p-8 rounded-2xl border-0 shadow-md">
                 <CardContent className="space-y-4">
                   <h3 className="text-xl font-bold text-gray-900">
+                    האם החבילה החינמית באמת חינמית לתמיד?
+                  </h3>
+                  <p className="text-gray-700">
+                    כן! החבילה החינמית שלנו חינמית לחלוטין ולתמיד. 
+                    היא כוללת 5 רכבים, 10 לידים ו-50 הודעות וואטסאפ בחודש.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="p-8 rounded-2xl border-0 shadow-md">
+                <CardContent className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900">
                     האם זה מתאים גם לסוחרים קטנים?
                   </h3>
                   <p className="text-gray-700">
                     כן! המערכת פותחה במיוחד לסוחרי רכב קטנים ובינוניים. 
-                    המחירים משתלמים וההתחלה פשוטה.
+                    תוכל להתחיל חינם ולשדרג רק כשהעסק גדל.
                   </p>
                 </CardContent>
               </Card>
@@ -420,18 +451,6 @@ export default function Landing() {
                   <p className="text-gray-700">
                     כן! המערכת מותאמת למובייל בצורה מלאה. 
                     תוכל לנהל את כל העסק שלך מהטלפון.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="p-8 rounded-2xl border-0 shadow-md">
-                <CardContent className="space-y-4">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    כמה זה עולה?
-                  </h3>
-                  <p className="text-gray-700">
-                    יש תקופת ניסיון ללא עלות, ואחר כך תבחר את המסלול שמתאים לך. 
-                    המחירים שקופים וללא הפתעות.
                   </p>
                 </CardContent>
               </Card>
@@ -468,19 +487,19 @@ export default function Landing() {
                     size="lg" 
                     className="w-full bg-white text-[#2F3C7E] hover:bg-gray-100 font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"
                   >
-                    הירשם עכשיו - חינם!
+                    התחל חינם עכשיו!
                   </Button>
                 </Link>
               </div>
               
               <div className="flex items-center justify-center mt-6 space-x-reverse space-x-4">
                 <CheckCircle className="h-5 w-5 text-green-300" />
-                <span className="text-sm opacity-80">אין צורך בכרטיס אשראי</span>
+                <span className="text-sm opacity-80">ללא כרטיס אשראי</span>
               </div>
               
               <div className="flex items-center justify-center mt-2 space-x-reverse space-x-4">
                 <CheckCircle className="h-5 w-5 text-green-300" />
-                <span className="text-sm opacity-80">אפשר לבטל בכל רגע</span>
+                <span className="text-sm opacity-80">חינם לתמיד</span>
               </div>
               
               <p className="mt-6 text-sm opacity-70">
