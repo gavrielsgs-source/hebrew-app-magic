@@ -44,9 +44,9 @@ export function NavigationHeader({ user, loading }: NavigationHeaderProps) {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm font-medium transition-colors hover:text-[#2F3C7E] ${
+                className={`text-base font-medium transition-colors hover:text-[#2F3C7E] ${
                   isActive(item.href) 
-                    ? 'text-[#2F3C7E] border-b-2 border-[#2F3C7E] pb-1' 
+                    ? 'text-[#2F3C7E]' 
                     : 'text-gray-600'
                 }`}
               >
