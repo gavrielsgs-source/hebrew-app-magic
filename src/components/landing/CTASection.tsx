@@ -17,6 +17,10 @@ export function CTASection() {
           </p>
           
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-8 max-w-md mx-auto">
+            <div className="bg-green-100 text-green-700 text-sm font-bold px-4 py-2 rounded-full text-center mb-4">
+              🎉 14 ימי ניסיון חינם - ללא כרטיס אשראי!
+            </div>
+            
             <div className="space-y-4">
               <Input 
                 type="email" 
@@ -33,7 +37,7 @@ export function CTASection() {
                   size="lg" 
                   className="w-full bg-white text-[#2F3C7E] hover:bg-gray-100 font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"
                 >
-                  התחל חינם עכשיו!
+                  התחל ניסיון חינם עכשיו!
                 </Button>
               </Link>
             </div>
@@ -45,7 +49,12 @@ export function CTASection() {
             
             <div className="flex items-center justify-center mt-2 space-x-reverse space-x-4">
               <CheckCircle className="h-5 w-5 text-green-300" />
-              <span className="text-sm opacity-80">חינם לתמיד</span>
+              <span className="text-sm opacity-80">14 ימים חינם</span>
+            </div>
+            
+            <div className="flex items-center justify-center mt-2 space-x-reverse space-x-4">
+              <CheckCircle className="h-5 w-5 text-green-300" />
+              <span className="text-sm opacity-80">בטל בכל עת</span>
             </div>
             
             <p className="mt-6 text-sm opacity-70">

@@ -11,30 +11,18 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
     <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50 w-full">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
+          <div className="inline-block bg-gradient-to-r from-green-100 to-blue-100 rounded-full px-6 py-3 mb-6">
+            <span className="text-green-700 font-bold text-lg">🎉 14 ימי ניסיון חינם - ללא כרטיס אשראי!</span>
+          </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            מחירים שקופים לכל סוחר
+            בחר את התוכנית המתאימה לך
           </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-            בחר את החבילה שמתאימה לעסק שלך - מחינם ועד פתרון מתקדם
+            כל התוכניות כוללות ניסיון חינם של 14 ימים עם גישה מלאה לכל התכונות
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-6 max-w-7xl mx-auto">
-          <PricingCard
-            title="חינם לתמיד"
-            price={0}
-            description="מתאים להתחלה"
-            features={[
-              "עד 5 רכבים",
-              "עד 10 לידים",
-              "משתמש אחד",
-              "עד 50 הודעות וואטסאפ",
-              "10 משימות",
-              "דשבורד בסיסי"
-            ]}
-            onSelect={() => user ? window.location.href = '/dashboard' : window.location.href = '/auth'}
-          />
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6 max-w-6xl mx-auto">
           <PricingCard
             title="פרימיום"
             price={199}
@@ -48,7 +36,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
               "דשבורד בסיסי",
               "תמיכה בוואטסאפ"
             ]}
-            onSelect={() => onPricingSelect('premium')}
+            onSelect={() => user ? window.location.href = '/dashboard' : window.location.href = '/auth'}
           />
 
           <PricingCard
@@ -88,11 +76,11 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
         </div>
 
         <div className="text-center mt-8 md:mt-12 px-4">
-          <p className="text-gray-600 mb-4 text-sm md:text-base">
-            💡 התחל עם החבילה החינמית - ללא מחויבות ולכל החיים
+          <p className="text-green-600 mb-4 text-lg md:text-xl font-semibold">
+            ✅ 14 ימי ניסיון חינם • ללא מחויבות • בטל בכל עת
           </p>
           <p className="text-xs md:text-sm text-gray-500">
-            אין דמי הפעלה • אפשר לשדרג בכל עת • תמיכה בעברית
+            אין דמי הפעלה • שדרג או הורד בכל עת • תמיכה בעברית
           </p>
         </div>
       </div>

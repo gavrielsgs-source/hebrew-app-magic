@@ -1,10 +1,12 @@
 
-export type SubscriptionTier = 'free' | 'premium' | 'business' | 'enterprise';
+export type SubscriptionTier = 'premium' | 'business' | 'enterprise';
 
 export interface Subscription {
   tier: SubscriptionTier;
   active: boolean;
   expiresAt?: string;
+  trialEndsAt?: string;
+  isTrialActive?: boolean;
   carLimit?: number;
   leadLimit?: number;
   userLimit?: number;
@@ -15,17 +17,6 @@ export interface Subscription {
 }
 
 export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
-  free: {
-    tier: 'free',
-    active: true,
-    carLimit: 5,
-    leadLimit: 10,
-    userLimit: 1,
-    templateLimit: 1,
-    whatsappMessageLimit: 50,
-    taskLimit: 10,
-    analyticsLevel: 'basic'
-  },
   premium: {
     tier: 'premium',
     active: true,

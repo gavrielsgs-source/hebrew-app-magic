@@ -10,19 +10,23 @@ interface SubscriptionContextType {
   error: Error | null;
   checkEntitlement: (feature: keyof Subscription, value?: number) => boolean;
   refreshSubscription: () => Promise<void>;
+  daysLeftInTrial: number;
+  isTrialExpired: boolean;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<Subscription>(subscriptionFeatures.free);
+  const [subscription, setSubscription] = useState<Subscription>(subscriptionFeatures.premium);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [daysLeftInTrial, setDaysLeftInTrial] = useState(14);
+  const [isTrialExpired, setIsTrialExpired] = useState(false);
 
   const fetchSubscription = async () => {
     if (!user) {
-      setSubscription(subscriptionFeatures.free);
+      setSubscription(subscriptionFeatures.premium);
       return;
     }
     
@@ -32,41 +36,64 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     try {
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('subscriptions')
-        .select('subscription_tier, active, expires_at')
+        .select('subscription_tier, active, expires_at, trial_ends_at')
         .eq('user_id', user.id)
         .single();
 
       if (subscriptionError) {
         if (subscriptionError.code === 'PGRST116') {
-          // אין מנוי עדיין, ניצור אחד חדש
+          // אין מנוי עדיין, ניצור ניסיון חדש
+          const trialEndDate = new Date();
+          trialEndDate.setDate(trialEndDate.getDate() + 14);
+          
           const { error: insertError } = await supabase
             .from('subscriptions')
             .insert({
               user_id: user.id,
-              subscription_tier: 'free',
-              active: true
+              subscription_tier: 'premium',
+              active: true,
+              trial_ends_at: trialEndDate.toISOString()
             });
           
           if (insertError) {
             console.error("Error creating subscription:", insertError);
           }
-          setSubscription(subscriptionFeatures.free);
+          
+          const newSubscription = { ...subscriptionFeatures.premium };
+          newSubscription.isTrialActive = true;
+          newSubscription.trialEndsAt = trialEndDate.toISOString();
+          setSubscription(newSubscription);
+          setDaysLeftInTrial(14);
+          setIsTrialExpired(false);
         } else {
           throw subscriptionError;
         }
       } else {
-        // בדיקה אם המנוי פעיל ולא פג
-        const isActive = subscriptionData.active && 
-          (!subscriptionData.expires_at || new Date(subscriptionData.expires_at) > new Date());
+        const now = new Date();
+        const trialEndDate = subscriptionData.trial_ends_at ? new Date(subscriptionData.trial_ends_at) : null;
+        const isTrialActive = trialEndDate && trialEndDate > now;
+        const trialExpired = trialEndDate && trialEndDate <= now && !subscriptionData.expires_at;
         
-        const tier = isActive ? subscriptionData.subscription_tier as SubscriptionTier : 'free';
-        setSubscription(subscriptionFeatures[tier] || subscriptionFeatures.free);
+        if (isTrialActive && trialEndDate) {
+          const daysLeft = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          setDaysLeftInTrial(Math.max(0, daysLeft));
+        }
+        
+        setIsTrialExpired(!!trialExpired);
+        
+        const tier = subscriptionData.subscription_tier as SubscriptionTier;
+        const currentSubscription = { ...subscriptionFeatures[tier] };
+        currentSubscription.active = subscriptionData.active && !trialExpired;
+        currentSubscription.isTrialActive = isTrialActive;
+        currentSubscription.trialEndsAt = subscriptionData.trial_ends_at;
+        currentSubscription.expiresAt = subscriptionData.expires_at;
+        
+        setSubscription(currentSubscription);
       }
     } catch (err) {
       console.error("Error fetching subscription:", err);
       setError(err instanceof Error ? err : new Error('Failed to fetch subscription'));
-      // תמיד נחזור לרמה הבסיסית במקרה של שגיאה
-      setSubscription(subscriptionFeatures.free);
+      setSubscription(subscriptionFeatures.premium);
     } finally {
       setIsLoading(false);
     }
@@ -75,20 +102,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const checkEntitlement = (feature: keyof Subscription, value?: number): boolean => {
     if (!subscription) return false;
     
+    // אם הניסיון פג ולא שילם - חסום הכל
+    if (isTrialExpired) return false;
+    
     const limit = subscription[feature];
     
-    // If the feature isn't a limit (like "active")
     if (typeof limit === 'boolean') return limit;
-    
-    // If the feature is unlimited (Infinity)
     if (limit === Infinity) return true;
     
-    // If we're checking if we're under a limit
     if (typeof limit === 'number' && typeof value === 'number') {
       return value <= limit;
     }
     
-    // If we're just checking if the feature exists
     return !!limit;
   };
   
@@ -107,7 +132,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         isLoading, 
         error, 
         checkEntitlement,
-        refreshSubscription
+        refreshSubscription,
+        daysLeftInTrial,
+        isTrialExpired
       }}
     >
       {children}

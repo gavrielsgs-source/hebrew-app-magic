@@ -26,7 +26,7 @@ export function PricingCard({
       "relative flex flex-col justify-between text-right",
       "transition-all duration-300 hover:shadow-xl hover:scale-105",
       "rounded-2xl border-0 shadow-lg backdrop-blur-sm bg-white/95",
-      "h-auto md:h-[500px] w-full max-w-sm mx-auto",
+      "h-auto md:h-[550px] w-full max-w-sm mx-auto",
       "p-4 md:p-0",
       isPopular && "ring-2 ring-blue-500 shadow-2xl md:scale-[1.05]"
     )}>
@@ -39,6 +39,9 @@ export function PricingCard({
       )}
       
       <CardHeader className="text-right pt-6 md:pt-8 pb-4 md:pb-6 px-4 md:px-6">
+        <div className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full text-center mb-3">
+          14 ימי ניסיון חינם!
+        </div>
         <div className="space-y-1 md:space-y-2">
           <h3 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h3>
           <p className="text-sm md:text-base text-gray-600">{description}</p>
@@ -47,6 +50,7 @@ export function PricingCard({
           <span className="text-gray-500 text-sm md:text-lg">/חודש</span>
           <span className="text-3xl md:text-5xl font-bold text-gray-900">₪{price}</span>
         </div>
+        <p className="text-xs text-gray-500 text-center">לאחר תום תקופת הניסיון</p>
       </CardHeader>
       
       <CardContent className="flex-grow px-4 md:px-6 py-2 md:py-0">
@@ -72,7 +76,7 @@ export function PricingCard({
               : "bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black"
           )}
         >
-          בחר תוכנית
+          התחל ניסיון חינם
         </Button>
       </CardFooter>
     </Card>
