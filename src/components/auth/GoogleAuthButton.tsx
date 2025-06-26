@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 interface GoogleAuthButtonProps {
-  mode: 'login' | 'signup';
+  mode: 'login' | 'register';
 }
 
 export function GoogleAuthButton({ mode }: GoogleAuthButtonProps) {
