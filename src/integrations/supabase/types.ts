@@ -345,6 +345,7 @@ export type Database = {
           expires_at: string | null
           id: string
           subscription_tier: string
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
         }
@@ -354,6 +355,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           subscription_tier?: string
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -363,6 +365,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           subscription_tier?: string
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
         }

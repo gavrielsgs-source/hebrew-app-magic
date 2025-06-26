@@ -1,0 +1,4 @@
+
+-- Add trial_ends_at column to subscriptions table
+ALTER TABLE subscriptions 
+ADD COLUMN trial_ends_at timestamp with time zone;
