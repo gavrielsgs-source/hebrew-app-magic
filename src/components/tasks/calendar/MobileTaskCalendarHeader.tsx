@@ -16,8 +16,8 @@ export function MobileTaskCalendarHeader({
 }: MobileTaskCalendarHeaderProps) {
   return (
     <div className="space-y-4" dir="rtl">
-      {/* Unified header with brand gradient */}
-      <div className="bg-carslead-gradient rounded-3xl p-6 shadow-xl border border-white/20">
+      {/* Header with brand colors */}
+      <div className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-3xl p-6 shadow-xl border border-white/20">
         <h1 className="text-xl font-bold text-white mb-2 text-right">
           יומן משימות
         </h1>
@@ -34,8 +34,8 @@ export function MobileTaskCalendarHeader({
           onClick={() => onViewModeChange("today")}
           className={`flex-1 h-12 text-base font-semibold rounded-2xl shadow-md transition-all duration-300 ${
             viewMode === "today" 
-              ? "bg-carslead-gradient text-white border-0" 
-              : "border-carslead-purple text-carslead-purple hover:bg-carslead-purple hover:text-white"
+              ? "bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white border-0" 
+              : "border-[#2F3C7E] text-[#2F3C7E] hover:bg-gradient-to-r hover:from-[#2F3C7E] hover:to-[#4CAF50] hover:text-white"
           }`}
         >
           היום ({todayCount})
@@ -46,8 +46,8 @@ export function MobileTaskCalendarHeader({
           onClick={() => onViewModeChange("upcoming")}
           className={`flex-1 h-12 text-base font-semibold rounded-2xl shadow-md transition-all duration-300 ${
             viewMode === "upcoming" 
-              ? "bg-carslead-gradient text-white border-0" 
-              : "border-carslead-purple text-carslead-purple hover:bg-carslead-purple hover:text-white"
+              ? "bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white border-0" 
+              : "border-[#2F3C7E] text-[#2F3C7E] hover:bg-gradient-to-r hover:from-[#2F3C7E] hover:to-[#4CAF50] hover:text-white"
           }`}
         >
           קרובים ({upcomingCount})

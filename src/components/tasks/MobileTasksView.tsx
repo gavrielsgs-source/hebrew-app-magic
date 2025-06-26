@@ -68,9 +68,9 @@ export function MobileTasksView({
   }
 
   return (
-    <MobileContainer className="pb-24" withPadding={false}>
-      {/* Simple Header - NO ADD BUTTONS */}
-      <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl mx-4 mt-4 p-4 shadow-lg">
+    <MobileContainer className="pb-32" withPadding={false}>
+      {/* Simple Header with brand colors */}
+      <div className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-xl mx-4 mt-4 p-4 shadow-lg">
         <h1 className="text-lg font-semibold text-white mb-1 text-right">
           ניהול משימות
         </h1>
@@ -96,8 +96,8 @@ export function MobileTasksView({
             className={`
               flex-1 h-12 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[48px]
               ${viewMode === "calendar" 
-                ? "bg-[#2F3C7E] text-white" 
-                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white active:bg-[#2F3C7E] active:text-white"
+                ? "bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white" 
+                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-gradient-to-r hover:from-[#2F3C7E] hover:to-[#4CAF50] hover:text-white active:bg-gradient-to-r active:from-[#2F3C7E] active:to-[#4CAF50] active:text-white"
               }
             `}
             style={{
@@ -116,8 +116,8 @@ export function MobileTasksView({
             className={`
               flex-1 h-12 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[48px]
               ${viewMode === "cards" 
-                ? "bg-[#2F3C7E] text-white" 
-                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white active:bg-[#2F3C7E] active:text-white"
+                ? "bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white" 
+                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-gradient-to-r hover:from-[#2F3C7E] hover:to-[#4CAF50] hover:text-white active:bg-gradient-to-r active:from-[#2F3C7E] active:to-[#4CAF50] active:text-white"
               }
             `}
             style={{
@@ -131,7 +131,7 @@ export function MobileTasksView({
           </button>
         </div>
 
-        {/* Content based on view mode - CLEAN, NO ADD BUTTONS */}
+        {/* Content based on view mode */}
         <div className="min-h-screen">
           {viewMode === "cards" && (
             <TasksCardsView 
