@@ -74,15 +74,6 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
             onSelect={() => onPricingSelect('enterprise')}
           />
         </div>
-
-        <div className="text-center mt-12 md:mt-16 px-4">
-          <p className="text-green-600 mb-4 text-lg md:text-xl font-semibold">
-            ✅ 14 ימי ניסיון חינם • ללא מחויבות • בטל בכל עת
-          </p>
-          <p className="text-xs md:text-sm text-gray-500">
-            אין דמי הפעלה • שדרג או הורד בכל עת • תמיכה בעברית
-          </p>
-        </div>
       </div>
     </section>
   );
