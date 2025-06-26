@@ -75,7 +75,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
           />
         </div>
 
-        <div className="text-center mt-8 md:mt-12 px-4">
+        <div className="text-center mt-12 md:mt-16 px-4">
           <p className="text-green-600 mb-4 text-lg md:text-xl font-semibold">
             ✅ 14 ימי ניסיון חינם • ללא מחויבות • בטל בכל עת
           </p>
