@@ -39,8 +39,8 @@ export function DocumentsManager({ entityId, entityType }: DocumentsManagerProps
     isDeleting,
     isTogglingTemplate
   } = useDocuments(
-    formData.selectedEntityId || entityId, 
-    formData.selectedEntityType || entityType
+    formData.selectedEntityType || entityType, 
+    formData.selectedEntityId || entityId
   );
   
   const { leads, isLoading: isLeadsLoading } = useLeads();
