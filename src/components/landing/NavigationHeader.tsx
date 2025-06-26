@@ -25,7 +25,7 @@ export function NavigationHeader({ user, loading }: NavigationHeaderProps) {
   };
 
   return (
-    <header className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 border-b border-gray-200/50 sticky top-0 z-50 w-full">
+    <header className="bg-transparent border-b border-white/20 sticky top-0 z-50 w-full backdrop-blur-md">
       <div className="container mx-auto px-4">
         <nav className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
@@ -89,7 +89,7 @@ export function NavigationHeader({ user, loading }: NavigationHeaderProps) {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200/50">
+          <div className="md:hidden py-4 border-t border-white/20 bg-white/90 backdrop-blur-sm rounded-b-lg">
             <div className="flex flex-col gap-4">
               {navItems.map((item) => (
                 <Link
