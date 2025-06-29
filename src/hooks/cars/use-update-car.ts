@@ -41,6 +41,10 @@ export function useUpdateCar() {
           ownership_history: car.ownership_history || null,
           status: car.status || "available",
           agency_id: car.agency_id || null,
+          entry_date: car.entry_date || null,
+          license_number: car.license_number || null,
+          chassis_number: car.chassis_number || null,
+          next_test_date: car.next_test_date || null,
           updated_at: new Date().toISOString()
         };
 
@@ -65,6 +69,26 @@ export function useUpdateCar() {
           console.log(`useUpdateCar - Uploading ${car.images.length} images for car ${id}`);
           
           try {
+            // First, delete existing images for this car
+            const { data: existingFiles, error: listError } = await supabase
+              .storage
+              .from('cars')
+              .list(`${id}`);
+              
+            if (!listError && existingFiles && existingFiles.length > 0) {
+              const filesToDelete = existingFiles.map(file => `${id}/${file.name}`);
+              const { error: deleteError } = await supabase
+                .storage
+                .from('cars')
+                .remove(filesToDelete);
+                
+              if (deleteError) {
+                console.warn("Error deleting existing images:", deleteError);
+              } else {
+                console.log("Deleted existing images successfully");
+              }
+            }
+
             const uploadPromises = car.images.map(async (image, index) => {
               const fileExt = image.name.split('.').pop();
               const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
@@ -89,16 +113,20 @@ export function useUpdateCar() {
             
             const uploadResults = await Promise.all(uploadPromises);
             const failedUploads = uploadResults.filter(result => !result.success);
+            const successfulUploads = uploadResults.filter(result => result.success);
             
             if (failedUploads.length > 0) {
               console.warn(`${failedUploads.length} images failed to upload:`, failedUploads);
-              // Don't throw error for image upload failures, just log them
-            } else if (uploadResults.length > 0) {
-              console.log(`${uploadResults.length} images uploaded successfully`);
+              toast.error(`${failedUploads.length} תמונות לא הועלו בהצלחה`);
+            }
+            
+            if (successfulUploads.length > 0) {
+              console.log(`${successfulUploads.length} images uploaded successfully`);
+              toast.success(`${successfulUploads.length} תמונות הועלו בהצלחה`);
             }
           } catch (imageError) {
             console.error("Error during image upload process:", imageError);
-            // Continue with car update even if images fail
+            toast.error("שגיאה בהעלאת תמונות");
           }
         }
 

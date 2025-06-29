@@ -6,7 +6,7 @@ import { Car } from "@/types/car";
 import { useUpdateCar } from "@/hooks/cars/use-update-car";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check, X, Loader2 } from "lucide-react";
 
 interface CarStatusChangerProps {
   car: Car;
@@ -15,18 +15,19 @@ interface CarStatusChangerProps {
 
 export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps) {
   const [isChanging, setIsChanging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const updateCar = useUpdateCar();
 
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'available':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200';
       case 'sold':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
       case 'reserved':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
     }
   };
 
@@ -49,6 +50,7 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
       return;
     }
 
+    setIsLoading(true);
     try {
       await updateCar.mutateAsync({
         id: car.id,
@@ -79,7 +81,13 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
     } catch (error) {
       console.error("Error updating car status:", error);
       toast.error("שגיאה בעדכון סטטוס הרכב");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    setIsChanging(false);
   };
 
   if (compact) {
@@ -90,32 +98,57 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
             variant="ghost"
             size="sm"
             onClick={() => setIsChanging(true)}
-            className="h-8 px-2"
+            className="h-auto p-0 hover:bg-transparent"
+            disabled={isLoading}
           >
-            <Badge className={`${getStatusColor(car.status)} font-medium px-2 py-1 rounded-full`}>
-              {getStatusText(car.status)}
+            <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full transition-all duration-200 cursor-pointer hover:shadow-md`}>
+              <span className="ml-1">{getStatusText(car.status)}</span>
+              {isLoading ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <ChevronDown className="h-3 w-3 mr-1" />
+              )}
             </Badge>
-            <ChevronDown className="h-3 w-3 mr-1" />
           </Button>
         ) : (
-          <div className="flex items-center gap-1">
-            <Select value={car.status || 'available'} onValueChange={handleStatusChange}>
-              <SelectTrigger className="h-8 w-24">
+          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-2 shadow-lg">
+            <Select 
+              value={car.status || 'available'} 
+              onValueChange={handleStatusChange}
+              disabled={isLoading}
+            >
+              <SelectTrigger className="h-8 w-28 border-0 focus:ring-0 bg-transparent">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="available">זמין</SelectItem>
-                <SelectItem value="reserved">שמור</SelectItem>
-                <SelectItem value="sold">נמכר</SelectItem>
+              <SelectContent dir="rtl" className="bg-white border border-gray-200 shadow-lg">
+                <SelectItem value="available" className="text-right hover:bg-green-50">
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    זמין
+                  </span>
+                </SelectItem>
+                <SelectItem value="reserved" className="text-right hover:bg-yellow-50">
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    שמור
+                  </span>
+                </SelectItem>
+                <SelectItem value="sold" className="text-right hover:bg-gray-50">
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    נמכר
+                  </span>
+                </SelectItem>
               </SelectContent>
             </Select>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsChanging(false)}
-              className="h-8 w-8 p-0"
+              onClick={handleCancel}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              disabled={isLoading}
             >
-              <Check className="h-3 w-3" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         )}
@@ -124,21 +157,40 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">סטטוס:</span>
+        <span className="text-sm font-medium text-gray-700">סטטוס:</span>
         <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full`}>
           {getStatusText(car.status)}
         </Badge>
       </div>
-      <Select value={car.status || 'available'} onValueChange={handleStatusChange}>
+      <Select 
+        value={car.status || 'available'} 
+        onValueChange={handleStatusChange}
+        disabled={isLoading}
+      >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="בחר סטטוס" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="available">זמין</SelectItem>
-          <SelectItem value="reserved">שמור</SelectItem>
-          <SelectItem value="sold">נמכר</SelectItem>
+        <SelectContent dir="rtl" className="bg-white border border-gray-200 shadow-lg">
+          <SelectItem value="available" className="text-right hover:bg-green-50">
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              זמין
+            </span>
+          </SelectItem>
+          <SelectItem value="reserved" className="text-right hover:bg-yellow-50">
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              שמור
+            </span>
+          </SelectItem>
+          <SelectItem value="sold" className="text-right hover:bg-gray-50">
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+              נמכר
+            </span>
+          </SelectItem>
         </SelectContent>
       </Select>
     </div>
