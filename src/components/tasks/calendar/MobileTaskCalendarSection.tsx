@@ -21,12 +21,12 @@ export function MobileTaskCalendarSection({
 }: MobileTaskCalendarSectionProps) {
   return (
     <div className="space-y-4" dir="rtl">
-      {/* Section header with brand colors */}
-      <div className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-2xl p-5 shadow-lg border border-white/20">
-        <h2 className="text-lg font-bold text-white mb-1 text-right">
+      {/* Clean section header */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <h2 className="text-lg font-bold text-[#2F3C7E] mb-1 text-right">
           {viewMode === "today" ? "משימות להיום" : "משימות קרובות"}
         </h2>
-        <p className="text-sm text-white/90 text-right">
+        <p className="text-sm text-gray-600 text-right">
           {viewMode === "today" 
             ? `${format(new Date(), "dd/MM/yyyy")} - ${tasks.length} משימות`
             : `${tasks.length} משימות עתידיות`

@@ -69,12 +69,12 @@ export function MobileTasksView({
 
   return (
     <MobileContainer className="pb-32" withPadding={false}>
-      {/* Simple Header with brand colors */}
-      <div className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-xl mx-4 mt-4 p-4 shadow-lg">
-        <h1 className="text-lg font-semibold text-white mb-1 text-right">
+      {/* Clean Header */}
+      <div className="bg-white rounded-xl mx-4 mt-4 p-4 shadow-sm border border-gray-100">
+        <h1 className="text-lg font-semibold text-[#2F3C7E] mb-1 text-right">
           ניהול משימות
         </h1>
-        <p className="text-sm text-white/90 text-right">
+        <p className="text-sm text-gray-600 text-right">
           {tasks?.length || 0} משימות פעילות
         </p>
       </div>
@@ -87,17 +87,17 @@ export function MobileTasksView({
           onTasksFilter={onTasksFilter}
         />
         
-        {/* Mobile View Mode Selector */}
+        {/* Clean View Mode Selector */}
         <div className="flex gap-2">
           <button
             type="button"
             onClick={(e) => handleViewModeChange("calendar", e)}
             onTouchStart={(e) => handleViewModeChange("calendar", e)}
             className={`
-              flex-1 h-12 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[48px]
+              flex-1 h-12 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[48px] border-2
               ${viewMode === "calendar" 
-                ? "bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white" 
-                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-gradient-to-r hover:from-[#2F3C7E] hover:to-[#4CAF50] hover:text-white active:bg-gradient-to-r active:from-[#2F3C7E] active:to-[#4CAF50] active:text-white"
+                ? "bg-[#2F3C7E] text-white border-[#2F3C7E]" 
+                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#2F3C7E] hover:text-[#2F3C7E]"
               }
             `}
             style={{
@@ -114,10 +114,10 @@ export function MobileTasksView({
             onClick={(e) => handleViewModeChange("cards", e)}
             onTouchStart={(e) => handleViewModeChange("cards", e)}
             className={`
-              flex-1 h-12 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[48px]
+              flex-1 h-12 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[48px] border-2
               ${viewMode === "cards" 
-                ? "bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white" 
-                : "bg-white border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-gradient-to-r hover:from-[#2F3C7E] hover:to-[#4CAF50] hover:text-white active:bg-gradient-to-r active:from-[#2F3C7E] active:to-[#4CAF50] active:text-white"
+                ? "bg-[#2F3C7E] text-white border-[#2F3C7E]" 
+                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#2F3C7E] hover:text-[#2F3C7E]"
               }
             `}
             style={{

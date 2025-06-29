@@ -66,36 +66,36 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
 
   return (
     <div className="space-y-6 pb-safe min-h-screen" dir="rtl">
-      {/* Clean header with view mode toggle ONLY - NO ADD BUTTONS */}
+      {/* Clean header with view mode toggle */}
       <div className="px-4 pt-4 space-y-4">
-        {/* Simple header */}
-        <div className="bg-gradient-to-r from-carslead-purple to-carslead-blue rounded-xl p-4 shadow-lg">
-          <h1 className="text-lg font-semibold text-white mb-1 text-right">
+        {/* Clean header */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <h1 className="text-lg font-semibold text-[#2F3C7E] mb-1 text-right">
             יומן משימות
           </h1>
-          <p className="text-sm text-white/90 text-right">
+          <p className="text-sm text-gray-600 text-right">
             {todayTasks.length + upcomingTasks.length} משימות פעילות
           </p>
         </div>
 
-        {/* View Mode Toggle */}
+        {/* Clean View Mode Toggle */}
         <div className="flex gap-2">
           <button
             onClick={() => setViewMode("today")}
-            className={`flex-1 h-10 text-sm font-medium rounded-lg transition-all ${
+            className={`flex-1 h-10 text-sm font-medium rounded-lg transition-all border-2 ${
               viewMode === "today"
-                ? "bg-gradient-to-r from-carslead-purple to-carslead-blue text-white shadow"
-                : "border-2 border-carslead-purple text-carslead-purple hover:bg-carslead-purple hover:text-white bg-white"
+                ? "bg-[#2F3C7E] text-white border-[#2F3C7E] shadow"
+                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#2F3C7E] hover:text-[#2F3C7E] bg-white"
             }`}
           >
             היום ({todayTasks.length})
           </button>
           <button
             onClick={() => setViewMode("upcoming")}
-            className={`flex-1 h-10 text-sm font-medium rounded-lg transition-all ${
+            className={`flex-1 h-10 text-sm font-medium rounded-lg transition-all border-2 ${
               viewMode === "upcoming"
-                ? "bg-gradient-to-r from-carslead-purple to-carslead-blue text-white shadow"
-                : "border-2 border-carslead-purple text-carslead-purple hover:bg-carslead-purple hover:text-white bg-white"
+                ? "bg-[#2F3C7E] text-white border-[#2F3C7E] shadow"
+                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#2F3C7E] hover:text-[#2F3C7E] bg-white"
             }`}
           >
             קרובים ({upcomingTasks.length})

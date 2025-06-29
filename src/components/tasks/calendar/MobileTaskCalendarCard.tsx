@@ -22,24 +22,24 @@ export function MobileTaskCalendarCard({
   showDate = false
 }: MobileTaskCalendarCardProps) {
   const getTaskTypeColor = (task: Task) => {
+    if (task.status === 'completed') {
+      return "bg-white border-gray-200 text-gray-600";
+    }
+    
     const now = new Date();
     const taskDate = task.due_date ? new Date(task.due_date) : null;
     
-    if (task.status === 'completed') {
-      return "bg-gradient-to-br from-green-50 to-green-100 border-green-200 text-green-800";
-    }
-    
-    if (!taskDate) return "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200";
+    if (!taskDate) return "bg-white border-gray-200";
     
     // Priority takes precedence
     if (task.priority === 'high') {
-      return "bg-gradient-to-br from-red-50 to-red-100 border-red-200 text-red-800";
+      return "bg-white border-red-200 text-red-700";
     }
     
     if (taskDate < now) {
-      return "bg-gradient-to-br from-red-50 to-red-100 border-red-200 text-red-800";
+      return "bg-white border-red-200 text-red-700";
     } else {
-      return "bg-gradient-to-br from-carslead-blue/10 to-blue-50 border-carslead-blue/20 text-carslead-darkgray";
+      return "bg-white border-gray-200 text-gray-700";
     }
   };
 
@@ -50,7 +50,7 @@ export function MobileTaskCalendarCard({
       dir="rtl"
     >
       <MobileCard className={cn(
-        "cursor-pointer hover:shadow-lg transition-all duration-300 min-h-[100px] rounded-2xl border-2 shadow-md hover:scale-[1.02] active:scale-[0.98]",
+        "cursor-pointer hover:shadow-lg transition-all duration-300 min-h-[100px] rounded-2xl border-2 shadow-sm hover:scale-[1.01] active:scale-[0.99]",
         getTaskTypeColor(task),
         task.status === 'completed' && "opacity-70"
       )}>
@@ -65,14 +65,14 @@ export function MobileTaskCalendarCard({
             </h3>
             <div className="flex items-center gap-2 mr-3">
               {showDate && task.due_date && (
-                <div className="text-sm text-carslead-darkgray flex-shrink-0 bg-white/90 px-3 py-2 rounded-xl font-semibold shadow-sm">
-                  <div className="text-xs text-carslead-purple text-center font-bold">
+                <div className="text-sm text-gray-600 flex-shrink-0 bg-gray-50 px-3 py-2 rounded-xl font-semibold shadow-sm border border-gray-100">
+                  <div className="text-xs text-[#2F3C7E] text-center font-bold">
                     {format(new Date(task.due_date), "dd/MM")}
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-2 text-sm text-carslead-darkgray bg-white/90 px-3 py-2 rounded-xl shadow-sm">
-                <Clock className="h-4 w-4 text-carslead-purple" />
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-xl shadow-sm border border-gray-100">
+                <Clock className="h-4 w-4 text-gray-500" />
                 <span className="font-semibold text-sm">
                   {task.due_date && format(new Date(task.due_date), "HH:mm")}
                 </span>
@@ -82,7 +82,7 @@ export function MobileTaskCalendarCard({
           
           {/* Description */}
           {task.description && (
-            <p className="text-base text-carslead-darkgray line-clamp-2 leading-relaxed text-right">
+            <p className="text-base text-gray-600 line-clamp-2 leading-relaxed text-right">
               {task.description}
             </p>
           )}
@@ -90,7 +90,7 @@ export function MobileTaskCalendarCard({
           {/* Footer with badges and actions */}
           <div className="flex justify-between items-center">
             <div className="flex gap-2 flex-wrap">
-              <Badge variant="outline" className="text-sm px-3 py-1 bg-white/90 rounded-xl border-carslead-purple/30 text-carslead-purple font-semibold">
+              <Badge variant="outline" className="text-sm px-3 py-1 bg-gray-50 rounded-xl border-gray-300 text-gray-600 font-semibold">
                 {task.type === 'call' ? 'שיחה' : 
                  task.type === 'meeting' ? 'פגישה' : 
                  task.type === 'follow_up' ? 'מעקב' : 'משימה'}
@@ -98,10 +98,10 @@ export function MobileTaskCalendarCard({
               <Badge 
                 variant="outline" 
                 className={cn(
-                  "text-sm px-3 py-1 bg-white/90 rounded-xl font-semibold",
-                  task.priority === 'high' ? 'border-red-400 text-red-700' :
-                  task.priority === 'medium' ? 'border-yellow-400 text-yellow-700' :
-                  'border-green-400 text-green-700'
+                  "text-sm px-3 py-1 bg-gray-50 rounded-xl font-semibold",
+                  task.priority === 'high' ? 'border-red-300 text-red-600' :
+                  task.priority === 'medium' ? 'border-yellow-300 text-yellow-600' :
+                  'border-green-300 text-green-600'
                 )}
               >
                 {task.priority === 'high' ? 'גבוהה' : 
@@ -114,10 +114,10 @@ export function MobileTaskCalendarCard({
               <button
                 onClick={(e) => onTaskStatusToggle(task, e)}
                 className={cn(
-                  "p-3 rounded-full transition-all duration-300 shadow-md hover:scale-110 active:scale-95",
+                  "p-3 rounded-full transition-all duration-300 shadow-sm hover:scale-110 active:scale-95 border-2",
                   task.status === 'completed' 
-                    ? "bg-gradient-to-br from-green-100 to-green-200 text-green-700 hover:from-green-200 hover:to-green-300" 
-                    : "bg-white text-carslead-purple hover:bg-carslead-purple hover:text-white border border-carslead-purple/30"
+                    ? "bg-green-50 text-green-600 border-green-200 hover:bg-green-100" 
+                    : "bg-white text-gray-600 hover:bg-gray-50 border-gray-300"
                 )}
               >
                 {task.status === 'completed' ? 
@@ -127,7 +127,7 @@ export function MobileTaskCalendarCard({
               </button>
               <button
                 onClick={(e) => onEditTask(task, e)}
-                className="p-3 rounded-full bg-white text-carslead-blue hover:bg-carslead-blue hover:text-white transition-all duration-300 shadow-md border border-carslead-blue/30 hover:scale-110 active:scale-95"
+                className="p-3 rounded-full bg-white text-gray-600 hover:bg-gray-50 transition-all duration-300 shadow-sm border-2 border-gray-300 hover:scale-110 active:scale-95"
               >
                 <Edit className="h-5 w-5" />
               </button>
