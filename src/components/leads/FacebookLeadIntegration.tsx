@@ -89,6 +89,7 @@ export function FacebookLeadIntegration() {
     }, {
       scope: 'public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval'
     });
+  }
     
   return (
     <div className="p-4 text-right">
