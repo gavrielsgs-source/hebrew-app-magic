@@ -59,79 +59,78 @@ export function FacebookLeadIntegration() {
   setLoading(true);
   setMessage("");
 
-  window.FB.login(async function (response) {
+  // Use a non-async function here
+  window.FB.login(function (response) {
     if (response.authResponse) {
-      try {
-        // Get pages the user manages
-        const pagesResponse = await new Promise((resolve, reject) => {
-          window.FB.api("/me/accounts", function (res) {
-            if (res.error) reject(res.error);
-            else resolve(res);
-          });
-        });
-
-        for (const page of (pagesResponse as any).data) {
-          // Subscribe page to webhook
-          await new Promise((resolve, reject) => {
-            window.FB.api(
-              `/${page.id}/subscribed_apps`,
-              "POST",
-              { access_token: page.access_token, subscribed_fields: "leadgen" },
-              function (subRes) {
-                if (!subRes || subRes.error) reject(subRes?.error || "Unknown error");
-                else resolve(subRes);
-              }
-            );
+      // Async IIFE inside the callback
+      (async () => {
+        try {
+          const pagesResponse = await new Promise((resolve, reject) => {
+            window.FB.api("/me/accounts", function (res) {
+              if (res.error) reject(res.error);
+              else resolve(res);
+            });
           });
 
-          console.log(`Subscribed page ${page.name} (${page.id})`);
-
-          // Fetch lead forms for page
-          const leadFormsResponse = await new Promise((resolve, reject) => {
-            window.FB.api(
-              `/${page.id}/leadgen_forms`,
-              "GET",
-              { access_token: page.access_token },
-              function (formsRes) {
-                if (!formsRes || formsRes.error) reject(formsRes?.error || "Failed to fetch lead forms");
-                else resolve(formsRes);
-              }
-            );
-          });
-
-          const leadForms = (leadFormsResponse as any).data || [];
-          console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
-
-          // For each form, fetch leads
-          for (const form of leadForms) {
-            const leadsResponse = await new Promise((resolve, reject) => {
+          for (const page of (pagesResponse as any).data) {
+            await new Promise((resolve, reject) => {
               window.FB.api(
-                `/${form.id}/leads`,
-                "GET",
-                { access_token: page.access_token },
-                function (leadsRes) {
-                  if (!leadsRes || leadsRes.error) reject(leadsRes?.error || "Failed to fetch leads");
-                  else resolve(leadsRes);
+                `/${page.id}/subscribed_apps`,
+                "POST",
+                { access_token: page.access_token, subscribed_fields: "leadgen" },
+                function (subRes) {
+                  if (!subRes || subRes.error) reject(subRes?.error || "Unknown error");
+                  else resolve(subRes);
                 }
               );
             });
 
-            const leads = (leadsResponse as any).data || [];
-            console.log(`Fetched ${leads.length} leads for form ${form.id}`);
+            console.log(`Subscribed page ${page.name} (${page.id})`);
 
-            // Process leads here or send to backend
-            for (const lead of leads) {
-              console.log("Lead:", lead);
+            const leadFormsResponse = await new Promise((resolve, reject) => {
+              window.FB.api(
+                `/${page.id}/leadgen_forms`,
+                "GET",
+                { access_token: page.access_token },
+                function (formsRes) {
+                  if (!formsRes || formsRes.error) reject(formsRes?.error || "Failed to fetch lead forms");
+                  else resolve(formsRes);
+                }
+              );
+            });
+
+            const leadForms = (leadFormsResponse as any).data || [];
+            console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
+
+            for (const form of leadForms) {
+              const leadsResponse = await new Promise((resolve, reject) => {
+                window.FB.api(
+                  `/${form.id}/leads`,
+                  "GET",
+                  { access_token: page.access_token },
+                  function (leadsRes) {
+                    if (!leadsRes || leadsRes.error) reject(leadsRes?.error || "Failed to fetch leads");
+                    else resolve(leadsRes);
+                  }
+                );
+              });
+
+              const leads = (leadsResponse as any).data || [];
+              console.log(`Fetched ${leads.length} leads for form ${form.id}`);
+
+              for (const lead of leads) {
+                console.log("Lead:", lead);
+              }
             }
           }
-        }
 
-        setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
-      } catch (error: any) {
-        setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
-      } finally {
-        setLoading(false);
-      }
+          setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
+        } catch (error: any) {
+          setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
+        } finally {
+          setLoading(false);
+        }
+      })();
     } else {
       setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
       setLoading(false);
