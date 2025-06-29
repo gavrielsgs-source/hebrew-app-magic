@@ -104,7 +104,7 @@ export function FacebookLeadIntegration() {
         setLoading(false);
       }
     }, {
-      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval",
+      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management",
     });
   };
 
