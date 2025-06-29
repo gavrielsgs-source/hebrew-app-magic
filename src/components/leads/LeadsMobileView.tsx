@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
       <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
         <div className="space-y-4 p-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse rounded-2xl overflow-hidden">
+            <Card key={i} className="animate-pulse rounded-2xl overflow-hidden bg-white border border-gray-100">
               <CardHeader className="pb-3">
                 <div className="h-8 bg-slate-200 rounded-xl mb-2"></div>
                 <div className="h-6 bg-slate-200 rounded-lg w-2/3"></div>
@@ -89,10 +90,10 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
     console.log('Showing error state:', error);
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 pb-24" dir="rtl">
-        <div className="bg-red-50 border-2 border-red-200 text-red-700 p-6 rounded-3xl text-center max-w-md w-full">
+        <div className="bg-white border border-gray-200 text-gray-700 p-6 rounded-3xl text-center max-w-md w-full shadow-md">
           <div className="mb-3">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Phone className="h-6 w-6 text-red-500" />
+            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Phone className="h-6 w-6 text-gray-500" />
             </div>
           </div>
           <p className="font-bold text-lg mb-2">שגיאה בטעינת הלקוחות</p>
@@ -108,13 +109,13 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
     return (
       <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-          <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-full p-6 mb-6">
+          <div className="bg-white rounded-full p-6 mb-6 border border-gray-200 shadow-sm">
             <Users className="h-12 w-12 text-[#2F3C7E]" />
           </div>
           <h3 className="font-bold text-2xl mb-3 text-gray-900">אין לקוחות פוטנציאליים</h3>
           <p className="text-gray-500 text-lg mb-6 leading-relaxed">הוסף את הלקוח הראשון שלך כדי להתחיל לעקוב ולנהל לידים</p>
           <Button 
-            className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] text-white text-lg py-4 px-8 rounded-2xl shadow-lg"
+            className="bg-[#2F3C7E] hover:bg-[#1A2347] text-white text-lg py-4 px-8 rounded-2xl shadow-md"
             size="lg"
           >
             <Plus className="h-6 w-6 ml-2" />
@@ -131,8 +132,8 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
     <div className="min-h-screen bg-gray-50 pb-24" dir="rtl">
       <div className="space-y-4 p-4">
         {leads.map((lead) => (
-          <Card key={lead.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 rounded-3xl border-0 bg-white">
-            <CardHeader className="pb-4 bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100">
+          <Card key={lead.id} className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 rounded-3xl border border-gray-100 bg-white">
+            <CardHeader className="pb-4 bg-white border-b border-gray-100">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-bold text-2xl text-[#2F3C7E] mb-3 leading-tight">{lead.name as string}</h3>
@@ -143,7 +144,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-[#2F3C7E] hover:bg-[#2F3C7E]/10 h-12 w-12 rounded-2xl"
+                  className="text-gray-600 hover:bg-gray-100 h-12 w-12 rounded-2xl"
                   onClick={() => {
                     setSelectedLeadId(lead.id as string);
                     setActiveDialog("edit");
@@ -158,11 +159,11 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
               {/* פרטי קשר */}
               <div className="space-y-4 mb-6">
                 {lead.phone && (
-                  <div className="flex justify-between items-center bg-gradient-to-l from-blue-50 to-white p-4 rounded-2xl border border-blue-100">
+                  <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-200">
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white rounded-xl px-4 py-2 font-semibold"
+                      className="border-gray-300 text-gray-600 hover:bg-gray-50 rounded-xl px-4 py-2 font-semibold"
                       onClick={() => handleCallLead(lead.phone as string)}
                     >
                       <Phone className="h-5 w-5" />
@@ -175,22 +176,22 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                 )}
                 
                 {lead.email && (
-                  <div className="flex items-center bg-gradient-to-l from-purple-50 to-white p-4 rounded-2xl border border-purple-100">
+                  <div className="flex items-center bg-white p-4 rounded-2xl border border-gray-200">
                     <div className="text-right flex-1">
                       <div className="font-semibold text-gray-900 truncate">{lead.email as string}</div>
                       <div className="text-sm text-gray-600">אימייל</div>
                     </div>
-                    <MessageSquare className="h-5 w-5 text-purple-600 mr-3" />
+                    <MessageSquare className="h-5 w-5 text-gray-500 mr-3" />
                   </div>
                 )}
                 
                 {lead.source && (
-                  <div className="flex items-center bg-gradient-to-l from-green-50 to-white p-4 rounded-2xl border border-green-100">
+                  <div className="flex items-center bg-white p-4 rounded-2xl border border-gray-200">
                     <div className="text-right flex-1">
                       <div className="font-semibold text-gray-900">{lead.source as string}</div>
                       <div className="text-sm text-gray-600">מקור הליד</div>
                     </div>
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-gray-500 mr-3" />
                   </div>
                 )}
               </div>
@@ -201,7 +202,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                 <div className="grid grid-cols-2 gap-3">
                   <Button 
                     size="lg"
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl py-4 h-16 shadow-lg font-bold text-lg"
+                    className="bg-green-500 hover:bg-green-600 text-white rounded-2xl py-4 h-16 shadow-md font-bold text-lg"
                     disabled={!lead.phone}
                     onClick={() => handleWhatsAppMessage(lead.id as string)}
                   >
@@ -212,7 +213,7 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
                   <Button 
                     variant="outline" 
                     size="lg"
-                    className="border-2 border-red-300 text-red-600 hover:bg-red-50 rounded-2xl py-4 h-16 font-semibold"
+                    className="border-2 border-gray-300 text-gray-600 hover:bg-gray-50 rounded-2xl py-4 h-16 font-semibold"
                     onClick={() => {
                       setLeadToDelete(lead.id as string);
                       setIsDeleteDialogOpen(true);
