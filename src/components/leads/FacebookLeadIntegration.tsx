@@ -36,114 +36,78 @@ export function FacebookLeadIntegration() {
     }
   }, []);
 
-  async function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
+  // Helper: promisify FB.api calls
+  function fbApi<T = any>(path: string, method = "GET", params?: Record<string, any>): Promise<T> {
     return new Promise((resolve, reject) => {
-      window.FB.api(
-        `/${pageId}/subscribed_apps`,
-        "POST",
-        { access_token: pageAccessToken, subscribed_fields: "leadgen" },
-        function (response: any) {
-          if (!response || response.error) {
-            reject(response?.error || "Unknown error");
-          } else {
-            resolve(response);
-          }
+      window.FB.api(path, method, params, (response: any) => {
+        if (!response || response.error) {
+          reject(response?.error || new Error("Unknown Facebook API error"));
+        } else {
+          resolve(response);
         }
-      );
+      });
+    });
+  }
+
+  async function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
+    return fbApi(`/${pageId}/subscribed_apps`, "POST", {
+      access_token: pageAccessToken,
+      subscribed_fields: "leadgen",
     });
   }
 
   const loginAndSubscribe = () => {
-  if (!fbInitialized) return;
+    if (!fbInitialized) return;
 
-  setLoading(true);
-  setMessage("");
+    setLoading(true);
+    setMessage("");
 
-  // Use a non-async function here
-  window.FB.login(function (response) {
-    if (response.authResponse) {
-      // Async IIFE inside the callback
-      console.log(response.authResponse)
-      (async () => {
-        try {
-          const pagesResponse = await new Promise((resolve, reject) => {
-            window.FB.api("/me/accounts", function (res) {
-              if (res.error) reject(res.error);
-              else resolve(res);
-            });
-          });
-          console.log('hi')
+    window.FB.login(function (response: fb.StatusResponse) {
+      if (response.authResponse) {
+        (async () => {
+          try {
+            const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts");
+            console.log("Pages response:", pagesResponse);
 
-          for (const page of (pagesResponse as any).data) {
-            console.log(page)
-            await new Promise((resolve, reject) => {
-              window.FB.api(
-                `/${page.id}/subscribed_apps`,
-                "POST",
-                { access_token: page.access_token, subscribed_fields: "leadgen" },
-                function (subRes) {
-                  if (!subRes || subRes.error) reject(subRes?.error || "Unknown error");
-                  else resolve(subRes);
-                }
-              );
-            });
+            for (const page of pagesResponse.data) {
+              await subscribePageToWebhook(page.id, page.access_token);
+              console.log(`Subscribed page ${page.name} (${page.id})`);
 
-            console.log(`Subscribed page ${page.name} (${page.id})`);
-
-            const leadFormsResponse = await new Promise((resolve, reject) => {
-              window.FB.api(
-                `/${page.id}/leadgen_forms`,
-                "GET",
-                { access_token: page.access_token },
-                function (formsRes) {
-                  if (!formsRes || formsRes.error) reject(formsRes?.error || "Failed to fetch lead forms");
-                  else resolve(formsRes);
-                }
-              );
-            });
-
-            const leadForms = (leadFormsResponse as any).data || [];
-            console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
-
-            for (const form of leadForms) {
-              const leadsResponse = await new Promise((resolve, reject) => {
-                window.FB.api(
-                  `/${form.id}/leads`,
-                  "GET",
-                  { access_token: page.access_token },
-                  function (leadsRes) {
-                    if (!leadsRes || leadsRes.error) reject(leadsRes?.error || "Failed to fetch leads");
-                    else resolve(leadsRes);
-                  }
-                );
+              const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page.id}/leadgen_forms`, "GET", {
+                access_token: page.access_token,
               });
+              const leadForms = leadFormsResponse.data || [];
+              console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
 
-              const leads = (leadsResponse as any).data || [];
-              console.log(`Fetched ${leads.length} leads for form ${form.id}`);
+              for (const form of leadForms) {
+                const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
+                  access_token: page.access_token,
+                });
+                const leads = leadsResponse.data || [];
+                console.log(`Fetched ${leads.length} leads for form ${form.id}`);
 
-              for (const lead of leads) {
-                console.log("Lead:", lead);
+                for (const lead of leads) {
+                  console.log("Lead:", lead);
+                }
               }
             }
+
+            setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
+          } catch (error: any) {
+            setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
+          } finally {
+            setLoading(false);
           }
+        })();
+      } else {
+        setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+        setLoading(false);
+      }
+    }, {
+      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval",
+    });
+  };
 
-          setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
-        } catch (error: any) {
-          setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
-        } finally {
-          setLoading(false);
-        }
-      })();
-    } else {
-      setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
-      setLoading(false);
-    }
-  }, {
-    scope: 'public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval'
-  });
-};
-
-    
   return (
     <div className="p-4 text-right">
       <button
