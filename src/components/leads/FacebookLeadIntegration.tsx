@@ -63,6 +63,7 @@ export function FacebookLeadIntegration() {
   window.FB.login(function (response) {
     if (response.authResponse) {
       // Async IIFE inside the callback
+      console.log(response.authResponse)
       (async () => {
         try {
           const pagesResponse = await new Promise((resolve, reject) => {
@@ -71,6 +72,7 @@ export function FacebookLeadIntegration() {
               else resolve(res);
             });
           });
+          console.log('hi')
 
           for (const page of (pagesResponse as any).data) {
             console.log(page)
