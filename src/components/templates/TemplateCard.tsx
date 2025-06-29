@@ -1,5 +1,4 @@
 
-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
@@ -51,40 +50,47 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   const previewMessage = generatePreviewMessage();
   
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 border-border">
-      <CardHeader className="pb-3">
+    <Card className="hover:shadow-xl transition-all duration-300 border border-gray-200 bg-white rounded-2xl overflow-hidden">
+      <CardHeader className="pb-4 p-6">
         <div className="flex items-start justify-between w-full">
           {/* כותרת ותיאור - צד ימין */}
           <div className="text-right order-2 flex-1">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2 justify-end">
-              <Badge variant={template.type === 'car' ? 'default' : 'secondary'} className="text-xs">
+            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-end mb-2">
+              <Badge 
+                variant={template.type === 'car' ? 'default' : 'secondary'} 
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border-2 ${
+                  template.type === 'car' 
+                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                    : 'bg-gray-50 text-gray-700 border-gray-200'
+                }`}
+              >
                 {template.type === 'car' ? (
                   <>
-                    <Car className="h-3 w-3 mr-1" />
+                    <Car className="h-3 w-3 ml-1" />
                     רכב
                   </>
                 ) : (
                   <>
-                    <User className="h-3 w-3 mr-1" />
+                    <User className="h-3 w-3 ml-1" />
                     לקוח
                   </>
                 )}
               </Badge>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              {template.name}
+              <FileText className="h-5 w-5 text-gray-400" />
+              <span className="text-gray-800">{template.name}</span>
             </CardTitle>
-            <CardDescription className="mt-1 text-right">
+            <CardDescription className="text-right text-gray-600 leading-relaxed">
               {template.description}
             </CardDescription>
           </div>
           
           {/* כפתורי פעולה - צד שמאל */}
-          <div className="flex gap-1 order-1">
+          <div className="flex gap-2 order-1">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => onEdit(template)}
-              className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
+              className="h-9 w-9 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-transparent hover:border-blue-200"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -92,7 +98,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               variant="ghost" 
               size="icon"
               onClick={() => onDelete(template.id)}
-              className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+              className="h-9 w-9 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-transparent hover:border-red-200"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -100,18 +106,22 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0">
-        <div className="bg-muted/30 rounded-lg p-3 min-h-[100px] max-h-[120px] overflow-hidden">
-          <div className="text-sm text-muted-foreground whitespace-pre-line text-right line-clamp-4">
+      <CardContent className="pt-0 px-6">
+        <div className="bg-gray-50 rounded-xl p-4 min-h-[100px] max-h-[120px] overflow-hidden border border-gray-100">
+          <div className="text-sm text-gray-700 whitespace-pre-line text-right line-clamp-4 leading-relaxed">
             {previewMessage}
           </div>
         </div>
       </CardContent>
       
-      <CardFooter className="pt-3 justify-start">
+      <CardFooter className="pt-4 pb-6 px-6 justify-start">
         <SwipeDialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-2 rounded-xl border-2 border-gray-200 hover:border-[#2F3C7E] hover:text-[#2F3C7E] transition-all duration-200 px-4 py-2 font-medium"
+            >
               <Eye className="h-4 w-4" />
               תצוגה מקדימה
             </Button>
@@ -129,4 +139,3 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
     </Card>
   );
 }
-
