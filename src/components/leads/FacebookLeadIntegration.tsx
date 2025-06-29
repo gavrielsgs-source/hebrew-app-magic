@@ -62,7 +62,7 @@ export function FacebookLeadIntegration() {
     setLoading(true);
     setMessage("");
 
-    window.FB.login(function (response: fb.StatusResponse) {
+    window.FB.login(function (response: any) {
       if (response.authResponse) {
         (async () => {
           try {
