@@ -21,6 +21,11 @@ export function createDefaultFormValues(car: Car): CarFormValues {
     last_test_date: car.last_test_date || "",
     ownership_history: car.ownership_history || "",
     agency_id: car.agency_id || "", // Convert null to empty string
+    // New fields
+    entry_date: car.entry_date || "",
+    license_number: car.license_number || "",
+    chassis_number: car.chassis_number || "",
+    next_test_date: car.next_test_date || "",
   };
 
   console.log("createDefaultFormValues - Output defaultValues:", defaultValues);

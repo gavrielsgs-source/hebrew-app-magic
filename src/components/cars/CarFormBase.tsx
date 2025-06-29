@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -290,6 +291,63 @@ export function CarFormBase({
                 <FormControl>
                   <Input placeholder="יד ראשונה" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* New fields */}
+          <FormField
+            control={form.control}
+            name="entry_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>תאריך כניסה</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="license_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>מספר רישוי</FormLabel>
+                <FormControl>
+                  <Input placeholder="123-45-678" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="chassis_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>מספר שלדה</FormLabel>
+                <FormControl>
+                  <Input placeholder="VIN123456789" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="next_test_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>תאריך טסט הבא</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormDescription>
+                  יתווסף כמשימה ביומן
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

@@ -75,10 +75,17 @@ export function CarCard({
               <p className="text-base text-gray-600">
                 שנת {car.year}
               </p>
+              {car.license_number && (
+                <p className="text-sm text-gray-500">
+                  רישוי: {car.license_number}
+                </p>
+              )}
             </div>
-            <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full flex-shrink-0 mr-3`}>
-              {getStatusText(car.status)}
-            </Badge>
+            <div className="flex flex-col items-end gap-2">
+              <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full flex-shrink-0`}>
+                {getStatusText(car.status)}
+              </Badge>
+            </div>
           </div>
           
           {/* מחיר בולט */}
@@ -116,6 +123,27 @@ export function CarCard({
                 <CarIcon className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
               </div>
             )}
+
+            {/* New fields display */}
+            {car.entry_date && (
+              <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
+                <div className="text-sm min-w-0 flex-1">
+                  <div className="font-medium text-gray-900">{new Date(car.entry_date).toLocaleDateString('he-IL')}</div>
+                  <div className="text-xs text-gray-500">כניסה למלאי</div>
+                </div>
+                <Calendar className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+              </div>
+            )}
+
+            {car.next_test_date && (
+              <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
+                <div className="text-sm min-w-0 flex-1">
+                  <div className="font-medium text-gray-900">{new Date(car.next_test_date).toLocaleDateString('he-IL')}</div>
+                  <div className="text-xs text-gray-500">טסט הבא</div>
+                </div>
+                <Calendar className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+              </div>
+            )}
           </div>
           
           {/* תיאור קצר */}
@@ -138,7 +166,7 @@ export function CarCard({
     );
   }
 
-  // Desktop version - keep existing code
+  // Desktop version
   return (
     <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 group border-0 shadow-lg bg-white rounded-2xl flex flex-col">
       <CarImageSection 
@@ -157,6 +185,11 @@ export function CarCard({
             <CardDescription className="text-lg font-medium text-gray-600">
               שנת {car.year}
             </CardDescription>
+            {car.license_number && (
+              <CardDescription className="text-sm text-gray-500">
+                רישוי: {car.license_number}
+              </CardDescription>
+            )}
           </div>
           <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full flex-shrink-0 ml-2`}>
             {getStatusText(car.status)}
@@ -198,6 +231,27 @@ export function CarCard({
                 <div className="text-xs text-gray-500">תיבת הילוכים</div>
               </div>
               <CarIcon className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+            </div>
+          )}
+
+          {/* New fields display */}
+          {car.entry_date && (
+            <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
+              <div className="text-sm min-w-0 flex-1">
+                <div className="font-medium text-gray-900 truncate">{new Date(car.entry_date).toLocaleDateString('he-IL')}</div>
+                <div className="text-xs text-gray-500">כניסה למלאי</div>
+              </div>
+              <Calendar className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+            </div>
+          )}
+
+          {car.next_test_date && (
+            <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
+              <div className="text-sm min-w-0 flex-1">
+                <div className="font-medium text-gray-900 truncate">{new Date(car.next_test_date).toLocaleDateString('he-IL')}</div>
+                <div className="text-xs text-gray-500">טסט הבא</div>
+              </div>
+              <Calendar className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
             </div>
           )}
         </div>

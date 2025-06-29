@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAddCar } from "@/hooks/cars/use-add-car";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { Car, Calendar, Fuel, Palette, Settings } from "lucide-react";
+import { Car, Calendar, Fuel, Palette, Settings, FileText, Hash } from "lucide-react";
 import { NewCar } from "@/types/car";
+import { useTasks } from "@/hooks/use-tasks";
 
 interface MobileAddCarFormProps {
   onSuccess?: () => void;
@@ -18,6 +19,7 @@ interface MobileAddCarFormProps {
 export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
   const { user } = useAuth();
   const addCar = useAddCar();
+  const { addTask } = useTasks();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -34,7 +36,12 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
     description: "",
     registration_year: "",
     last_test_date: "",
-    ownership_history: ""
+    ownership_history: "",
+    // New fields
+    entry_date: "",
+    license_number: "",
+    chassis_number: "",
+    next_test_date: ""
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,10 +73,34 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
         last_test_date: formData.last_test_date || null,
         ownership_history: formData.ownership_history || null,
         status: "available",
-        agency_id: null
+        agency_id: null,
+        // New fields
+        entry_date: formData.entry_date || null,
+        license_number: formData.license_number || null,
+        chassis_number: formData.chassis_number || null,
+        next_test_date: formData.next_test_date || null,
       };
 
-      await addCar.mutateAsync(carData);
+      const newCar = await addCar.mutateAsync(carData);
+
+      // Create task for next test date if provided
+      if (formData.next_test_date && newCar) {
+        try {
+          await addTask.mutateAsync({
+            title: `טסט לרכב ${formData.make} ${formData.model}`,
+            description: `תאריך טסט לרכב ${formData.make} ${formData.model} (${formData.year}) - מספר רישוי: ${formData.license_number || 'לא צוין'}`,
+            due_date: new Date(formData.next_test_date).toISOString(),
+            type: 'test',
+            priority: 'high',
+            status: 'pending',
+            car_id: newCar.id,
+            assigned_to: null,
+            agency_id: null,
+          });
+        } catch (taskError) {
+          console.error("Error creating test task:", taskError);
+        }
+      }
       
       toast({
         title: "רכב נוסף",
@@ -152,6 +183,70 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
             placeholder="120000"
+            className="h-11 text-right"
+            dir="rtl"
+          />
+        </div>
+      </div>
+
+      {/* License Number & Chassis Number */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="license_number" className="text-sm font-medium flex items-center gap-2">
+            <Hash className="h-4 w-4" />
+            מספר רישוי
+          </Label>
+          <Input
+            id="license_number"
+            value={formData.license_number}
+            onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+            placeholder="123-45-678"
+            className="h-11 text-right"
+            dir="rtl"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="chassis_number" className="text-sm font-medium flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            מספר שלדה
+          </Label>
+          <Input
+            id="chassis_number"
+            value={formData.chassis_number}
+            onChange={(e) => setFormData({ ...formData, chassis_number: e.target.value })}
+            placeholder="VIN123456789"
+            className="h-11 text-right"
+            dir="rtl"
+          />
+        </div>
+      </div>
+
+      {/* Entry Date & Next Test Date */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="entry_date" className="text-sm font-medium flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            תאריך כניסה
+          </Label>
+          <Input
+            id="entry_date"
+            type="date"
+            value={formData.entry_date}
+            onChange={(e) => setFormData({ ...formData, entry_date: e.target.value })}
+            className="h-11 text-right"
+            dir="rtl"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="next_test_date" className="text-sm font-medium flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            תאריך טסט הבא
+          </Label>
+          <Input
+            id="next_test_date"
+            type="date"
+            value={formData.next_test_date}
+            onChange={(e) => setFormData({ ...formData, next_test_date: e.target.value })}
             className="h-11 text-right"
             dir="rtl"
           />

@@ -69,9 +69,11 @@ export type Database = {
       cars: {
         Row: {
           agency_id: string | null
+          chassis_number: string | null
           created_at: string | null
           description: string | null
           engine_size: string | null
+          entry_date: string | null
           exterior_color: string | null
           features: string[] | null
           fuel_type: string | null
@@ -79,8 +81,10 @@ export type Database = {
           interior_color: string | null
           kilometers: number
           last_test_date: string | null
+          license_number: string | null
           make: string
           model: string
+          next_test_date: string | null
           ownership_history: string | null
           price: number
           registration_year: number | null
@@ -92,9 +96,11 @@ export type Database = {
         }
         Insert: {
           agency_id?: string | null
+          chassis_number?: string | null
           created_at?: string | null
           description?: string | null
           engine_size?: string | null
+          entry_date?: string | null
           exterior_color?: string | null
           features?: string[] | null
           fuel_type?: string | null
@@ -102,8 +108,10 @@ export type Database = {
           interior_color?: string | null
           kilometers: number
           last_test_date?: string | null
+          license_number?: string | null
           make: string
           model: string
+          next_test_date?: string | null
           ownership_history?: string | null
           price: number
           registration_year?: number | null
@@ -115,9 +123,11 @@ export type Database = {
         }
         Update: {
           agency_id?: string | null
+          chassis_number?: string | null
           created_at?: string | null
           description?: string | null
           engine_size?: string | null
+          entry_date?: string | null
           exterior_color?: string | null
           features?: string[] | null
           fuel_type?: string | null
@@ -125,8 +135,10 @@ export type Database = {
           interior_color?: string | null
           kilometers?: number
           last_test_date?: string | null
+          license_number?: string | null
           make?: string
           model?: string
+          next_test_date?: string | null
           ownership_history?: string | null
           price?: number
           registration_year?: number | null

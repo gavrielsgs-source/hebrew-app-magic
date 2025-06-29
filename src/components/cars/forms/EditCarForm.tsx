@@ -7,6 +7,7 @@ import { CarFormBase } from "../CarFormBase";
 import { useUpdateCar } from "@/hooks/cars/use-update-car";
 import { useAuthContext } from "@/contexts/auth-context";
 import { createDefaultFormValues } from "./CarFormValues";
+import { useTasks } from "@/hooks/use-tasks";
 
 interface EditCarFormProps {
   car: Car;
@@ -16,6 +17,7 @@ interface EditCarFormProps {
 export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   const updateCar = useUpdateCar();
   const { agencies } = useAuthContext();
+  const { addTask } = useTasks();
   const defaultValues = createDefaultFormValues(car);
 
   console.log("EditCarForm - Rendering with car:", car.id);
@@ -52,12 +54,37 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         ownership_history: values.ownership_history || null,
         status: car.status,
         agency_id: values.agency_id || null,
-        images: images && images.length > 0 ? images : undefined
+        images: images && images.length > 0 ? images : undefined,
+        // New fields
+        entry_date: values.entry_date || null,
+        license_number: values.license_number || null,
+        chassis_number: values.chassis_number || null,
+        next_test_date: values.next_test_date || null,
       };
 
       console.log("EditCarForm - About to call updateCar.mutateAsync with data:", updateData);
       
       const result = await updateCar.mutateAsync(updateData);
+      
+      // Create task for next test date if provided and different from previous
+      if (values.next_test_date && values.next_test_date !== car.next_test_date) {
+        try {
+          await addTask.mutateAsync({
+            title: `טסט לרכב ${car.make} ${car.model}`,
+            description: `תאריך טסט לרכב ${car.make} ${car.model} (${car.year}) - מספר רישוי: ${values.license_number || 'לא צוין'}`,
+            due_date: new Date(values.next_test_date).toISOString(),
+            type: 'test',
+            priority: 'high',
+            status: 'pending',
+            car_id: car.id,
+            assigned_to: null,
+            agency_id: values.agency_id || null,
+          });
+          console.log("EditCarForm - Test task created successfully");
+        } catch (taskError) {
+          console.error("EditCarForm - Error creating test task:", taskError);
+        }
+      }
       
       console.log("EditCarForm - Update successful, result:", result);
       toast.success("הרכב עודכן בהצלחה");

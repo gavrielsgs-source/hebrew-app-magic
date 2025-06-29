@@ -9,6 +9,7 @@ import { SubscriptionLimitAlert } from "@/components/subscription/SubscriptionLi
 import { useState, useEffect } from "react";
 import { useSubscriptionLimits } from "@/hooks/use-subscription-limits";
 import { useNavigate } from "react-router-dom";
+import { useTasks } from "@/hooks/use-tasks";
 
 interface AddCarFormProps {
   onSuccess?: () => void;
@@ -19,6 +20,7 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
   const { agencies } = useAuthContext();
   const { subscription } = useSubscription();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
+  const { addTask } = useTasks();
   const navigate = useNavigate();
   const [carCount, setCarCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +57,11 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
     last_test_date: "",
     ownership_history: "",
     agency_id: agencies && agencies.length > 0 ? agencies[0]?.id : undefined,
+    // New fields
+    entry_date: "",
+    license_number: "",
+    chassis_number: "",
+    next_test_date: "",
   };
 
   const onSubmit = async (values: CarFormValues, images: File[]) => {
@@ -70,7 +77,8 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
         const confirmed = window.confirm("לא נבחרו תמונות לרכב. האם ברצונך להמשיך בכל זאת?");
         if (!confirmed) return;
       }
-      await addCar.mutateAsync({
+
+      const newCar = await addCar.mutateAsync({
         make: values.make,
         model: values.model,
         year: parseInt(values.year),
@@ -87,8 +95,33 @@ export function AddCarForm({ onSuccess }: AddCarFormProps = {}) {
         ownership_history: values.ownership_history || null,
         status: "available",
         agency_id: values.agency_id,
-        images
+        images,
+        // New fields
+        entry_date: values.entry_date || null,
+        license_number: values.license_number || null,
+        chassis_number: values.chassis_number || null,
+        next_test_date: values.next_test_date || null,
       });
+
+      // Create task for next test date if provided
+      if (values.next_test_date && newCar) {
+        try {
+          await addTask.mutateAsync({
+            title: `טסט לרכב ${values.make} ${values.model}`,
+            description: `תאריך טסט לרכב ${values.make} ${values.model} (${values.year}) - מספר רישוי: ${values.license_number || 'לא צוין'}`,
+            due_date: new Date(values.next_test_date).toISOString(),
+            type: 'test',
+            priority: 'high',
+            status: 'pending',
+            car_id: newCar.id,
+            assigned_to: null,
+            agency_id: values.agency_id || null,
+          });
+          console.log("AddCarForm - Test task created successfully");
+        } catch (taskError) {
+          console.error("AddCarForm - Error creating test task:", taskError);
+        }
+      }
 
       // Update car count after successful addition
       setCarCount(prevCount => prevCount + 1);
