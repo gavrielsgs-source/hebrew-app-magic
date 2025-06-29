@@ -7,6 +7,8 @@ import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplateP
 import { FileText, Edit, Trash2, Eye, Car, User } from "lucide-react";
 import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { Badge } from "@/components/ui/badge";
+import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
+import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
 
 interface TemplateCardProps {
   template: UnifiedTemplate;
@@ -34,13 +36,21 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   // Generate preview message based on template type
   const generatePreviewMessage = () => {
     try {
-      if (template.type === 'car') {
-        return template.generateMessage(mockCar);
-      } else if (template.type === 'lead') {
-        return template.generateMessage(mockLeadName, mockLeadSource);
-      } else {
-        return "לא ניתן ליצור תצוגה מקדימה עבור תבנית זו";
+      // Find the original template from the defaults to get the generateMessage function
+      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
+      const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
+      
+      if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
+        if (originalTemplate.type === 'car') {
+          return originalTemplate.generateMessage(mockCar);
+        } else if (originalTemplate.type === 'lead') {
+          return originalTemplate.generateMessage(mockLeadName, mockLeadSource);
+        }
       }
+      
+      // Fallback if no original template found or generateMessage is not available
+      return "תצוגה מקדימה של ההודעה תופיע כאן";
+      
     } catch (error) {
       console.error("Error generating preview message:", error);
       return "שגיאה ביצירת תצוגה מקדימה";
@@ -53,9 +63,11 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
     <Card className="hover:shadow-xl transition-all duration-300 border border-gray-200 bg-white rounded-2xl overflow-hidden">
       <CardHeader className="pb-4 p-6">
         <div className="flex items-start justify-between w-full">
-          {/* כותרת ותיאור - צד ימין */}
-          <div className="text-right order-2 flex-1">
-            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-end mb-2">
+          {/* כותרת ותיאור - צד שמאל */}
+          <div className="text-left order-1 flex-1">
+            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-start mb-2">
+              <span className="text-gray-800">{template.name}</span>
+              <FileText className="h-5 w-5 text-gray-400" />
               <Badge 
                 variant={template.type === 'car' ? 'default' : 'secondary'} 
                 className={`text-xs font-medium px-3 py-1.5 rounded-full border-2 ${
@@ -66,26 +78,24 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               >
                 {template.type === 'car' ? (
                   <>
-                    <Car className="h-3 w-3 ml-1" />
                     רכב
+                    <Car className="h-3 w-3 mr-1" />
                   </>
                 ) : (
                   <>
-                    <User className="h-3 w-3 ml-1" />
                     לקוח
+                    <User className="h-3 w-3 mr-1" />
                   </>
                 )}
               </Badge>
-              <FileText className="h-5 w-5 text-gray-400" />
-              <span className="text-gray-800">{template.name}</span>
             </CardTitle>
-            <CardDescription className="text-right text-gray-600 leading-relaxed">
+            <CardDescription className="text-left text-gray-600 leading-relaxed">
               {template.description}
             </CardDescription>
           </div>
           
-          {/* כפתורי פעולה - צד שמאל */}
-          <div className="flex gap-2 order-1">
+          {/* כפתורי פעולה - צד ימין */}
+          <div className="flex gap-2 order-2">
             <Button 
               variant="ghost" 
               size="icon" 
