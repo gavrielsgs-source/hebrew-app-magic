@@ -1,83 +1,132 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, LogIn } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, Play, Star, Users, Zap } from 'lucide-react';
 
 interface HeroSectionProps {
   user: any;
-  onVideoOpen: () => void;
 }
 
-export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
+export function HeroSection({ user }: HeroSectionProps) {
+  const handleGetStarted = () => {
+    if (user) {
+      window.location.href = '/dashboard';
+    } else {
+      window.location.href = '/register';
+    }
+  };
+
+  const scrollToDemo = () => {
+    const demoSection = document.querySelector('[data-section="demo"]');
+    if (demoSection) {
+      demoSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <section className="container mx-auto px-4 py-8 md:py-16 text-center w-full">
-      <div className="max-w-4xl mx-auto">
-        <div className="animate-fade-in">
-          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
-            ניהול לידים. רכבים. לקוחות.
-            <span className="block text-transparent bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] bg-clip-text">
-              הכל במקום אחד.
-            </span>
-          </h1>
-          
-          <h2 className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto px-4">
-            מערכת שעוזרת לך לסגור יותר עסקאות – מכל מכשיר, בכל שעה.
-          </h2>
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-bl from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-blue-100/30 to-transparent rounded-full transform rotate-12"></div>
+        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-indigo-100/30 to-transparent rounded-full transform -rotate-12"></div>
+      </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-8 md:mb-12 px-4">
-            {user ? (
-              <Link to="/dashboard">
-                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all min-h-[48px]">
-                  כניסה למערכת
+      <div className="container mx-auto px-4 py-20 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Content */}
+            <div className="text-center lg:text-right space-y-8">
+              {/* Trust indicators */}
+              <div className="flex items-center justify-center lg:justify-end gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4 text-[#4CAF50]" />
+                  <span>500+ עסקים</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 text-[#4CAF50] fill-current" />
+                  <span>4.9/5 דירוג</span>
+                </div>
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                <span className="bg-gradient-to-l from-[#2F3C7E] to-[#4CAF50] bg-clip-text text-transparent">
+                  המערכת החכמה
+                </span>
+                <br />
+                <span className="text-gray-900">לניהול מכירות רכב</span>
+              </h1>
+
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                נהל את כל הלידים, המלאי והמכירות שלך במקום אחד. 
+                חסוך זמן, הגדל מכירות וספק שירות מעולה ללקוחותיך.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-end">
+                <Button 
+                  size="lg" 
+                  onClick={handleGetStarted}
+                  className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                >
+                  <Zap className="h-5 w-5 ml-2" />
+                  {user ? 'כניסה למערכת' : 'התחל עכשיו בחינם'}
                 </Button>
-              </Link>
-            ) : (
-              <Link to="/auth?intent=trial">
-                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all min-h-[48px]">
-                  התחל בחינם
+                
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={scrollToDemo}
+                  className="border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white px-8 py-4 text-lg rounded-xl transition-all"
+                >
+                  <Play className="h-5 w-5 ml-2" />
+                  צפה בהדגמה
                 </Button>
-              </Link>
-            )}
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="w-full sm:w-auto text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-2xl border-2 min-h-[48px]"
-              onClick={onVideoOpen}
-            >
-              <Play className="ml-2 h-4 w-4 md:h-5 md:w-5" />
-              צפה בסרטון הדגמה
-            </Button>
-          </div>
+              </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-2xl mx-auto text-center px-4">
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-[#2F3C7E]">500+</div>
-              <div className="text-xs md:text-sm text-gray-600">סוחרים פעילים</div>
+              {/* Social proof */}
+              <div className="pt-8 border-t border-gray-200">
+                <p className="text-sm text-gray-500 mb-4">מהסוכנויות המובילות בישראל כבר משתמשות במערכת:</p>
+                <div className="flex items-center justify-center lg:justify-end gap-8 opacity-60">
+                  <div className="text-sm font-medium">סוכנות אלפא</div>
+                  <div className="text-sm font-medium">רכב ישראלי</div>
+                  <div className="text-sm font-medium">מוטור פלוס</div>
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-[#4CAF50]">10K+</div>
-              <div className="text-xs md:text-sm text-gray-600">לידים מנוהלים</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-[#2F3C7E]">98%</div>
-              <div className="text-xs md:text-sm text-gray-600">שביעות רצון</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-bold text-[#4CAF50]">24/7</div>
-              <div className="text-xs md:text-sm text-gray-600">זמינות</div>
-            </div>
-          </div>
-        </div>
 
-        {/* Hero Image */}
-        <div className="mt-8 md:mt-16 relative px-4">
-          <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 max-w-4xl mx-auto">
-            <img 
-              src="/placeholder.svg" 
-              alt="CarsLead Dashboard" 
-              className="w-full rounded-xl md:rounded-2xl shadow-lg"
-            />
+            {/* Visual */}
+            <div className="relative">
+              <div className="bg-white rounded-3xl shadow-2xl p-8 transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                <div className="bg-gradient-to-br from-[#2F3C7E] to-[#4CAF50] rounded-2xl p-6 text-white">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm opacity-90">לידים חדשים היום</span>
+                      <span className="text-2xl font-bold">12</span>
+                    </div>
+                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                      <div className="h-full w-3/4 bg-white rounded-full"></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                      <div className="text-center">
+                        <div className="text-xl font-bold">₪850K</div>
+                        <div className="text-xs opacity-80">מכירות החודש</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold">45</div>
+                        <div className="text-xs opacity-80">רכבים במלאי</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Floating elements */}
+              <div className="absolute -top-4 -right-4 bg-[#4CAF50] text-white p-3 rounded-xl shadow-lg transform rotate-12">
+                <Zap className="h-6 w-6" />
+              </div>
+              <div className="absolute -bottom-4 -left-4 bg-[#2F3C7E] text-white p-3 rounded-xl shadow-lg transform -rotate-12">
+                <Star className="h-6 w-6" />
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -10,10 +10,8 @@ import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import { VideoModal } from '@/components/landing/VideoModal';
 
 export default function Landing() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const { user, loading } = useAuth();
 
   const handlePricingSelect = (plan: string) => {
@@ -25,10 +23,7 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 w-full overflow-x-hidden" dir="rtl">
       <NavigationHeader user={user} loading={loading} />
       
-      <HeroSection 
-        user={user} 
-        onVideoOpen={() => setIsVideoOpen(true)} 
-      />
+      <HeroSection user={user} />
       
       <BenefitsSection />
       
@@ -37,7 +32,7 @@ export default function Landing() {
         onPricingSelect={handlePricingSelect} 
       />
       
-      <DemoSection onVideoOpen={() => setIsVideoOpen(true)} />
+      <DemoSection />
       
       <TestimonialsSection />
       
@@ -46,11 +41,6 @@ export default function Landing() {
       <CTASection />
       
       <LandingFooter />
-      
-      <VideoModal 
-        isOpen={isVideoOpen} 
-        onClose={() => setIsVideoOpen(false)} 
-      />
     </div>
   );
 }
