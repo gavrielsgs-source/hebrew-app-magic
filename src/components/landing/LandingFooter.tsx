@@ -40,7 +40,7 @@ export function LandingFooter() {
             <h4 className="font-bold mb-4">משפטי</h4>
             <ul className="space-y-2 text-gray-400">
               <li><a href="/terms-of-service" className="hover:text-white">תנאי שימוש</a></li>
-              <li><a href="#" className="hover:text-white">מדיניות פרטיות</a></li>
+              <li><a href="/privacy-policy" className="hover:text-white">מדיניות פרטיות</a></li>
               <li><a href="#" className="hover:text-white">תנאי התשלום</a></li>
             </ul>
           </div>

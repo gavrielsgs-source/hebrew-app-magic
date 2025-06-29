@@ -18,6 +18,7 @@ import WhyChooseUs from "./pages/WhyChooseUs";
 import Features from "./pages/Features";
 import Contact from "./pages/Contact";
 import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Profile from "./pages/Profile";
 import Tasks from "./pages/Tasks";
 import Cars from "./pages/Cars";
@@ -66,6 +67,7 @@ const App = () => {
               <Route path="/features" element={<Features />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/auth" element={<AuthRoute />} />
               <Route path="/welcome" element={
                 <ProtectedRoute>
