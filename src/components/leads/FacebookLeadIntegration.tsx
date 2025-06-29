@@ -73,6 +73,7 @@ export function FacebookLeadIntegration() {
           });
 
           for (const page of (pagesResponse as any).data) {
+            console.log(page)
             await new Promise((resolve, reject) => {
               window.FB.api(
                 `/${page.id}/subscribed_apps`,
