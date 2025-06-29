@@ -43,7 +43,7 @@ export default function TermsOfService() {
               <div className="space-y-3 text-gray-700">
                 <p><strong>4.1</strong> חיוב חודשי/שנתי יבוצע מראש באמצעות GROW.</p>
                 <p><strong>4.2</strong> משתמש רשאי לבטל בכל עת; השירות ימשיך עד סוף מחזור החיוב.</p>
-                <p><strong>4.3</strong> החזר כספי יינתן רק במקרה של תקלה מערכתית מתמשכת (>72 שעות).</p>
+                <p><strong>4.3</strong> החזר כספי יינתן רק במקרה של תקלה מערכתית מתמשכת (&gt;72 שעות).</p>
               </div>
             </section>
 
