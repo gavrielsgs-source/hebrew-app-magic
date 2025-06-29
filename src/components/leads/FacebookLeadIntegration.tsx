@@ -62,6 +62,7 @@ export function FacebookLeadIntegration() {
   window.FB.login(async function (response) {
     if (response.authResponse) {
       try {
+        // Get pages the user manages
         const pagesResponse = await new Promise((resolve, reject) => {
           window.FB.api("/me/accounts", function (res) {
             if (res.error) reject(res.error);
@@ -70,16 +71,28 @@ export function FacebookLeadIntegration() {
         });
 
         for (const page of (pagesResponse as any).data) {
-          await subscribePageToWebhook(page.id, page.access_token);
+          // Subscribe page to webhook
+          await new Promise((resolve, reject) => {
+            window.FB.api(
+              `/${page.id}/subscribed_apps`,
+              "POST",
+              { access_token: page.access_token, subscribed_fields: "leadgen" },
+              function (subRes) {
+                if (!subRes || subRes.error) reject(subRes?.error || "Unknown error");
+                else resolve(subRes);
+              }
+            );
+          });
+
           console.log(`Subscribed page ${page.name} (${page.id})`);
 
-          // Fetch lead forms for the page
+          // Fetch lead forms for page
           const leadFormsResponse = await new Promise((resolve, reject) => {
             window.FB.api(
               `/${page.id}/leadgen_forms`,
               "GET",
               { access_token: page.access_token },
-              (formsRes) => {
+              function (formsRes) {
                 if (!formsRes || formsRes.error) reject(formsRes?.error || "Failed to fetch lead forms");
                 else resolve(formsRes);
               }
@@ -96,7 +109,7 @@ export function FacebookLeadIntegration() {
                 `/${form.id}/leads`,
                 "GET",
                 { access_token: page.access_token },
-                (leadsRes) => {
+                function (leadsRes) {
                   if (!leadsRes || leadsRes.error) reject(leadsRes?.error || "Failed to fetch leads");
                   else resolve(leadsRes);
                 }
@@ -106,8 +119,7 @@ export function FacebookLeadIntegration() {
             const leads = (leadsResponse as any).data || [];
             console.log(`Fetched ${leads.length} leads for form ${form.id}`);
 
-            // Here you can process leads, e.g., send to your backend or update state
-            // For now, just log them:
+            // Process leads here or send to backend
             for (const lead of leads) {
               console.log("Lead:", lead);
             }
@@ -128,6 +140,7 @@ export function FacebookLeadIntegration() {
     scope: 'public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval'
   });
 };
+
     
   return (
     <div className="p-4 text-right">
