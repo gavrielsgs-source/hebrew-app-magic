@@ -1,24 +1,18 @@
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Play, Star, Users, Zap } from 'lucide-react';
+import { Play, Star, Users, Zap } from 'lucide-react';
 
 interface HeroSectionProps {
   user: any;
+  onVideoOpen: () => void;
 }
 
-export function HeroSection({ user }: HeroSectionProps) {
+export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
   const handleGetStarted = () => {
     if (user) {
       window.location.href = '/dashboard';
     } else {
       window.location.href = '/register';
-    }
-  };
-
-  const scrollToDemo = () => {
-    const demoSection = document.querySelector('[data-section="demo"]');
-    if (demoSection) {
-      demoSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -74,22 +68,12 @@ export function HeroSection({ user }: HeroSectionProps) {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  onClick={scrollToDemo}
+                  onClick={onVideoOpen}
                   className="border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white px-8 py-4 text-lg rounded-xl transition-all"
                 >
                   <Play className="h-5 w-5 ml-2" />
                   צפה בהדגמה
                 </Button>
-              </div>
-
-              {/* Social proof */}
-              <div className="pt-8 border-t border-gray-200">
-                <p className="text-sm text-gray-500 mb-4">מהסוכנויות המובילות בישראל כבר משתמשות במערכת:</p>
-                <div className="flex items-center justify-center lg:justify-end gap-8 opacity-60">
-                  <div className="text-sm font-medium">סוכנות אלפא</div>
-                  <div className="text-sm font-medium">רכב ישראלי</div>
-                  <div className="text-sm font-medium">מוטור פלוס</div>
-                </div>
               </div>
             </div>
 
