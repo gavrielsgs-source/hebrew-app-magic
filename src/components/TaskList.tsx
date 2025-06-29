@@ -55,6 +55,7 @@ export function TaskList({ extended = false }: TaskListProps) {
       case 'call': return 'שיחת טלפון';
       case 'meeting': return 'פגישה';
       case 'follow_up': return 'מעקב';
+      case 'test': return 'טסט';
       case 'task': 
       default: return 'משימה';
     }
