@@ -50,7 +50,7 @@ export function FacebookLeadIntegration() {
   }
 
   async function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
-    return fbApi(`/${pageId}/subscribed_apps`, "POST", {
+    return fbApi(/${pageId}/subscribed_apps, "POST", {
       access_token: pageAccessToken,
       subscribed_fields: "leadgen",
     });
@@ -62,68 +62,54 @@ export function FacebookLeadIntegration() {
     setLoading(true);
     setMessage("");
 
-    window.FB.login(
-      function (response: any) {
-        if (response.authResponse) {
-          (async () => {
-            try {
-              const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts");
-              console.log("Pages response:", pagesResponse);
+    window.FB.login(function (response: any) {
+      if (response.authResponse) {
+        (async () => {
+          try {
+            const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts");
+            console.log("Pages response:", pagesResponse);
 
-              for (const page of pagesResponse.data) {
-                await subscribePageToWebhook(page.id, page.access_token);
-                console.log(`Subscribed page ${page.name} (${page.id})`);
+            for (const page of pagesResponse.data) {
+              await subscribePageToWebhook(page.id, page.access_token);
+              console.log(Subscribed page ${page.name} (${page.id}));
 
-                const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page.id}/leadgen_forms`, "GET", {
+              const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(/${page.id}/leadgen_forms, "GET", {
+                access_token: page.access_token,
+              });
+              const leadForms = leadFormsResponse.data || [];
+              console.log(Found ${leadForms.length} lead forms for page ${page.name});
+
+              for (const form of leadForms) {
+                const leadsResponse = await fbApi<{ data: any[] }>(/${form.id}/leads, "GET", {
                   access_token: page.access_token,
                 });
-                const leadForms = leadFormsResponse.data || [];
-                console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
+                const leads = leadsResponse.data || [];
+                console.log(Fetched ${leads.length} leads for form ${form.id});
 
-                for (const form of leadForms) {
-                  const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
-                    access_token: page.access_token,
-                  });
-                  const leads = leadsResponse.data || [];
-                  console.log(`Fetched ${leads.length} leads for form ${form.id}`);
-
-                  for (const lead of leads) {
-                    console.log("Lead:", lead);
-                  }
+                for (const lead of leads) {
+                  console.log("Lead:", lead);
                 }
               }
-
-              setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
-            } catch (error: any) {
-              setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
-            } finally {
-              setLoading(false);
             }
-          })();
-        } else {
-          setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
-          setLoading(false);
-        }
-      },
-      {
-        scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval",
-        auth_type: "reauthenticate", // <-- forces fresh login dialog
+
+            setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
+          } catch (error: any) {
+            setMessage(שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error});
+          } finally {
+            setLoading(false);
+          }
+        })();
+      } else {
+        setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+        setLoading(false);
       }
-    );
-  };
-
-  const logout = () => {
-    if (!fbInitialized) return;
-
-    setLoading(true);
-    window.FB.logout(() => {
-      setMessage("התנתקת מפייסבוק.");
-      setLoading(false);
+    }, {
+      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval",
     });
   };
 
   return (
-    <div className="p-4 text-right space-y-4">
+    <div className="p-4 text-right">
       <button
         className="btn-primary"
         onClick={loginAndSubscribe}
@@ -131,15 +117,6 @@ export function FacebookLeadIntegration() {
       >
         {loading ? "טוען..." : "התחבר לפייסבוק והרשם לכל הדפים"}
       </button>
-
-      <button
-        className="btn-secondary"
-        onClick={logout}
-        disabled={!fbInitialized || loading}
-      >
-        התנתק מפייסבוק
-      </button>
-
       {message && <p className="mt-2">{message}</p>}
     </div>
   );
