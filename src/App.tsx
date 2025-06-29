@@ -38,6 +38,7 @@ import Payment from "./pages/Payment";
 import Welcome from "./pages/Welcome";
 import "./components/ui/mobile-responsive.css";
 import { useMemo } from "react";
+import AboutUs from "./pages/AboutUs";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -63,6 +64,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/about-us" element={<AboutUs />} />
               <Route path="/why-choose-us" element={<WhyChooseUs />} />
               <Route path="/features" element={<Features />} />
               <Route path="/contact" element={<Contact />} />
