@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { extractYouTubeVideoId, generateYouTubeEmbedUrl } from '@/lib/youtube-utils';
 
 interface VideoModalProps {
@@ -57,14 +57,23 @@ export function VideoModal({ isOpen, onClose }: VideoModalProps) {
         
         <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden">
           {embedUrl ? (
-            <iframe
-              src={embedUrl}
-              title="הדגמת המערכת"
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
+            <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+              <div className="text-center">
+                <p className="text-lg font-semibold text-gray-700 mb-2">
+                  הסרטון זמין ב-YouTube
+                </p>
+                <p className="text-gray-600 mb-4">
+                  לחץ כאן לצפייה בסרטון ההדגמה
+                </p>
+              </div>
+              <Button 
+                onClick={() => window.open(videoUrl, '_blank')}
+                className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+              >
+                <ExternalLink className="h-5 w-5 ml-2" />
+                צפה ב-YouTube
+              </Button>
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full">
               <p className="text-gray-500">שגיאה בטעינת הסרטון</p>
