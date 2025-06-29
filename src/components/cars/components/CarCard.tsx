@@ -1,3 +1,4 @@
+
 import { Car } from "@/types/car";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CarImageSection } from "./CarImageSection";
 import { CarInfoGrid } from "./CarInfoGrid";
 import { CarCardActions } from "./CarCardActions";
+import { CarStatusChanger } from "./CarStatusChanger";
 import { formatPrice } from "@/lib/utils";
 import { Calendar, Gauge, Fuel, Car as CarIcon, MapPin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -28,32 +30,6 @@ export function CarCard({
   onViewDetails
 }: CarCardProps) {
   const isMobile = useIsMobile();
-
-  const getStatusColor = (status: string | null) => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'sold':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'reserved':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getStatusText = (status: string | null) => {
-    switch (status) {
-      case 'available':
-        return 'זמין';
-      case 'sold':
-        return 'נמכר';
-      case 'reserved':
-        return 'שמור';
-      default:
-        return 'לא ידוע';
-    }
-  };
 
   if (isMobile) {
     return (
@@ -82,9 +58,7 @@ export function CarCard({
               )}
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full flex-shrink-0`}>
-                {getStatusText(car.status)}
-              </Badge>
+              <CarStatusChanger car={car} compact={true} />
             </div>
           </div>
           
@@ -191,9 +165,9 @@ export function CarCard({
               </CardDescription>
             )}
           </div>
-          <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full flex-shrink-0 ml-2`}>
-            {getStatusText(car.status)}
-          </Badge>
+          <div className="flex-shrink-0 ml-2">
+            <CarStatusChanger car={car} compact={true} />
+          </div>
         </div>
         
         {/* מחיר בולט */}

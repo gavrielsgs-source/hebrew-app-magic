@@ -15,6 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { AddCarForm } from "./cars/AddCarForm";
 import { AddLeadForm } from "./leads/AddLeadForm";
 import { EditCarForm } from "./cars/forms/EditCarForm";
+import { CarStatusChanger } from "./cars/components/CarStatusChanger";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { WhatsappTemplateSelector } from "./whatsapp/WhatsappTemplateSelector";
@@ -86,9 +87,7 @@ export function CarsTable() {
                   <TableCell className="text-right">{car.kilometers.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{car.price.toLocaleString()} ₪</TableCell>
                   <TableCell className="text-right">
-                    <Badge className={getStatusBadgeColor(car.status)}>
-                      {getStatusText(car.status)}
-                    </Badge>
+                    <CarStatusChanger car={car} compact={true} />
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2 rtl:space-x-reverse">
@@ -185,30 +184,4 @@ export function CarsTable() {
       </Sheet>
     </div>
   );
-}
-
-function getStatusBadgeColor(status: string | null) {
-  switch (status) {
-    case "available":
-      return "bg-green-500 hover:bg-green-600";
-    case "reserved":
-      return "bg-yellow-500 hover:bg-yellow-600";
-    case "sold":
-      return "bg-gray-500 hover:bg-gray-600";
-    default:
-      return "bg-gray-500 hover:bg-gray-600";
-  }
-}
-
-function getStatusText(status: string | null) {
-  switch (status) {
-    case "available":
-      return "זמין";
-    case "reserved":
-      return "שמור";
-    case "sold":
-      return "נמכר";
-    default:
-      return "לא ידוע";
-  }
 }
