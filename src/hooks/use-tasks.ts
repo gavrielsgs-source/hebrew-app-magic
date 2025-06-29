@@ -35,6 +35,8 @@ type NewTask = {
   due_date?: string | null; // Using string for ISO dates
   car_id?: string | null;
   lead_id?: string | null;
+  assigned_to?: string | null; // Add assigned_to field
+  agency_id?: string | null; // Add agency_id field
 };
 
 export function useTasks() {
