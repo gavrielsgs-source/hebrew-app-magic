@@ -1,20 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/auth/UserNav";
 import { NotificationsPopover } from "@/components/notifications/NotificationsPopover";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const CarSleadLogoSVG = () => (
-  <svg width="48" height="48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="80" height="80" rx="10" fill="#1A1F2C"/>
-    <path d="M20 40C20 28.9543 28.9543 20 40 20C51.0457 20 60 28.9543 60 40C60 51.0457 51.0457 60 40 60C28.9543 60 20 51.0457 20 40Z" fill="#33C3F0"/>
-    <path d="M25 40H55" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-    <path d="M35 30L40 35L45 30" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M35 50L40 45L45 50" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
 
 export function AppHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -25,7 +14,11 @@ export function AppHeader() {
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo and Title */}
         <div className="flex items-center gap-4">
-          <CarSleadLogoSVG />
+          <img 
+            src="/lovable-uploads/8b7d63b5-191f-4ad8-92fa-f9c31ab1f55b.png" 
+            alt="CarsLead Logo" 
+            className="w-12 h-12 object-contain"
+          />
           <div className="text-right">
             <h1 className="text-2xl font-bold text-[#2F3C7E]">CarsLead</h1>
             <p className="text-sm text-gray-600">מערכת ניהול לסוחרי רכב</p>

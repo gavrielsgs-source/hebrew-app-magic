@@ -115,7 +115,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">13. יצירת קשר</h2>
               <p className="text-gray-700">
-                gavrielsgs@gmail.com | עמוד "צור קשר" באתר.
+                itscarslead@gmail.com | עמוד "צור קשר" באתר.
               </p>
             </section>
           </div>

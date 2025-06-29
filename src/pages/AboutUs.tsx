@@ -89,7 +89,7 @@ export default function AboutUs() {
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-[#2F3C7E] mb-6">יש לכם רעיון, שאלה או פידבק?</h2>
               <p className="text-gray-700 leading-relaxed text-lg">
-                כתבו לנו ב-<a href="mailto:gavrielsgs@gmail.com" className="text-[#2F3C7E] hover:underline font-medium">gavrielsgs@gmail.com</a> או דרך עמוד <a href="/contact" className="text-[#2F3C7E] hover:underline font-medium">"צור קשר"</a>.
+                כתבו לנו ב-<a href="mailto:itscarslead@gmail.com" className="text-[#2F3C7E] hover:underline font-medium">itscarslead@gmail.com</a> או דרך עמוד <a href="/contact" className="text-[#2F3C7E] hover:underline font-medium">"צור קשר"</a>.
               </p>
               <p className="text-gray-700 leading-relaxed text-lg mt-4 font-medium">
                 ברוכים הבאים למשפחת CarsLead – מוכרים, לא מתעסקים. 🚗

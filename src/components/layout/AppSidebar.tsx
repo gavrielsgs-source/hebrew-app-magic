@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
@@ -24,16 +23,6 @@ import {
   FileText,
 } from "lucide-react";
 
-const CarSleadLogoSVG = () => (
-  <svg width="32" height="32" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="80" height="80" rx="10" fill="#1A1F2C"/>
-    <path d="M20 40C20 28.9543 28.9543 20 40 20C51.0457 20 60 28.9543 60 40C60 51.0457 51.0457 60 40 60C28.9543 60 20 51.0457 20 40Z" fill="#33C3F0"/>
-    <path d="M25 40H55" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-    <path d="M35 30L40 35L45 30" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M35 50L40 45L45 50" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
 export function AppSidebar() {
   const { pathname } = useLocation();
   const { user } = useAuth();
@@ -46,7 +35,11 @@ export function AppSidebar() {
     <Sidebar className="border-l z-40">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3 px-2">
-          <CarSleadLogoSVG />
+          <img 
+            src="/lovable-uploads/8b7d63b5-191f-4ad8-92fa-f9c31ab1f55b.png" 
+            alt="CarsLead Logo" 
+            className="w-8 h-8 object-contain"
+          />
           <h1 className="text-lg font-bold text-white">CarsLead</h1>
         </div>
       </SidebarHeader>

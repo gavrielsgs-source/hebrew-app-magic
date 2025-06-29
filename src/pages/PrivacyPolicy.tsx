@@ -1,4 +1,3 @@
-
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" dir="rtl">
@@ -73,7 +72,7 @@ export default function PrivacyPolicy() {
               <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">7. זכויות משתמש</h2>
               <div className="space-y-3 text-gray-700">
                 <p>• עיון, תיקון, מחיקה ("הזכות להישכח"), הגבלת עיבוד, ניידות.</p>
-                <p>• בקשה במייל support@carslead.app; מענה תוך 30 יום.</p>
+                <p>• בקשה במייל itscarslead@gmail.com; מענה תוך 30 יום.</p>
               </div>
             </section>
 
@@ -101,7 +100,7 @@ export default function PrivacyPolicy() {
             <section className="mb-8">
               <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">11. יצירת קשר בנושא פרטיות</h2>
               <p className="text-gray-700">
-                gavrielsgs@gmail.com | עמוד "צור קשר".
+                itscarslead@gmail.com | עמוד "צור קשר".
               </p>
             </section>
           </div>
