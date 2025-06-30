@@ -72,9 +72,28 @@ export function FacebookLeadIntegration() {
             for (const page of pagesResponse.data) {
               await subscribePageToWebhook(page.id, page.access_token);
               console.log(`Subscribed page ${page.name} (${page.id})`);
+
+              const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page.id}/leadgen_forms`, "GET", {
+                access_token: page.access_token,
+              });
+              
+              const leadForms = leadFormsResponse.data || [];
+              console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
+
+              for (const form of leadForms) {
+                const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
+                  access_token: page.access_token,
+                });
+                const leads = leadsResponse.data || [];
+                console.log(`Fetched ${leads.length} leads for form ${form.id}`);
+
+                for (const lead of leads) {
+                  console.log("Lead:", lead);
+                }
+              }
             }
 
-            setMessage("כל הדפים שלך נרשמו!");
+            setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
           } catch (error: any) {
             setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
           } finally {
@@ -86,7 +105,7 @@ export function FacebookLeadIntegration() {
         setLoading(false);
       }
     }, {
-      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management",
+      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management, pages_manage_ads",
     });
   };
 
