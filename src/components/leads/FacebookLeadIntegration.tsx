@@ -77,7 +77,7 @@ export function FacebookLeadIntegration() {
               }
             }
 
-            setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
+            setMessage("כל הדפים שלך נרשמו!");
           } catch (error: any) {
             setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
           } finally {
