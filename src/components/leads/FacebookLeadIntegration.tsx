@@ -72,9 +72,6 @@ export function FacebookLeadIntegration() {
             for (const page of pagesResponse.data) {
               await subscribePageToWebhook(page.id, page.access_token);
               console.log(`Subscribed page ${page.name} (${page.id})`);
-
-              
-              }
             }
 
             setMessage("כל הדפים שלך נרשמו!");
