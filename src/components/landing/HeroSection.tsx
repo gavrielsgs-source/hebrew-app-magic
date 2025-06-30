@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Play, Star, Users, Zap } from 'lucide-react';
+import { Play, Zap } from 'lucide-react';
 
 interface HeroSectionProps {
   user: any;
@@ -25,91 +25,59 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
       </div>
 
       <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Content */}
-            <div className="text-center lg:text-right space-y-8">
-              {/* Trust indicators */}
-              <div className="flex items-center justify-center lg:justify-end gap-4 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4 text-[#4CAF50]" />
-                  <span>500+ עסקים</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-[#4CAF50] fill-current" />
-                  <span>4.9/5 דירוג</span>
-                </div>
-              </div>
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          {/* Main heading */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
+            ניהול לידים. רכבים. לקוחות.
+            <br />
+            <span className="bg-gradient-to-l from-[#2F3C7E] to-[#4CAF50] bg-clip-text text-transparent">
+              הכל במקום אחד.
+            </span>
+          </h1>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                <span className="bg-gradient-to-l from-[#2F3C7E] to-[#4CAF50] bg-clip-text text-transparent">
-                  המערכת החכמה
-                </span>
-                <br />
-                <span className="text-gray-900">לניהול מכירות רכב</span>
-              </h1>
+          <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
+            מערכת עזורת לך לנהל יותר עמוקות – מכל מכירות, בכל שנה.
+          </p>
 
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                נהל את כל הלידים, המלאי והמכירות שלך במקום אחד. 
-                חסוך זמן, הגדל מכירות וספק שירות מעולה ללקוחותיך.
-              </p>
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              size="lg" 
+              onClick={handleGetStarted}
+              className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+            >
+              <Zap className="h-5 w-5 ml-2" />
+              {user ? 'כניסה למערכת' : 'התחל בחינם'}
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="lg"
+              onClick={onVideoOpen}
+              className="text-gray-600 hover:text-[#2F3C7E] px-8 py-4 text-lg transition-all"
+            >
+              <Play className="h-5 w-5 ml-2" />
+              צפה בהדגמה
+            </Button>
+          </div>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-end">
-                <Button 
-                  size="lg" 
-                  onClick={handleGetStarted}
-                  className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:from-[#1A2347] hover:to-[#45A049] text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                >
-                  <Zap className="h-5 w-5 ml-2" />
-                  {user ? 'כניסה למערכת' : 'התחל עכשיו בחינם'}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  onClick={onVideoOpen}
-                  className="border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white px-8 py-4 text-lg rounded-xl transition-all"
-                >
-                  <Play className="h-5 w-5 ml-2" />
-                  צפה בהדגמה
-                </Button>
-              </div>
+          {/* Statistics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-8">
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-[#4CAF50] mb-1">24/7</div>
+              <div className="text-sm text-gray-500">זמינות</div>
             </div>
-
-            {/* Visual */}
-            <div className="relative">
-              <div className="bg-white rounded-3xl shadow-2xl p-8 transform rotate-2 hover:rotate-0 transition-transform duration-500">
-                <div className="bg-gradient-to-br from-[#2F3C7E] to-[#4CAF50] rounded-2xl p-6 text-white">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm opacity-90">לידים חדשים היום</span>
-                      <span className="text-2xl font-bold">12</span>
-                    </div>
-                    <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full w-3/4 bg-white rounded-full"></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 pt-4">
-                      <div className="text-center">
-                        <div className="text-xl font-bold">₪850K</div>
-                        <div className="text-xs opacity-80">מכירות החודש</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xl font-bold">45</div>
-                        <div className="text-xs opacity-80">רכבים במלאי</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 bg-[#4CAF50] text-white p-3 rounded-xl shadow-lg transform rotate-12">
-                <Zap className="h-6 w-6" />
-              </div>
-              <div className="absolute -bottom-4 -left-4 bg-[#2F3C7E] text-white p-3 rounded-xl shadow-lg transform -rotate-12">
-                <Star className="h-6 w-6" />
-              </div>
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-[#2F3C7E] mb-1">98%</div>
+              <div className="text-sm text-gray-500">שביעות רצון</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-[#4CAF50] mb-1">+10K</div>
+              <div className="text-sm text-gray-500">לידים מנוהלים</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-[#2F3C7E] mb-1">+500</div>
+              <div className="text-sm text-gray-500">סוחרים פעילים</div>
             </div>
           </div>
         </div>
