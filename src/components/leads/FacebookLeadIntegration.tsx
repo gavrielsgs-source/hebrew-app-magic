@@ -73,22 +73,7 @@ export function FacebookLeadIntegration() {
               await subscribePageToWebhook(page.id, page.access_token);
               console.log(`Subscribed page ${page.name} (${page.id})`);
 
-              const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page.id}/leadgen_forms`, "GET", {
-                access_token: page.access_token,
-              });
-              const leadForms = leadFormsResponse.data || [];
-              console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
-
-              for (const form of leadForms) {
-                const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
-                  access_token: page.access_token,
-                });
-                const leads = leadsResponse.data || [];
-                console.log(`Fetched ${leads.length} leads for form ${form.id}`);
-
-                for (const lead of leads) {
-                  console.log("Lead:", lead);
-                }
+              
               }
             }
 
