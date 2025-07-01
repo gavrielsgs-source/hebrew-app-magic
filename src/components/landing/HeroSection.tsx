@@ -117,78 +117,87 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Right Content - Combined System Images */}
-          <div className="relative flex items-center justify-center">
-            <div className="relative w-full max-w-lg">
-              {/* Desktop Images - Stacked Diagonally - Made smaller */}
-              <div className="relative scale-75 origin-top-right">
-                {/* First Desktop Image */}
-                <div className="absolute top-0 right-0 transform rotate-6 shadow-2xl rounded-xl overflow-hidden z-10">
-                  <img
-                    src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
-                    alt="מלאי רכבים מקצועי"
-                    className="w-72 h-44 object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </div>
-                
-                {/* Second Desktop Image */}
-                <div className="absolute top-12 right-20 transform -rotate-3 shadow-2xl rounded-xl overflow-hidden z-20">
-                  <img
-                    src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
-                    alt="אנליטיקס וסיכומים"
-                    className="w-72 h-44 object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </div>
+          {/* Right Content - 3D Layout with perspective */}
+          <div className="relative flex items-center justify-center perspective-1000">
+            <div className="relative w-full max-w-2xl h-96">
+              {/* Desktop Background Image - Back */}
+              <div className="absolute top-0 left-0 transform rotate-y-12 rotate-x-3 shadow-2xl rounded-xl overflow-hidden z-10" 
+                   style={{ transform: 'perspective(1000px) rotateY(-15deg) rotateX(8deg) translateZ(-50px)', width: '280px', height: '180px' }}>
+                <img
+                  src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
+                  alt="מלאי רכבים מקצועי"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60"></div>
+              </div>
+              
+              {/* Desktop Front Image - Overlapping */}
+              <div className="absolute top-8 left-16 transform shadow-2xl rounded-xl overflow-hidden z-20" 
+                   style={{ transform: 'perspective(1000px) rotateY(-8deg) rotateX(5deg) translateZ(20px)', width: '280px', height: '180px' }}>
+                <img
+                  src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
+                  alt="אנליטיקס וסיכומים"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-40"></div>
               </div>
 
-              {/* iPhone Mockup with Mobile Image */}
-              <div className="relative z-30 mt-20 mr-8">
-                {/* iPhone Frame */}
-                <div className="relative bg-black rounded-[2.5rem] p-1 shadow-2xl transform hover:rotate-2 transition-transform duration-300">
-                  <div className="bg-black rounded-[2rem] overflow-hidden">
-                    {/* iPhone Notch */}
-                    <div className="relative bg-black h-6 flex items-center justify-center">
-                      <div className="w-24 h-4 bg-black rounded-b-2xl"></div>
+              {/* iPhone Mockup - Right side */}
+              <div className="absolute top-4 right-0 z-30" 
+                   style={{ transform: 'perspective(1000px) rotateY(15deg) rotateX(-5deg) translateZ(40px)' }}>
+                {/* iPhone Frame with realistic proportions */}
+                <div className="relative bg-black rounded-[2.5rem] p-1 shadow-2xl">
+                  <div className="bg-black rounded-[2rem] overflow-hidden" style={{ width: '200px', height: '400px' }}>
+                    {/* iPhone Dynamic Island */}
+                    <div className="relative bg-black h-8 flex items-center justify-center">
+                      <div className="w-28 h-6 bg-black rounded-full border border-gray-800"></div>
                     </div>
                     
-                    {/* Mobile Screen - Exact fit */}
-                    <div className="relative bg-white">
+                    {/* Mobile Screen - Perfect fit */}
+                    <div className="relative bg-white flex-1">
                       <img
                         src="/lovable-uploads/f9f8d800-8eaf-45ae-b55c-4ea76d1ec04e.png"
                         alt="דשבורד מובייל מתקדם"
-                        className="w-56 h-auto object-cover block"
+                        className="w-full h-80 object-cover object-top"
                       />
                     </div>
                     
                     {/* iPhone Home Indicator */}
-                    <div className="bg-black h-4 flex items-center justify-center">
-                      <div className="w-24 h-1 bg-white rounded-full opacity-60"></div>
+                    <div className="bg-black h-6 flex items-center justify-center">
+                      <div className="w-20 h-1 bg-white rounded-full opacity-60"></div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Floating Labels */}
-              <div className="absolute top-8 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+              {/* Floating Labels with 3D effect */}
+              <div className="absolute top-12 left-8 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform rotate-2">
                 <p className="text-sm font-medium text-[#2F3C7E]">מלאי רכבים</p>
               </div>
               
-              <div className="absolute top-20 left-12 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+              <div className="absolute top-24 left-20 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform -rotate-1">
                 <p className="text-sm font-medium text-[#4CAF50]">אנליטיקס</p>
               </div>
               
-              <div className="absolute bottom-20 left-8 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+              <div className="absolute bottom-32 right-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform rotate-1">
                 <p className="text-sm font-medium text-[#2F3C7E]">דשבורד מובייל</p>
               </div>
 
-              {/* Decorative elements */}
-              <div className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-full opacity-20 animate-pulse"></div>
-              <div className="absolute -bottom-8 -left-8 w-12 h-12 bg-gradient-to-r from-[#4CAF50] to-[#2F3C7E] rounded-full opacity-20 animate-bounce"></div>
-              <div className="absolute top-1/2 -right-4 w-4 h-4 bg-blue-400 rounded-full animate-ping"></div>
+              {/* Decorative 3D elements */}
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-full opacity-20 animate-pulse transform rotate-45"></div>
+              <div className="absolute -bottom-8 -left-8 w-12 h-12 bg-gradient-to-r from-[#4CAF50] to-[#2F3C7E] rounded-full opacity-20 animate-bounce transform -rotate-12"></div>
+              <div className="absolute top-1/2 -right-4 w-4 h-4 bg-blue-400 rounded-full animate-ping transform rotate-45"></div>
             </div>
           </div>
         </div>
       </div>
+      
+      {/* CSS for 3D perspective */}
+      <style jsx>{`
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+      `}</style>
     </section>
   );
 }
