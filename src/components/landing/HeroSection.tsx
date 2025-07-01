@@ -120,12 +120,12 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
           {/* Right Content - Just the embedded image and desktop screenshots */}
           <div className="relative flex items-center justify-center">
             <div className="relative w-full max-w-3xl h-96">
-              {/* Mobile Image - Left side */}
+              {/* Mobile Image - Left side, doubled in size and transparent background */}
               <div className="absolute top-0 left-0 z-30">
                 <img
                   src="/lovable-uploads/25f76e09-b68f-4546-ae11-feadf0586392.png"
                   alt="דשבורד מובייל מתקדם"
-                  className="w-48 h-auto shadow-2xl rounded-2xl"
+                  className="w-96 h-auto"
                 />
               </div>
 
