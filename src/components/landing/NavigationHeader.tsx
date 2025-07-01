@@ -31,20 +31,9 @@ export function NavigationHeader({ user, loading }: NavigationHeaderProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
-              src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
+              src="/lovable-uploads/85996f43-dfa3-4a57-9020-52b4da01c3ad.png" 
               alt="Carslead Software" 
               className="h-12 md:h-16 w-auto object-contain"
-              onLoad={() => console.log('Logo loaded successfully')}
-              onError={(e) => {
-                console.error('Logo failed to load:', e);
-                console.log('Trying to load logo from:', e.currentTarget.src);
-                // Show a text fallback instead of hiding
-                const textFallback = document.createElement('div');
-                textFallback.textContent = 'CarsLead';
-                textFallback.className = 'text-xl font-bold text-[#2F3C7E]';
-                e.currentTarget.parentNode?.appendChild(textFallback);
-                e.currentTarget.style.display = 'none';
-              }}
             />
           </Link>
 
