@@ -197,13 +197,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
     
     if (typeof limit === 'number' && typeof value === 'number') {
-      // בדיקה: האם הערך הנוכחי קטן מהמגבלה (כלומר יש מקום עבור עוד)
+      // בדיקה נכונה: האם הערך החדש (value) קטן או שווה למגבלה
       const result = value <= limit;
       console.log('🔍 [SubscriptionContext] Numeric entitlement check:', { 
         limit, 
         value, 
         result, 
-        calculation: `${value} <= ${limit} = ${result}`
+        calculation: `${value} <= ${limit} = ${result}`,
+        explanation: 'Checking if the new total (including the item to be added) is within the limit'
       });
       return result;
     }
