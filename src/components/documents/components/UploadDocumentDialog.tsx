@@ -1,43 +1,30 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Upload, X } from "lucide-react";
-import { DocumentIcon } from "./DocumentIcon";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Upload, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { useDocuments, type UploadDocumentParams } from "@/hooks/use-documents";
+import { useSubscriptionLimits } from "@/hooks/use-subscription-limits";
 import type { DocumentFormData } from "../types";
-import type { UploadDocumentParams } from "@/hooks/use-documents";
 
 interface UploadDocumentDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   formData: DocumentFormData;
-  onFormChange: (data: Partial<DocumentFormData>) => void;
+  onFormChange: (updates: Partial<DocumentFormData>) => void;
   onUpload: (params: UploadDocumentParams) => Promise<void>;
   onReset: () => void;
   isUploading: boolean;
-  entityId?: string;
-  entityType?: 'lead' | 'car' | 'agency';
+  entityId?: string | null;
+  entityType?: string | null;
   leads?: any[];
   cars?: any[];
-  isLeadsLoading: boolean;
-  isCarsLoading: boolean;
+  isLeadsLoading?: boolean;
+  isCarsLoading?: boolean;
 }
 
 export function UploadDocumentDialog({
@@ -50,72 +37,99 @@ export function UploadDocumentDialog({
   isUploading,
   entityId,
   entityType,
-  leads,
-  cars,
-  isLeadsLoading,
-  isCarsLoading
+  leads = [],
+  cars = [],
+  isLeadsLoading = false,
+  isCarsLoading = false,
 }: UploadDocumentDialogProps) {
+  const { documents } = useDocuments();
+  const { checkAndNotifyLimit } = useSubscriptionLimits();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (file) {
       onFormChange({ 
-        file: selectedFile,
-        documentName: !formData.documentName ? selectedFile.name.split('.')[0] : formData.documentName
+        file, 
+        documentName: formData.documentName || file.name.split('.')[0] 
       });
     }
   };
 
-  const handleUpload = async () => {
-    if (!formData.file) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.file || !formData.documentName) {
+      toast.error("יש להזין שם מסמך ולבחור קובץ");
       return;
     }
-    
-    if (!formData.documentName) {
-      return;
+
+    setIsSubmitting(true);
+    try {
+      const currentCount = documents?.length || 0;
+      console.log('🔍 [UploadDocumentDialog] Current documents count:', currentCount);
+      
+      // כרגע אין מגבלה על מסמכים, אבל אפשר להוסיף בעתיד
+      // const canProceed = checkAndNotifyLimit('document', currentCount);
+      // if (!canProceed) {
+      //   setIsSubmitting(false);
+      //   return;
+      // }
+
+      await onUpload({
+        file: formData.file,
+        name: formData.documentName,
+        type: formData.documentType,
+        entityId: formData.selectedEntityId,
+        entityType: formData.selectedEntityType,
+      });
+    } catch (error) {
+      console.error('Error uploading document:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    const params: UploadDocumentParams = {
-      file: formData.file,
-      name: formData.documentName,
-      type: formData.documentType,
-      entityId: formData.selectedEntityId || entityId,
-      entityType: formData.selectedEntityType || entityType,
-    };
-    
-    // העלאה תטופל ב-DocumentsManager
-    await onUpload(params);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button className="gap-1">
-          <Upload className="h-4 w-4 ml-1" />
+        <Button>
+          <Plus className="h-4 w-4 ml-2" />
           העלאת מסמך
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      
+      <DialogContent className="max-w-md" dir="rtl">
         <DialogHeader>
           <DialogTitle>העלאת מסמך חדש</DialogTitle>
-          <DialogDescription>
-            העלה מסמכים כמו חוזים, רישיונות, חשבוניות ועוד.
-          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="documentName" className="block text-right">שם המסמך</Label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="file" className="text-right">בחר קובץ</Label>
             <Input
-              id="documentName"
-              value={formData.documentName}
-              onChange={(e) => onFormChange({ documentName: e.target.value })}
-              placeholder="לדוגמה: חוזה מכירה - יונדאי i10"
-              className="text-right"
+              id="file"
+              type="file"
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              className="text-right cursor-pointer"
             />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="documentType" className="block text-right">סוג המסמך</Label>
+
+          <div>
+            <Label htmlFor="name" className="text-right">שם המסמך</Label>
+            <Input
+              id="name"
+              value={formData.documentName}
+              onChange={(e) => onFormChange({ documentName: e.target.value })}
+              placeholder="שם המסמך"
+              className="text-right"
+              dir="rtl"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="type" className="text-right">סוג המסמך</Label>
             <Select 
               value={formData.documentType} 
               onValueChange={(value) => onFormChange({ documentType: value })}
@@ -125,135 +139,118 @@ export function UploadDocumentDialog({
               </SelectTrigger>
               <SelectContent align="end">
                 <SelectItem value="contract">חוזה</SelectItem>
-                <SelectItem value="id">תעודת זהות</SelectItem>
-                <SelectItem value="license">רישיון</SelectItem>
+                <SelectItem value="quote">הצעת מחיר</SelectItem>
                 <SelectItem value="invoice">חשבונית</SelectItem>
-                <SelectItem value="insurance">ביטוח</SelectItem>
+                <SelectItem value="receipt">קבלה</SelectItem>
                 <SelectItem value="other">אחר</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          
-          {!entityId && !entityType && (
+
+          {!entityId && (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="entityType" className="block text-right">שייך מסמך אל</Label>
+              <div>
+                <Label htmlFor="entityType" className="text-right">קשר ל</Label>
                 <Select 
-                  value={formData.selectedEntityType || "none"} 
-                  onValueChange={(value) => onFormChange({
-                    selectedEntityId: null,
-                    selectedEntityType: value === "none" ? null : value as 'lead' | 'car' | 'agency'
+                  value={formData.selectedEntityType || ""} 
+                  onValueChange={(value) => onFormChange({ 
+                    selectedEntityType: value || null,
+                    selectedEntityId: null 
                   })}
                 >
                   <SelectTrigger className="text-right">
                     <SelectValue placeholder="בחר סוג ישות" />
                   </SelectTrigger>
                   <SelectContent align="end">
-                    <SelectItem value="none">לא משויך</SelectItem>
-                    <SelectItem value="lead">לקוח</SelectItem>
+                    <SelectItem value="lead">לקוח פוטנציאלי</SelectItem>
                     <SelectItem value="car">רכב</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {formData.selectedEntityType === 'lead' && (
-                <div className="space-y-2">
-                  <Label htmlFor="leadId" className="block text-right">בחר לקוח</Label>
+                <div>
+                  <Label htmlFor="lead" className="text-right">בחר לקוח</Label>
                   <Select 
                     value={formData.selectedEntityId || ""} 
-                    onValueChange={(value) => onFormChange({ selectedEntityId: value })}
-                    disabled={isLeadsLoading}
+                    onValueChange={(value) => onFormChange({ selectedEntityId: value || null })}
                   >
                     <SelectTrigger className="text-right">
                       <SelectValue placeholder="בחר לקוח" />
                     </SelectTrigger>
                     <SelectContent align="end">
-                      {leads?.map(lead => (
-                        <SelectItem key={lead.id} value={lead.id}>
-                          {lead.name} {lead.phone ? `(${lead.phone})` : ''}
-                        </SelectItem>
-                      ))}
+                      {isLeadsLoading ? (
+                        <SelectItem value="" disabled>טוען...</SelectItem>
+                      ) : (
+                        leads.map((lead) => (
+                          <SelectItem key={lead.id} value={lead.id}>
+                            {lead.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
-                  {isLeadsLoading && <p className="text-sm text-muted-foreground text-right">טוען לקוחות...</p>}
                 </div>
               )}
-              
+
               {formData.selectedEntityType === 'car' && (
-                <div className="space-y-2">
-                  <Label htmlFor="carId" className="block text-right">בחר רכב</Label>
+                <div>
+                  <Label htmlFor="car" className="text-right">בחר רכב</Label>
                   <Select 
                     value={formData.selectedEntityId || ""} 
-                    onValueChange={(value) => onFormChange({ selectedEntityId: value })}
-                    disabled={isCarsLoading}
+                    onValueChange={(value) => onFormChange({ selectedEntityId: value || null })}
                   >
                     <SelectTrigger className="text-right">
                       <SelectValue placeholder="בחר רכב" />
                     </SelectTrigger>
                     <SelectContent align="end">
-                      {cars?.map(car => (
-                        <SelectItem key={car.id} value={car.id}>
-                          {car.make} {car.model} {car.year}
-                        </SelectItem>
-                      ))}
+                      {isCarsLoading ? (
+                        <SelectItem value="" disabled>טוען...</SelectItem>
+                      ) : (
+                        cars.map((car) => (
+                          <SelectItem key={car.id} value={car.id}>
+                            {car.make} {car.model} ({car.year})
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
-                  {isCarsLoading && <p className="text-sm text-muted-foreground text-right">טוען רכבים...</p>}
                 </div>
               )}
             </>
           )}
-          
-          <div className="space-y-2">
-            <Label htmlFor="file" className="block text-right">קובץ</Label>
-            <div className="border rounded-lg p-4">
-              <Input
-                id="file"
-                type="file"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              
-              {formData.file ? (
-                <div className="flex items-center justify-between">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => onFormChange({ file: null })}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <span className="truncate">{formData.file.name}</span>
-                    <DocumentIcon fileType={formData.file.type} />
-                  </div>
-                </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                onReset();
+                onOpenChange(false);
+              }}
+              className="flex-1"
+            >
+              ביטול
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isUploading || isSubmitting || !formData.file || !formData.documentName}
+              className="flex-1"
+            >
+              {(isUploading || isSubmitting) ? (
+                <>
+                  <Upload className="h-4 w-4 ml-2 animate-spin" />
+                  מעלה...
+                </>
               ) : (
-                <div className="text-center">
-                  <Label htmlFor="file" className="cursor-pointer block">
-                    <div className="py-4 flex flex-col items-center gap-2 text-muted-foreground">
-                      <Upload className="h-8 w-8" />
-                      <span>לחץ לבחירת קובץ או גרור לכאן</span>
-                      <span className="text-xs">
-                        PDF, תמונות ומסמכי משרד נתמכים
-                      </span>
-                    </div>
-                  </Label>
-                </div>
+                <>
+                  <Upload className="h-4 w-4 ml-2" />
+                  העלה
+                </>
               )}
-            </div>
+            </Button>
           </div>
-        </div>
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={onReset}>איפוס</Button>
-          <Button 
-            onClick={handleUpload}
-            disabled={!formData.file || !formData.documentName || isUploading || (formData.selectedEntityType && !formData.selectedEntityId)}
-          >
-            {isUploading ? "מעלה..." : "העלאה"}
-          </Button>
-        </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

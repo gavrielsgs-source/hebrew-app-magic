@@ -1,222 +1,72 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Car } from "@/types/car";
-import { WhatsappLeadSelector } from "./components/WhatsappLeadSelector";
-import { WhatsappPhoneInput } from "./components/WhatsappPhoneInput";
-import { ManualPhoneInput } from "./components/ManualPhoneInput";
-import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
-import { SelectedCarDetails } from "./components/SelectedCarDetails";
-import { whatsappTemplates } from "./whatsapp-templates";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useUpdateLead } from "@/hooks/use-leads";
-import { toast } from "sonner";
+
+import React, { useState, useEffect } from 'react';
+import { useSubscription } from '@/contexts/subscription-context';
+import { whatsappTemplates, type WhatsappTemplate } from './whatsapp-templates';
+import { WhatsappTemplateForm } from './WhatsappTemplateForm';
+import { toast } from 'sonner';
 
 interface WhatsappTemplateSelectorProps {
-  car: Car;
-  onClose: () => void;
+  selectedTemplateId: string;
+  customizedTemplate: string;
+  onTemplateChange: (templateId: string) => void;
+  onCustomizedTemplateChange: (template: string) => void;
 }
 
-export function WhatsappTemplateSelector({ car, onClose }: WhatsappTemplateSelectorProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState(whatsappTemplates[0]);
-  const [selectedPhone, setSelectedPhone] = useState("");
-  const [selectedLeadName, setSelectedLeadName] = useState("");
-  const [selectedLeadId, setSelectedLeadId] = useState("");
-  const [customMessage, setCustomMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("templates");
-  const isMobile = useIsMobile();
-  const updateLead = useUpdateLead();
+export function WhatsappTemplateSelector({
+  selectedTemplateId,
+  customizedTemplate,
+  onTemplateChange,
+  onCustomizedTemplateChange,
+}: WhatsappTemplateSelectorProps) {
+  const { subscription } = useSubscription();
+  const [availableTemplates, setAvailableTemplates] = useState<WhatsappTemplate[]>([]);
 
-  const generateMessage = () => {
-    if (customMessage.trim()) {
-      return customMessage;
-    }
+  useEffect(() => {
+    // הגבלת מספר התבניות לפי החבילה
+    const templateLimit = subscription.templateLimit || 0;
     
-    // Safe check for selectedTemplate and its generateMessage function
-    if (selectedTemplate && typeof selectedTemplate.generateMessage === 'function') {
-      try {
-        return selectedTemplate.generateMessage(car);
-      } catch (error) {
-        console.error("Error generating message from template:", error);
-        // Fallback to default message
-        return generateDefaultMessage();
+    if (templateLimit === Infinity) {
+      setAvailableTemplates(whatsappTemplates);
+    } else {
+      setAvailableTemplates(whatsappTemplates.slice(0, templateLimit));
+    }
+
+    console.log('🔍 [WhatsappTemplateSelector] Template limit:', templateLimit);
+    console.log('🔍 [WhatsappTemplateSelector] Available templates:', templateLimit === Infinity ? whatsappTemplates.length : templateLimit);
+  }, [subscription.templateLimit]);
+
+  useEffect(() => {
+    // אם התבנית הנבחרת לא זמינה יותר, בחר את הראשונה
+    if (selectedTemplateId && !availableTemplates.find(t => t.id === selectedTemplateId)) {
+      if (availableTemplates.length > 0) {
+        onTemplateChange(availableTemplates[0].id);
+        toast.info('התבנית שנבחרה לא זמינה בחבילה הנוכחית. עבר לתבנית ראשונה.');
       }
     }
-    
-    return generateDefaultMessage();
-  };
-
-  const generateDefaultMessage = () => {
-    return `שלום! אני רוצה להציע לך רכב מעולה:
-${car.make} ${car.model} ${car.year}
-מחיר: ${car.price ? `${car.price.toLocaleString()}₪` : 'לא צוין'}
-${car.kilometers ? `קילומטרים: ${car.kilometers.toLocaleString()}` : ''}
-${car.description ? `פרטים נוספים: ${car.description}` : ''}
-אשמח לשמוע מהך!`;
-  };
-
-  const formatPhoneForWhatsApp = (phone: string) => {
-    if (!phone) return '';
-    
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    
-    if (cleanPhone.startsWith('972')) {
-      return cleanPhone;
-    }
-    
-    if (cleanPhone.startsWith('0')) {
-      return '972' + cleanPhone.substring(1);
-    }
-    
-    return '972' + cleanPhone;
-  };
-
-  const updateLeadStatus = async (leadId: string) => {
-    if (!leadId) return;
-    
-    try {
-      await updateLead.mutateAsync({ 
-        id: leadId, 
-        data: { 
-          status: 'in_treatment',
-          updated_at: new Date().toISOString()
-        } 
-      });
-      console.log(`Lead ${leadId} status updated to 'in_treatment'`);
-    } catch (error) {
-      console.error("Error updating lead status:", error);
-    }
-  };
-
-  const handleSendMessage = async (phone: string, message: string) => {
-    if (!phone || !message) {
-      toast.error("אנא בחר מספר טלפון והודעה");
-      return;
-    }
-
-    const formattedPhone = formatPhoneForWhatsApp(phone);
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-    
-    window.open(whatsappUrl, '_blank');
-    
-    // Update lead status to 'in_treatment' after sending WhatsApp message
-    if (selectedLeadId) {
-      await updateLeadStatus(selectedLeadId);
-    }
-    
-    toast.success(`נפתח וואטסאפ עם ההודעה${selectedLeadName ? ` ל${selectedLeadName}` : ''}${selectedLeadId ? ' והליד עבר לסטטוס "בטיפול"' : ''}`);
-    onClose();
-  };
-
-  const handleLeadSelect = (leadId: string, phone: string, name: string) => {
-    setSelectedPhone(phone);
-    setSelectedLeadName(name);
-    setSelectedLeadId(leadId);
-    console.log("Lead selected:", { leadId, phone, name });
-  };
-
-  const handleNewLead = () => {
-    // Switch to manual tab when a new lead is added
-    setActiveTab("manual");
-    console.log("New lead added, switching to manual tab");
-  };
-
-  const message = generateMessage();
+  }, [availableTemplates, selectedTemplateId, onTemplateChange]);
 
   return (
-    <div className={`space-y-6 ${isMobile ? 'space-y-4' : ''}`} dir="rtl">
-      <div>
-        <h2 className={`font-semibold mb-2 text-right ${isMobile ? 'text-lg' : 'text-xl'}`}>שליחת פרטי רכב בוואטסאפ</h2>
-        <p className={`text-gray-600 text-right ${isMobile ? 'text-sm' : ''}`}>בחר תבנית הודעה ולקוח לשליחה</p>
-      </div>
-
-      <SelectedCarDetails car={car} />
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
-        <TabsList className={`w-full ${isMobile ? 'h-auto grid-cols-3 text-xs' : 'grid grid-cols-3'}`}>
-          <TabsTrigger value="templates" className={isMobile ? "text-xs" : ""}>תבניות</TabsTrigger>
-          <TabsTrigger value="leads" className={isMobile ? "text-xs" : ""}>לקוחות</TabsTrigger>
-          <TabsTrigger value="manual" className={isMobile ? "text-xs" : ""}>ידנית</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
-          <div className="grid gap-3">
-            {whatsappTemplates.map((template) => (
-              <div
-                key={template.id}
-                className={`border rounded-lg cursor-pointer transition-colors ${
-                  isMobile ? 'p-3' : 'p-4'
-                } ${
-                  selectedTemplate?.id === template.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-                onClick={() => setSelectedTemplate(template)}
-              >
-                <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>{template.name}</h3>
-                <p className={`text-gray-600 text-right mt-1 ${
-                  isMobile ? 'text-xs' : 'text-sm'
-                }`}>{template.description}</p>
-              </div>
-            ))}
-          </div>
-          
-          {/* Template preview under templates section */}
-          <WhatsappTemplatePreview
-            template={message}
-          />
-        </TabsContent>
-        
-        <TabsContent value="leads" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
-          <WhatsappLeadSelector 
-            onLeadSelect={handleLeadSelect}
-            onNewLead={handleNewLead}
-            selectedLeadId={selectedLeadId}
-          />
-          
-          {selectedPhone && (
-            <div className="mt-4">
-              <WhatsappPhoneInput
-                phoneNumber={selectedPhone}
-                setPhoneNumber={setSelectedPhone}
-              />
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="manual" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
-          <ManualPhoneInput
-            onSendMessage={handleSendMessage}
-            defaultMessage={message}
-          />
-        </TabsContent>
-      </Tabs>
-
-      {(selectedPhone || activeTab === "manual") && activeTab !== "manual" && (
-        <>
-          <WhatsappTemplatePreview
-            template={message}
-          />
-
-          <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
-            <Button 
-              onClick={() => handleSendMessage(selectedPhone, message)}
-              className={`bg-green-600 hover:bg-green-700 text-white ${
-                isMobile ? 'flex-1 order-1' : 'flex-1'
-              }`}
-            >
-              שלח בוואטסאפ{selectedLeadName && ` ל${selectedLeadName}`}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={onClose}
-              className={isMobile ? 'order-2' : ''}
-            >
-              ביטול
-            </Button>
-          </div>
-        </>
+    <div className="space-y-4">
+      {subscription.templateLimit !== Infinity && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+          <p className="text-blue-800">
+            זמינות עבורך {availableTemplates.length} תבניות מתוך {whatsappTemplates.length} בחבילת {subscription.tier}.
+            {subscription.tier !== 'enterprise' && (
+              <span className="block mt-1">
+                שדרג לחבילה גבוהה יותר לגישה לכל התבניות.
+              </span>
+            )}
+          </p>
+        </div>
       )}
+      
+      <WhatsappTemplateForm
+        templates={availableTemplates}
+        selectedTemplateId={selectedTemplateId}
+        customizedTemplate={customizedTemplate}
+        onTemplateChange={onTemplateChange}
+        onCustomizedTemplateChange={onCustomizedTemplateChange}
+      />
     </div>
   );
 }

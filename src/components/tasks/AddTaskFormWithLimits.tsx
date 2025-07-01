@@ -1,47 +1,58 @@
 
-import { useState, useEffect } from "react";
-import { useTasks } from "@/hooks/use-tasks";
-import { SubscriptionLimitAlert } from "@/components/subscription/SubscriptionLimitAlert";
-import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
-import { Plus } from "lucide-react";
-import { AddTaskDialog } from "./AddTaskDialog";
+import React, { useState } from 'react';
+import { useTasks } from '@/hooks/use-tasks';
+import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
+import { TaskForm } from './TaskForm';
+import { toast } from 'sonner';
 
-export function AddTaskFormWithLimits() {
-  const { tasks } = useTasks();
-  const [taskCount, setTaskCount] = useState(0);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+interface AddTaskFormWithLimitsProps {
+  onSuccess?: () => void;
+  className?: string;
+}
 
-  useEffect(() => {
-    setTaskCount(tasks?.length || 0);
-  }, [tasks]);
+export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithLimitsProps) {
+  const { tasks, addTask, isLoading } = useTasks();
+  const { checkAndNotifyLimit } = useSubscriptionLimits();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddTask = () => {
-    console.log('Add task clicked from limits component', { taskCount });
-    setIsAddDialogOpen(true);
+  const handleSubmit = async (formData: any) => {
+    console.log('🔍 [AddTaskFormWithLimits] handleSubmit called with formData:', formData);
+    
+    setIsSubmitting(true);
+    try {
+      const currentCount = tasks?.length || 0;
+      console.log('🔍 [AddTaskFormWithLimits] Current tasks count:', currentCount);
+      
+      // בדיקת מגבלות לפני יצירת המשימה
+      const canProceed = checkAndNotifyLimit('task', currentCount);
+      
+      if (!canProceed) {
+        console.log('🔍 [AddTaskFormWithLimits] Limit check failed, aborting submission');
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('🔍 [AddTaskFormWithLimits] Limit check passed, creating task');
+      
+      await addTask(formData);
+      toast.success('משימה חדשה נוצרה בהצלחה!');
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('🔍 [AddTaskFormWithLimits] Error creating task:', error);
+      toast.error('שגיאה ביצירת המשימה');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <>
-      <SubscriptionLimitAlert 
-        featureKey="taskLimit" 
-        currentCount={taskCount} 
-        entityName="משימות" 
-      />
-      
-      <LimitAwareButton 
-        resourceType="task"
-        currentCount={taskCount}
-        onAction={handleAddTask}
-        className="bg-primary hover:bg-primary/90"
-      >
-        <Plus className="ml-2 h-4 w-4" />
-        הוסף משימה
-      </LimitAwareButton>
-      
-      <AddTaskDialog 
-        open={isAddDialogOpen} 
-        onOpenChange={setIsAddDialogOpen} 
-      />
-    </>
+    <TaskForm
+      onSubmit={handleSubmit}
+      isLoading={isLoading || isSubmitting}
+      className={className}
+    />
   );
 }

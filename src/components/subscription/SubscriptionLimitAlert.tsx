@@ -1,83 +1,70 @@
 
 import React from 'react';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSubscription } from '@/contexts/subscription-context';
-import { Subscription } from '@/types/subscription';
 
 interface SubscriptionLimitAlertProps {
-  featureKey: keyof Subscription;
+  resourceType: 'car' | 'lead' | 'task' | 'template' | 'whatsappMessage';
   currentCount: number;
-  entityName: string;
+  showWarning?: boolean;
 }
 
-export function SubscriptionLimitAlert({ featureKey, currentCount, entityName }: SubscriptionLimitAlertProps) {
+export function SubscriptionLimitAlert({ 
+  resourceType, 
+  currentCount, 
+  showWarning = true 
+}: SubscriptionLimitAlertProps) {
   const { subscription } = useSubscription();
-  
-  // Get the limit for this feature
-  const limit = subscription[featureKey] as number;
-  
-  console.log('SubscriptionLimitAlert Debug:', {
-    featureKey,
-    currentCount,
-    entityName,
-    limit,
-    subscription
-  });
-  
-  if (!limit || limit === Infinity) {
-    console.log('SubscriptionLimitAlert: No limit or infinite limit, not showing alert');
+  const navigate = useNavigate();
+
+  const resourceNames = {
+    car: 'רכבים',
+    lead: 'לקוחות פוטנציאליים', 
+    task: 'משימות',
+    template: 'תבניות הודעות',
+    whatsappMessage: 'הודעות וואטסאפ'
+  };
+
+  const limitKey = `${resourceType}Limit` as keyof typeof subscription;
+  const limit = subscription[limitKey] as number;
+
+  if (limit === Infinity) {
     return null;
   }
-  
-  // Calculate percentage used
-  const percentUsed = (currentCount / limit) * 100;
-  
-  console.log('SubscriptionLimitAlert: Percent used:', percentUsed);
-  
-  // Show alert if we're at 70% or more of the limit (lowered threshold for better UX)
-  if (percentUsed < 70) {
-    console.log('SubscriptionLimitAlert: Below 70% threshold, not showing alert');
-    return null;
-  }
-  
-  // If at limit or beyond, show destructive alert. Otherwise show warning
+
+  const percentage = Math.round((currentCount / limit) * 100);
+  const isNearLimit = percentage >= 80;
   const isAtLimit = currentCount >= limit;
-  const variant = isAtLimit ? "destructive" : "default" as const;
-  
-  console.log('SubscriptionLimitAlert: Showing alert', { isAtLimit, variant });
-  
+
+  if (!showWarning && !isAtLimit) {
+    return null;
+  }
+
   return (
-    <Alert 
-      variant={variant}
-      className={`mb-4 mx-4 md:mx-0 md:mb-6 ${
-        isAtLimit 
-          ? 'border-red-200 dark:border-red-900 bg-red-50/90 dark:bg-red-950/90' 
-          : 'border-amber-200 dark:border-amber-900 bg-amber-50/90 dark:bg-amber-950/90'
-      } rounded-xl shadow-sm`}
-      dir="rtl"
-    >
-      <AlertCircle className={`h-4 w-4 ${
-        isAtLimit 
-          ? 'text-red-600 dark:text-red-400' 
-          : 'text-amber-600 dark:text-amber-400'
-      }`} />
-      <AlertTitle className={`text-sm md:text-base font-semibold ${
-        isAtLimit 
-          ? 'text-red-700 dark:text-red-300' 
-          : 'text-amber-700 dark:text-amber-300'
-      }`}>
-        {isAtLimit ? 'הגעת למגבלת המנוי' : 'מתקרב למגבלת המנוי'}
-      </AlertTitle>
-      <AlertDescription className={`mt-2 text-xs md:text-sm leading-relaxed ${
-        isAtLimit 
-          ? 'text-red-600 dark:text-red-400' 
-          : 'text-amber-600 dark:text-amber-400'
-      }`}>
-        {isAtLimit ? 
-          `הגעת למספר ה${entityName} המקסימלי (${limit}) במנוי שלך. שדרג את המנוי כדי להוסיף יותר ${entityName}.` :
-          `אתה משתמש ב-${currentCount} מתוך ${limit} ${entityName} המותרים במנוי שלך (${Math.round(percentUsed)}%). שקול לשדרג את המנוי שלך.`
-        }
+    <Alert className={`mb-4 ${isAtLimit ? 'border-red-500 bg-red-50' : 'border-yellow-500 bg-yellow-50'}`}>
+      <AlertTriangle className={`h-4 w-4 ${isAtLimit ? 'text-red-600' : 'text-yellow-600'}`} />
+      <AlertDescription className="flex items-center justify-between">
+        <div className="text-right flex-1">
+          {isAtLimit ? (
+            <span className="text-red-800 font-medium">
+              הגעת למגבלת ה{resourceNames[resourceType]} בחבילת {subscription.tier} ({currentCount}/{limit})
+            </span>
+          ) : isNearLimit ? (
+            <span className="text-yellow-800 font-medium">
+              אתה משתמש ב-{currentCount} מתוך {limit} {resourceNames[resourceType]} ({percentage}%)
+            </span>
+          ) : null}
+        </div>
+        <Button
+          onClick={() => navigate('/subscription/upgrade')}
+          size="sm"
+          className={`mr-4 ${isAtLimit ? 'bg-red-600 hover:bg-red-700' : 'bg-yellow-600 hover:bg-yellow-700'}`}
+        >
+          שדרג חבילה
+        </Button>
       </AlertDescription>
     </Alert>
   );

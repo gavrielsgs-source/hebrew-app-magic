@@ -23,7 +23,7 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     carLimit: 20,
     leadLimit: 50,
     userLimit: 2,
-    templateLimit: 3,
+    templateLimit: 5, // עודכן מ-3 ל-5
     whatsappMessageLimit: 100,
     taskLimit: 20,
     analyticsLevel: 'basic'
