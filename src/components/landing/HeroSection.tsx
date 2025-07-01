@@ -118,11 +118,17 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
           </div>
 
           {/* Right Content - 3D Layout with perspective */}
-          <div className="relative flex items-center justify-center perspective-1000">
+          <div className="relative flex items-center justify-center" style={{ perspective: '1000px' }}>
             <div className="relative w-full max-w-2xl h-96">
               {/* Desktop Background Image - Back */}
-              <div className="absolute top-0 left-0 transform rotate-y-12 rotate-x-3 shadow-2xl rounded-xl overflow-hidden z-10" 
-                   style={{ transform: 'perspective(1000px) rotateY(-15deg) rotateX(8deg) translateZ(-50px)', width: '280px', height: '180px' }}>
+              <div 
+                className="absolute top-0 left-0 shadow-2xl rounded-xl overflow-hidden z-10" 
+                style={{ 
+                  transform: 'perspective(1000px) rotateY(-15deg) rotateX(8deg) translateZ(-50px)', 
+                  width: '280px', 
+                  height: '180px' 
+                }}
+              >
                 <img
                   src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
                   alt="מלאי רכבים מקצועי"
@@ -132,8 +138,14 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
               </div>
               
               {/* Desktop Front Image - Overlapping */}
-              <div className="absolute top-8 left-16 transform shadow-2xl rounded-xl overflow-hidden z-20" 
-                   style={{ transform: 'perspective(1000px) rotateY(-8deg) rotateX(5deg) translateZ(20px)', width: '280px', height: '180px' }}>
+              <div 
+                className="absolute top-8 left-16 shadow-2xl rounded-xl overflow-hidden z-20" 
+                style={{ 
+                  transform: 'perspective(1000px) rotateY(-8deg) rotateX(5deg) translateZ(20px)', 
+                  width: '280px', 
+                  height: '180px' 
+                }}
+              >
                 <img
                   src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
                   alt="אנליטיקס וסיכומים"
@@ -143,8 +155,10 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
               </div>
 
               {/* iPhone Mockup - Right side */}
-              <div className="absolute top-4 right-0 z-30" 
-                   style={{ transform: 'perspective(1000px) rotateY(15deg) rotateX(-5deg) translateZ(40px)' }}>
+              <div 
+                className="absolute top-4 right-0 z-30" 
+                style={{ transform: 'perspective(1000px) rotateY(15deg) rotateX(-5deg) translateZ(40px)' }}
+              >
                 {/* iPhone Frame with realistic proportions */}
                 <div className="relative bg-black rounded-[2.5rem] p-1 shadow-2xl">
                   <div className="bg-black rounded-[2rem] overflow-hidden" style={{ width: '200px', height: '400px' }}>
@@ -191,13 +205,6 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
           </div>
         </div>
       </div>
-      
-      {/* CSS for 3D perspective */}
-      <style jsx>{`
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-      `}</style>
     </section>
   );
 }
