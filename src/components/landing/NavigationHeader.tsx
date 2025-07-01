@@ -33,7 +33,7 @@ export function NavigationHeader({ user, loading }: NavigationHeaderProps) {
             <img 
               src="/lovable-uploads/85996f43-dfa3-4a57-9020-52b4da01c3ad.png" 
               alt="Carslead Software" 
-              className="h-48 md:h-64 w-auto object-contain"
+              className="h-24 md:h-32 w-auto object-contain"
             />
           </Link>
 

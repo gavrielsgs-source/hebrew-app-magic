@@ -9,7 +9,7 @@ export function LandingFooter() {
               <img 
                 src="/lovable-uploads/85996f43-dfa3-4a57-9020-52b4da01c3ad.png" 
                 alt="Carslead Software" 
-                className="h-48 w-auto object-contain"
+                className="h-24 w-auto object-contain"
               />
             </div>
             <p className="text-gray-400">
