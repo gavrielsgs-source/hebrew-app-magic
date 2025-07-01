@@ -117,48 +117,11 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Right Content - 3D Layout with perspective */}
-          <div className="relative flex items-center justify-center" style={{ perspective: '1000px' }}>
+          {/* Right Content - Clean Layout without 3D effects */}
+          <div className="relative flex items-center justify-center">
             <div className="relative w-full max-w-2xl h-96">
-              {/* Desktop Background Image - Back */}
-              <div 
-                className="absolute top-0 left-0 shadow-2xl rounded-xl overflow-hidden z-10" 
-                style={{ 
-                  transform: 'perspective(1000px) rotateY(-15deg) rotateX(8deg) translateZ(-50px)', 
-                  width: '280px', 
-                  height: '180px' 
-                }}
-              >
-                <img
-                  src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
-                  alt="מלאי רכבים מקצועי"
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60"></div>
-              </div>
-              
-              {/* Desktop Front Image - Overlapping */}
-              <div 
-                className="absolute top-8 left-16 shadow-2xl rounded-xl overflow-hidden z-20" 
-                style={{ 
-                  transform: 'perspective(1000px) rotateY(-8deg) rotateX(5deg) translateZ(20px)', 
-                  width: '280px', 
-                  height: '180px' 
-                }}
-              >
-                <img
-                  src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
-                  alt="אנליטיקס וסיכומים"
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-40"></div>
-              </div>
-
-              {/* iPhone Mockup - Right side */}
-              <div 
-                className="absolute top-4 right-0 z-30" 
-                style={{ transform: 'perspective(1000px) rotateY(15deg) rotateX(-5deg) translateZ(40px)' }}
-              >
+              {/* iPhone Mockup - Left side */}
+              <div className="absolute top-4 left-0 z-30">
                 {/* iPhone Frame with realistic proportions */}
                 <div className="relative bg-black rounded-[2.5rem] p-1 shadow-2xl">
                   <div className="bg-black rounded-[2rem] overflow-hidden" style={{ width: '200px', height: '400px' }}>
@@ -167,10 +130,10 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
                       <div className="w-28 h-6 bg-black rounded-full border border-gray-800"></div>
                     </div>
                     
-                    {/* Mobile Screen - Perfect fit */}
+                    {/* Mobile Screen - Using your uploaded image */}
                     <div className="relative bg-white flex-1">
                       <img
-                        src="/lovable-uploads/f9f8d800-8eaf-45ae-b55c-4ea76d1ec04e.png"
+                        src="/lovable-uploads/25f76e09-b68f-4546-ae11-feadf0586392.png"
                         alt="דשבורד מובייל מתקדם"
                         className="w-full h-80 object-cover object-top"
                       />
@@ -184,23 +147,46 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
                 </div>
               </div>
 
-              {/* Floating Labels with 3D effect */}
-              <div className="absolute top-12 left-8 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform rotate-2">
-                <p className="text-sm font-medium text-[#2F3C7E]">מלאי רכבים</p>
+              {/* Desktop Images - Right side, larger and stacked */}
+              <div className="absolute top-0 right-0">
+                {/* Desktop Background Image - Back */}
+                <div className="shadow-2xl rounded-xl overflow-hidden" style={{ width: '380px', height: '240px' }}>
+                  <img
+                    src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
+                    alt="מלאי רכבים מקצועי"
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-60"></div>
+                </div>
               </div>
               
-              <div className="absolute top-24 left-20 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform -rotate-1">
-                <p className="text-sm font-medium text-[#4CAF50]">אנליטיקס</p>
-              </div>
-              
-              <div className="absolute bottom-32 right-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform rotate-1">
-                <p className="text-sm font-medium text-[#2F3C7E]">דשבורד מובייל</p>
+              {/* Desktop Front Image - Overlapping on top */}
+              <div className="absolute top-12 right-8 shadow-2xl rounded-xl overflow-hidden z-20" style={{ width: '380px', height: '240px' }}>
+                <img
+                  src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
+                  alt="אנליטיקס וסיכומים"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-40"></div>
               </div>
 
-              {/* Decorative 3D elements */}
+              {/* Floating Labels */}
+              <div className="absolute top-12 left-44 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform rotate-2">
+                <p className="text-sm font-medium text-[#2F3C7E]">דשבורד מובייל</p>
+              </div>
+              
+              <div className="absolute top-24 right-12 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform -rotate-1">
+                <p className="text-sm font-medium text-[#4CAF50]">מלאי רכבים</p>
+              </div>
+              
+              <div className="absolute bottom-32 right-20 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40 transform rotate-1">
+                <p className="text-sm font-medium text-[#2F3C7E]">אנליטיקס</p>
+              </div>
+
+              {/* Decorative elements */}
               <div className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-full opacity-20 animate-pulse transform rotate-45"></div>
               <div className="absolute -bottom-8 -left-8 w-12 h-12 bg-gradient-to-r from-[#4CAF50] to-[#2F3C7E] rounded-full opacity-20 animate-bounce transform -rotate-12"></div>
-              <div className="absolute top-1/2 -right-4 w-4 h-4 bg-blue-400 rounded-full animate-ping transform rotate-45"></div>
+              <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-blue-400 rounded-full animate-ping transform rotate-45"></div>
             </div>
           </div>
         </div>
