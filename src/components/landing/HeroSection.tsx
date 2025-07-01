@@ -27,7 +27,7 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
       </div>
 
       <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="text-center lg:text-right space-y-8">
             {/* Badge */}
@@ -119,65 +119,65 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
 
           {/* Right Content - Combined System Images */}
           <div className="relative flex items-center justify-center">
-            <div className="relative w-full max-w-2xl">
-              {/* Desktop Images - Stacked Diagonally */}
-              <div className="relative">
+            <div className="relative w-full max-w-lg">
+              {/* Desktop Images - Stacked Diagonally - Made smaller */}
+              <div className="relative scale-75 origin-top-right">
                 {/* First Desktop Image */}
                 <div className="absolute top-0 right-0 transform rotate-6 shadow-2xl rounded-xl overflow-hidden z-10">
                   <img
                     src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
                     alt="מלאי רכבים מקצועי"
-                    className="w-80 h-48 object-cover transition-transform duration-300 hover:scale-105"
+                    className="w-72 h-44 object-cover transition-transform duration-300 hover:scale-105"
                   />
                 </div>
                 
                 {/* Second Desktop Image */}
-                <div className="absolute top-16 right-24 transform -rotate-3 shadow-2xl rounded-xl overflow-hidden z-20">
+                <div className="absolute top-12 right-20 transform -rotate-3 shadow-2xl rounded-xl overflow-hidden z-20">
                   <img
                     src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
                     alt="אנליטיקס וסיכומים"
-                    className="w-80 h-48 object-cover transition-transform duration-300 hover:scale-105"
+                    className="w-72 h-44 object-cover transition-transform duration-300 hover:scale-105"
                   />
                 </div>
               </div>
 
               {/* iPhone Mockup with Mobile Image */}
-              <div className="relative z-30 mt-32 mr-8">
+              <div className="relative z-30 mt-20 mr-8">
                 {/* iPhone Frame */}
-                <div className="relative bg-black rounded-[3rem] p-2 shadow-2xl transform hover:rotate-2 transition-transform duration-300">
-                  <div className="bg-black rounded-[2.5rem] overflow-hidden">
+                <div className="relative bg-black rounded-[2.5rem] p-1 shadow-2xl transform hover:rotate-2 transition-transform duration-300">
+                  <div className="bg-black rounded-[2rem] overflow-hidden">
                     {/* iPhone Notch */}
-                    <div className="relative bg-black h-8 flex items-center justify-center">
-                      <div className="w-32 h-6 bg-black rounded-b-2xl"></div>
+                    <div className="relative bg-black h-6 flex items-center justify-center">
+                      <div className="w-24 h-4 bg-black rounded-b-2xl"></div>
                     </div>
                     
-                    {/* Mobile Screen */}
+                    {/* Mobile Screen - Exact fit */}
                     <div className="relative bg-white">
                       <img
                         src="/lovable-uploads/f9f8d800-8eaf-45ae-b55c-4ea76d1ec04e.png"
                         alt="דשבורד מובייל מתקדם"
-                        className="w-64 h-auto object-cover"
+                        className="w-56 h-auto object-cover block"
                       />
                     </div>
                     
                     {/* iPhone Home Indicator */}
-                    <div className="bg-black h-6 flex items-center justify-center">
-                      <div className="w-32 h-1 bg-white rounded-full opacity-60"></div>
+                    <div className="bg-black h-4 flex items-center justify-center">
+                      <div className="w-24 h-1 bg-white rounded-full opacity-60"></div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Floating Labels */}
-              <div className="absolute top-12 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+              <div className="absolute top-8 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
                 <p className="text-sm font-medium text-[#2F3C7E]">מלאי רכבים</p>
               </div>
               
-              <div className="absolute top-28 left-12 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+              <div className="absolute top-20 left-12 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
                 <p className="text-sm font-medium text-[#4CAF50]">אנליטיקס</p>
               </div>
               
-              <div className="absolute bottom-32 left-8 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+              <div className="absolute bottom-20 left-8 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
                 <p className="text-sm font-medium text-[#2F3C7E]">דשבורד מובייל</p>
               </div>
 
