@@ -57,45 +57,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
       if (subscriptionError) {
         if (subscriptionError.code === 'PGRST116') {
-          console.log('🔍 [SubscriptionContext] No subscription found, creating new trial');
-          
-          // אין מנוי עדיין, ניצור ניסיון חדש של 14 ימים
-          const trialEndDate = new Date();
-          trialEndDate.setDate(trialEndDate.getDate() + 14);
-          
-          const { error: insertError } = await supabase
-            .from('subscriptions')
-            .insert({
-              user_id: user.id,
-              subscription_tier: 'premium',
-              active: true,
-              trial_ends_at: trialEndDate.toISOString()
-            });
-          
-          if (insertError) {
-            console.error("🔍 [SubscriptionContext] Error creating subscription:", insertError);
-          }
-          
-          // יצירת מנוי פרימיום עם ניסיון של 14 ימים
-          const newSubscription: Subscription = {
-            ...subscriptionFeatures.premium,
-            isTrialActive: true,
-            trialEndsAt: trialEndDate.toISOString(),
-            active: true
-          };
-          
-          console.log('🔍 [SubscriptionContext] New subscription created:', {
-            tier: newSubscription.tier,
-            leadLimit: newSubscription.leadLimit,
-            carLimit: newSubscription.carLimit,
-            isTrialActive: newSubscription.isTrialActive,
-            active: newSubscription.active,
-            trialEndsAt: newSubscription.trialEndsAt
-          });
-          
-          setSubscription(newSubscription);
-          setDaysLeftInTrial(14);
-          setIsTrialExpired(false);
+          console.log('🔍 [SubscriptionContext] No subscription found, this should not happen after the migration');
+          throw new Error('No subscription found - this should not happen');
         } else {
           throw subscriptionError;
         }
@@ -108,6 +71,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         if (isTrialActive && trialEndDate) {
           const daysLeft = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
           setDaysLeftInTrial(Math.max(0, daysLeft));
+        } else {
+          setDaysLeftInTrial(0);
         }
         
         setIsTrialExpired(!!trialExpired);
@@ -128,6 +93,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           trialExpired,
           leadLimit: currentSubscription.leadLimit,
           carLimit: currentSubscription.carLimit,
+          daysLeft: isTrialActive ? daysLeftInTrial : 0,
           subscription: currentSubscription
         });
         
@@ -238,7 +204,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     carLimit: subscription.carLimit,
     isLoading,
     isTrialExpired,
-    active: subscription.active
+    active: subscription.active,
+    daysLeftInTrial
   });
 
   return (
