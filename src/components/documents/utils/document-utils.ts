@@ -3,11 +3,11 @@ export const getDocumentTypeLabel = (type: string) => {
   switch (type) {
     case 'contract': return 'חוזה';
     case 'id': return 'תעודת זהות';
-    case 'license': return 'רישיון';
+    case 'license': return 'רישיון נהיגה';
     case 'invoice': return 'חשבונית';
-    case 'insurance': return 'ביטוח';
-    case 'other': return 'אחר';
-    default: return type;
+    case 'insurance': return 'פוליסת ביטוח';
+    case 'other': return 'מסמך אחר';
+    default: return 'מסמך';
   }
 };
 
