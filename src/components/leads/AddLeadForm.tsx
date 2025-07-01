@@ -6,6 +6,7 @@ import { useCars } from "@/hooks/use-cars";
 import { useAuth } from "@/hooks/use-auth";
 import { useTasks } from "@/hooks/use-tasks";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { useSubscription } from '@/contexts/subscription-context';
 import { toast } from "sonner";
 import { LeadFormBase, FormContextValue } from "./LeadFormBase";
 import { LeadFormValues } from "./schemas/lead-form-schema";
@@ -21,6 +22,8 @@ import { useState } from "react";
 
 export function AddLeadForm({ carId, onSuccess }: { carId?: string; onSuccess?: () => void }) {
   const { user } = useAuth();
+  const { leads } = useLeads();
+  const { checkEntitlement } = useSubscription();
   const addLead = useCreateLead();
   const { addTask } = useTasks();
   const { cars } = useCars();
@@ -30,6 +33,16 @@ export function AddLeadForm({ carId, onSuccess }: { carId?: string; onSuccess?: 
 
   const handleSubmit = async (values: LeadFormValues) => {
     console.log("Starting lead submission with values:", values);
+    
+    // Check subscription limits before submitting
+    const currentLeadCount = leads?.length || 0;
+    const canAddLead = checkEntitlement('leadLimit', currentLeadCount + 1);
+    
+    if (!canAddLead) {
+      console.log("Lead creation blocked by subscription limits");
+      toast.error("הגעת למגבלת המנוי. לא ניתן להוסיף עוד לקוחות. אנא שדרג את המנוי שלך.");
+      return;
+    }
     
     try {
       const leadData = {
