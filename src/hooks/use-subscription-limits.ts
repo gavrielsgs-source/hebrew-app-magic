@@ -59,11 +59,10 @@ export function useSubscriptionLimits() {
         return { allowed: true, message: '' };
       }
 
-      // תיקון הלוגיקה: בודק אם currentCount + 1 יעבור את המגבלה
-      // כלומר, אם אנחנו כעת במספר הנוכחי, האם נוכל להוסיף עוד אחד?
+      // בדיקה: האם אחרי הוספת פריט חדש נעבור את המגבלה?
       const wouldExceedLimit = (currentCount + 1) > limit;
       
-      console.log('🔍 [useSubscriptionLimits] Fixed limit calculation:', {
+      console.log('🔍 [useSubscriptionLimits] Limit calculation:', {
         currentCount,
         limit,
         nextCount: currentCount + 1,
