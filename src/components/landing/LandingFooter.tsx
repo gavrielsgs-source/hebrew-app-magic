@@ -10,8 +10,15 @@ export function LandingFooter() {
                 src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
                 alt="Carslead Software" 
                 className="h-12 w-auto object-contain"
+                onLoad={() => console.log('Footer logo loaded successfully')}
                 onError={(e) => {
-                  console.log('Footer logo failed to load');
+                  console.error('Footer logo failed to load:', e);
+                  console.log('Trying to load footer logo from:', e.currentTarget.src);
+                  // Show a text fallback instead of hiding
+                  const textFallback = document.createElement('div');
+                  textFallback.textContent = 'CarsLead';
+                  textFallback.className = 'text-xl font-bold text-white';
+                  e.currentTarget.parentNode?.appendChild(textFallback);
                   e.currentTarget.style.display = 'none';
                 }}
               />
