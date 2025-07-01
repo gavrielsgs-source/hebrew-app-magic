@@ -1,4 +1,3 @@
-import { Car } from 'lucide-react';
 
 export function LandingFooter() {
   return (
@@ -6,11 +5,12 @@ export function LandingFooter() {
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#2F3C7E] to-[#4CAF50] rounded-xl flex items-center justify-center">
-                <Car className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold">CarsLead</span>
+            <div className="flex items-center mb-4">
+              <img 
+                src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
+                alt="Carslead Software" 
+                className="h-10 w-auto"
+              />
             </div>
             <p className="text-gray-400">
               מערכת הלידים המתקדמת לסוחרי רכב בישראל

@@ -1,5 +1,5 @@
 
-import { Car, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -12,14 +12,13 @@ export function LandingHeader({ user, loading }: LandingHeaderProps) {
   return (
     <header className="container mx-auto px-4 py-4 md:py-6 w-full">
       <nav className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#2F3C7E] to-[#4CAF50] rounded-xl flex items-center justify-center">
-            <Car className="h-6 w-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] bg-clip-text text-transparent">
-            CarsLead
-          </span>
-        </div>
+        <Link to="/" className="flex items-center">
+          <img 
+            src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
+            alt="Carslead Software" 
+            className="h-12 md:h-14 w-auto"
+          />
+        </Link>
         <div className="flex items-center gap-4">
           {loading ? (
             <div className="w-8 h-8 animate-spin border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
