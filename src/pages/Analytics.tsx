@@ -36,6 +36,12 @@ export default function Analytics() {
   
   return (
     <div className="container py-4 md:py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-right">אנליטיקה</h1>
+        <p className="text-muted-foreground text-right mt-2">
+          נתונים ותובנות עיסקיות מתקדמות
+        </p>
+      </div>
       <AnalyticsDashboard />
     </div>
   );

@@ -1,179 +1,99 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, TrendingUp, Users, Car } from "lucide-react";
-import { useDateRangeAnalytics } from "@/hooks/analytics/use-date-range-analytics";
-import { useAdvancedAnalytics, type AdvancedAnalyticsData } from "@/hooks/analytics/use-combined-analytics";
+import { useSubscription } from "@/contexts/subscription-context";
+import { SubscriptionGatedFeature } from "@/components/subscription/SubscriptionGatedFeature";
+import { BasicAnalytics } from "./BasicAnalytics";
+import { FullAnalytics } from "./FullAnalytics";
+import { CustomAnalytics } from "./CustomAnalytics";
 
 export function AnalyticsDashboard() {
-  const { data: dateRanges } = useDateRangeAnalytics();
-  const currentPeriod = dateRanges?.thisMonth || { from: new Date(), to: new Date() };
-  const previousPeriod = dateRanges?.lastMonth || { from: new Date(), to: new Date() };
+  const { subscription } = useSubscription();
 
-  const { data: currentAnalytics, isLoading: currentLoading, error: currentError } = useAdvancedAnalytics(currentPeriod);
-  const { data: previousAnalytics, isLoading: previousLoading, error: previousError } = useAdvancedAnalytics(previousPeriod);
-
-  const isLoading = currentLoading || previousLoading;
-  const error = currentError || previousError;
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Loading...</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">--</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>שגיאה בטעינת נתונים</CardTitle>
-            <CardDescription>לא ניתן לטעון את נתוני האנליטיקס</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  // Provide proper default values with correct types
-  const defaultAnalytics: AdvancedAnalyticsData = {
-    totalLeads: 0,
-    totalCars: 0,
-    totalSales: 0,
-    leadsBySource: [],
-    leadsOverTime: [],
-    avgResponseTime: 0,
-    conversionRate: 0,
-    conversionBySource: [],
-    salesByAgent: [],
-    salesOverTime: [],
-    templatePerformance: [],
+  // Determine which analytics component to show based on subscription level
+  const renderAnalytics = () => {
+    switch (subscription.analyticsLevel) {
+      case 'custom':
+        return <CustomAnalytics />;
+      case 'full':
+        return <FullAnalytics />;
+      case 'basic':
+      default:
+        return <BasicAnalytics />;
+    }
   };
-
-  const currentPeriodData = currentAnalytics || defaultAnalytics;
-  const previousPeriodData = previousAnalytics || defaultAnalytics;
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">לידים חדשים</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.totalLeads}</div>
-            <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalLeads ? 
-                `${(((currentPeriodData.totalLeads - previousPeriodData.totalLeads) / previousPeriodData.totalLeads) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
-            </p>
-          </CardContent>
-        </Card>
+      {/* Always show basic analytics, but gate advanced features */}
+      {subscription.analyticsLevel === 'basic' && (
+        <div>
+          <BasicAnalytics />
+          
+          {/* Show what they're missing */}
+          <div className="mt-8 space-y-4">
+            <SubscriptionGatedFeature
+              feature="advancedAnalytics"
+              fallback={
+                <div className="border border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                  <h3 className="text-lg font-semibold mb-2">גרפים וניתוחים מתקדמים</h3>
+                  <p className="text-muted-foreground mb-4">
+                    קבל תובנות עמוקות יותר עם גרפים אינטראקטיביים, השוואות תקופות ומגמות
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    זמין בחבילת ביזנס ומעלה
+                  </p>
+                </div>
+              }
+            >
+              <div />
+            </SubscriptionGatedFeature>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">רכבים פעילים</CardTitle>
-            <Car className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.totalCars}</div>
-            <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalCars ? 
-                `${(((currentPeriodData.totalCars - previousPeriodData.totalCars) / previousPeriodData.totalCars) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
-            </p>
-          </CardContent>
-        </Card>
+            <SubscriptionGatedFeature
+              feature="customReports"
+              fallback={
+                <div className="border border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                  <h3 className="text-lg font-semibold mb-2">דוחות מותאמים אישית</h3>
+                  <p className="text-muted-foreground mb-4">
+                    צור דוחות מותאמים לצרכים שלך, ייצא נתונים ותקבל תחזיות AI
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    זמין בחבילת אנטרפרייז
+                  </p>
+                </div>
+              }
+            >
+              <div />
+            </SubscriptionGatedFeature>
+          </div>
+        </div>
+      )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">משימות שהושלמו</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.totalSales}</div>
-            <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalSales ? 
-                `${(((currentPeriodData.totalSales - previousPeriodData.totalSales) / previousPeriodData.totalSales) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
-            </p>
-          </CardContent>
-        </Card>
+      {subscription.analyticsLevel === 'full' && (
+        <div>
+          <FullAnalytics />
+          
+          {/* Show enterprise features preview */}
+          <div className="mt-8">
+            <SubscriptionGatedFeature
+              feature="customReports"
+              fallback={
+                <div className="border border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                  <h3 className="text-lg font-semibold mb-2">תכונות אנטרפרייז</h3>
+                  <p className="text-muted-foreground mb-4">
+                    תחזיות AI, דוחות מותאמים אישית, ניתוח רווחיות מתקדם ועוד
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    זמין בחבילת אנטרפרייז
+                  </p>
+                </div>
+              }
+            >
+              <div />
+            </SubscriptionGatedFeature>
+          </div>
+        </div>
+      )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">שיעור המרה</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{currentPeriodData.conversionRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              מלידים לעסקאות סגורות
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="leads" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="leads">לידים</TabsTrigger>
-          <TabsTrigger value="sales">מכירות</TabsTrigger>
-          <TabsTrigger value="conversion">המרות</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="leads" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>מגמת לידים</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <div className="text-center py-8 text-muted-foreground">
-                גרף לידים יופיע כאן
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="sales" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>ביצועי מכירות</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <div className="text-center py-8 text-muted-foreground">
-                גרף מכירות יופיע כאן
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="conversion" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>שיעורי המרה</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <div className="text-center py-8 text-muted-foreground">
-                גרף המרות יופיע כאן
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {subscription.analyticsLevel === 'custom' && <CustomAnalytics />}
     </div>
   );
 }
