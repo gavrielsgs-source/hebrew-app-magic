@@ -8,8 +8,8 @@ export const taskFormSchema = z.object({
   status: z.enum(["pending", "in_progress", "completed", "cancelled"]),
   type: z.enum(["task", "call", "meeting", "follow_up"]),
   due_date: z.date().optional(),
-  car_id: z.string().uuid("נא לבחור רכב").optional().or(z.literal("")),
-  lead_id: z.string().uuid("נא לבחור ליד").optional().or(z.literal("")),
+  car_id: z.string().optional().or(z.literal("")),
+  lead_id: z.string().optional().or(z.literal("")),
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;

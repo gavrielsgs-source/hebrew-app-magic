@@ -5,12 +5,12 @@ import { CarsTable } from "@/components/CarsTable";
 import { CarGrid } from "@/components/cars/CarGrid";
 import { Button } from "@/components/ui/button";
 import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon } from "lucide-react";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddCarForm } from "@/components/cars/AddCarForm";
 import { MobileAddCarForm } from "@/components/cars/MobileAddCarForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
+import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { CarsMobileHeader } from "@/components/cars/page/CarsMobileHeader";
@@ -38,16 +38,6 @@ export default function Cars() {
 
   const handleAddCar = () => {
     console.log("Add car clicked, can add car:", canAddCar);
-    
-    if (!canAddCar) {
-      toast({
-        title: "הגעת למגבלת המנוי",
-        description: "לא ניתן להוסיף עוד רכבים. אנא שדרג את המנוי שלך.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setShowAddDialog(true);
   };
 
@@ -108,7 +98,7 @@ export default function Cars() {
         </div>
 
         {/* Add Car Dialog for Mobile */}
-        <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]" dir="rtl">
             <DialogHeader>
               <DialogTitle className="text-right">הוסף רכב חדש</DialogTitle>
@@ -125,12 +115,12 @@ export default function Cars() {
               <MobileAddCarForm onSuccess={onCarAdded} />
             )}
           </DialogContent>
-        </SwipeDialog>
+        </Dialog>
       </MobileContainer>
     );
   }
 
-  // Desktop view - keep existing code
+  // Desktop view - fixed both buttons
   return (
     <div className="p-6">
       <SubscriptionLimitAlert 
@@ -165,14 +155,16 @@ export default function Cars() {
               </>
             )}
           </Button>
-          <Button
-            onClick={handleAddCar}
+          <LimitAwareButton
+            resourceType="car"
+            currentCount={cars.length}
+            onAction={handleAddCar}
             size="sm"
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4 mr-1" />
             הוסף רכב
-          </Button>
+          </LimitAwareButton>
         </div>
       </div>
 
@@ -183,7 +175,7 @@ export default function Cars() {
       )}
 
       {/* Add Car Dialog for Desktop */}
-      <SwipeDialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="w-[90%] sm:w-[600px] overflow-y-auto" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-right">הוסף רכב חדש</DialogTitle>
@@ -200,7 +192,7 @@ export default function Cars() {
             <AddCarForm onSuccess={onCarAdded} />
           )}
         </DialogContent>
-      </SwipeDialog>
+      </Dialog>
     </div>
   );
 }

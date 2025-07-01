@@ -27,7 +27,12 @@ export function LeadsPageHeader({
   const { leads } = useLeads();
   const currentLeadCount = leads?.length || 0;
 
-  console.log('LeadsPageHeader rendered - only Add Lead button should be visible');
+  console.log('LeadsPageHeader rendered - both buttons should work consistently');
+
+  const handleAddLead = () => {
+    console.log('Add lead clicked from header', { currentLeadCount, canAddLead });
+    setIsAddingLead(true);
+  };
 
   return (
     <>
@@ -48,7 +53,7 @@ export function LeadsPageHeader({
             <LimitAwareButton 
               resourceType="lead"
               currentCount={currentLeadCount}
-              onAction={() => setIsAddingLead(true)}
+              onAction={handleAddLead}
               className="bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90 text-white shadow-lg"
             >
               <Plus className="ml-2 h-4 w-4" />

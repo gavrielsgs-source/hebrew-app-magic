@@ -32,6 +32,9 @@ export function useNotificationPermission() {
     if ('Notification' in window) {
       setIsSupported(true);
       setPermission(Notification.permission);
+      console.log('Notification permission state:', Notification.permission);
+    } else {
+      console.log('Notifications not supported in this browser');
     }
   }, []);
 
@@ -42,7 +45,25 @@ export function useNotificationPermission() {
     }
 
     try {
+      console.log('Requesting notification permission...');
+      
+      // Check current permission state
+      if (Notification.permission === 'granted') {
+        console.log('Permission already granted');
+        setPermission('granted');
+        toast.success('הרשאת התראות כבר מאושרת');
+        return true;
+      }
+
+      if (Notification.permission === 'denied') {
+        console.log('Permission was previously denied');
+        toast.error('הרשאת התראות נדחתה בעבר. יש לאפשר התראות בהגדרות הדפדפן');
+        return false;
+      }
+
+      // Request permission
       const result = await Notification.requestPermission();
+      console.log('Permission request result:', result);
       setPermission(result);
       
       if (result === 'granted') {
@@ -75,6 +96,8 @@ export function useNotificationPermission() {
 
                 if (error) {
                   console.error('Error saving push subscription:', error);
+                } else {
+                  console.log('Push subscription saved successfully');
                 }
               }
             } else {
@@ -82,12 +105,16 @@ export function useNotificationPermission() {
             }
           } catch (swError) {
             console.error('Service Worker registration failed:', swError);
+            // Don't show error to user as basic notifications still work
           }
         }
         
         return true;
+      } else if (result === 'denied') {
+        toast.error('הרשאת התראות נדחתה. ניתן לשנות זאת בהגדרות הדפדפן');
+        return false;
       } else {
-        toast.error('הרשאת התראות נדחתה');
+        toast.warning('הרשאת התראות לא אושרה');
         return false;
       }
     } catch (error) {
@@ -99,10 +126,16 @@ export function useNotificationPermission() {
 
   const showTestNotification = () => {
     if (permission === 'granted') {
-      new Notification('התראת בדיקה', {
-        body: 'זוהי התראת בדיקה מהמערכת',
-        icon: '/favicon.ico'
-      });
+      try {
+        new Notification('התראת בדיקה', {
+          body: 'זוהי התראת בדיקה מהמערכת',
+          icon: '/favicon.ico'
+        });
+        toast.success('התראת בדיקה נשלחה');
+      } catch (error) {
+        console.error('Error showing test notification:', error);
+        toast.error('שגיאה בהצגת התראת בדיקה');
+      }
     } else {
       toast.error('יש להעניק הרשאה להתראות תחילה');
     }

@@ -2,14 +2,12 @@
 import { useState, useEffect } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { SubscriptionLimitAlert } from "@/components/subscription/SubscriptionLimitAlert";
-import { useSubscriptionLimits } from "@/hooks/use-subscription-limits";
 import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
 import { Plus } from "lucide-react";
 import { AddTaskDialog } from "./AddTaskDialog";
 
 export function AddTaskFormWithLimits() {
   const { tasks } = useTasks();
-  const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [taskCount, setTaskCount] = useState(0);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
@@ -18,10 +16,8 @@ export function AddTaskFormWithLimits() {
   }, [tasks]);
 
   const handleAddTask = () => {
-    const canProceed = checkAndNotifyLimit('task', taskCount);
-    if (canProceed) {
-      setIsAddDialogOpen(true);
-    }
+    console.log('Add task clicked from limits component', { taskCount });
+    setIsAddDialogOpen(true);
   };
 
   return (
