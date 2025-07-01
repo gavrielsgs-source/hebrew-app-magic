@@ -59,14 +59,16 @@ export function useSubscriptionLimits() {
         return { allowed: true, message: '' };
       }
 
-      // תיקון הלוגיקה: בודק אם currentCount קטן מהמגבלה
-      const wouldExceedLimit = currentCount >= limit;
+      // תיקון הלוגיקה: בודק אם currentCount + 1 יעבור את המגבלה
+      // כלומר, אם אנחנו כעת במספר הנוכחי, האם נוכל להוסיף עוד אחד?
+      const wouldExceedLimit = (currentCount + 1) > limit;
       
-      console.log('🔍 [useSubscriptionLimits] Limit calculation:', {
+      console.log('🔍 [useSubscriptionLimits] Fixed limit calculation:', {
         currentCount,
         limit,
+        nextCount: currentCount + 1,
         wouldExceedLimit,
-        calculation: `${currentCount} >= ${limit} = ${wouldExceedLimit}`
+        calculation: `(${currentCount} + 1) > ${limit} = ${wouldExceedLimit}`
       });
 
       if (wouldExceedLimit) {
@@ -84,6 +86,7 @@ export function useSubscriptionLimits() {
         console.log('🔍 [useSubscriptionLimits] Limit exceeded:', { 
           currentCount, 
           limit, 
+          nextCount: currentCount + 1,
           message,
           resourceType,
           tierLabel: getTierLabel(subscription.tier)

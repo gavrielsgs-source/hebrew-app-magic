@@ -29,7 +29,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     
     if (!user) {
       console.log('🔍 [SubscriptionContext] No user, setting premium subscription');
-      setSubscription(subscriptionFeatures.premium);
+      const premiumSub = { ...subscriptionFeatures.premium };
+      console.log('🔍 [SubscriptionContext] Setting subscription to premium:', {
+        tier: premiumSub.tier,
+        leadLimit: premiumSub.leadLimit,
+        carLimit: premiumSub.carLimit,
+        active: premiumSub.active
+      });
+      setSubscription(premiumSub);
       return;
     }
     
@@ -72,16 +79,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           const newSubscription = { ...subscriptionFeatures.premium };
           newSubscription.isTrialActive = true;
           newSubscription.trialEndsAt = trialEndDate.toISOString();
-          setSubscription(newSubscription);
-          setDaysLeftInTrial(14);
-          setIsTrialExpired(false);
           
-          console.log('🔍 [SubscriptionContext] New subscription created:', {
+          console.log('🔍 [SubscriptionContext] New subscription created with limits:', {
             tier: newSubscription.tier,
             leadLimit: newSubscription.leadLimit,
             carLimit: newSubscription.carLimit,
-            isTrialActive: newSubscription.isTrialActive
+            isTrialActive: newSubscription.isTrialActive,
+            active: newSubscription.active
           });
+          
+          setSubscription(newSubscription);
+          setDaysLeftInTrial(14);
+          setIsTrialExpired(false);
         } else {
           throw subscriptionError;
         }
@@ -105,9 +114,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         currentSubscription.trialEndsAt = subscriptionData.trial_ends_at;
         currentSubscription.expiresAt = subscriptionData.expires_at;
         
-        setSubscription(currentSubscription);
-        
-        console.log('🔍 [SubscriptionContext] Subscription loaded successfully:', {
+        console.log('🔍 [SubscriptionContext] Subscription loaded with limits:', {
           tier,
           active: currentSubscription.active,
           isTrialActive,
@@ -116,11 +123,20 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           carLimit: currentSubscription.carLimit,
           subscription: currentSubscription
         });
+        
+        setSubscription(currentSubscription);
       }
     } catch (err) {
       console.error("🔍 [SubscriptionContext] Error fetching subscription:", err);
       setError(err instanceof Error ? err : new Error('Failed to fetch subscription'));
-      setSubscription(subscriptionFeatures.premium);
+      // במקרה של שגיאה, עדיין נגדיר מנוי פרימיום כברירת מחדל
+      const fallbackSub = { ...subscriptionFeatures.premium };
+      console.log('🔍 [SubscriptionContext] Setting fallback premium subscription:', {
+        tier: fallbackSub.tier,
+        leadLimit: fallbackSub.leadLimit,
+        carLimit: fallbackSub.carLimit
+      });
+      setSubscription(fallbackSub);
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +146,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     console.log('🔍 [SubscriptionContext] checkEntitlement called:', {
       feature,
       value,
-      subscription,
+      subscriptionTier: subscription.tier,
+      subscriptionActive: subscription.active,
       isTrialExpired,
       timestamp: new Date().toISOString()
     });
@@ -148,7 +165,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     
     const limit = subscription[feature];
     
-    console.log('🔍 [SubscriptionContext] Checking limit:', { feature, limit, value });
+    console.log('🔍 [SubscriptionContext] Checking limit details:', { 
+      feature, 
+      limit, 
+      value,
+      limitType: typeof limit,
+      subscription: {
+        tier: subscription.tier,
+        leadLimit: subscription.leadLimit,
+        carLimit: subscription.carLimit
+      }
+    });
     
     if (typeof limit === 'boolean') {
       console.log('🔍 [SubscriptionContext] Boolean limit result:', limit);
@@ -161,6 +188,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     }
     
     if (typeof limit === 'number' && typeof value === 'number') {
+      // תיקון הלוגיקה: אם הערך הנוכחי קטן או שווה למגבלה - מותר
       const result = value <= limit;
       console.log('🔍 [SubscriptionContext] Numeric limit check:', { 
         limit, 
@@ -195,12 +223,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     isTrialExpired
   };
 
-  console.log('🔍 [SubscriptionContext] Context value:', {
+  console.log('🔍 [SubscriptionContext] Context value being provided:', {
     subscriptionTier: subscription.tier,
     leadLimit: subscription.leadLimit,
     carLimit: subscription.carLimit,
     isLoading,
-    isTrialExpired
+    isTrialExpired,
+    active: subscription.active
   });
 
   return (
