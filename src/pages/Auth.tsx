@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Car, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 
@@ -16,13 +16,12 @@ export default function Auth() {
       {/* Header */}
       <header className="container mx-auto px-4 py-6">
         <nav className="flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#2F3C7E] to-[#4CAF50] rounded-xl flex items-center justify-center">
-              <Car className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] bg-clip-text text-transparent">
-              CarsLead
-            </span>
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/85996f43-dfa3-4a57-9020-52b4da01c3ad.png" 
+              alt="Carslead Software" 
+              className="h-16 md:h-20 w-auto object-contain"
+            />
           </Link>
           <Link 
             to="/" 
