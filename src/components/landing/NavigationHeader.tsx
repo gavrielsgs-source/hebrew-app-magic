@@ -27,13 +27,13 @@ export function NavigationHeader({ user, loading }: NavigationHeaderProps) {
   return (
     <header className="bg-transparent border-b border-white/20 sticky top-0 z-50 w-full backdrop-blur-md">
       <div className="container mx-auto px-4">
-        <nav className="flex justify-between items-center h-16 md:h-20">
+        <nav className="flex justify-between items-center h-20 md:h-24">
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
               src="/lovable-uploads/85996f43-dfa3-4a57-9020-52b4da01c3ad.png" 
               alt="Carslead Software" 
-              className="h-12 md:h-16 w-auto object-contain"
+              className="h-48 md:h-64 w-auto object-contain"
             />
           </Link>
 

@@ -16,7 +16,7 @@ export function LandingHeader({ user, loading }: LandingHeaderProps) {
           <img 
             src="/lovable-uploads/85996f43-dfa3-4a57-9020-52b4da01c3ad.png" 
             alt="Carslead Software" 
-            className="h-12 md:h-16 w-auto object-contain"
+            className="h-48 md:h-64 w-auto object-contain"
           />
         </Link>
         <div className="flex items-center gap-4">
