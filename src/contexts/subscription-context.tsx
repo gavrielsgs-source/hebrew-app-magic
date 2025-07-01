@@ -65,6 +65,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           setSubscription(newSubscription);
           setDaysLeftInTrial(14);
           setIsTrialExpired(false);
+          
+          console.log('New subscription created:', newSubscription);
         } else {
           throw subscriptionError;
         }
@@ -89,6 +91,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         currentSubscription.expiresAt = subscriptionData.expires_at;
         
         setSubscription(currentSubscription);
+        
+        console.log('Subscription fetched:', {
+          tier,
+          active: currentSubscription.active,
+          isTrialActive,
+          trialExpired,
+          subscription: currentSubscription
+        });
       }
     } catch (err) {
       console.error("Error fetching subscription:", err);
@@ -100,21 +110,44 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   };
   
   const checkEntitlement = (feature: keyof Subscription, value?: number): boolean => {
-    if (!subscription) return false;
+    console.log('checkEntitlement called:', {
+      feature,
+      value,
+      subscription,
+      isTrialExpired,
+      timestamp: new Date().toISOString()
+    });
+    
+    if (!subscription) {
+      console.log('No subscription found, denying access');
+      return false;
+    }
     
     // אם הניסיון פג ולא שילם - חסום הכל
-    if (isTrialExpired) return false;
+    if (isTrialExpired) {
+      console.log('Trial expired, denying access');
+      return false;
+    }
     
     const limit = subscription[feature];
     
-    if (typeof limit === 'boolean') return limit;
-    if (limit === Infinity) return true;
+    console.log('Checking limit:', { feature, limit, value });
     
-    if (typeof limit === 'number' && typeof value === 'number') {
-      return value <= limit;
+    if (typeof limit === 'boolean') return limit;
+    if (limit === Infinity) {
+      console.log('Infinite limit, allowing');
+      return true;
     }
     
-    return !!limit;
+    if (typeof limit === 'number' && typeof value === 'number') {
+      const result = value <= limit;
+      console.log('Numeric limit check:', { limit, value, result, allowed: result });
+      return result;
+    }
+    
+    const result = !!limit;
+    console.log('Generic limit check result:', result);
+    return result;
   };
   
   const refreshSubscription = async () => {

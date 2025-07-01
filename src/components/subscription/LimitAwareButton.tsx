@@ -30,10 +30,21 @@ export function LimitAwareButton({
 
   const { allowed, message } = checkLimitBeforeAction(resourceType, 'create', currentCount);
   
+  // Debug logging
+  console.log('LimitAwareButton Debug:', {
+    resourceType,
+    currentCount,
+    allowed,
+    message,
+    timestamp: new Date().toISOString()
+  });
+  
   const handleClick = () => {
+    console.log('LimitAwareButton handleClick:', { allowed, currentCount, resourceType });
     if (allowed && onAction) {
       onAction();
     } else if (!allowed) {
+      console.log('Limit reached, redirecting to upgrade or calling onUpgrade');
       if (onUpgrade) {
         onUpgrade();
       } else {

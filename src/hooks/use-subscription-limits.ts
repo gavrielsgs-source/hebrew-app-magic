@@ -22,6 +22,14 @@ export function useSubscriptionLimits() {
     action: 'create' | 'update' | 'delete',
     currentCount: number
   ): { allowed: boolean; message: string } => {
+    console.log('checkLimitBeforeAction called:', {
+      resourceType,
+      action,
+      currentCount,
+      subscription,
+      timestamp: new Date().toISOString()
+    });
+
     // מחיקה תמיד מותרת
     if (action === 'delete') {
       return { allowed: true, message: '' };
@@ -32,10 +40,19 @@ export function useSubscriptionLimits() {
       const limitKey = `${resourceType}Limit` as keyof typeof subscription;
       const limit = subscription[limitKey] as number | undefined;
 
+      console.log('Limit check details:', {
+        limitKey,
+        limit,
+        currentCount,
+        checkResult: limit ? currentCount < limit : true
+      });
+
       if (!limit || limit === Infinity) {
+        console.log('No limit or infinite limit, allowing action');
         return { allowed: true, message: '' };
       }
 
+      // שינוי הלוגיקה: בודק אם currentCount קטן מהמגבלה (לא שווה או קטן)
       if (currentCount >= limit) {
         const resourceNames: Record<ResourceType, string> = {
           car: 'רכבים',
@@ -46,13 +63,18 @@ export function useSubscriptionLimits() {
           task: 'משימות'
         };
 
+        const message = `הגעת למגבלת ה${resourceNames[resourceType]} במנוי ${getTierLabel(subscription.tier)} (${currentCount}/${limit}). שדרג לחבילה גבוהה יותר.`;
+        
+        console.log('Limit exceeded:', { currentCount, limit, message });
+        
         return {
           allowed: false,
-          message: `הגעת למגבלת ה${resourceNames[resourceType]} במנוי ${getTierLabel(subscription.tier)}. שדרג לחבילה גבוהה יותר.`
+          message
         };
       }
     }
 
+    console.log('Action allowed');
     return { allowed: true, message: '' };
   };
 
