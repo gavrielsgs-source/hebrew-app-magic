@@ -25,7 +25,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [isTrialExpired, setIsTrialExpired] = useState(false);
 
   const fetchSubscription = async () => {
+    console.log('🔍 [SubscriptionContext] fetchSubscription called', { user: user?.id });
+    
     if (!user) {
+      console.log('🔍 [SubscriptionContext] No user, setting premium subscription');
       setSubscription(subscriptionFeatures.premium);
       return;
     }
@@ -34,14 +37,21 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setError(null);
     
     try {
+      console.log('🔍 [SubscriptionContext] Fetching subscription for user:', user.id);
+      
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('subscriptions')
         .select('subscription_tier, active, expires_at, trial_ends_at')
         .eq('user_id', user.id)
         .single();
 
+      console.log('🔍 [SubscriptionContext] Raw subscription data:', subscriptionData);
+      console.log('🔍 [SubscriptionContext] Subscription error:', subscriptionError);
+
       if (subscriptionError) {
         if (subscriptionError.code === 'PGRST116') {
+          console.log('🔍 [SubscriptionContext] No subscription found, creating new trial');
+          
           // אין מנוי עדיין, ניצור ניסיון חדש
           const trialEndDate = new Date();
           trialEndDate.setDate(trialEndDate.getDate() + 14);
@@ -56,7 +66,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
             });
           
           if (insertError) {
-            console.error("Error creating subscription:", insertError);
+            console.error("🔍 [SubscriptionContext] Error creating subscription:", insertError);
           }
           
           const newSubscription = { ...subscriptionFeatures.premium };
@@ -66,7 +76,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           setDaysLeftInTrial(14);
           setIsTrialExpired(false);
           
-          console.log('New subscription created:', newSubscription);
+          console.log('🔍 [SubscriptionContext] New subscription created:', {
+            tier: newSubscription.tier,
+            leadLimit: newSubscription.leadLimit,
+            carLimit: newSubscription.carLimit,
+            isTrialActive: newSubscription.isTrialActive
+          });
         } else {
           throw subscriptionError;
         }
@@ -92,16 +107,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         
         setSubscription(currentSubscription);
         
-        console.log('Subscription fetched:', {
+        console.log('🔍 [SubscriptionContext] Subscription loaded successfully:', {
           tier,
           active: currentSubscription.active,
           isTrialActive,
           trialExpired,
+          leadLimit: currentSubscription.leadLimit,
+          carLimit: currentSubscription.carLimit,
           subscription: currentSubscription
         });
       }
     } catch (err) {
-      console.error("Error fetching subscription:", err);
+      console.error("🔍 [SubscriptionContext] Error fetching subscription:", err);
       setError(err instanceof Error ? err : new Error('Failed to fetch subscription'));
       setSubscription(subscriptionFeatures.premium);
     } finally {
@@ -110,7 +127,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   };
   
   const checkEntitlement = (feature: keyof Subscription, value?: number): boolean => {
-    console.log('checkEntitlement called:', {
+    console.log('🔍 [SubscriptionContext] checkEntitlement called:', {
       feature,
       value,
       subscription,
@@ -119,34 +136,44 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     });
     
     if (!subscription) {
-      console.log('No subscription found, denying access');
+      console.log('🔍 [SubscriptionContext] No subscription found, denying access');
       return false;
     }
     
     // אם הניסיון פג ולא שילם - חסום הכל
     if (isTrialExpired) {
-      console.log('Trial expired, denying access');
+      console.log('🔍 [SubscriptionContext] Trial expired, denying access');
       return false;
     }
     
     const limit = subscription[feature];
     
-    console.log('Checking limit:', { feature, limit, value });
+    console.log('🔍 [SubscriptionContext] Checking limit:', { feature, limit, value });
     
-    if (typeof limit === 'boolean') return limit;
+    if (typeof limit === 'boolean') {
+      console.log('🔍 [SubscriptionContext] Boolean limit result:', limit);
+      return limit;
+    }
+    
     if (limit === Infinity) {
-      console.log('Infinite limit, allowing');
+      console.log('🔍 [SubscriptionContext] Infinite limit, allowing');
       return true;
     }
     
     if (typeof limit === 'number' && typeof value === 'number') {
       const result = value <= limit;
-      console.log('Numeric limit check:', { limit, value, result, allowed: result });
+      console.log('🔍 [SubscriptionContext] Numeric limit check:', { 
+        limit, 
+        value, 
+        result, 
+        allowed: result,
+        calculation: `${value} <= ${limit} = ${result}`
+      });
       return result;
     }
     
     const result = !!limit;
-    console.log('Generic limit check result:', result);
+    console.log('🔍 [SubscriptionContext] Generic limit check result:', result);
     return result;
   };
   
@@ -158,18 +185,26 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     fetchSubscription();
   }, [user]);
 
+  const contextValue = { 
+    subscription, 
+    isLoading, 
+    error, 
+    checkEntitlement,
+    refreshSubscription,
+    daysLeftInTrial,
+    isTrialExpired
+  };
+
+  console.log('🔍 [SubscriptionContext] Context value:', {
+    subscriptionTier: subscription.tier,
+    leadLimit: subscription.leadLimit,
+    carLimit: subscription.carLimit,
+    isLoading,
+    isTrialExpired
+  });
+
   return (
-    <SubscriptionContext.Provider 
-      value={{ 
-        subscription, 
-        isLoading, 
-        error, 
-        checkEntitlement,
-        refreshSubscription,
-        daysLeftInTrial,
-        isTrialExpired
-      }}
-    >
+    <SubscriptionContext.Provider value={contextValue}>
       {children}
     </SubscriptionContext.Provider>
   );

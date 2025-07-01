@@ -22,16 +22,22 @@ export function useSubscriptionLimits() {
     action: 'create' | 'update' | 'delete',
     currentCount: number
   ): { allowed: boolean; message: string } => {
-    console.log('checkLimitBeforeAction called:', {
+    console.log('🔍 [useSubscriptionLimits] checkLimitBeforeAction called:', {
       resourceType,
       action,
       currentCount,
-      subscription,
+      subscription: {
+        tier: subscription.tier,
+        active: subscription.active,
+        leadLimit: subscription.leadLimit,
+        carLimit: subscription.carLimit
+      },
       timestamp: new Date().toISOString()
     });
 
     // מחיקה תמיד מותרת
     if (action === 'delete') {
+      console.log('🔍 [useSubscriptionLimits] Delete action - always allowed');
       return { allowed: true, message: '' };
     }
 
@@ -40,20 +46,30 @@ export function useSubscriptionLimits() {
       const limitKey = `${resourceType}Limit` as keyof typeof subscription;
       const limit = subscription[limitKey] as number | undefined;
 
-      console.log('Limit check details:', {
+      console.log('🔍 [useSubscriptionLimits] Create action limit check:', {
         limitKey,
         limit,
         currentCount,
-        checkResult: limit ? currentCount < limit : true
+        subscription: subscription,
+        limitType: typeof limit
       });
 
       if (!limit || limit === Infinity) {
-        console.log('No limit or infinite limit, allowing action');
+        console.log('🔍 [useSubscriptionLimits] No limit or infinite limit, allowing action');
         return { allowed: true, message: '' };
       }
 
-      // שינוי הלוגיקה: בודק אם currentCount קטן מהמגבלה (לא שווה או קטן)
-      if (currentCount >= limit) {
+      // תיקון הלוגיקה: בודק אם currentCount קטן מהמגבלה
+      const wouldExceedLimit = currentCount >= limit;
+      
+      console.log('🔍 [useSubscriptionLimits] Limit calculation:', {
+        currentCount,
+        limit,
+        wouldExceedLimit,
+        calculation: `${currentCount} >= ${limit} = ${wouldExceedLimit}`
+      });
+
+      if (wouldExceedLimit) {
         const resourceNames: Record<ResourceType, string> = {
           car: 'רכבים',
           lead: 'לקוחות פוטנציאליים',
@@ -65,7 +81,13 @@ export function useSubscriptionLimits() {
 
         const message = `הגעת למגבלת ה${resourceNames[resourceType]} במנוי ${getTierLabel(subscription.tier)} (${currentCount}/${limit}). שדרג לחבילה גבוהה יותר.`;
         
-        console.log('Limit exceeded:', { currentCount, limit, message });
+        console.log('🔍 [useSubscriptionLimits] Limit exceeded:', { 
+          currentCount, 
+          limit, 
+          message,
+          resourceType,
+          tierLabel: getTierLabel(subscription.tier)
+        });
         
         return {
           allowed: false,
@@ -74,7 +96,7 @@ export function useSubscriptionLimits() {
       }
     }
 
-    console.log('Action allowed');
+    console.log('🔍 [useSubscriptionLimits] Action allowed');
     return { allowed: true, message: '' };
   };
 
@@ -87,7 +109,15 @@ export function useSubscriptionLimits() {
     onContinue?: () => void,
     onUpgrade?: () => void
   ): boolean => {
+    console.log('🔍 [useSubscriptionLimits] checkAndNotifyLimit called:', {
+      resourceType,
+      currentCount,
+      subscription: subscription
+    });
+
     const result = checkLimitBeforeAction(resourceType, 'create', currentCount);
+
+    console.log('🔍 [useSubscriptionLimits] checkAndNotifyLimit result:', result);
 
     if (!result.allowed) {
       toast.error(result.message, {
@@ -111,6 +141,12 @@ export function useSubscriptionLimits() {
 
     if (limit && limit !== Infinity) {
       const percentUsed = Math.round((currentCount / limit) * 100);
+      
+      console.log('🔍 [useSubscriptionLimits] Usage percentage:', {
+        currentCount,
+        limit,
+        percentUsed
+      });
       
       if (percentUsed >= 80) {
         const resourceNames: Record<ResourceType, string> = {
@@ -171,6 +207,12 @@ export function useSubscriptionLimits() {
       default: return tier;
     }
   };
+
+  console.log('🔍 [useSubscriptionLimits] Hook returning functions with subscription:', {
+    tier: subscription.tier,
+    leadLimit: subscription.leadLimit,
+    carLimit: subscription.carLimit
+  });
 
   return {
     checkLimitBeforeAction,

@@ -30,30 +30,47 @@ export function LimitAwareButton({
 
   const { allowed, message } = checkLimitBeforeAction(resourceType, 'create', currentCount);
   
-  // Debug logging
-  console.log('LimitAwareButton Debug:', {
+  console.log('🔍 [LimitAwareButton] Component rendered with:', {
     resourceType,
     currentCount,
     allowed,
     message,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    props: {
+      disabled: props.disabled,
+      variant: props.variant
+    }
   });
   
-  const handleClick = () => {
-    console.log('LimitAwareButton handleClick:', { allowed, currentCount, resourceType });
+  const handleClick = (e: React.MouseEvent) => {
+    console.log('🔍 [LimitAwareButton] Button clicked:', { 
+      allowed, 
+      currentCount, 
+      resourceType,
+      hasOnAction: !!onAction
+    });
+    
+    // מניעת התפשטות האירוע
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (allowed && onAction) {
+      console.log('🔍 [LimitAwareButton] Executing onAction');
       onAction();
     } else if (!allowed) {
-      console.log('Limit reached, redirecting to upgrade or calling onUpgrade');
+      console.log('🔍 [LimitAwareButton] Limit reached, redirecting to upgrade or calling onUpgrade');
       if (onUpgrade) {
         onUpgrade();
       } else {
         navigate('/subscription/upgrade');
       }
+    } else {
+      console.log('🔍 [LimitAwareButton] No onAction provided but allowed=true');
     }
   };
   
   if (!allowed) {
+    console.log('🔍 [LimitAwareButton] Rendering upgrade button due to limit reached');
     return (
       <TooltipProvider>
         <Tooltip>
@@ -74,6 +91,7 @@ export function LimitAwareButton({
     );
   }
   
+  console.log('🔍 [LimitAwareButton] Rendering normal button - limit not reached');
   return (
     <Button 
       {...props}
