@@ -31,9 +31,13 @@ export function NavigationHeader({ user, loading }: NavigationHeaderProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
-              src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
+              src="/lovable-uploads/aead4341-cf43-44fb-aa97-c7970a945a5e.png" 
               alt="Carslead Software" 
-              className="h-12 md:h-14 w-auto"
+              className="h-12 md:h-16 w-auto object-contain"
+              onError={(e) => {
+                console.log('Logo failed to load');
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </Link>
 

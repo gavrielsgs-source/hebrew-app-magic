@@ -14,9 +14,13 @@ export function LandingHeader({ user, loading }: LandingHeaderProps) {
       <nav className="flex justify-between items-center">
         <Link to="/" className="flex items-center">
           <img 
-            src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
+            src="/lovable-uploads/aead4341-cf43-44fb-aa97-c7970a945a5e.png" 
             alt="Carslead Software" 
-            className="h-12 md:h-14 w-auto"
+            className="h-12 md:h-16 w-auto object-contain"
+            onError={(e) => {
+              console.log('Header logo failed to load');
+              e.currentTarget.style.display = 'none';
+            }}
           />
         </Link>
         <div className="flex items-center gap-4">

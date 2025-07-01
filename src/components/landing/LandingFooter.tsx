@@ -7,9 +7,13 @@ export function LandingFooter() {
           <div>
             <div className="flex items-center mb-4">
               <img 
-                src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
+                src="/lovable-uploads/aead4341-cf43-44fb-aa97-c7970a945a5e.png" 
                 alt="Carslead Software" 
-                className="h-10 w-auto"
+                className="h-12 w-auto object-contain"
+                onError={(e) => {
+                  console.log('Footer logo failed to load');
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
             <p className="text-gray-400">
