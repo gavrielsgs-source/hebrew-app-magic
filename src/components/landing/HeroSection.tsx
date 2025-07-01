@@ -117,40 +117,22 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Right Content - Clean Layout without 3D effects */}
+          {/* Right Content - Just the embedded image and desktop screenshots */}
           <div className="relative flex items-center justify-center">
-            <div className="relative w-full max-w-2xl h-96">
-              {/* iPhone Mockup - Left side */}
-              <div className="absolute top-4 left-0 z-30">
-                {/* iPhone Frame with realistic proportions */}
-                <div className="relative bg-black rounded-[2.5rem] p-1 shadow-2xl">
-                  <div className="bg-black rounded-[2rem] overflow-hidden" style={{ width: '200px', height: '400px' }}>
-                    {/* iPhone Dynamic Island */}
-                    <div className="relative bg-black h-8 flex items-center justify-center">
-                      <div className="w-28 h-6 bg-black rounded-full border border-gray-800"></div>
-                    </div>
-                    
-                    {/* Mobile Screen - Using your uploaded image */}
-                    <div className="relative bg-white flex-1">
-                      <img
-                        src="/lovable-uploads/25f76e09-b68f-4546-ae11-feadf0586392.png"
-                        alt="דשבורד מובייל מתקדם"
-                        className="w-full h-80 object-cover object-top"
-                      />
-                    </div>
-                    
-                    {/* iPhone Home Indicator */}
-                    <div className="bg-black h-6 flex items-center justify-center">
-                      <div className="w-20 h-1 bg-white rounded-full opacity-60"></div>
-                    </div>
-                  </div>
-                </div>
+            <div className="relative w-full max-w-3xl h-96">
+              {/* Mobile Image - Left side */}
+              <div className="absolute top-0 left-0 z-30">
+                <img
+                  src="/lovable-uploads/25f76e09-b68f-4546-ae11-feadf0586392.png"
+                  alt="דשבורד מובייל מתקדם"
+                  className="w-48 h-auto shadow-2xl rounded-2xl"
+                />
               </div>
 
               {/* Desktop Images - Right side, larger and stacked */}
               <div className="absolute top-0 right-0">
                 {/* Desktop Background Image - Back */}
-                <div className="shadow-2xl rounded-xl overflow-hidden" style={{ width: '380px', height: '240px' }}>
+                <div className="shadow-2xl rounded-xl overflow-hidden" style={{ width: '450px', height: '280px' }}>
                   <img
                     src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
                     alt="מלאי רכבים מקצועי"
@@ -161,7 +143,7 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
               </div>
               
               {/* Desktop Front Image - Overlapping on top */}
-              <div className="absolute top-12 right-8 shadow-2xl rounded-xl overflow-hidden z-20" style={{ width: '380px', height: '240px' }}>
+              <div className="absolute top-16 right-12 shadow-2xl rounded-xl overflow-hidden z-20" style={{ width: '450px', height: '280px' }}>
                 <img
                   src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
                   alt="אנליטיקס וסיכומים"
