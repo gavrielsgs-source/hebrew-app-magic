@@ -198,12 +198,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     
     if (typeof limit === 'number' && typeof value === 'number') {
       // בדיקה: האם הערך הנוכחי קטן מהמגבלה (כלומר יש מקום עבור עוד)
-      const result = value < limit;
+      const result = value <= limit;
       console.log('🔍 [SubscriptionContext] Numeric entitlement check:', { 
         limit, 
         value, 
         result, 
-        calculation: `${value} < ${limit} = ${result}`
+        calculation: `${value} <= ${limit} = ${result}`
       });
       return result;
     }

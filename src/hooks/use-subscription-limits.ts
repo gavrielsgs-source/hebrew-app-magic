@@ -43,34 +43,18 @@ export function useSubscriptionLimits() {
 
     // בדיקה רק עבור יצירת משאב חדש
     if (action === 'create') {
-      const limitKey = `${resourceType}Limit` as keyof typeof subscription;
-      const limit = subscription[limitKey] as number | undefined;
-
-      console.log('🔍 [useSubscriptionLimits] Create action limit check:', {
-        limitKey,
-        limit,
-        currentCount,
-        subscription: subscription,
-        limitType: typeof limit
-      });
-
-      if (!limit || limit === Infinity) {
-        console.log('🔍 [useSubscriptionLimits] No limit or infinite limit, allowing action');
-        return { allowed: true, message: '' };
-      }
-
-      // בדיקה: האם אחרי הוספת פריט חדש נעבור את המגבלה?
-      const wouldExceedLimit = (currentCount + 1) > limit;
+      // שימוש בפונקציה checkEntitlement במקום בדיקה ידנית
+      const canAdd = checkEntitlement(`${resourceType}Limit` as keyof typeof subscription, currentCount + 1);
       
-      console.log('🔍 [useSubscriptionLimits] Limit calculation:', {
+      console.log('🔍 [useSubscriptionLimits] Create action entitlement check:', {
+        resourceType,
         currentCount,
-        limit,
         nextCount: currentCount + 1,
-        wouldExceedLimit,
-        calculation: `(${currentCount} + 1) > ${limit} = ${wouldExceedLimit}`
+        canAdd,
+        subscription: subscription
       });
 
-      if (wouldExceedLimit) {
+      if (!canAdd) {
         const resourceNames: Record<ResourceType, string> = {
           car: 'רכבים',
           lead: 'לקוחות פוטנציאליים',
@@ -80,6 +64,8 @@ export function useSubscriptionLimits() {
           task: 'משימות'
         };
 
+        const limitKey = `${resourceType}Limit` as keyof typeof subscription;
+        const limit = subscription[limitKey] as number;
         const message = `הגעת למגבלת ה${resourceNames[resourceType]} במנוי ${getTierLabel(subscription.tier)} (${currentCount}/${limit}). שדרג לחבילה גבוהה יותר.`;
         
         console.log('🔍 [useSubscriptionLimits] Limit exceeded:', { 
