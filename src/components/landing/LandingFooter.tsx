@@ -7,7 +7,7 @@ export function LandingFooter() {
           <div>
             <div className="flex items-center mb-4">
               <img 
-                src="/lovable-uploads/aead4341-cf43-44fb-aa97-c7970a945a5e.png" 
+                src="/lovable-uploads/d3acba4a-3358-4ddd-9be5-60dbccd53c94.png" 
                 alt="Carslead Software" 
                 className="h-12 w-auto object-contain"
                 onError={(e) => {
