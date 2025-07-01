@@ -1,7 +1,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Play, Zap, CheckCircle, TrendingUp, Users, Car } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 interface HeroSectionProps {
   user: any;
@@ -16,24 +15,6 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
       window.location.href = '/auth';
     }
   };
-
-  const systemImages = [
-    {
-      src: '/lovable-uploads/f9f8d800-8eaf-45ae-b55c-4ea76d1ec04e.png',
-      title: 'דשבורד מובייל מתקדם',
-      description: 'ניהול מלא של כל הפעילות ישירות מהמובייל'
-    },
-    {
-      src: '/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png',
-      title: 'מלאי רכבים מקצועי',
-      description: 'תצוגה מושלמת של כל הרכבים עם כל הפרטים'
-    },
-    {
-      src: '/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png',
-      title: 'אנליטיקס וסיכומים',
-      description: 'דוחות מפורטים ותובנות עסקיות מתקדמות'
-    }
-  ];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-bl from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
@@ -136,42 +117,75 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Right Content - System Images Carousel */}
-          <div className="relative">
-            <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
-              <Carousel className="w-full max-w-md mx-auto" opts={{ align: "start", loop: true }}>
-                <CarouselContent>
-                  {systemImages.map((image, index) => (
-                    <CarouselItem key={index}>
-                      <div className="text-center space-y-4">
-                        <div className="relative group">
-                          <img
-                            src={image.src}
-                            alt={image.title}
-                            className="w-full max-w-sm mx-auto rounded-2xl shadow-xl transition-transform duration-300 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-bold text-[#2F3C7E]">{image.title}</h3>
-                          <p className="text-sm text-gray-600">{image.description}</p>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="hidden md:flex -left-12 bg-white/80 hover:bg-white border-2 border-blue-100" />
-                <CarouselNext className="hidden md:flex -right-12 bg-white/80 hover:bg-white border-2 border-blue-100" />
-              </Carousel>
+          {/* Right Content - Combined System Images */}
+          <div className="relative flex items-center justify-center">
+            <div className="relative w-full max-w-2xl">
+              {/* Desktop Images - Stacked Diagonally */}
+              <div className="relative">
+                {/* First Desktop Image */}
+                <div className="absolute top-0 right-0 transform rotate-6 shadow-2xl rounded-xl overflow-hidden z-10">
+                  <img
+                    src="/lovable-uploads/9e5691a8-a637-4121-87d1-2d4ec8b232e3.png"
+                    alt="מלאי רכבים מקצועי"
+                    className="w-80 h-48 object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+                
+                {/* Second Desktop Image */}
+                <div className="absolute top-16 right-24 transform -rotate-3 shadow-2xl rounded-xl overflow-hidden z-20">
+                  <img
+                    src="/lovable-uploads/5dcfcdf9-081b-4cba-af46-143e740878d2.png"
+                    alt="אנליטיקס וסיכומים"
+                    className="w-80 h-48 object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+              </div>
 
-              {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-full animate-bounce"></div>
-              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-gradient-to-r from-[#4CAF50] to-[#2F3C7E] rounded-full animate-pulse"></div>
+              {/* iPhone Mockup with Mobile Image */}
+              <div className="relative z-30 mt-32 mr-8">
+                {/* iPhone Frame */}
+                <div className="relative bg-black rounded-[3rem] p-2 shadow-2xl transform hover:rotate-2 transition-transform duration-300">
+                  <div className="bg-black rounded-[2.5rem] overflow-hidden">
+                    {/* iPhone Notch */}
+                    <div className="relative bg-black h-8 flex items-center justify-center">
+                      <div className="w-32 h-6 bg-black rounded-b-2xl"></div>
+                    </div>
+                    
+                    {/* Mobile Screen */}
+                    <div className="relative bg-white">
+                      <img
+                        src="/lovable-uploads/f9f8d800-8eaf-45ae-b55c-4ea76d1ec04e.png"
+                        alt="דשבורד מובייל מתקדם"
+                        className="w-64 h-auto object-cover"
+                      />
+                    </div>
+                    
+                    {/* iPhone Home Indicator */}
+                    <div className="bg-black h-6 flex items-center justify-center">
+                      <div className="w-32 h-1 bg-white rounded-full opacity-60"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Labels */}
+              <div className="absolute top-12 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+                <p className="text-sm font-medium text-[#2F3C7E]">מלאי רכבים</p>
+              </div>
+              
+              <div className="absolute top-28 left-12 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+                <p className="text-sm font-medium text-[#4CAF50]">אנליטיקס</p>
+              </div>
+              
+              <div className="absolute bottom-32 left-8 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg z-40">
+                <p className="text-sm font-medium text-[#2F3C7E]">דשבורד מובייל</p>
+              </div>
+
+              {/* Decorative elements */}
+              <div className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] rounded-full opacity-20 animate-pulse"></div>
+              <div className="absolute -bottom-8 -left-8 w-12 h-12 bg-gradient-to-r from-[#4CAF50] to-[#2F3C7E] rounded-full opacity-20 animate-bounce"></div>
+              <div className="absolute top-1/2 -right-4 w-4 h-4 bg-blue-400 rounded-full animate-ping"></div>
             </div>
-
-            {/* Decorative elements */}
-            <div className="absolute -z-10 -top-10 -right-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl"></div>
-            <div className="absolute -z-10 -bottom-10 -left-10 w-16 h-16 bg-green-200/30 rounded-full blur-xl"></div>
           </div>
         </div>
       </div>
