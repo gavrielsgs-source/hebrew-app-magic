@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +24,7 @@ interface CarFormBaseProps {
   isSubmitting?: boolean;
   submitLabel: string;
   onCancel?: () => void;
+  className?: string;
 }
 
 export function CarFormBase({
@@ -33,6 +33,7 @@ export function CarFormBase({
   isSubmitting = false,
   submitLabel,
   onCancel,
+  className,
 }: CarFormBaseProps) {
   const [images, setImages] = useState<File[]>([]);
   const { agencies, isAdmin, hasRole } = useAuthContext();
@@ -100,7 +101,7 @@ export function CarFormBase({
           e.stopPropagation();
           handleFormSubmit();
         }} 
-        className="space-y-4 mt-4"
+        className={`space-y-4 mt-4 ${className || ''}`}
       >
         {canSelectAgency && agencies && agencies.length > 0 && (
           <FormField

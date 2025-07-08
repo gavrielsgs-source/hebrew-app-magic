@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useTasks } from '@/hooks/use-tasks';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
-import { TaskForm } from './TaskForm';
+import { TaskFormContent } from './form/TaskFormContent';
 import { toast } from 'sonner';
 
 interface AddTaskFormWithLimitsProps {
@@ -15,7 +15,7 @@ export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithL
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (formData: any, resetForm: () => void) => {
+  const handleSubmit = async (formData: any) => {
     console.log('🔍 [AddTaskFormWithLimits] handleSubmit called with formData:', formData);
     
     setIsSubmitting(true);
@@ -36,7 +36,6 @@ export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithL
       
       await addTask.mutateAsync(formData);
       toast.success('משימה חדשה נוצרה בהצלחה!');
-      resetForm();
       
       if (onSuccess) {
         onSuccess();
@@ -50,9 +49,10 @@ export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithL
   };
 
   return (
-    <TaskForm
+    <TaskFormContent
+      onTaskCreated={onSuccess}
+      isSubmitting={addTask.isPending || isSubmitting}
       onSubmit={handleSubmit}
-      isLoading={addTask.isPending || isSubmitting}
       className={className}
     />
   );

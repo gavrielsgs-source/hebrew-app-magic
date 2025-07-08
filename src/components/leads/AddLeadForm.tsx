@@ -3,7 +3,15 @@ import React, { useState } from 'react';
 import { useCreateLead } from '@/hooks/leads/use-create-lead';
 import { useLeads } from '@/hooks/use-leads';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
-import { LeadFormBase } from './LeadFormBase';
+import { LeadFormBase, FormContextValue } from './LeadFormBase';
+import { AddLeadNameField } from './AddLeadNameField';
+import { AddLeadPhoneField } from './AddLeadPhoneField';
+import { AddLeadEmailField } from './AddLeadEmailField';
+import { AddLeadSourceField } from './AddLeadSourceField';
+import { AddLeadCarField } from './AddLeadCarField';
+import { AddLeadNotesField } from './AddLeadNotesField';
+import { AddLeadAssignedField } from './AddLeadAssignedField';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface AddLeadFormProps {
@@ -56,12 +64,47 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     }
   };
 
+  const defaultValues = {
+    name: '',
+    phone: '',
+    email: '',
+    source: '',
+    car_id: '',
+    notes: '',
+    assigned_to: '',
+    status: 'new'
+  };
+
   return (
     <LeadFormBase
+      defaultValues={defaultValues}
       onSubmit={handleSubmit}
-      submitButtonText="צור ליד"
       isLoading={isLoading || isSubmitting}
       className={className}
-    />
+    >
+      {({ form, salesAgents, canAssignLeads }: FormContextValue) => (
+        <>
+          <AddLeadNameField />
+          <AddLeadPhoneField />
+          <AddLeadEmailField />
+          <AddLeadSourceField />
+          <AddLeadCarField />
+          <AddLeadNotesField />
+          {canAssignLeads && (
+            <AddLeadAssignedField salesAgents={salesAgents} />
+          )}
+          
+          <div className="flex gap-2 pt-4">
+            <Button 
+              type="submit" 
+              disabled={isLoading || isSubmitting}
+              className="w-full"
+            >
+              {(isLoading || isSubmitting) ? "יוצר..." : "צור ליד"}
+            </Button>
+          </div>
+        </>
+      )}
+    </LeadFormBase>
   );
 }

@@ -20,9 +20,20 @@ interface LeadFormBaseProps {
   onSubmit: (values: LeadFormValues) => Promise<void>;
   children: ReactNode | ((contextValue: FormContextValue) => ReactNode);
   isSubmitting?: boolean;
+  submitButtonText?: string;
+  isLoading?: boolean;
+  className?: string;
 }
 
-export function LeadFormBase({ defaultValues, onSubmit, children, isSubmitting }: LeadFormBaseProps) {
+export function LeadFormBase({ 
+  defaultValues, 
+  onSubmit, 
+  children, 
+  isSubmitting,
+  submitButtonText = "שמור",
+  isLoading = false,
+  className 
+}: LeadFormBaseProps) {
   const { user } = useAuth();
   const { isAdmin, isAgencyManager } = useRoles();
   const { allUsers } = useUserManagement();
@@ -60,7 +71,7 @@ export function LeadFormBase({ defaultValues, onSubmit, children, isSubmitting }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className={`space-y-4 mt-4 ${className || ''}`}>
         {typeof children === 'function' 
           ? (children as (context: FormContextValue) => ReactNode)(contextValue)
           : children}
