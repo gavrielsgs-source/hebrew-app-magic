@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -101,7 +100,7 @@ export function CarsTable() {
                           <SheetHeader>
                             <SheetTitle>הוסף ליד חדש</SheetTitle>
                           </SheetHeader>
-                          <AddLeadForm carId={car.id} />
+                          <AddLeadForm />
                         </SheetContent>
                       </Sheet>
                       <Button 
@@ -154,7 +153,12 @@ export function CarsTable() {
             <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
           </DialogHeader>
           {selectedCar && (
-            <WhatsappTemplateSelector car={selectedCar} onClose={() => setIsWhatsappOpen(false)} />
+            <WhatsappTemplateSelector 
+              selectedTemplateId=""
+              customizedTemplate=""
+              onTemplateChange={() => {}}
+              onCustomizedTemplateChange={() => {}}
+            />
           )}
         </DialogContent>
       </Dialog>

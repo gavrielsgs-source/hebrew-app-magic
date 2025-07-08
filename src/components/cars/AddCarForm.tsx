@@ -13,12 +13,12 @@ interface AddCarFormProps {
 
 export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
   const { cars } = useCars();
-  const { addCar, isLoading } = useAddCar();
+  const { mutate: addCar, isPending: isLoading } = useAddCar();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (formData: any, resetForm: () => void) => {
-    console.log('🔍 [AddCarForm] handleSubmit called with formData:', formData);
+  const handleSubmit = async (values: any, images: File[]) => {
+    console.log('🔍 [AddCarForm] handleSubmit called with values:', values);
     
     setIsSubmitting(true);
     try {
@@ -36,13 +36,23 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
 
       console.log('🔍 [AddCarForm] Limit check passed, creating car');
       
-      await addCar(formData);
-      toast.success('רכב חדש נוסף בהצלחה!');
-      resetForm();
+      const carData = {
+        ...values,
+        images
+      };
       
-      if (onSuccess) {
-        onSuccess();
-      }
+      addCar(carData, {
+        onSuccess: () => {
+          toast.success('רכב חדש נוסף בהצלחה!');
+          if (onSuccess) {
+            onSuccess();
+          }
+        },
+        onError: (error) => {
+          console.error('🔍 [AddCarForm] Error creating car:', error);
+          toast.error('שגיאה בהוספת הרכב');
+        }
+      });
     } catch (error) {
       console.error('🔍 [AddCarForm] Error creating car:', error);
       toast.error('שגיאה בהוספת הרכב');
@@ -53,9 +63,28 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
 
   return (
     <CarFormBase
+      defaultValues={{
+        make: '',
+        model: '',
+        year: '',
+        kilometers: '',
+        price: '',
+        transmission: '',
+        fuel_type: '',
+        engine_size: '',
+        exterior_color: '',
+        interior_color: '',
+        description: '',
+        ownership_history: '',
+        entry_date: '',
+        license_number: '',
+        chassis_number: '',
+        next_test_date: '',
+        agency_id: ''
+      }}
       onSubmit={handleSubmit}
-      submitButtonText="הוסף רכב"
-      isLoading={isLoading || isSubmitting}
+      submitLabel="הוסף רכב"
+      isSubmitting={isLoading || isSubmitting}
       className={className}
     />
   );

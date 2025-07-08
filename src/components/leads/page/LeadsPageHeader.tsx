@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddLeadForm } from "../AddLeadForm";
@@ -37,9 +36,8 @@ export function LeadsPageHeader({
   return (
     <>
       <SubscriptionLimitAlert 
-        featureKey="leadLimit" 
+        resourceType="lead" 
         currentCount={currentLeadCount} 
-        entityName="לקוחות פוטנציאליים" 
       />
       
       <div className="flex justify-between items-center mb-6">

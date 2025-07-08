@@ -34,7 +34,12 @@ export function CarDialogs({
             <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
           </DialogHeader>
           {selectedCar && (
-            <WhatsappTemplateSelector car={selectedCar} onClose={onWhatsappClose} />
+            <WhatsappTemplateSelector 
+              selectedTemplateId=""
+              customizedTemplate=""
+              onTemplateChange={() => {}}
+              onCustomizedTemplateChange={() => {}}
+            />
           )}
         </DialogContent>
       </Dialog>

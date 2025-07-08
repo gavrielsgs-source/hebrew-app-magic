@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
@@ -114,9 +113,8 @@ export default function Leads() {
     return (
       <MobileContainer withPadding={false}>
         <SubscriptionLimitAlert 
-          featureKey="leadLimit" 
+          resourceType="lead" 
           currentCount={leads.length} 
-          entityName="לקוחות" 
         />
         
         <LeadsMobileHeader
@@ -163,9 +161,8 @@ export default function Leads() {
   return (
     <div className={cn("p-4 sm:p-6 rtl-fix", isMobile && "pb-24")}>
       <SubscriptionLimitAlert 
-        featureKey="leadLimit" 
+        resourceType="lead" 
         currentCount={leads.length} 
-        entityName="לקוחות" 
       />
       
       <LeadsPageHeader

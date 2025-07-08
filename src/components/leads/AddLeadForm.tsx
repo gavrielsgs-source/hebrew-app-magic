@@ -1,10 +1,9 @@
 
 import React, { useState } from 'react';
-import { useAddLead } from '@/hooks/leads/use-create-lead';
+import { useCreateLead } from '@/hooks/leads/use-create-lead';
 import { useLeads } from '@/hooks/use-leads';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
 import { LeadFormBase } from './LeadFormBase';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface AddLeadFormProps {
@@ -14,12 +13,12 @@ interface AddLeadFormProps {
 
 export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
   const { leads } = useLeads();
-  const { addLead, isLoading } = useAddLead();
+  const { mutate: addLead, isPending: isLoading } = useCreateLead();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (formData: any, resetForm: () => void) => {
-    console.log('🔍 [AddLeadForm] handleSubmit called with formData:', formData);
+  const handleSubmit = async (values: any) => {
+    console.log('🔍 [AddLeadForm] handleSubmit called with values:', values);
     
     setIsSubmitting(true);
     try {
@@ -37,13 +36,18 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
 
       console.log('🔍 [AddLeadForm] Limit check passed, creating lead');
       
-      await addLead(formData);
-      toast.success('ליד חדש נוצר בהצלחה!');
-      resetForm();
-      
-      if (onSuccess) {
-        onSuccess();
-      }
+      addLead(values, {
+        onSuccess: () => {
+          toast.success('ליד חדש נוצר בהצלחה!');
+          if (onSuccess) {
+            onSuccess();
+          }
+        },
+        onError: (error) => {
+          console.error('🔍 [AddLeadForm] Error creating lead:', error);
+          toast.error('שגיאה ביצירת הליד');
+        }
+      });
     } catch (error) {
       console.error('🔍 [AddLeadForm] Error creating lead:', error);
       toast.error('שגיאה ביצירת הליד');

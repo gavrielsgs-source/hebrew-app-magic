@@ -11,11 +11,11 @@ interface AddTaskFormWithLimitsProps {
 }
 
 export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithLimitsProps) {
-  const { tasks, addTask, isLoading } = useTasks();
+  const { tasks, addTask } = useTasks();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: any, resetForm: () => void) => {
     console.log('🔍 [AddTaskFormWithLimits] handleSubmit called with formData:', formData);
     
     setIsSubmitting(true);
@@ -34,8 +34,9 @@ export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithL
 
       console.log('🔍 [AddTaskFormWithLimits] Limit check passed, creating task');
       
-      await addTask(formData);
+      await addTask.mutateAsync(formData);
       toast.success('משימה חדשה נוצרה בהצלחה!');
+      resetForm();
       
       if (onSuccess) {
         onSuccess();
@@ -51,7 +52,7 @@ export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithL
   return (
     <TaskForm
       onSubmit={handleSubmit}
-      isLoading={isLoading || isSubmitting}
+      isLoading={addTask.isPending || isSubmitting}
       className={className}
     />
   );

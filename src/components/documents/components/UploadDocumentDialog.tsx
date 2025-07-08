@@ -81,7 +81,7 @@ export function UploadDocumentDialog({
         name: formData.documentName,
         type: formData.documentType,
         entityId: formData.selectedEntityId,
-        entityType: formData.selectedEntityType,
+        entityType: formData.selectedEntityType as 'car' | 'lead' | null,
       });
     } catch (error) {
       console.error('Error uploading document:', error);

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useCars } from "@/hooks/use-cars";
 import { CarsTable } from "@/components/CarsTable";
@@ -54,9 +53,8 @@ export default function Cars() {
     return (
       <MobileContainer withPadding={false}>
         <SubscriptionLimitAlert 
-          featureKey="carLimit" 
+          resourceType="car" 
           currentCount={cars.length} 
-          entityName="רכבים" 
         />
 
         <CarsMobileHeader
@@ -124,9 +122,8 @@ export default function Cars() {
   return (
     <div className="p-6">
       <SubscriptionLimitAlert 
-        featureKey="carLimit" 
+        resourceType="car" 
         currentCount={cars.length} 
-        entityName="רכבים" 
       />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
