@@ -50,7 +50,6 @@ export function AddTaskFormWithLimits({ onSuccess, className }: AddTaskFormWithL
 
   return (
     <TaskFormContent
-      onTaskCreated={onSuccess}
       isSubmitting={addTask.isPending || isSubmitting}
       onSubmit={handleSubmit}
       className={className}

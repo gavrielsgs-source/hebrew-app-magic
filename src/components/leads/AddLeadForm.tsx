@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useCreateLead } from '@/hooks/leads/use-create-lead';
 import { useLeads } from '@/hooks/use-leads';
+import { useCars } from '@/hooks/use-cars';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
 import { LeadFormBase, FormContextValue } from './LeadFormBase';
 import { AddLeadNameField } from './AddLeadNameField';
@@ -21,6 +22,7 @@ interface AddLeadFormProps {
 
 export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
   const { leads } = useLeads();
+  const { cars } = useCars();
   const { mutate: addLead, isPending: isLoading } = useCreateLead();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,14 +86,14 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     >
       {({ form, salesAgents, canAssignLeads }: FormContextValue) => (
         <>
-          <AddLeadNameField />
-          <AddLeadPhoneField />
-          <AddLeadEmailField />
-          <AddLeadSourceField />
-          <AddLeadCarField />
-          <AddLeadNotesField />
+          <AddLeadNameField control={form.control} />
+          <AddLeadPhoneField control={form.control} />
+          <AddLeadEmailField control={form.control} />
+          <AddLeadSourceField control={form.control} />
+          <AddLeadCarField control={form.control} cars={cars || []} />
+          <AddLeadNotesField control={form.control} />
           {canAssignLeads && (
-            <AddLeadAssignedField salesAgents={salesAgents} />
+            <AddLeadAssignedField control={form.control} salesAgents={salesAgents} />
           )}
           
           <div className="flex gap-2 pt-4">

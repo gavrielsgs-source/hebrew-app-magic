@@ -155,7 +155,7 @@ export function UploadDocumentDialog({
                 <Label htmlFor="entityType" className="text-right">קשר ל</Label>
                 <Select 
                   value={formData.selectedEntityType || ""} 
-                  onValueChange={(value) => onFormChange({ 
+                  onValueChange={(value: "car" | "lead" | "") => onFormChange({ 
                     selectedEntityType: value || null,
                     selectedEntityId: null 
                   })}
