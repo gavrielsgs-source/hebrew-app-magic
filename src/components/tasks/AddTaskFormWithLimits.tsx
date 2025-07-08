@@ -38,12 +38,13 @@ export function AddTaskFormWithLimits({
   };
 
   return (
-    <TaskFormContent
-      onSuccess={handleSuccess}
-      initialLeadId={initialLeadId}
-      initialCarId={initialCarId}
-      initialDate={initialDate}
-      className={className}
-    />
+    <div className={className}>
+      <TaskFormContent
+        onSuccess={handleSuccess}
+        initialLeadId={initialLeadId}
+        initialCarId={initialCarId}
+        initialDate={initialDate}
+      />
+    </div>
   );
 }
