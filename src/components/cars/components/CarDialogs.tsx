@@ -2,9 +2,9 @@
 import { Car } from "@/types/car";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { WhatsappTemplateSelector } from "@/components/whatsapp/WhatsappTemplateSelector";
 import { CarDetails } from "../CarDetails";
 import { EditCarForm } from "../forms/EditCarForm";
+import { CarWhatsAppDialog } from "./CarWhatsAppDialog";
 
 interface CarDialogsProps {
   selectedCar: Car | null;
@@ -29,17 +29,12 @@ export function CarDialogs({
     <>
       {/* WhatsApp Dialog */}
       <Dialog open={isWhatsappOpen} onOpenChange={onWhatsappClose}>
-        <DialogContent>
+        <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
           </DialogHeader>
           {selectedCar && (
-            <WhatsappTemplateSelector 
-              selectedTemplateId=""
-              customizedTemplate=""
-              onTemplateChange={() => {}}
-              onCustomizedTemplateChange={() => {}}
-            />
+            <CarWhatsAppDialog car={selectedCar} onClose={onWhatsappClose} />
           )}
         </DialogContent>
       </Dialog>
