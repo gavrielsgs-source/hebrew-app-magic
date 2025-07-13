@@ -18,7 +18,7 @@ interface CarWhatsAppDialogProps {
 }
 
 export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
-  const [activeTab, setActiveTab] = useState("lead");
+  const [activeTab, setActiveTab] = useState("manual");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [manualName, setManualName] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState("");
@@ -129,13 +129,13 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       {/* Recipient Selection Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full grid grid-cols-2">
-          <TabsTrigger value="lead" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            בחר לקוח
-          </TabsTrigger>
           <TabsTrigger value="manual" className="flex items-center gap-2">
             <Phone className="h-4 w-4" />
             הזנה ידנית
+          </TabsTrigger>
+          <TabsTrigger value="lead" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            בחר לקוח
           </TabsTrigger>
         </TabsList>
 
