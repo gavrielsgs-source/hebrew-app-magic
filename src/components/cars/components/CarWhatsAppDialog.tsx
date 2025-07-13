@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useLeads } from "@/hooks/use-leads";
 import { Car } from "@/types/car";
-import { Send, Car as CarIcon } from "lucide-react";
+import { Send, Car as CarIcon, Phone, User } from "lucide-react";
+import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -16,34 +18,48 @@ interface CarWhatsAppDialogProps {
 }
 
 export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
+  const [activeTab, setActiveTab] = useState("lead");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [manualName, setManualName] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState("");
-  const [message, setMessage] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
   const { leads } = useLeads();
 
+  // Initialize default template
   useEffect(() => {
-    if (car) {
-      const carMessage = `שלום,
-
-אני רוצה להציג לך רכב מעולה:
-
-🚗 ${car.make} ${car.model} (${car.year})
-💰 מחיר: ${car.price.toLocaleString()} ₪
-📏 קילומטרים: ${car.kilometers.toLocaleString()}
-${car.fuel_type ? `⛽ סוג דלק: ${car.fuel_type}` : ''}
-${car.transmission ? `⚙️ תיבת הילוכים: ${car.transmission}` : ''}
-${car.exterior_color ? `🎨 צבע: ${car.exterior_color}` : ''}
-
-${car.description ? `📝 תיאור: ${car.description}` : ''}
-
-מעוניין/ת בפרטים נוספים או בתיאום צפייה?
-
-בברכה,
-צוות המכירות`;
-
-      setMessage(carMessage);
+    if (whatsappTemplates.length > 0) {
+      setSelectedTemplateId(whatsappTemplates[0].id);
     }
-  }, [car]);
+  }, []);
+
+  // Generate message based on template and car details
+  const generateCarMessage = () => {
+    const clientName = activeTab === "lead" 
+      ? (leads?.find(lead => lead.id === selectedLeadId)?.name as string || "לקוח יקר")
+      : manualName || "לקוח יקר";
+
+    if (selectedTemplateId === "custom") {
+      return customMessage;
+    }
+
+    const template = whatsappTemplates.find(t => t.id === selectedTemplateId);
+    if (!template) return "";
+
+    // Prepare car object with the correct property names
+    const carForTemplate = {
+      ...car,
+      mileage: car.kilometers // Map kilometers to mileage for template compatibility
+    };
+
+    // Generate message using template function
+    let message = template.generateMessage(carForTemplate);
+    
+    // Replace client name placeholder if exists
+    message = message.replace(/שלום[!]?/, `שלום ${clientName}!`);
+
+    return message;
+  };
 
   const handleLeadSelect = (leadId: string) => {
     const selectedLead = leads?.find(lead => (lead.id as string) === leadId);
@@ -56,20 +72,16 @@ ${car.description ? `📝 תיאור: ${car.description}` : ''}
   const formatPhoneForWhatsApp = (phone: string) => {
     if (!phone) return '';
     
-    // Remove all non-numeric characters
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     
-    // If already starts with 972, return as is
     if (cleanPhone.startsWith('972')) {
       return cleanPhone;
     }
     
-    // If starts with 0, replace with 972
     if (cleanPhone.startsWith('0')) {
       return '972' + cleanPhone.substring(1);
     }
     
-    // If doesn't start with 972 or 0, add 972 prefix
     return '972' + cleanPhone;
   };
 
@@ -79,8 +91,13 @@ ${car.description ? `📝 תיאור: ${car.description}` : ''}
       return;
     }
 
+    const message = generateCarMessage();
+    if (!message.trim()) {
+      toast.error("אנא בחר תבנית או כתוב הודעה");
+      return;
+    }
+
     const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
-    
     const encodedText = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
     window.open(whatsappUrl, '_blank');
@@ -88,6 +105,8 @@ ${car.description ? `📝 תיאור: ${car.description}` : ''}
     toast.success("ההודעה נשלחה בוואטסאפ");
     onClose();
   };
+
+  const currentMessage = generateCarMessage();
 
   return (
     <div className="space-y-4" dir="rtl">
@@ -107,53 +126,127 @@ ${car.description ? `📝 תיאור: ${car.description}` : ''}
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+      {/* Recipient Selection Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="w-full grid grid-cols-2">
+          <TabsTrigger value="lead" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            בחר לקוח
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            הזנה ידנית
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="lead" className="space-y-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            <div>
+              <Label className="text-right text-sm">בחר לקוח</Label>
+              <Select value={selectedLeadId} onValueChange={handleLeadSelect}>
+                <SelectTrigger className="text-right">
+                  <SelectValue placeholder="בחר לקוח" />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {leads?.map(lead => (
+                    <SelectItem key={lead.id as string} value={lead.id as string}>
+                      {lead.name as string} {lead.phone ? `(${lead.phone as string})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label className="text-right text-sm">מספר טלפון</Label>
+              <Input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="05X-XXXXXXX"
+                className="text-right"
+                dir="ltr"
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="manual" className="space-y-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            <div>
+              <Label className="text-right text-sm">שם הלקוח</Label>
+              <Input
+                value={manualName}
+                onChange={(e) => setManualName(e.target.value)}
+                placeholder="שם הלקוח"
+                className="text-right"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-right text-sm">מספר טלפון</Label>
+              <Input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="05X-XXXXXXX"
+                className="text-right"
+                dir="ltr"
+              />
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Template Selection */}
+      <div>
+        <Label className="text-right text-sm mb-2 block">בחר תבנית הודעה</Label>
+        <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+          <SelectTrigger className="text-right">
+            <SelectValue placeholder="בחר תבנית" />
+          </SelectTrigger>
+          <SelectContent align="end">
+            {whatsappTemplates.map(template => (
+              <SelectItem key={template.id} value={template.id}>
+                {template.name}
+              </SelectItem>
+            ))}
+            <SelectItem value="custom">הודעה מותאמת אישית</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Custom Message Input */}
+      {selectedTemplateId === "custom" && (
         <div>
-          <Label className="text-right text-sm">בחר לקוח</Label>
-          <Select value={selectedLeadId} onValueChange={handleLeadSelect}>
-            <SelectTrigger className="text-right">
-              <SelectValue placeholder="בחר לקוח" />
-            </SelectTrigger>
-            <SelectContent align="end">
-              {leads?.map(lead => (
-                <SelectItem key={lead.id as string} value={lead.id as string}>
-                  {lead.name as string} {lead.phone ? `(${lead.phone as string})` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <Label className="text-right text-sm">מספר טלפון</Label>
-          <Input
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="05X-XXXXXXX"
-            className="text-right"
-            dir="ltr"
+          <Label className="text-right text-sm">הודעה מותאמת אישית</Label>
+          <Textarea
+            value={customMessage}
+            onChange={(e) => setCustomMessage(e.target.value)}
+            rows={8}
+            className="text-right resize-none"
+            dir="rtl"
+            placeholder="כתוב כאן את ההודעה המותאמת אישית..."
           />
         </div>
-      </div>
+      )}
 
+      {/* Message Preview */}
       <div>
-        <Label className="text-right text-sm">הודעה</Label>
-        <Textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={12}
-          className="text-right resize-none"
-          dir="rtl"
-        />
+        <Label className="text-right text-sm mb-2 block">תצוגה מקדימה של ההודעה</Label>
+        <div className="bg-muted/50 p-3 rounded-lg border max-h-48 overflow-y-auto">
+          <pre className="text-sm whitespace-pre-wrap text-right" dir="rtl">
+            {currentMessage || "בחר תבנית או כתוב הודעה מותאמת"}
+          </pre>
+        </div>
       </div>
 
+      {/* Action Buttons */}
       <div className="flex gap-3 pt-4">
         <Button variant="outline" onClick={onClose} className="flex-1">
           ביטול
         </Button>
         <Button 
           onClick={handleSend}
-          disabled={!phoneNumber || !message}
+          disabled={!phoneNumber || !currentMessage.trim()}
           className="flex-1 bg-green-600 hover:bg-green-700"
         >
           <Send className="w-4 h-4 ml-2" />
