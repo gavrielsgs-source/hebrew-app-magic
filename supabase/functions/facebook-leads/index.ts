@@ -89,17 +89,8 @@ serve(async (req) => {
         if (!leadData.form_id || !leadData.leadgen_id) continue;
 
         try {
-          const pageId = leadData.page_id;
-          const { data: pageRecord } = await supabase
-            .from("facebook_pages")
-            .select("page_access_token")
-            .eq("page_id", pageId)
-            .single();
-          
-          if (!pageRecord) throw new Error(`No token found for Page ID: ${pageId}`);
-          
           const leadRes = await fetch(
-            `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${pageRecord.page_access_token}`
+            `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${fbAccessToken}`
           );
 
           if (!leadRes.ok) {
