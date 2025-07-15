@@ -7,9 +7,21 @@ export const useUpdateLead = () => {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      // Convert empty strings to null for UUID fields to prevent database errors
+      const cleanedData = {
+        ...data,
+        car_id: data.car_id === "" ? null : data.car_id,
+        assigned_to: data.assigned_to === "" ? null : data.assigned_to,
+        agency_id: data.agency_id === "" ? null : data.agency_id,
+        // Also clean other optional fields
+        email: data.email === "" ? null : data.email,
+        notes: data.notes === "" ? null : data.notes,
+        source: data.source === "" ? null : data.source,
+      };
+
       const { data: responseData, error } = await supabase
         .from("leads")
-        .update(data)
+        .update(cleanedData)
         .eq("id", id);
 
       if (error) {
