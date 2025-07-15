@@ -1,8 +1,8 @@
 
 import { useState } from "react";
-import { useAgencies } from "@/hooks/use-agencies";
-import { useUserManagement } from "@/hooks/use-user-management";
-import { useRoles } from "@/hooks/use-roles";
+import { useRealAgencies } from "@/hooks/use-real-agencies";
+import { useRealUserManagement } from "@/hooks/use-real-user-management";
+import { useRealAdminCheck } from "@/hooks/use-real-admin-check";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -16,10 +16,19 @@ import { ShieldAlert, UserCog, Building, Users } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 export default function Admin() {
-  const { isAdmin, hasRole } = useRoles();
+  const { isAdmin, isLoading: adminLoading } = useRealAdminCheck();
+  
+  // אם טוען, מציג מסך טעינה
+  if (adminLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-xl">בודק הרשאות...</p>
+      </div>
+    );
+  }
   
   // אם המשתמש אינו אדמין, נעביר אותו לדף הראשי
-  if (!isAdmin()) {
+  if (!isAdmin) {
     toast.error("אין לך הרשאות לדף זה");
     return <Navigate to="/" />;
   }
@@ -35,15 +44,15 @@ export default function Admin() {
         </div>
       </div>
 
-      <Tabs defaultValue="agencies">
+      <Tabs defaultValue="users">
         <TabsList>
-          <TabsTrigger value="agencies" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            <span>סוכנויות</span>
-          </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span>משתמשים</span>
+          </TabsTrigger>
+          <TabsTrigger value="agencies" className="flex items-center gap-2">
+            <Building className="h-4 w-4" />
+            <span>סוכנויות</span>
           </TabsTrigger>
           <TabsTrigger value="permissions" className="flex items-center gap-2">
             <UserCog className="h-4 w-4" />
@@ -51,12 +60,12 @@ export default function Admin() {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="agencies" className="space-y-4">
-          <AgenciesManager />
-        </TabsContent>
-        
         <TabsContent value="users" className="space-y-4">
           <UsersTable />
+        </TabsContent>
+        
+        <TabsContent value="agencies" className="space-y-4">
+          <AgenciesManager />
         </TabsContent>
         
         <TabsContent value="permissions" className="space-y-4">
@@ -68,7 +77,7 @@ export default function Admin() {
 }
 
 function AgenciesManager() {
-  const { agencies, isLoading, addAgency, updateAgency } = useAgencies();
+  const { agencies, isLoading, addAgency, updateAgency } = useRealAgencies();
   const [newAgencyName, setNewAgencyName] = useState("");
   const [editAgencyId, setEditAgencyId] = useState<string | null>(null);
   const [editAgencyName, setEditAgencyName] = useState("");
@@ -212,7 +221,7 @@ function AgenciesManager() {
 }
 
 function UsersTable() {
-  const { allUsers, isLoading } = useUserManagement();
+  const { allUsers, isLoading } = useRealUserManagement();
 
   return (
     <Card>
@@ -229,20 +238,31 @@ function UsersTable() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>משתמש</TableHead>
                 <TableHead>אימייל</TableHead>
-                <TableHead>פעולות</TableHead>
+                <TableHead>תאריך הרשמה</TableHead>
+                <TableHead>התחברות אחרונה</TableHead>
+                <TableHead>סטטוס אימות</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {allUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.id}</TableCell>
-                  <TableCell>{user.email}</TableCell>
+                  <TableCell className="font-medium">{user.email}</TableCell>
+                  <TableCell>{new Date(user.created_at).toLocaleDateString('he-IL')}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline">
-                      פרטים
-                    </Button>
+                    {user.last_sign_in_at 
+                      ? new Date(user.last_sign_in_at).toLocaleDateString('he-IL')
+                      : 'לא התחבר עדיין'
+                    }
+                  </TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      user.email_confirmed_at 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {user.email_confirmed_at ? 'מאומת' : 'לא מאומת'}
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}
@@ -255,22 +275,21 @@ function UsersTable() {
 }
 
 function PermissionsManager() {
-  const { agencies } = useAgencies();
-  const { allUsers, getUserRoles, assignRole, removeRole } = useUserManagement();
+  const { agencies } = useRealAgencies();
+  const { allUsers, userRoles, assignRole, removeRole, getUserRoles } = useRealUserManagement();
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [selectedRole, setSelectedRole] = useState<UserRole>("viewer");
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>("");
-  const [userRoles, setUserRoles] = useState<any[]>([]);
+  const [currentUserRoles, setCurrentUserRoles] = useState<any[]>([]);
   
   const handleUserSelect = async (userId: string) => {
     setSelectedUserId(userId);
     try {
-      // Updated to call without arguments since the simplified version doesn't accept any
-      const roles = await getUserRoles();
-      setUserRoles(roles);
+      const roles = await getUserRoles(userId);
+      setCurrentUserRoles(roles);
     } catch (error) {
       console.error("Failed to get user roles:", error);
-      setUserRoles([]);
+      setCurrentUserRoles([]);
     }
   };
   
@@ -281,12 +300,15 @@ function PermissionsManager() {
     }
     
     try {
-      // Updated to call without arguments since the simplified version doesn't accept any
-      await assignRole.mutateAsync();
+      await assignRole.mutateAsync({
+        userId: selectedUserId,
+        role: selectedRole,
+        agencyId: selectedRole !== 'admin' ? selectedAgencyId : undefined
+      });
       
       // רענון הרשאות
-      const roles = await getUserRoles();
-      setUserRoles(roles);
+      const roles = await getUserRoles(selectedUserId);
+      setCurrentUserRoles(roles);
     } catch (error) {
       console.error("Failed to assign role:", error);
     }
@@ -294,12 +316,13 @@ function PermissionsManager() {
   
   const handleRemoveRole = async (roleId: string) => {
     try {
-      // Updated to call without arguments since the simplified version doesn't accept any
-      await removeRole.mutateAsync();
+      await removeRole.mutateAsync(roleId);
       
       // רענון הרשאות
-      const roles = await getUserRoles();
-      setUserRoles(roles);
+      if (selectedUserId) {
+        const roles = await getUserRoles(selectedUserId);
+        setCurrentUserRoles(roles);
+      }
     } catch (error) {
       console.error("Failed to remove role:", error);
     }
@@ -383,14 +406,14 @@ function PermissionsManager() {
                 
                 <Button 
                   onClick={handleAssignRole}
-                  disabled={!selectedUserId || !selectedRole || (selectedRole !== 'admin' && !selectedAgencyId)}
+                  disabled={!selectedUserId || !selectedRole || (selectedRole !== 'admin' && !selectedAgencyId) || assignRole.isPending}
                 >
-                  הקצה תפקיד
+                  {assignRole.isPending ? "מוקצה..." : "הקצה תפקיד"}
                 </Button>
                 
                 <div className="pt-4">
                   <Label>תפקידים נוכחיים</Label>
-                  {userRoles.length === 0 ? (
+                  {currentUserRoles.length === 0 ? (
                     <div className="text-center py-4 text-muted-foreground">אין תפקידים להצגה</div>
                   ) : (
                     <Table>
@@ -402,7 +425,7 @@ function PermissionsManager() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {userRoles.map((role) => (
+                        {currentUserRoles.map((role) => (
                           <TableRow key={role.id}>
                             <TableCell>{roleLabels[role.role as UserRole] || role.role}</TableCell>
                             <TableCell>
@@ -415,8 +438,9 @@ function PermissionsManager() {
                                 size="sm" 
                                 variant="destructive"
                                 onClick={() => handleRemoveRole(role.id)}
+                                disabled={removeRole.isPending}
                               >
-                                הסר
+                                {removeRole.isPending ? "מוסר..." : "הסר"}
                               </Button>
                             </TableCell>
                           </TableRow>
