@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
-import { useCreateLead } from "@/hooks/use-leads";
+import { useCreateLead } from "@/hooks/leads/use-create-lead";
 import { useCars } from "@/hooks/use-cars";
 import { useToast } from "@/hooks/use-toast";
 import { User, Phone, Mail, FileText, Car, Building } from "lucide-react";
@@ -40,6 +40,15 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     
     console.log('MobileAddLeadForm - Submit handler called');
     
+    if (!user?.id) {
+      toast({
+        title: "שגיאה",
+        description: "אנא התחבר מחדש למערכת",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!formData.name || !formData.phone) {
       toast({
         title: "שגיאה",
@@ -59,8 +68,10 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         source: formData.source,
         status: "new",
         assigned_to: null,
-        user_id: user?.id || null
+        user_id: user.id
       };
+
+      console.log('MobileAddLeadForm - Creating lead with data:', leadData);
 
       await addLead.mutateAsync(leadData);
       
@@ -76,7 +87,7 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
       console.error("שגיאה בהוספת ליד:", error);
       toast({
         title: "שגיאה",
-        description: "לא ניתן להוסיף את הליד",
+        description: "לא ניתן להוסיף את הליד: " + (error as Error).message,
         variant: "destructive",
       });
     }

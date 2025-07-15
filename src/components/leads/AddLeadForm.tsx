@@ -4,6 +4,7 @@ import { useCreateLead } from '@/hooks/leads/use-create-lead';
 import { useLeads } from '@/hooks/use-leads';
 import { useCars } from '@/hooks/use-cars';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
+import { useAuth } from '@/hooks/use-auth';
 import { LeadFormBase, FormContextValue } from './LeadFormBase';
 import { AddLeadNameField } from './AddLeadNameField';
 import { AddLeadPhoneField } from './AddLeadPhoneField';
@@ -21,6 +22,7 @@ interface AddLeadFormProps {
 }
 
 export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
+  const { user } = useAuth();
   const { leads } = useLeads();
   const { cars } = useCars();
   const { mutate: addLead, isPending: isLoading } = useCreateLead();
@@ -29,6 +31,12 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
 
   const handleSubmit = async (values: any) => {
     console.log('🔍 [AddLeadForm] handleSubmit called with values:', values);
+    
+    if (!user?.id) {
+      console.error('🔍 [AddLeadForm] No user found');
+      toast.error('אנא התחבר מחדש למערכת');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -46,7 +54,16 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
 
       console.log('🔍 [AddLeadForm] Limit check passed, creating lead');
       
-      addLead(values, {
+      // הוספת user_id לנתונים
+      const leadData = {
+        ...values,
+        user_id: user.id,
+        status: values.status || 'new'
+      };
+
+      console.log('🔍 [AddLeadForm] Final lead data with user_id:', leadData);
+      
+      addLead(leadData, {
         onSuccess: () => {
           toast.success('ליד חדש נוצר בהצלחה!');
           if (onSuccess) {
@@ -55,12 +72,12 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
         },
         onError: (error) => {
           console.error('🔍 [AddLeadForm] Error creating lead:', error);
-          toast.error('שגיאה ביצירת הליד');
+          toast.error('שגיאה ביצירת הליד: ' + error.message);
         }
       });
     } catch (error) {
-      console.error('🔍 [AddLeadForm] Error creating lead:', error);
-      toast.error('שגיאה ביצירת הליד');
+      console.error('🔍 [AddLeadForm] Unexpected error:', error);
+      toast.error('שגיאה לא צפויה ביצירת הליד');
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +87,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     name: '',
     phone: '',
     email: '',
-    source: '',
+    source: 'ידני',
     car_id: '',
     notes: '',
     assigned_to: '',

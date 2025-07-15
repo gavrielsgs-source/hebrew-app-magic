@@ -7,6 +7,8 @@ export const useCreateLead = () => {
 
   return useMutation({
     mutationFn: async (newLead: any) => {
+      console.log('🔍 [useCreateLead] Creating lead with data:', newLead);
+      
       // Convert empty strings to null for UUID fields to prevent database errors
       const cleanedLead = {
         ...newLead,
@@ -16,22 +18,26 @@ export const useCreateLead = () => {
         // Also clean other optional fields
         email: newLead.email === "" ? null : newLead.email,
         notes: newLead.notes === "" ? null : newLead.notes,
-        source: newLead.source === "" ? null : newLead.source,
+        source: newLead.source === "" ? "ידני" : newLead.source, // Default source
       };
+
+      console.log('🔍 [useCreateLead] Cleaned lead data:', cleanedLead);
 
       const { data, error } = await supabase.from("leads").insert([cleanedLead]).select();
       
       if (error) {
-        console.error("שגיאה ביצירת ליד:", error);
+        console.error("🔍 [useCreateLead] Database error:", error);
         throw new Error(error.message);
       }
+      
+      console.log('🔍 [useCreateLead] Lead created successfully:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
     },
     onError: (error) => {
-      console.error("שגיאה בהוספת לקוח:", error);
+      console.error("🔍 [useCreateLead] Mutation error:", error);
     }
   });
 };
