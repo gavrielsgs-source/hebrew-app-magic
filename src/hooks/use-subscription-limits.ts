@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSubscription } from '@/contexts/subscription-context';
+import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { SubscriptionTier } from '@/types/subscription';
@@ -13,6 +14,7 @@ export type ResourceType = 'car' | 'lead' | 'user' | 'template' | 'whatsappMessa
 export function useSubscriptionLimits() {
   const { subscription, checkEntitlement } = useSubscription();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   /**
    * בדיקה האם פעולה מסוימת מותרת לפי מגבלות המנוי
@@ -34,6 +36,12 @@ export function useSubscriptionLimits() {
       },
       timestamp: new Date().toISOString()
     });
+
+    // Super Admin bypass - unlimited access for specific email
+    if (user?.email === 'gavrielsgs@gmail.com') {
+      console.log('🔍 [useSubscriptionLimits] Super Admin detected, allowing all actions');
+      return { allowed: true, message: '' };
+    }
 
     // מחיקה תמיד מותרת
     if (action === 'delete') {
@@ -102,6 +110,13 @@ export function useSubscriptionLimits() {
       currentCount,
       subscription: subscription
     });
+
+    // Super Admin bypass - unlimited access for specific email
+    if (user?.email === 'gavrielsgs@gmail.com') {
+      console.log('🔍 [useSubscriptionLimits] Super Admin detected, allowing action without limits');
+      if (onContinue) onContinue();
+      return true;
+    }
 
     const result = checkLimitBeforeAction(resourceType, 'create', currentCount);
 

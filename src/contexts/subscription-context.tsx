@@ -57,12 +57,36 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
       if (subscriptionError) {
         if (subscriptionError.code === 'PGRST116') {
-          console.log('🔍 [SubscriptionContext] No subscription found, this should not happen after the migration');
+      console.log('🔍 [SubscriptionContext] No subscription found, this should not happen after the migration');
+          // Super Admin gets Enterprise tier automatically
+          if (user.email === 'gavrielsgs@gmail.com') {
+            console.log('🔍 [SubscriptionContext] Super Admin detected, setting Enterprise subscription');
+            const enterpriseSub: Subscription = {
+              ...subscriptionFeatures.enterprise,
+              active: true,
+              isTrialActive: false
+            };
+            setSubscription(enterpriseSub);
+            return;
+          }
           throw new Error('No subscription found - this should not happen');
         } else {
           throw subscriptionError;
         }
       } else {
+        // Super Admin gets Enterprise tier override
+        if (user.email === 'gavrielsgs@gmail.com') {
+          console.log('🔍 [SubscriptionContext] Super Admin detected, overriding with Enterprise subscription');
+          const enterpriseSub: Subscription = {
+            ...subscriptionFeatures.enterprise,
+            active: true,
+            isTrialActive: false,
+            trialEndsAt: subscriptionData.trial_ends_at,
+            expiresAt: subscriptionData.expires_at
+          };
+          setSubscription(enterpriseSub);
+          return;
+        }
         const now = new Date();
         const trialEndDate = subscriptionData.trial_ends_at ? new Date(subscriptionData.trial_ends_at) : null;
         const isTrialActive = trialEndDate && trialEndDate > now;
@@ -130,6 +154,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       subscription: subscription,
       timestamp: new Date().toISOString()
     });
+    
+    // Super Admin bypass - unlimited access for specific email
+    if (user?.email === 'gavrielsgs@gmail.com') {
+      console.log('🔍 [SubscriptionContext] Super Admin detected, granting unlimited access');
+      return true;
+    }
     
     if (!subscription) {
       console.log('🔍 [SubscriptionContext] No subscription found, denying access');
