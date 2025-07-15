@@ -28,6 +28,7 @@ async function verifyFacebookSignature(req: Request, secret: string): Promise<bo
 }
 
 serve(async (req) => {
+  console.log(req)
   // Handle preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
