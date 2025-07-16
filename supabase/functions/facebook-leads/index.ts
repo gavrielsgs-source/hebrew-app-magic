@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
@@ -9,177 +10,259 @@ const corsHeaders = {
 };
 
 // Verify Facebook signature
-async function verifyFacebookSignature(req: Request, secret: string): Promise<boolean> {
-  const signatureHeader = req.headers.get("x-hub-signature");
-  if (!signatureHeader || !signatureHeader.startsWith("sha1=")) {
-    console.warn("Missing or invalid signature header");
+async function verifyFacebookSignature(body: string, signature: string, secret: string): Promise<boolean> {
+  if (!signature || !signature.startsWith("sha1=")) {
+    console.warn("Missing or invalid signature header:", signature);
     return false;
   }
 
-  const signature = signatureHeader.slice(5);
-  const body = await req.text(); // read body as text
+  const expectedSignature = signature.slice(5);
   const encoder = new TextEncoder();
   const key = encoder.encode(secret);
   const hmac = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
   const digest = await crypto.subtle.sign("HMAC", hmac, encoder.encode(body));
   const hash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
 
-  return signature === hash;
+  const isValid = expectedSignature === hash;
+  console.log("Signature verification:", { expected: expectedSignature, calculated: hash, isValid });
+  return isValid;
 }
 
 serve(async (req) => {
-  console.log(req)
+  console.log("=== Facebook Leads Webhook Called ===");
+  console.log("Method:", req.method);
+  console.log("URL:", req.url);
+  console.log("Headers:", Object.fromEntries(req.headers.entries()));
+
   // Handle preflight
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   // Facebook Webhook Verification (GET)
   if (req.method === "GET") {
     const url = new URL(req.url);
-    console.log(url)
+    console.log("GET request - webhook verification");
+    console.log("Search params:", Object.fromEntries(url.searchParams.entries()));
+    
     const mode = url.searchParams.get("hub.mode");
     const token = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
 
     const verifyToken = Deno.env.get("FB_VERIFY_TOKEN");
+    console.log("Verification attempt:", { mode, token, challenge, expectedToken: verifyToken });
     
     if (mode === "subscribe" && token === verifyToken) {
-      console.log("Facebook Webhook verified");
+      console.log("✅ Facebook Webhook verified successfully");
       return new Response(challenge, { status: 200, headers: corsHeaders });
     } else {
+      console.log("❌ Facebook Webhook verification failed");
       return new Response("Verification failed", { status: 403, headers: corsHeaders });
     }
   }
 
-  try {
-    const appSecret = Deno.env.get("FB_APP_SECRET");
-    const fbAccessToken = Deno.env.get("FB_ACCESS_TOKEN");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  // Handle POST requests (actual webhook data)
+  if (req.method === "POST") {
+    console.log("POST request - processing webhook data");
+    
+    try {
+      const appSecret = Deno.env.get("FB_APP_SECRET");
+      const fbAccessToken = Deno.env.get("FB_ACCESS_TOKEN");
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!appSecret || !fbAccessToken || !supabaseUrl || !supabaseKey) {
-      throw new Error("Missing environment variables");
-    }
-
-    const signatureValid = await verifyFacebookSignature(req.clone(), appSecret);
-    if (!signatureValid) {
-      return new Response("Invalid Facebook signature", { status: 401, headers: corsHeaders });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const body = await req.json();
-    console.log("Received webhook data:", JSON.stringify(body));
-
-    if (!body.entry || !Array.isArray(body.entry) || body.entry.length === 0) {
-      return new Response(JSON.stringify({ error: "No entries in payload" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      console.log("Environment check:", {
+        hasAppSecret: !!appSecret,
+        hasAccessToken: !!fbAccessToken,
+        hasSupabaseUrl: !!supabaseUrl,
+        hasSupabaseKey: !!supabaseKey
       });
-    }
 
-    const results = [];
+      if (!appSecret || !fbAccessToken || !supabaseUrl || !supabaseKey) {
+        throw new Error("Missing required environment variables");
+      }
 
-    for (const entry of body.entry) {
-      if (!entry.changes || !Array.isArray(entry.changes)) continue;
+      // Read body and verify signature
+      const body = await req.text();
+      const signatureHeader = req.headers.get("x-hub-signature");
+      
+      console.log("Request body:", body);
+      console.log("Signature header:", signatureHeader);
 
-      for (const change of entry.changes) {
-        if (change.field !== "leadgen") continue;
-        const leadData = change.value;
-        if (!leadData.form_id || !leadData.leadgen_id) continue;
+      const signatureValid = await verifyFacebookSignature(body, signatureHeader || "", appSecret);
+      if (!signatureValid) {
+        console.log("❌ Invalid Facebook signature");
+        return new Response("Invalid Facebook signature", { status: 401, headers: corsHeaders });
+      }
 
-        try {
-          const leadRes = await fetch(
-            `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${fbAccessToken}`
-          );
+      console.log("✅ Signature verified, processing webhook data");
 
-          if (!leadRes.ok) {
-            throw new Error(`Failed to fetch lead: ${await leadRes.text()}`);
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const webhookData = JSON.parse(body);
+      
+      console.log("Parsed webhook data:", JSON.stringify(webhookData, null, 2));
+
+      if (!webhookData.entry || !Array.isArray(webhookData.entry) || webhookData.entry.length === 0) {
+        console.log("❌ No entries in webhook payload");
+        return new Response(JSON.stringify({ error: "No entries in payload" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const results = [];
+
+      for (const entry of webhookData.entry) {
+        console.log("Processing entry:", entry);
+        
+        if (!entry.changes || !Array.isArray(entry.changes)) {
+          console.log("No changes in entry, skipping");
+          continue;
+        }
+
+        for (const change of entry.changes) {
+          console.log("Processing change:", change);
+          
+          if (change.field !== "leadgen") {
+            console.log("Change field is not leadgen, skipping:", change.field);
+            continue;
+          }
+          
+          const leadData = change.value;
+          console.log("Lead data from change:", leadData);
+          
+          if (!leadData.form_id || !leadData.leadgen_id) {
+            console.log("Missing form_id or leadgen_id, skipping");
+            continue;
           }
 
-          const leadDetails = await leadRes.json();
-          console.log("Lead details:", leadDetails);
+          try {
+            console.log(`Fetching lead details for leadgen_id: ${leadData.leadgen_id}`);
+            
+            const leadRes = await fetch(
+              `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${fbAccessToken}`
+            );
 
-          const formattedLead = {
-            name: "",
-            email: "",
-            phone: "",
-            notes: `ליד מפייסבוק - טופס ${leadData.form_id}`,
-            source: "פייסבוק",
-            status: "new",
-          };
+            if (!leadRes.ok) {
+              const errorText = await leadRes.text();
+              console.log("❌ Failed to fetch lead from Facebook:", errorText);
+              throw new Error(`Failed to fetch lead: ${errorText}`);
+            }
 
-          if (Array.isArray(leadDetails.field_data)) {
-            for (const field of leadDetails.field_data) {
-              const value = field.values?.[0];
-              if (!value) continue;
+            const leadDetails = await leadRes.json();
+            console.log("✅ Lead details from Facebook:", JSON.stringify(leadDetails, null, 2));
 
-              switch (field.name.toLowerCase()) {
-                case "full_name":
-                case "name":
-                  formattedLead.name = value;
-                  break;
-                case "email":
-                  formattedLead.email = value;
-                  break;
-                case "phone":
-                case "phone_number":
-                  formattedLead.phone = value;
-                  break;
-                default:
-                  formattedLead.notes += `\n${field.name}: ${value}`;
+            const formattedLead = {
+              name: "",
+              email: "",
+              phone: "",
+              notes: `ליד מפייסבוק - טופס ${leadData.form_id}`,
+              source: "פייסבוק",
+              status: "new",
+            };
+
+            if (Array.isArray(leadDetails.field_data)) {
+              console.log("Processing field data:", leadDetails.field_data);
+              
+              for (const field of leadDetails.field_data) {
+                const value = field.values?.[0];
+                if (!value) continue;
+
+                console.log(`Processing field: ${field.name} = ${value}`);
+
+                switch (field.name.toLowerCase()) {
+                  case "full_name":
+                  case "name":
+                    formattedLead.name = value;
+                    break;
+                  case "email":
+                    formattedLead.email = value;
+                    break;
+                  case "phone":
+                  case "phone_number":
+                    formattedLead.phone = value;
+                    break;
+                  default:
+                    formattedLead.notes += `\n${field.name}: ${value}`;
+                }
               }
             }
-          }
 
-          if (!formattedLead.name) {
-            formattedLead.name = `ליד פייסבוק ${new Date().toISOString().split("T")[0]}`;
-          }
+            if (!formattedLead.name) {
+              formattedLead.name = `ליד פייסבוק ${new Date().toISOString().split("T")[0]}`;
+            }
 
-          if (formattedLead.phone || formattedLead.email) {
-            const { data: adminUser } = await supabase.from("profiles").select("id").limit(1).single();
-            const { data: lead, error } = await supabase
-              .from("leads")
-              .insert({
-                ...formattedLead,
-                user_id: adminUser.id,
-              })
-              .select()
-              .single();
+            console.log("Formatted lead:", formattedLead);
 
-            if (error) throw error;
+            if (formattedLead.phone || formattedLead.email) {
+              // Get the first admin user to assign the lead to
+              const { data: adminUser, error: adminError } = await supabase
+                .from("profiles")
+                .select("id")
+                .limit(1)
+                .single();
 
-            results.push({
-              success: true,
-              lead_id: lead.id,
-              message: `ליד נשמר בהצלחה: ${formattedLead.name}`,
-            });
-          } else {
+              if (adminError) {
+                console.log("Error fetching admin user:", adminError);
+                throw new Error(`Failed to get admin user: ${adminError.message}`);
+              }
+
+              console.log("Admin user found:", adminUser);
+
+              const { data: lead, error } = await supabase
+                .from("leads")
+                .insert({
+                  ...formattedLead,
+                  user_id: adminUser.id,
+                })
+                .select()
+                .single();
+
+              if (error) {
+                console.log("❌ Error inserting lead to database:", error);
+                throw error;
+              }
+
+              console.log("✅ Lead saved successfully:", lead);
+
+              results.push({
+                success: true,
+                lead_id: lead.id,
+                message: `ליד נשמר בהצלחה: ${formattedLead.name}`,
+              });
+            } else {
+              console.log("❌ Lead missing essential data (phone or email)");
+              results.push({
+                success: false,
+                message: "ליד חסר נתונים חיוניים (טלפון או אימייל)",
+              });
+            }
+          } catch (err) {
+            console.error("❌ Error handling individual lead:", err);
             results.push({
               success: false,
-              message: "ליד חסר נתונים חיוניים (טלפון או אימייל)",
+              error: err.message,
             });
           }
-        } catch (err) {
-          console.error("Error handling lead:", err);
-          results.push({
-            success: false,
-            error: err.message,
-          });
         }
       }
-    }
 
-    return new Response(JSON.stringify({ success: true, results }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Unhandled error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error", details: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      console.log("Final results:", results);
+
+      return new Response(JSON.stringify({ success: true, results }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("❌ Unhandled error in webhook:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error", details: error.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
   }
+
+  console.log("❌ Unsupported method:", req.method);
+  return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 });
