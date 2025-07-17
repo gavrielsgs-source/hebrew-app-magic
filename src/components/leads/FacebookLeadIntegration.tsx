@@ -12,31 +12,58 @@ export function FacebookLeadIntegration() {
   const [fbInitialized, setFbInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const { saveUserAccessToken } = FacebookTokenStorage();
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState("לא מחובר");
+  const { saveUserAccessToken, tokens } = FacebookTokenStorage();
+
+  const addDebugLog = (log: string) => {
+    console.log("[FB Debug]:", log);
+    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${log}`]);
+  };
 
   useEffect(() => {
+    addDebugLog("Starting Facebook SDK initialization...");
+    
     if (window.FB) {
+      addDebugLog("Facebook SDK already loaded");
       setFbInitialized(true);
+      setConnectionStatus("SDK מוכן");
       return;
     }
 
+    addDebugLog("Setting up Facebook SDK...");
     window.fbAsyncInit = () => {
+      addDebugLog("Facebook SDK loaded, initializing...");
       window.FB.init({
         appId: "2106125989900776",
         cookie: true,
         xfbml: false,
         version: "v17.0",
       });
+      addDebugLog("Facebook SDK initialized successfully");
       setFbInitialized(true);
+      setConnectionStatus("SDK מוכן");
     };
 
     if (!document.getElementById("facebook-jssdk")) {
+      addDebugLog("Loading Facebook SDK script...");
       const js = document.createElement("script");
       js.id = "facebook-jssdk";
       js.src = "https://connect.facebook.net/he_IL/sdk.js";
+      js.onload = () => addDebugLog("Facebook SDK script loaded");
+      js.onerror = () => addDebugLog("ERROR: Failed to load Facebook SDK script");
       document.head.appendChild(js);
+    } else {
+      addDebugLog("Facebook SDK script already exists");
     }
   }, []);
+
+  useEffect(() => {
+    if (tokens && tokens.length > 0) {
+      setConnectionStatus(`מחובר - ${tokens.length} דפים`);
+      addDebugLog(`Found ${tokens.length} stored Facebook tokens`);
+    }
+  }, [tokens]);
 
   // Helper: promisify FB.api calls
   function fbApi<T = any>(path: string, method = "GET", params?: Record<string, any>): Promise<T> {
@@ -59,59 +86,78 @@ export function FacebookLeadIntegration() {
   }
 
   const loginAndSubscribe = () => {
-    if (!fbInitialized) return;
+    if (!fbInitialized) {
+      addDebugLog("ERROR: Facebook SDK not initialized");
+      return;
+    }
 
+    addDebugLog("Starting Facebook login process...");
     setLoading(true);
     setMessage("");
+    setConnectionStatus("מתחבר...");
 
     window.FB.login(function (response: any) {
+      addDebugLog(`Facebook login response: ${JSON.stringify(response)}`);
+      
       if (response.authResponse) {
         const userAccessToken = response.authResponse.accessToken;
-        console.log("User Access Token:", userAccessToken);
+        addDebugLog("Successfully obtained user access token");
+        setConnectionStatus("מקבל נתוני דפים...");
 
         (async () => {
           try {
+            addDebugLog("Fetching user pages...");
             const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts", "GET", {
               access_token: userAccessToken,
             });
-            console.log("Pages response:", pagesResponse);
+            addDebugLog(`Found ${pagesResponse.data.length} pages`);
 
             for (const page of pagesResponse.data) {
+              addDebugLog(`Processing page: ${page.name} (${page.id})`);
+              setConnectionStatus(`מעבד דף: ${page.name}`);
+              
               // שמירת הטוקן של הדף
               await saveUserAccessToken(page.access_token, page.id, page.name);
+              addDebugLog(`Saved token for page: ${page.name}`);
 
               await subscribePageToWebhook(page.id, page.access_token);
-              console.log(`Subscribed page ${page.name} (${page.id})`);
+              addDebugLog(`Subscribed page ${page.name} to webhook`);
 
               const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page.id}/leadgen_forms`, "GET", {
                 access_token: page.access_token,
               });
               
               const leadForms = leadFormsResponse.data || [];
-              console.log(`Found ${leadForms.length} lead forms for page ${page.name}`);
+              addDebugLog(`Found ${leadForms.length} lead forms for page ${page.name}`);
 
               for (const form of leadForms) {
                 const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
                   access_token: page.access_token,
                 });
                 const leads = leadsResponse.data || [];
-                console.log(`Fetched ${leads.length} leads for form ${form.id}`);
+                addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
 
                 for (const lead of leads) {
-                  console.log("Lead:", lead);
+                  addDebugLog(`Lead data: ${JSON.stringify(lead)}`);
                 }
               }
             }
 
             setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה! טוקנים נשמרו למערכת.");
+            setConnectionStatus(`מחובר - ${pagesResponse.data.length} דפים`);
+            addDebugLog("Integration completed successfully");
           } catch (error: any) {
+            addDebugLog(`ERROR in integration process: ${error.message || error}`);
             setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
+            setConnectionStatus("שגיאה בחיבור");
           } finally {
             setLoading(false);
           }
         })();
       } else {
+        addDebugLog("Facebook login was cancelled or failed");
         setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+        setConnectionStatus("חיבור נכשל");
         setLoading(false);
       }
     }, {
@@ -119,16 +165,98 @@ export function FacebookLeadIntegration() {
     });
   };
 
+  const resetConnection = () => {
+    addDebugLog("Resetting Facebook connection...");
+    setMessage("");
+    setConnectionStatus("מאפס חיבור...");
+    setDebugInfo([]);
+    
+    // Clear any Facebook auth status
+    if (window.FB && window.FB.getAuthResponse) {
+      window.FB.logout(() => {
+        addDebugLog("Facebook logout completed");
+        setConnectionStatus("לא מחובר");
+      });
+    }
+  };
+
+  const testFacebookAPI = async () => {
+    if (!fbInitialized) {
+      addDebugLog("Cannot test - Facebook SDK not initialized");
+      return;
+    }
+
+    addDebugLog("Testing Facebook API connection...");
+    try {
+      const response = await new Promise((resolve, reject) => {
+        window.FB.getLoginStatus((response: any) => {
+          addDebugLog(`Login status: ${JSON.stringify(response)}`);
+          resolve(response);
+        });
+      });
+      addDebugLog("Facebook API test completed");
+    } catch (error) {
+      addDebugLog(`Facebook API test failed: ${error}`);
+    }
+  };
+
   return (
-    <div className="p-4 text-right">
-      <button
-        className="btn-primary"
-        onClick={loginAndSubscribe}
-        disabled={!fbInitialized || loading}
-      >
-        {loading ? "טוען..." : "התחבר לפייסבוק והרשם לכל הדפים"}
-      </button>
-      {message && <p className="mt-2">{message}</p>}
+    <div className="p-4 text-right space-y-4">
+      {/* Status Display */}
+      <div className="bg-muted/50 p-3 rounded-lg">
+        <div className="text-sm font-medium">סטטוס חיבור: {connectionStatus}</div>
+        {tokens && tokens.length > 0 && (
+          <div className="text-xs text-muted-foreground mt-1">
+            דפים מחוברים: {tokens.map(t => t.page_name).join(", ")}
+          </div>
+        )}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          className="btn-primary"
+          onClick={loginAndSubscribe}
+          disabled={!fbInitialized || loading}
+        >
+          {loading ? "טוען..." : "התחבר לפייסבוק והרשם לכל הדפים"}
+        </button>
+        
+        <button
+          className="btn-secondary"
+          onClick={resetConnection}
+          disabled={loading}
+        >
+          איפוס חיבור
+        </button>
+        
+        <button
+          className="btn-secondary"
+          onClick={testFacebookAPI}
+          disabled={!fbInitialized || loading}
+        >
+          בדיקת API
+        </button>
+      </div>
+
+      {/* Messages */}
+      {message && <div className="p-3 bg-accent/20 rounded-lg text-sm">{message}</div>}
+
+      {/* Debug Info */}
+      {debugInfo.length > 0 && (
+        <details className="bg-muted/30 p-3 rounded-lg">
+          <summary className="cursor-pointer text-sm font-medium">
+            מידע דיבוג ({debugInfo.length} הודעות)
+          </summary>
+          <div className="mt-2 space-y-1 text-xs font-mono max-h-60 overflow-y-auto">
+            {debugInfo.map((log, i) => (
+              <div key={i} className={`${log.includes('ERROR') ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {log}
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
     </div>
   );
 }
