@@ -21,7 +21,6 @@ export function FacebookTokenStorage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Using raw SQL query to avoid TypeScript issues with unknown table
       const { error } = await supabase.rpc('save_facebook_token', {
         p_user_id: user.id,
         p_access_token: accessToken,
@@ -52,13 +51,15 @@ export function FacebookTokenStorage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Using raw SQL query to avoid TypeScript issues with unknown table
       const { data, error } = await supabase.rpc('get_facebook_tokens', {
         p_user_id: user.id
       });
 
       if (error) throw error;
-      setTokens(data || []);
+      
+      // Properly type the returned data
+      const typedData = data as FacebookToken[];
+      setTokens(typedData || []);
     } catch (error) {
       console.error('Error loading Facebook tokens:', error);
     }

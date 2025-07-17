@@ -531,6 +531,17 @@ export type Database = {
           email_confirmed_at: string
         }[]
       }
+      get_facebook_tokens: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          user_id: string
+          access_token: string
+          page_id: string
+          page_name: string
+          created_at: string
+        }[]
+      }
       get_user_agencies: {
         Args: Record<PropertyKey, never>
         Returns: string[]
@@ -549,6 +560,15 @@ export type Database = {
       is_agency_manager_or_admin: {
         Args: { agency_id_param: string }
         Returns: boolean
+      }
+      save_facebook_token: {
+        Args: {
+          p_user_id: string
+          p_access_token: string
+          p_page_id: string
+          p_page_name: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
