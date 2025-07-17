@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FacebookTokenStorage } from "./FacebookTokenStorage";
 
 declare global {
   interface Window {
@@ -11,6 +12,7 @@ export function FacebookLeadIntegration() {
   const [fbInitialized, setFbInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const { saveUserAccessToken } = FacebookTokenStorage();
 
   useEffect(() => {
     if (window.FB) {
@@ -64,12 +66,20 @@ export function FacebookLeadIntegration() {
 
     window.FB.login(function (response: any) {
       if (response.authResponse) {
+        const userAccessToken = response.authResponse.accessToken;
+        console.log("User Access Token:", userAccessToken);
+
         (async () => {
           try {
-            const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts");
+            const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts", "GET", {
+              access_token: userAccessToken,
+            });
             console.log("Pages response:", pagesResponse);
 
             for (const page of pagesResponse.data) {
+              // שמירת הטוקן של הדף
+              await saveUserAccessToken(page.access_token, page.id, page.name);
+
               await subscribePageToWebhook(page.id, page.access_token);
               console.log(`Subscribed page ${page.name} (${page.id})`);
 
@@ -93,7 +103,7 @@ export function FacebookLeadIntegration() {
               }
             }
 
-            setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה!");
+            setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה! טוקנים נשמרו למערכת.");
           } catch (error: any) {
             setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
           } finally {
@@ -105,7 +115,7 @@ export function FacebookLeadIntegration() {
         setLoading(false);
       }
     }, {
-      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management, pages_manage_ads",
+      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads",
     });
   };
 

@@ -68,18 +68,16 @@ serve(async (req) => {
     
     try {
       const appSecret = Deno.env.get("FB_APP_SECRET");
-      const fbAccessToken = Deno.env.get("FB_ACCESS_TOKEN");
       const supabaseUrl = Deno.env.get("SUPABASE_URL");
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
       console.log("Environment check:", {
         hasAppSecret: !!appSecret,
-        hasAccessToken: !!fbAccessToken,
         hasSupabaseUrl: !!supabaseUrl,
         hasSupabaseKey: !!supabaseKey
       });
 
-      if (!appSecret || !fbAccessToken || !supabaseUrl || !supabaseKey) {
+      if (!appSecret || !supabaseUrl || !supabaseKey) {
         throw new Error("Missing required environment variables");
       }
 
@@ -132,16 +130,37 @@ serve(async (req) => {
           const leadData = change.value;
           console.log("Lead data from change:", leadData);
           
-          if (!leadData.form_id || !leadData.leadgen_id) {
-            console.log("Missing form_id or leadgen_id, skipping");
+          if (!leadData.form_id || !leadData.leadgen_id || !leadData.page_id) {
+            console.log("Missing form_id, leadgen_id, or page_id, skipping");
             continue;
           }
 
           try {
+            console.log(`Fetching saved access token for page: ${leadData.page_id}`);
+            
+            // קבלת הטוקן השמור עבור הדף הזה
+            const { data: tokenData, error: tokenError } = await supabase
+              .from('facebook_tokens')
+              .select('access_token')
+              .eq('page_id', leadData.page_id)
+              .single();
+
+            if (tokenError || !tokenData) {
+              console.log("❌ No saved access token found for page:", leadData.page_id);
+              results.push({
+                success: false,
+                message: `לא נמצא טוקן שמור עבור דף ${leadData.page_id}`,
+              });
+              continue;
+            }
+
+            const pageAccessToken = tokenData.access_token;
+            console.log(`✅ Found access token for page ${leadData.page_id}`);
+
             console.log(`Fetching lead details for leadgen_id: ${leadData.leadgen_id}`);
             
             const leadRes = await fetch(
-              `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${fbAccessToken}`
+              `https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${pageAccessToken}`
             );
 
             if (!leadRes.ok) {
