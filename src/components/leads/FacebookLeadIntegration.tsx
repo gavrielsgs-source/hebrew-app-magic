@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { FacebookTokenStorage } from "./FacebookTokenStorage";
 
 declare global {
@@ -211,6 +212,35 @@ export function FacebookLeadIntegration() {
     }
   };
 
+  const checkTokenStatus = async () => {
+    if (!tokens || tokens.length === 0) {
+      addDebugLog("No tokens to check");
+      return;
+    }
+
+    addDebugLog("Checking token validity...");
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('check-facebook-tokens');
+      
+      if (error) {
+        addDebugLog(`Error checking tokens: ${error.message}`);
+      } else {
+        addDebugLog(`Token check completed: ${JSON.stringify(data)}`);
+        if (data.results) {
+          data.results.forEach((result: any) => {
+            addDebugLog(`${result.page_name}: ${result.status} - ${result.message}`);
+          });
+        }
+      }
+    } catch (error) {
+      addDebugLog(`Error invoking token check: ${error}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const testFacebookAPI = async () => {
     if (!fbInitialized) {
       addDebugLog("Cannot test - Facebook SDK not initialized");
@@ -259,6 +289,14 @@ export function FacebookLeadIntegration() {
           disabled={loading}
         >
           איפוס חיבור
+        </button>
+        
+        <button
+          className="btn-secondary"
+          onClick={checkTokenStatus}
+          disabled={!tokens || tokens.length === 0 || loading}
+        >
+          בדיקת תקפות טוקנים
         </button>
         
         <button
