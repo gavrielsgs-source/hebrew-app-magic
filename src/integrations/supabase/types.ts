@@ -229,6 +229,36 @@ export type Database = {
         }
         Relationships: []
       }
+      facebook_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          page_id: string
+          page_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          page_id: string
+          page_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          page_id?: string
+          page_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           agency_id: string | null
