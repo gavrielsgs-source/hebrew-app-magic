@@ -78,6 +78,29 @@ export function FacebookLeadIntegration() {
     });
   }
 
+  const exchangeForLongLivedToken = async (shortLivedToken: string) => {
+    try {
+      const appId = "2106125989900776"; // Your Facebook App ID
+      const appSecret = "c3f5f5a4d7a2b1a"; // This should ideally come from your backend
+      
+      const response = await fetch(
+        `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`
+      );
+      
+      const data = await response.json();
+      addDebugLog(`Long-lived token response: ${JSON.stringify(data)}`);
+      
+      if (data.access_token) {
+        return data.access_token;
+      } else {
+        throw new Error('Failed to get long-lived token');
+      }
+    } catch (error) {
+      addDebugLog(`Error exchanging for long-lived token: ${error}`);
+      return shortLivedToken; // Fallback to short-lived token
+    }
+  };
+
   async function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
     return fbApi(`/${pageId}/subscribed_apps`, "POST", {
       access_token: pageAccessToken,
@@ -106,9 +129,13 @@ export function FacebookLeadIntegration() {
 
         (async () => {
           try {
+            addDebugLog("Exchanging user token for long-lived version...");
+            const longLivedUserToken = await exchangeForLongLivedToken(userAccessToken);
+            addDebugLog("Successfully obtained long-lived user token");
+
             addDebugLog("Fetching user pages...");
             const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts", "GET", {
-              access_token: userAccessToken,
+              access_token: longLivedUserToken,
             });
             addDebugLog(`Found ${pagesResponse.data.length} pages`);
 
@@ -116,15 +143,19 @@ export function FacebookLeadIntegration() {
               addDebugLog(`Processing page: ${page.name} (${page.id})`);
               setConnectionStatus(`מעבד דף: ${page.name}`);
               
-              // שמירת הטוקן של הדף
-              await saveUserAccessToken(page.access_token, page.id, page.name);
-              addDebugLog(`Saved token for page: ${page.name}`);
+              // Exchange page token for long-lived version
+              addDebugLog(`Exchanging page token for long-lived version: ${page.name}`);
+              const longLivedPageToken = await exchangeForLongLivedToken(page.access_token);
+              
+              // שמירת הטוקן הארוך של הדף
+              await saveUserAccessToken(longLivedPageToken, page.id, page.name);
+              addDebugLog(`Saved long-lived token for page: ${page.name}`);
 
-              await subscribePageToWebhook(page.id, page.access_token);
+              await subscribePageToWebhook(page.id, longLivedPageToken);
               addDebugLog(`Subscribed page ${page.name} to webhook`);
 
               const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page.id}/leadgen_forms`, "GET", {
-                access_token: page.access_token,
+                access_token: longLivedPageToken,
               });
               
               const leadForms = leadFormsResponse.data || [];
@@ -132,7 +163,7 @@ export function FacebookLeadIntegration() {
 
               for (const form of leadForms) {
                 const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
-                  access_token: page.access_token,
+                  access_token: longLivedPageToken,
                 });
                 const leads = leadsResponse.data || [];
                 addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
