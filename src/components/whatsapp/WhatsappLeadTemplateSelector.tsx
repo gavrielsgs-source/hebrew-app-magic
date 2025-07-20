@@ -44,23 +44,39 @@ export function WhatsappLeadTemplateSelector({
         
         // Filter lead templates
         const leadTemplatesFromStorage = parsedTemplates
-          .filter((t: any) => t.type === 'lead' && t.templateContent && t.templateContent.trim())
-          .map((stored: any) => ({
-            id: stored.id,
-            name: stored.name,
-            description: stored.description,
-            type: 'lead' as const,
-            templateContent: stored.templateContent,
-            generateMessage: (leadName: string, leadSource?: string) => {
-              const content = stored.templateContent;
-              return content
-                .replace(/\{\{leadName\}\}/g, leadName || '')
-                .replace(/\{\{leadSource\}\}/g, leadSource || '')
-                .replace(/\$\{leadName\}/g, leadName || '')
-                .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                         leadSource ? ` דרך ${leadSource}` : '');
-            }
-          }));
+          .filter((t: any) => t.type === 'lead')
+          .map((stored: any) => {
+            console.log('Processing lead template:', stored.name, 'Content:', stored.templateContent);
+            return {
+              id: stored.id,
+              name: stored.name,
+              description: stored.description,
+              type: 'lead' as const,
+              templateContent: stored.templateContent || '',
+              generateMessage: (leadName: string, leadSource?: string) => {
+                const content = stored.templateContent || '';
+                console.log('Generating message with content:', content);
+                if (!content) {
+                  return `היי ${leadName}! 👋
+
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`;
+                }
+                return content
+                  .replace(/\{\{leadName\}\}/g, leadName || '')
+                  .replace(/\{\{leadSource\}\}/g, leadSource || '')
+                  .replace(/\$\{leadName\}/g, leadName || '')
+                  .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+                           leadSource ? ` דרך ${leadSource}` : '');
+              }
+            };
+          });
 
         // Filter car templates  
         const carTemplatesFromStorage = parsedTemplates
