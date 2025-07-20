@@ -40,21 +40,23 @@ export function WhatsappLeadTemplateSelector({
         const parsedTemplates = JSON.parse(storedTemplates);
         console.log('Parsed templates:', parsedTemplates);
         
-        // Filter only lead templates
+        // Filter only lead templates and ensure they have content
         const leadTemplates = parsedTemplates
-          .filter((t: any) => t.type === 'lead')
+          .filter((t: any) => t.type === 'lead' && t.templateContent && t.templateContent.trim())
           .map((stored: any) => ({
             id: stored.id,
             name: stored.name,
             description: stored.description,
             type: 'lead' as const,
-            templateContent: stored.templateContent || '',
+            templateContent: stored.templateContent,
             generateMessage: (leadName: string, leadSource?: string) => {
-              const content = stored.templateContent || '';
-              if (!content) return '';
+              const content = stored.templateContent;
               return content
                 .replace(/\{\{leadName\}\}/g, leadName || '')
-                .replace(/\{\{leadSource\}\}/g, leadSource || '');
+                .replace(/\{\{leadSource\}\}/g, leadSource || '')
+                .replace(/\$\{leadName\}/g, leadName || '')
+                .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+                         leadSource ? ` דרך ${leadSource}` : '');
             }
           }));
         
