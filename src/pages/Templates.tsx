@@ -34,25 +34,23 @@ export default function Templates() {
 
   useEffect(() => {
     const savedTemplates = localStorage.getItem('whatsapp-templates');
-    if (savedTemplates) {
-      const parsed = JSON.parse(savedTemplates);
-      // Always load default templates if saved templates are empty or don't exist
-      if (!parsed || parsed.length === 0) {
-        setTemplates(allDefaultTemplates);
-        localStorage.setItem('whatsapp-templates', JSON.stringify(allDefaultTemplates));
-      } else {
-        // Merge saved templates with defaults, ensuring all templates have the required structure
-        const validTemplates = parsed.map((template: any) => ({
-          ...template,
-          templateContent: template.templateContent || '', // Ensure templateContent exists
-          generateMessage: template.generateMessage || (() => template.templateContent || ''),
-        }));
-        setTemplates(validTemplates);
-      }
-    } else {
-      // No saved templates, load defaults
+    console.log('Current localStorage templates:', savedTemplates);
+    
+    // Force reset localStorage to include templateContent for existing templates
+    const shouldReset = !savedTemplates || !savedTemplates.includes('templateContent');
+    
+    if (shouldReset) {
+      console.log('Resetting localStorage with updated templates');
       setTemplates(allDefaultTemplates);
       localStorage.setItem('whatsapp-templates', JSON.stringify(allDefaultTemplates));
+    } else {
+      const parsed = JSON.parse(savedTemplates);
+      // Always ensure templates have templateContent
+      const validTemplates = parsed.map((template: any) => ({
+        ...template,
+        templateContent: template.templateContent || '', 
+      }));
+      setTemplates(validTemplates);
     }
   }, []);
 

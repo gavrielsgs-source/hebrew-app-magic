@@ -14,6 +14,18 @@ export const whatsappTemplates: WhatsappTemplate[] = [
     name: "פרטי רכב בסיסיים",
     description: "הודעה פשוטה עם פרטי הרכב העיקריים",
     type: 'car' as const,
+    templateContent: `שלום! 👋
+
+רציתי לשתף אותך בפרטים על הרכב הזה:
+
+🚗 *\${car.make} \${car.model} \${car.year}*
+💰 מחיר: \${car.price ? \`₪\${car.price.toLocaleString()}\` : 'בהתאם להצעה'}
+📏 קילומטר: \${car.mileage ? \`\${car.mileage.toLocaleString()} ק"מ\` : 'לא צוין'}
+
+מעוניין לשמוע עוד פרטים או לתאם צפייה?
+
+בברכה,
+צוות המכירות`,
     generateMessage: (car) => `שלום! 👋
 
 רציתי לשתף אותך בפרטים על הרכב הזה:

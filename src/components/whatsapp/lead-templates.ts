@@ -16,6 +16,16 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     name: "הכרות עם לקוח פוטנציאלי",
     description: "הודעת היכרות ראשונית עם לקוח שפנה אלינו",
     type: 'lead' as const,
+    templateContent: `היי {{leadName}}! 👋
+
+קיבלנו את הפנייה שלך{{leadSource}} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`,
     generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
 
 קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
