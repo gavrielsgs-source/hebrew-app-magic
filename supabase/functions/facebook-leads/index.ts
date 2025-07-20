@@ -29,11 +29,14 @@ async function verifyFacebookSignature(body: string, signature: string, secret: 
 }
 
 serve(async (req) => {
+  // לוג פשוט כדי לראות אם בכלל מגיעות קריאות
+  console.log("🔥 WEBHOOK CALLED! 🔥");
   console.log("=== Facebook Leads Webhook Called ===");
   console.log("Method:", req.method);
   console.log("URL:", req.url);
   console.log("Headers:", Object.fromEntries(req.headers.entries()));
   console.log("Timestamp:", new Date().toISOString());
+  console.log("🔥 END INITIAL LOG 🔥");
 
   // Handle preflight
   if (req.method === "OPTIONS") {
