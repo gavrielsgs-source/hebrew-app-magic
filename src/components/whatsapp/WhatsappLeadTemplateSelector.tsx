@@ -48,14 +48,13 @@ export function WhatsappLeadTemplateSelector({
             name: stored.name,
             description: stored.description,
             type: 'lead' as const,
-            templateContent: stored.templateContent || stored.template || '',
+            templateContent: stored.templateContent || '',
             generateMessage: (leadName: string, leadSource?: string) => {
-              const content = stored.templateContent || stored.template || '';
+              const content = stored.templateContent || '';
+              if (!content) return '';
               return content
                 .replace(/\{\{leadName\}\}/g, leadName || '')
-                .replace(/\{\{leadSource\}\}/g, leadSource || '')
-                .replace(/\$\{leadName\}/g, leadName || '')
-                .replace(/\$\{leadSource\}/g, leadSource || '');
+                .replace(/\{\{leadSource\}\}/g, leadSource || '');
             }
           }));
         
