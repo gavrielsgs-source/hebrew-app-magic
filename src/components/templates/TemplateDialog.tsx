@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Plus, Sparkles, Car, User } from "lucide-react";
+import { Plus, Sparkles, Car, User, AlertCircle } from "lucide-react";
 import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 
 interface TemplateDialogProps {
@@ -91,7 +91,8 @@ export function TemplateDialog({
             .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, car.engine_size || 'לא צוין')
             .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, car.transmission || 'לא צוין')
             .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, car.fuel_type || 'לא צוין');
-        }
+        },
+        templateContent: content // Store the template content for editing
       });
     } else {
       onTemplateChange({
@@ -102,9 +103,60 @@ export function TemplateDialog({
             .replace(/\$\{leadName\}/g, leadName || '')
             .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
                      leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
-        }
+        },
+        templateContent: content // Store the template content for editing
       });
     }
+  };
+
+  const handleTypeChange = (newType: 'car' | 'lead') => {
+    // When changing type, update template content and provide default content
+    const defaultContent = newType === 'car' 
+      ? `שלום,
+
+רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:
+
+*\${car.make} \${car.model} \${car.year}*
+מחיר: \${car.price ? \`₪\${car.price.toLocaleString()}\` : 'בהתאם להצעה'}
+ק"מ: \${car.mileage ? \`\${car.mileage.toLocaleString()} ק"מ\` : 'לא צוין'}
+צבע: \${car.exterior_color || 'לא צוין'}
+
+נשמח לתאם פגישה לצפייה ברכב.
+
+בברכה,
+צוות המכירות`
+      : `היי \${leadName}! 👋
+
+קיבלנו את הפנייה שלך\${leadSource ? \` דרך \${leadSource}\` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`;
+
+    setTemplateContent(defaultContent);
+    
+    onTemplateChange({
+      ...newTemplate,
+      type: newType,
+      templateContent: defaultContent,
+      generateMessage: newType === 'car' 
+        ? (car: any) => defaultContent
+            .replace(/\$\{car\.make\}/g, car.make || '')
+            .replace(/\$\{car\.model\}/g, car.model || '')
+            .replace(/\$\{car\.year\}/g, car.year || '')
+            .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 
+                     car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה')
+            .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g,
+                     car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין')
+            .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, car.exterior_color || 'לא צוין')
+        : (leadName: string, leadSource?: string) => defaultContent
+            .replace(/\$\{leadName\}/g, leadName || '')
+            .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+                     leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו')
+    });
   };
 
   const handleSave = () => {
@@ -117,8 +169,30 @@ export function TemplateDialog({
       return;
     }
 
+    if (!templateContent.trim()) {
+      toast({
+        title: "יש למלא את תוכן התבנית",
+        description: "אנא הכנס את תוכן התבנית.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onSave();
+    toast({
+      title: isNew ? "התבנית נוצרה בהצלחה" : "התבנית עודכנה בהצלחה",
+      description: `התבנית "${newTemplate.name}" ${isNew ? 'נוצרה' : 'עודכנה'} בהצלחה וזמינה לשימוש.`,
+    });
   };
+
+  // Filter template tags based on type
+  const relevantTags = templateTags.filter(tag => {
+    if (newTemplate.type === 'car') {
+      return tag.includes('car.');
+    } else {
+      return tag.includes('leadName') || tag.includes('leadSource');
+    }
+  });
 
   return (
     <SwipeDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -183,12 +257,13 @@ export function TemplateDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-right text-sm font-medium">
+            <Label htmlFor="type" className="text-right text-sm font-medium flex items-center gap-2">
               סוג התבנית
+              <AlertCircle className="h-4 w-4 text-blue-500" />
             </Label>
             <Select
               value={newTemplate.type}
-              onValueChange={(value: 'car' | 'lead') => onTemplateChange({ ...newTemplate, type: value })}
+              onValueChange={handleTypeChange}
             >
               <SelectTrigger className="text-right" dir="rtl">
                 <SelectValue placeholder="בחר סוג תבנית" />
@@ -197,17 +272,26 @@ export function TemplateDialog({
                 <SelectItem value="car">
                   <div className="flex items-center gap-2">
                     <Car className="h-4 w-4" />
-                    תבנית רכב
+                    <div className="text-right">
+                      <div className="font-medium">תבנית רכב</div>
+                      <div className="text-xs text-gray-500">לשליחת פרטי רכבים ללקוחות</div>
+                    </div>
                   </div>
                 </SelectItem>
                 <SelectItem value="lead">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    תבנית לקוח
+                    <div className="text-right">
+                      <div className="font-medium">תבנית לקוח</div>
+                      <div className="text-xs text-gray-500">ליצירת קשר כללית עם לקוחות</div>
+                    </div>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500 text-right">
+              שינוי סוג התבנית יאפס את התוכן למבנה המתאים
+            </p>
           </div>
           
           <div className="space-y-2">
@@ -222,8 +306,8 @@ export function TemplateDialog({
                 isMobile ? 'min-h-[150px]' : 'min-h-[200px]'
               }`}
               placeholder={newTemplate.type === 'car' ? 
-                "שלום,&#10;&#10;רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:&#10;&#10;*${car.make} ${car.model} ${car.year}*&#10;מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}&#10;..." :
-                "שלום ${leadName},&#10;&#10;[ערוך כאן את ההודעה שלך]&#10;&#10;בברכה,&#10;צוות המכירות"
+                "שלום,\n\nרצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:\n\n*${car.make} ${car.model} ${car.year}*\nמחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}\n..." :
+                "שלום ${leadName},\n\n[ערוך כאן את ההודעה שלך]\n\nבברכה,\nצוות המכירות"
               }
               dir="rtl"
             />
@@ -231,11 +315,11 @@ export function TemplateDialog({
           
           <div className="space-y-3">
             <div className="flex items-center gap-2 justify-end">
-              <span className="text-sm font-medium">תגיות זמינות:</span>
+              <span className="text-sm font-medium">תגיות זמינות עבור {newTemplate.type === 'car' ? 'רכבים' : 'לקוחות'}:</span>
               <Plus className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className={`flex flex-wrap gap-2 justify-end ${isMobile ? 'max-h-20 overflow-y-auto' : ''}`}>
-              {templateTags.map((tag) => (
+              {relevantTags.map((tag) => (
                 <Badge
                   key={tag}
                   variant="outline"

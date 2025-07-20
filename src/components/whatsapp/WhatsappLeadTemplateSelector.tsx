@@ -7,7 +7,7 @@ import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
-import { WhatsappLeadTemplate } from "./lead-templates";
+import { WhatsappLeadTemplate, UnifiedTemplate } from "./lead-templates";
 
 interface WhatsappLeadTemplateSelectorProps {
   leadName: string;
@@ -24,33 +24,38 @@ export function WhatsappLeadTemplateSelector({
   leadId,
   onClose 
 }: WhatsappLeadTemplateSelectorProps) {
-  const [templates, setTemplates] = useState<WhatsappLeadTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<WhatsappLeadTemplate | null>(null);
+  const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("templates");
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
 
-  // Load templates from localStorage
+  // Load templates from localStorage - make sure we get both types but filter for lead templates
   useEffect(() => {
     const storedTemplates = localStorage.getItem("whatsapp-templates");
     if (storedTemplates) {
       try {
         const parsedTemplates = JSON.parse(storedTemplates);
-        const leadTemplates = parsedTemplates.filter((t: any) => t.type === 'lead').map((stored: any) => ({
-          id: stored.id,
-          name: stored.name,
-          description: stored.description,
-          generateMessage: stored.generateMessage || ((leadName: string, leadSource?: string) => {
-            // If there's no generateMessage function, try to use templateContent or fallback
-            if (stored.templateContent) {
-              return stored.templateContent
-                .replace(/\$\{leadName\}/g, leadName || '')
-                .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                         leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
-            }
-            // Fallback for default templates
-            return `היי ${leadName}! 👋
+        // Filter only lead templates and ensure they have the correct structure
+        const leadTemplates = parsedTemplates
+          .filter((t: any) => t.type === 'lead')
+          .map((stored: any) => ({
+            id: stored.id,
+            name: stored.name,
+            description: stored.description,
+            type: 'lead' as const,
+            generateMessage: stored.generateMessage ? 
+              // If we have a stored function, try to recreate it
+              ((leadName: string, leadSource?: string) => {
+                if (stored.templateContent) {
+                  return stored.templateContent
+                    .replace(/\$\{leadName\}/g, leadName || '')
+                    .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+                             leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
+                }
+                // Fallback for templates without templateContent
+                return `היי ${leadName}! 👋
 
 קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
 
@@ -60,15 +65,70 @@ export function WhatsappLeadTemplateSelector({
 
 בברכה,
 צוות המכירות`;
-          })
-        }));
+              }) :
+              // Default function for templates without generateMessage
+              ((leadName: string, leadSource?: string) => {
+                return `היי ${leadName}! 👋
+
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`;
+              })
+          }));
+        
+        console.log('Lead templates loaded:', leadTemplates);
         setTemplates(leadTemplates);
+        
         if (leadTemplates.length > 0) {
           setSelectedTemplate(leadTemplates[0]);
         }
       } catch (error) {
         console.error("Error loading templates:", error);
+        // If there's an error, set a default template
+        const defaultTemplate: UnifiedTemplate = {
+          id: 'default_intro',
+          name: 'הכרות עם לקוח פוטנציאלי',
+          description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
+          type: 'lead' as const,
+          generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
+
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`
+        };
+        setTemplates([defaultTemplate]);
+        setSelectedTemplate(defaultTemplate);
       }
+    } else {
+      // No stored templates, provide default
+      const defaultTemplate: UnifiedTemplate = {
+        id: 'default_intro',
+        name: 'הכרות עם לקוח פוטנציאלי',
+        description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
+        type: 'lead' as const,
+        generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
+
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`
+      };
+      setTemplates([defaultTemplate]);
+      setSelectedTemplate(defaultTemplate);
     }
   }, []);
 
@@ -77,8 +137,22 @@ export function WhatsappLeadTemplateSelector({
       return customMessage;
     }
     
-    if (selectedTemplate) {
-      return selectedTemplate.generateMessage(leadName, leadSource);
+    if (selectedTemplate && typeof selectedTemplate.generateMessage === 'function') {
+      try {
+        return selectedTemplate.generateMessage(leadName, leadSource);
+      } catch (error) {
+        console.error('Error generating message:', error);
+        return `היי ${leadName}! 👋
+
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`;
+      }
     }
 
     return "";
@@ -159,35 +233,44 @@ export function WhatsappLeadTemplateSelector({
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
         <TabsList className={`w-full ${isMobile ? 'h-auto grid-cols-2 text-xs' : 'grid grid-cols-2'}`}>
-          <TabsTrigger value="templates" className={isMobile ? "text-xs" : ""}>תבניות</TabsTrigger>
+          <TabsTrigger value="templates" className={isMobile ? "text-xs" : ""}>
+            תבניות ({templates.length})
+          </TabsTrigger>
           <TabsTrigger value="custom" className={isMobile ? "text-xs" : ""}>הודעה מותאמת</TabsTrigger>
         </TabsList>
         
         <TabsContent value="templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
-          <div className="grid gap-3">
-            {templates.map((template) => (
-              <div
-                key={template.id}
-                className={`border rounded-lg cursor-pointer transition-colors ${
-                  isMobile ? 'p-3' : 'p-4'
-                } ${
-                  selectedTemplate?.id === template.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-                onClick={() => setSelectedTemplate(template)}
-              >
-                <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
-                  {template.name}
-                </h3>
-                <p className={`text-gray-600 text-right mt-1 ${
-                  isMobile ? 'text-xs' : 'text-sm'
-                }`}>
-                  {template.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          {templates.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>לא נמצאו תבניות לקוחות.</p>
+              <p className="text-sm mt-2">צור תבניות חדשות בעמוד התבניות.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {templates.map((template) => (
+                <div
+                  key={template.id}
+                  className={`border rounded-lg cursor-pointer transition-colors ${
+                    isMobile ? 'p-3' : 'p-4'
+                  } ${
+                    selectedTemplate?.id === template.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedTemplate(template)}
+                >
+                  <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
+                    {template.name}
+                  </h3>
+                  <p className={`text-gray-600 text-right mt-1 ${
+                    isMobile ? 'text-xs' : 'text-sm'
+                  }`}>
+                    {template.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="custom" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
@@ -213,6 +296,7 @@ export function WhatsappLeadTemplateSelector({
           className={`bg-green-600 hover:bg-green-700 text-white ${
             isMobile ? 'flex-1 order-1' : 'flex-1'
           }`}
+          disabled={!message.trim()}
         >
           שלח בוואטסאפ ל{leadName}
         </Button>

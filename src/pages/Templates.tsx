@@ -8,6 +8,7 @@ import { whatsappTemplates, WhatsappTemplate } from "@/components/whatsapp/whats
 import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Templates() {
   const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
@@ -18,10 +19,12 @@ export default function Templates() {
     id: '',
     name: '',
     description: '',
-    type: 'car',
-    generateMessage: () => ''
+    type: 'lead',
+    generateMessage: () => '',
+    templateContent: ''
   });
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   // Combine all default templates
   const allDefaultTemplates: UnifiedTemplate[] = [
@@ -38,7 +41,13 @@ export default function Templates() {
         setTemplates(allDefaultTemplates);
         localStorage.setItem('whatsapp-templates', JSON.stringify(allDefaultTemplates));
       } else {
-        setTemplates(parsed);
+        // Merge saved templates with defaults, ensuring all templates have the required structure
+        const validTemplates = parsed.map((template: any) => ({
+          ...template,
+          templateContent: template.templateContent || '', // Ensure templateContent exists
+          generateMessage: template.generateMessage || (() => template.templateContent || ''),
+        }));
+        setTemplates(validTemplates);
       }
     } else {
       // No saved templates, load defaults
@@ -50,6 +59,7 @@ export default function Templates() {
   const saveTemplates = (newTemplates: UnifiedTemplate[]) => {
     setTemplates(newTemplates);
     localStorage.setItem('whatsapp-templates', JSON.stringify(newTemplates));
+    console.log('Templates saved to localStorage:', newTemplates);
   };
 
   const addTemplate = (template: Omit<UnifiedTemplate, 'id'>) => {
@@ -57,7 +67,9 @@ export default function Templates() {
       ...template,
       id: Date.now().toString()
     };
-    saveTemplates([...templates, newTemplate]);
+    const updatedTemplates = [...templates, newTemplate];
+    saveTemplates(updatedTemplates);
+    console.log('Template added:', newTemplate);
   };
 
   const updateTemplate = (updatedTemplate: UnifiedTemplate) => {
@@ -65,20 +77,35 @@ export default function Templates() {
       t.id === updatedTemplate.id ? updatedTemplate : t
     );
     saveTemplates(newTemplates);
+    console.log('Template updated:', updatedTemplate);
   };
 
   const deleteTemplate = (templateId: string) => {
-    const newTemplates = templates.filter(t => t.id !== templateId);
-    saveTemplates(newTemplates);
+    const templateToDelete = templates.find(t => t.id === templateId);
+    if (templateToDelete) {
+      const newTemplates = templates.filter(t => t.id !== templateId);
+      saveTemplates(newTemplates);
+      toast({
+        title: "התבנית נמחקה",
+        description: `התבנית "${templateToDelete.name}" נמחקה בהצלחה.`,
+      });
+    }
   };
 
   const resetToDefaults = () => {
     saveTemplates(allDefaultTemplates);
+    toast({
+      title: "התבניות אופסו",
+      description: "כל התבניות חזרו להגדרות המקוריות.",
+    });
   };
 
   const handleTemplateSelect = (template: UnifiedTemplate) => {
     setSelectedTemplate(template);
-    setNewTemplate(template);
+    setNewTemplate({
+      ...template,
+      templateContent: template.templateContent || ''
+    });
     setIsNew(false);
     setIsDialogOpen(true);
   };
@@ -89,24 +116,25 @@ export default function Templates() {
       id: '',
       name: '',
       description: '',
-      type: 'car',
-      generateMessage: (input: any) => typeof input === 'string' ? 
-        `היי ${input}! 👋
+      type: 'lead',
+      templateContent: `היי \${leadName}! 👋
 
-קיבלנו את הפנייה שלך וראינו שאתה מתעניין ברכב.
+קיבלנו את הפנייה שלך\${leadSource ? \` דרך \${leadSource}\` : ''} וראינו שאתה מתעניין ברכב.
 
 מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
 בברכה,
-צוות המכירות` : 
-        `שלום,
+צוות המכירות`,
+      generateMessage: (leadName: string, leadSource?: string) => 
+        `היי ${leadName}! 👋
 
-רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
 
-*${input.make} ${input.model} ${input.year}*
-מחיר: ${input.price ? `₪${input.price.toLocaleString()}` : 'בהתאם להצעה'}
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
 בברכה,
 צוות המכירות`
@@ -134,6 +162,10 @@ export default function Templates() {
     '{{leadName}}', '{{leadSource}}'
   ];
 
+  // Separate templates by type for better organization
+  const carTemplates = templates.filter(t => t.type === 'car');
+  const leadTemplates = templates.filter(t => t.type === 'lead');
+
   if (isMobile) {
     return (
       <MobileContainer>
@@ -144,15 +176,38 @@ export default function Templates() {
             canAddTemplate={true}
           />
 
-          <div className="space-y-4">
-            {templates.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onEdit={() => handleTemplateSelect(template)}
-                onDelete={() => deleteTemplate(template.id)}
-              />
-            ))}
+          <div className="space-y-6">
+            {leadTemplates.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-right">תבניות לקוחות ({leadTemplates.length})</h3>
+                <div className="space-y-4">
+                  {leadTemplates.map((template) => (
+                    <TemplateCard
+                      key={template.id}
+                      template={template}
+                      onEdit={() => handleTemplateSelect(template)}
+                      onDelete={() => deleteTemplate(template.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {carTemplates.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-right">תבניות רכבים ({carTemplates.length})</h3>
+                <div className="space-y-4">
+                  {carTemplates.map((template) => (
+                    <TemplateCard
+                      key={template.id}
+                      template={template}
+                      onEdit={() => handleTemplateSelect(template)}
+                      onDelete={() => deleteTemplate(template.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <TemplateDialog
@@ -175,7 +230,7 @@ export default function Templates() {
         <CardHeader>
           <CardTitle>ניהול תבניות וואטסאפ</CardTitle>
           <CardDescription>
-            צור ונהל תבניות הודעות לשליחה מהירה ללקוחות
+            צור ונהל תבניות הודעות לשליחה מהירה ללקוחות ולרכבים
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -185,15 +240,42 @@ export default function Templates() {
             canAddTemplate={true}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onEdit={() => handleTemplateSelect(template)}
-                onDelete={() => deleteTemplate(template.id)}
-              />
-            ))}
+          <div className="space-y-8">
+            {leadTemplates.length > 0 && (
+              <div>
+                <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
+                  תבניות לקוחות ({leadTemplates.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {leadTemplates.map((template) => (
+                    <TemplateCard
+                      key={template.id}
+                      template={template}
+                      onEdit={() => handleTemplateSelect(template)}
+                      onDelete={() => deleteTemplate(template.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {carTemplates.length > 0 && (
+              <div>
+                <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
+                  תבניות רכבים ({carTemplates.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {carTemplates.map((template) => (
+                    <TemplateCard
+                      key={template.id}
+                      template={template}
+                      onEdit={() => handleTemplateSelect(template)}
+                      onDelete={() => deleteTemplate(template.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <TemplateDialog
