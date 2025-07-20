@@ -50,9 +50,12 @@ export function WhatsappLeadTemplateSelector({
               ((leadName: string, leadSource?: string) => {
                 if (stored.templateContent) {
                   return stored.templateContent
+                    .replace(/\{\{leadName\}\}/g, leadName || '')
+                    .replace(/\{\{leadSource\}\}/g, leadSource || '')
+                    // Also handle template literal syntax for backwards compatibility
                     .replace(/\$\{leadName\}/g, leadName || '')
                     .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                             leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
+                             leadSource ? ` דרך ${leadSource}` : '');
                 }
                 // Fallback for templates without templateContent
                 return `היי ${leadName}! 👋
