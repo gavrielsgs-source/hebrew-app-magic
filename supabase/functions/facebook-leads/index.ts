@@ -138,10 +138,10 @@ serve(async (req) => {
           try {
             console.log(`Fetching saved access token for page: ${leadData.page_id}`);
             
-            // קבלת הטוקן השמור עבור הדף הזה
+            // קבלת הטוקן והמשתמש השמור עבור הדף הזה
             const { data: tokenData, error: tokenError } = await supabase
               .from('facebook_tokens')
-              .select('access_token')
+              .select('access_token, user_id')
               .eq('page_id', leadData.page_id)
               .single();
 
@@ -215,25 +215,14 @@ serve(async (req) => {
             console.log("Formatted lead:", formattedLead);
 
             if (formattedLead.phone || formattedLead.email) {
-              // Get the first admin user to assign the lead to
-              const { data: adminUser, error: adminError } = await supabase
-                .from("profiles")
-                .select("id")
-                .limit(1)
-                .single();
-
-              if (adminError) {
-                console.log("Error fetching admin user:", adminError);
-                throw new Error(`Failed to get admin user: ${adminError.message}`);
-              }
-
-              console.log("Admin user found:", adminUser);
+              // השתמש במשתמש שהוגדר לטוקן הפייסבוק
+              console.log("Using user_id from token:", tokenData.user_id);
 
               const { data: lead, error } = await supabase
                 .from("leads")
                 .insert({
                   ...formattedLead,
-                  user_id: adminUser.id,
+                  user_id: tokenData.user_id,
                 })
                 .select()
                 .single();
