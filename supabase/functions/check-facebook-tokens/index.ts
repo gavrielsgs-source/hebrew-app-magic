@@ -62,7 +62,8 @@ serve(async (req) => {
   }
 
   try {
-    console.log("=== Checking Facebook Tokens ===");
+    console.log("🔍 === Checking Facebook Tokens ===");
+    console.log("🕐 Timestamp:", new Date().toISOString());
     
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -74,15 +75,29 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // קבלת כל הטוקנים
+    console.log("📋 Fetching all Facebook tokens...");
     const { data: tokens, error: fetchError } = await supabase
       .from('facebook_tokens')
-      .select('*');
+      .select('*')
+      .order('created_at', { ascending: false });
     
     if (fetchError) {
+      console.error("❌ Error fetching tokens:", fetchError);
       throw fetchError;
     }
     
-    console.log(`Found ${tokens?.length || 0} tokens to check`);
+    console.log(`📊 Found ${tokens?.length || 0} tokens to check`);
+    
+    if (tokens && tokens.length > 0) {
+      console.log("📋 Token details:");
+      tokens.forEach((token, index) => {
+        console.log(`  ${index + 1}. Page: ${token.page_name} (${token.page_id})`);
+        console.log(`     User: ${token.user_id}`);
+        console.log(`     Created: ${token.created_at}`);
+        console.log(`     Updated: ${token.updated_at}`);
+        console.log(`     Token preview: ${token.access_token.substring(0, 20)}...`);
+      });
+    }
     
     const results = [];
     

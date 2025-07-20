@@ -36,6 +36,18 @@ serve(async (req) => {
   console.log("URL:", req.url);
   console.log("Headers:", Object.fromEntries(req.headers.entries()));
   console.log("Timestamp:", new Date().toISOString());
+  
+  // בדיקה אם זה POST request עם נתונים
+  if (req.method === "POST") {
+    try {
+      const body = await req.text();
+      console.log("📋 Raw POST Body:", body);
+      console.log("📋 Body Length:", body.length);
+    } catch (error) {
+      console.log("❌ Error reading body:", error);
+    }
+  }
+  
   console.log("🔥 END INITIAL LOG 🔥");
 
   // Handle preflight
