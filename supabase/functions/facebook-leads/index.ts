@@ -33,6 +33,7 @@ serve(async (req) => {
   console.log("Method:", req.method);
   console.log("URL:", req.url);
   console.log("Headers:", Object.fromEntries(req.headers.entries()));
+  console.log("Timestamp:", new Date().toISOString());
 
   // Handle preflight
   if (req.method === "OPTIONS") {
