@@ -90,7 +90,26 @@ export default function Templates() {
       name: '',
       description: '',
       type: 'car',
-      generateMessage: () => ''
+      generateMessage: (input: any) => typeof input === 'string' ? 
+        `היי ${input}! 👋
+
+קיבלנו את הפנייה שלך וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות` : 
+        `שלום,
+
+רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:
+
+*${input.make} ${input.model} ${input.year}*
+מחיר: ${input.price ? `₪${input.price.toLocaleString()}` : 'בהתאם להצעה'}
+
+בברכה,
+צוות המכירות`
     });
     setIsNew(true);
     setIsDialogOpen(true);

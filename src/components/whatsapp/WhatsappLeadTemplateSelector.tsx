@@ -33,7 +33,7 @@ export function WhatsappLeadTemplateSelector({
 
   // Load templates from localStorage
   useEffect(() => {
-    const storedTemplates = localStorage.getItem("whatsappTemplates");
+    const storedTemplates = localStorage.getItem("whatsapp-templates");
     if (storedTemplates) {
       try {
         const parsedTemplates = JSON.parse(storedTemplates);
@@ -41,12 +41,26 @@ export function WhatsappLeadTemplateSelector({
           id: stored.id,
           name: stored.name,
           description: stored.description,
-          generateMessage: (leadName: string, leadSource?: string) => {
-            return stored.templateContent
-              .replace(/\$\{leadName\}/g, leadName || '')
-              .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                       leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
-          }
+          generateMessage: stored.generateMessage || ((leadName: string, leadSource?: string) => {
+            // If there's no generateMessage function, try to use templateContent or fallback
+            if (stored.templateContent) {
+              return stored.templateContent
+                .replace(/\$\{leadName\}/g, leadName || '')
+                .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
+                         leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
+            }
+            // Fallback for default templates
+            return `היי ${leadName}! 👋
+
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`;
+          })
         }));
         setTemplates(leadTemplates);
         if (leadTemplates.length > 0) {

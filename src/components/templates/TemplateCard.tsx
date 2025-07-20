@@ -36,7 +36,16 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   // Generate preview message based on template type
   const generatePreviewMessage = () => {
     try {
-      // Find the original template from the defaults to get the generateMessage function
+      // First try to use the template's generateMessage function directly
+      if (template.generateMessage && typeof template.generateMessage === 'function') {
+        if (template.type === 'car') {
+          return template.generateMessage(mockCar);
+        } else if (template.type === 'lead') {
+          return template.generateMessage(mockLeadName, mockLeadSource);
+        }
+      }
+
+      // Fallback: Try to find in default templates
       const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
       const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
       
@@ -48,7 +57,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
         }
       }
       
-      // Fallback if no original template found or generateMessage is not available
+      // Final fallback
       return "תצוגה מקדימה של ההודעה תופיע כאן";
       
     } catch (error) {

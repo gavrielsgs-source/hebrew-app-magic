@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -180,6 +181,36 @@ export function TemplateDialog({
               dir="rtl"
             />
           </div>
+
+          {isNew && (
+            <div className="space-y-2">
+              <Label htmlFor="type" className="text-right text-sm font-medium">
+                סוג התבנית
+              </Label>
+              <Select
+                value={newTemplate.type}
+                onValueChange={(value: 'car' | 'lead') => onTemplateChange({ ...newTemplate, type: value })}
+              >
+                <SelectTrigger className="text-right" dir="rtl">
+                  <SelectValue placeholder="בחר סוג תבנית" />
+                </SelectTrigger>
+                <SelectContent dir="rtl">
+                  <SelectItem value="car">
+                    <div className="flex items-center gap-2">
+                      <Car className="h-4 w-4" />
+                      תבנית רכב
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="lead">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      תבנית לקוח
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           
           <div className="space-y-2">
             <Label htmlFor="template" className="text-right text-sm font-medium">
