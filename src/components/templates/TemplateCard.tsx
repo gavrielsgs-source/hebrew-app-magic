@@ -36,6 +36,29 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   // Generate preview message based on template type
   const generatePreviewMessage = () => {
     try {
+      // If template has templateContent, use it directly for preview
+      if ((template as any).templateContent && (template as any).templateContent.trim()) {
+        if (template.type === 'car') {
+          // Replace car placeholders with mock data
+          return (template as any).templateContent
+            .replace(/\{\{car\.make\}\}/g, mockCar.make)
+            .replace(/\{\{car\.model\}\}/g, mockCar.model)
+            .replace(/\{\{car\.year\}\}/g, mockCar.year.toString())
+            .replace(/\{\{car\.price\}\}/g, `₪${mockCar.price.toLocaleString()}`)
+            .replace(/\{\{car\.mileage\}\}/g, `${mockCar.mileage.toLocaleString()} ק"מ`)
+            .replace(/\{\{car\.exteriorColor\}\}/g, mockCar.exterior_color)
+            .replace(/\{\{car\.engineSize\}\}/g, mockCar.engine_size)
+            .replace(/\{\{car\.transmission\}\}/g, mockCar.transmission)
+            .replace(/\{\{car\.fuelType\}\}/g, mockCar.fuel_type);
+        } else if (template.type === 'lead') {
+          // Replace lead placeholders with mock data
+          return (template as any).templateContent
+            .replace(/\{\{leadName\}\}/g, mockLeadName)
+            .replace(/\{\{leadSource\}\}/g, mockLeadSource);
+        }
+        return (template as any).templateContent;
+      }
+
       // First try to use the template's generateMessage function directly
       if (template.generateMessage && typeof template.generateMessage === 'function') {
         if (template.type === 'car') {
