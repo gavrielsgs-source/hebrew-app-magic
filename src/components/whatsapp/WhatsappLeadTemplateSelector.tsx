@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,7 +6,7 @@ import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
-import { WhatsappLeadTemplate, UnifiedTemplate } from "./lead-templates";
+import { UnifiedTemplate } from "./lead-templates";
 
 interface WhatsappLeadTemplateSelectorProps {
   leadName: string;
@@ -31,13 +30,17 @@ export function WhatsappLeadTemplateSelector({
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
 
-  // Load templates from localStorage - make sure we get both types but filter for lead templates
+  // Load templates from localStorage
   useEffect(() => {
     const storedTemplates = localStorage.getItem("whatsapp-templates");
+    console.log('Loading templates from localStorage:', storedTemplates);
+    
     if (storedTemplates) {
       try {
         const parsedTemplates = JSON.parse(storedTemplates);
-        // Filter only lead templates and ensure they have the correct structure
+        console.log('Parsed templates:', parsedTemplates);
+        
+        // Filter only lead templates
         const leadTemplates = parsedTemplates
           .filter((t: any) => t.type === 'lead')
           .map((stored: any) => ({
@@ -45,54 +48,46 @@ export function WhatsappLeadTemplateSelector({
             name: stored.name,
             description: stored.description,
             type: 'lead' as const,
-            generateMessage: stored.generateMessage ? 
-              // If we have a stored function, try to recreate it
-              ((leadName: string, leadSource?: string) => {
-                if (stored.templateContent) {
-                  return stored.templateContent
-                    .replace(/\{\{leadName\}\}/g, leadName || '')
-                    .replace(/\{\{leadSource\}\}/g, leadSource || '')
-                    // Also handle template literal syntax for backwards compatibility
-                    .replace(/\$\{leadName\}/g, leadName || '')
-                    .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                             leadSource ? ` דרך ${leadSource}` : '');
-                }
-                // Fallback for templates without templateContent
-                return `היי ${leadName}! 👋
-
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`;
-              }) :
-              // Default function for templates without generateMessage
-              ((leadName: string, leadSource?: string) => {
-                return `היי ${leadName}! 👋
-
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`;
-              })
+            templateContent: stored.templateContent || stored.template || '',
+            generateMessage: (leadName: string, leadSource?: string) => {
+              const content = stored.templateContent || stored.template || '';
+              return content
+                .replace(/\{\{leadName\}\}/g, leadName || '')
+                .replace(/\{\{leadSource\}\}/g, leadSource || '')
+                .replace(/\$\{leadName\}/g, leadName || '')
+                .replace(/\$\{leadSource\}/g, leadSource || '');
+            }
           }));
         
-        console.log('Lead templates loaded:', leadTemplates);
-        setTemplates(leadTemplates);
+        console.log('Lead templates processed:', leadTemplates);
         
         if (leadTemplates.length > 0) {
+          setTemplates(leadTemplates);
           setSelectedTemplate(leadTemplates[0]);
+        } else {
+          // No custom templates found, use default
+          const defaultTemplate: UnifiedTemplate = {
+            id: 'default_intro',
+            name: 'הכרות עם לקוח פוטנציאלי',
+            description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
+            type: 'lead' as const,
+            generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
+
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
+
+מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+
+נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
+
+בברכה,
+צוות המכירות`
+          };
+          setTemplates([defaultTemplate]);
+          setSelectedTemplate(defaultTemplate);
         }
       } catch (error) {
         console.error("Error loading templates:", error);
-        // If there's an error, set a default template
+        // Fallback to default template
         const defaultTemplate: UnifiedTemplate = {
           id: 'default_intro',
           name: 'הכרות עם לקוח פוטנציאלי',
