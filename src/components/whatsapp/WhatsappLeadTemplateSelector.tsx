@@ -34,7 +34,15 @@ export function WhatsappLeadTemplateSelector({
 
   // Load templates from localStorage
   useEffect(() => {
+    // Force clear localStorage if templates don't have templateContent
     const storedTemplates = localStorage.getItem("whatsapp-templates");
+    if (storedTemplates && !storedTemplates.includes('templateContent')) {
+      console.log('Clearing old localStorage templates');
+      localStorage.removeItem("whatsapp-templates");
+      window.location.reload(); // Reload to get fresh templates
+      return;
+    }
+    
     console.log('Loading templates from localStorage:', storedTemplates);
     
     if (storedTemplates) {
