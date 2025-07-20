@@ -23,10 +23,12 @@ export function WhatsappLeadTemplateSelector({
   leadId,
   onClose 
 }: WhatsappLeadTemplateSelectorProps) {
-  const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
+  const [leadTemplates, setLeadTemplates] = useState<UnifiedTemplate[]>([]);
+  const [carTemplates, setCarTemplates] = useState<UnifiedTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
   const [customMessage, setCustomMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("templates");
+  const [activeTab, setActiveTab] = useState("lead-templates");
+  const [templateType, setTemplateType] = useState<"lead" | "car">("lead");
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
 
@@ -40,8 +42,8 @@ export function WhatsappLeadTemplateSelector({
         const parsedTemplates = JSON.parse(storedTemplates);
         console.log('Parsed templates:', parsedTemplates);
         
-        // Filter only lead templates and ensure they have content
-        const leadTemplates = parsedTemplates
+        // Filter lead templates
+        const leadTemplatesFromStorage = parsedTemplates
           .filter((t: any) => t.type === 'lead' && t.templateContent && t.templateContent.trim())
           .map((stored: any) => ({
             id: stored.id,
@@ -59,15 +61,50 @@ export function WhatsappLeadTemplateSelector({
                          leadSource ? ` דרך ${leadSource}` : '');
             }
           }));
+
+        // Filter car templates  
+        const carTemplatesFromStorage = parsedTemplates
+          .filter((t: any) => t.type === 'car' && t.templateContent && t.templateContent.trim())
+          .map((stored: any) => ({
+            id: stored.id,
+            name: stored.name,
+            description: stored.description,
+            type: 'car' as const,
+            templateContent: stored.templateContent,
+            generateMessage: (leadName: string, leadSource?: string) => {
+              const content = stored.templateContent;
+              // For car templates, replace lead variables with default car message
+              return content
+                .replace(/\$\{car\.make\}/g, 'רכב מעולה')
+                .replace(/\$\{car\.model\}/g, '')
+                .replace(/\$\{car\.year\}/g, '')
+                .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 'מחיר אטרקטיבי')
+                .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g, 'קילומטראז נמוך')
+                .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, 'צבע יפה')
+                .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, 'מנוע חזק')
+                .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, 'תיבת הילוכים מעולה')
+                .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, 'חסכוני בדלק');
+            }
+          }));
         
-        console.log('Lead templates processed:', leadTemplates);
+        console.log('Lead templates processed:', leadTemplatesFromStorage);
+        console.log('Car templates processed:', carTemplatesFromStorage);
         
-        if (leadTemplates.length > 0) {
-          setTemplates(leadTemplates);
-          setSelectedTemplate(leadTemplates[0]);
-        } else {
-          // No custom templates found, use default
-          const defaultTemplate: UnifiedTemplate = {
+        setLeadTemplates(leadTemplatesFromStorage);
+        setCarTemplates(carTemplatesFromStorage);
+        
+        // Set default selection
+        if (leadTemplatesFromStorage.length > 0) {
+          setSelectedTemplate(leadTemplatesFromStorage[0]);
+        } else if (carTemplatesFromStorage.length > 0) {
+          setSelectedTemplate(carTemplatesFromStorage[0]);
+          setTemplateType("car");
+          setActiveTab("car-templates");
+        }
+        
+        // Add default lead template if none exist
+        if (leadTemplatesFromStorage.length === 0) {
+          const defaultLeadTemplate: UnifiedTemplate = {
             id: 'default_intro',
             name: 'הכרות עם לקוח פוטנציאלי',
             description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
@@ -83,8 +120,10 @@ export function WhatsappLeadTemplateSelector({
 בברכה,
 צוות המכירות`
           };
-          setTemplates([defaultTemplate]);
-          setSelectedTemplate(defaultTemplate);
+          setLeadTemplates([defaultLeadTemplate]);
+          if (!selectedTemplate) {
+            setSelectedTemplate(defaultLeadTemplate);
+          }
         }
       } catch (error) {
         console.error("Error loading templates:", error);
@@ -105,7 +144,7 @@ export function WhatsappLeadTemplateSelector({
 בברכה,
 צוות המכירות`
         };
-        setTemplates([defaultTemplate]);
+        setLeadTemplates([defaultTemplate]);
         setSelectedTemplate(defaultTemplate);
       }
     } else {
@@ -126,7 +165,7 @@ export function WhatsappLeadTemplateSelector({
 בברכה,
 צוות המכירות`
       };
-      setTemplates([defaultTemplate]);
+      setLeadTemplates([defaultTemplate]);
       setSelectedTemplate(defaultTemplate);
     }
   }, []);
@@ -231,22 +270,25 @@ export function WhatsappLeadTemplateSelector({
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
-        <TabsList className={`w-full ${isMobile ? 'h-auto grid-cols-2 text-xs' : 'grid grid-cols-2'}`}>
-          <TabsTrigger value="templates" className={isMobile ? "text-xs" : ""}>
-            תבניות ({templates.length})
+        <TabsList className={`w-full ${isMobile ? 'h-auto grid-cols-3 text-xs' : 'grid grid-cols-3'}`}>
+          <TabsTrigger value="lead-templates" className={isMobile ? "text-xs" : ""}>
+            תבניות לקוחות ({leadTemplates.length})
+          </TabsTrigger>
+          <TabsTrigger value="car-templates" className={isMobile ? "text-xs" : ""}>
+            תבניות רכבים ({carTemplates.length})
           </TabsTrigger>
           <TabsTrigger value="custom" className={isMobile ? "text-xs" : ""}>הודעה מותאמת</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
-          {templates.length === 0 ? (
+        <TabsContent value="lead-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
+          {leadTemplates.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>לא נמצאו תבניות לקוחות.</p>
               <p className="text-sm mt-2">צור תבניות חדשות בעמוד התבניות.</p>
             </div>
           ) : (
             <div className="grid gap-3">
-              {templates.map((template) => (
+              {leadTemplates.map((template) => (
                 <div
                   key={template.id}
                   className={`border rounded-lg cursor-pointer transition-colors ${
@@ -256,7 +298,47 @@ export function WhatsappLeadTemplateSelector({
                       ? "border-blue-500 bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
-                  onClick={() => setSelectedTemplate(template)}
+                  onClick={() => {
+                    setSelectedTemplate(template);
+                    setTemplateType("lead");
+                  }}
+                >
+                  <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
+                    {template.name}
+                  </h3>
+                  <p className={`text-gray-600 text-right mt-1 ${
+                    isMobile ? 'text-xs' : 'text-sm'
+                  }`}>
+                    {template.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="car-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
+          {carTemplates.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>לא נמצאו תבניות רכבים.</p>
+              <p className="text-sm mt-2">צור תבניות חדשות בעמוד התבניות.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {carTemplates.map((template) => (
+                <div
+                  key={template.id}
+                  className={`border rounded-lg cursor-pointer transition-colors ${
+                    isMobile ? 'p-3' : 'p-4'
+                  } ${
+                    selectedTemplate?.id === template.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => {
+                    setSelectedTemplate(template);
+                    setTemplateType("car");
+                  }}
                 >
                   <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
                     {template.name}
