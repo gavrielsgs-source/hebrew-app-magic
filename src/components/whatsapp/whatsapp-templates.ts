@@ -5,6 +5,7 @@ export interface WhatsappTemplate {
   description: string;
   type: 'car';
   generateMessage: (car: any) => string;
+  templateContent?: string;
 }
 
 export const whatsappTemplates: WhatsappTemplate[] = [

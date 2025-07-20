@@ -7,6 +7,7 @@ export interface WhatsappLeadTemplate {
   description: string;
   type: 'lead';
   generateMessage: (leadName: string, leadSource?: string) => string;
+  templateContent?: string;
 }
 
 export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
