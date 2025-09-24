@@ -14,11 +14,6 @@ import {
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { FileText, Car, User, DollarSign } from "lucide-react";
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
-
-// התקנת גופנים
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 interface QuoteBuilderProps {
   onClose: () => void;
@@ -55,133 +50,179 @@ export function QuoteBuilder({ onClose }: QuoteBuilderProps) {
     setQuoteData(prev => ({ ...prev, [field]: value }));
   };
 
-  const generateQuote = () => {
+  const generateQuote = async () => {
     if (!selectedLead || !selectedCar) return;
 
-    const docDefinition = {
-      content: [
-        // כותרת
-        {
-          text: 'הצעת מחיר',
-          style: 'header',
-          alignment: 'center',
-          margin: [0, 0, 0, 20]
-        },
-        
-        // קו מפריד
-        {
-          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
-          margin: [0, 0, 0, 20]
-        },
-        
-        // פרטי לקוח
-        {
-          text: 'פרטי לקוח:',
-          style: 'subheader',
-          margin: [0, 0, 0, 10]
-        },
-        {
-          ul: [
-            `שם: ${selectedLead.name}`,
-            `טלפון: ${selectedLead.phone || 'לא צוין'}`
-          ],
-          margin: [20, 0, 0, 15]
-        },
-        
-        // פרטי רכב
-        {
-          text: 'פרטי רכב:',
-          style: 'subheader',
-          margin: [0, 0, 0, 10]
-        },
-        {
-          ul: [
-            `יצרן: ${selectedCar.make}`,
-            `דגם: ${selectedCar.model}`,
-            `שנה: ${selectedCar.year}`,
-            `מחיר מבוקש: ${selectedCar.price?.toLocaleString()} ש"ח`
-          ],
-          margin: [20, 0, 0, 15]
-        },
-        
-        // הצעת מחיר
-        {
-          text: 'הצעת מחיר:',
-          style: 'subheader',
-          margin: [0, 0, 0, 10]
-        },
-        {
-          table: {
-            widths: ['*', 'auto'],
-            body: [
-              [
-                { text: 'מחיר סופי:', bold: true },
-                { text: `${parseInt(quoteData.price).toLocaleString()} ש"ח`, bold: true, color: '#22c55e' }
-              ],
-              ...(quoteData.downPayment ? [[
-                'מקדמה:',
-                `${parseInt(quoteData.downPayment).toLocaleString()} ש"ח`
-              ]] : []),
-              ...(quoteData.monthlyPayment ? [[
-                'תשלום חודשי:',
-                `${parseInt(quoteData.monthlyPayment).toLocaleString()} ש"ח`
-              ]] : []),
-              ...(quoteData.monthlyPayment ? [[
-                'מספר תשלומים:',
-                `${quoteData.terms} חודשים`
-              ]] : [])
-            ]
-          },
-          layout: 'lightHorizontalLines',
-          margin: [0, 0, 0, 20]
-        },
-        
-        // פרטים נוספים
-        ...(quoteData.additionalDetails ? [
+    try {
+      // ייבוא דינמי של pdfmake
+      const pdfMake = (await import("pdfmake/build/pdfmake")).default;
+      const pdfFonts = (await import("pdfmake/build/vfs_fonts")).default;
+      
+      // הגדרת גופנים
+      pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+      const docDefinition = {
+        content: [
+          // כותרת
           {
-            text: 'פרטים נוספים:',
-            style: 'subheader',
+            text: "הצעת מחיר",
+            style: "header",
+            alignment: "center",
+            margin: [0, 0, 0, 20]
+          },
+          
+          // קו מפריד
+          {
+            canvas: [{ type: "line", x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
+            margin: [0, 0, 0, 20]
+          },
+          
+          // פרטי לקוח
+          {
+            text: "פרטי לקוח:",
+            style: "subheader",
             margin: [0, 0, 0, 10]
           },
           {
-            text: quoteData.additionalDetails,
-            margin: [20, 0, 0, 20]
+            ul: [
+              `שם: ${selectedLead.name}`,
+              `טלפון: ${selectedLead.phone || "לא צוין"}`
+            ],
+            margin: [20, 0, 0, 15]
+          },
+          
+          // פרטי רכב
+          {
+            text: "פרטי רכב:",
+            style: "subheader",
+            margin: [0, 0, 0, 10]
+          },
+          {
+            ul: [
+              `יצרן: ${selectedCar.make}`,
+              `דגם: ${selectedCar.model}`,
+              `שנה: ${selectedCar.year}`,
+              `מחיר מבוקש: ${selectedCar.price?.toLocaleString()} ש"ח`
+            ],
+            margin: [20, 0, 0, 15]
+          },
+          
+          // הצעת מחיר
+          {
+            text: "הצעת מחיר:",
+            style: "subheader",
+            margin: [0, 0, 0, 10]
+          },
+          {
+            table: {
+              widths: ["*", "auto"],
+              body: [
+                [
+                  { text: "מחיר סופי:", bold: true },
+                  { text: `${parseInt(quoteData.price).toLocaleString()} ש"ח`, bold: true, color: "#22c55e" }
+                ],
+                ...(quoteData.downPayment ? [[
+                  "מקדמה:",
+                  `${parseInt(quoteData.downPayment).toLocaleString()} ש"ח`
+                ]] : []),
+                ...(quoteData.monthlyPayment ? [[
+                  "תשלום חודשי:",
+                  `${parseInt(quoteData.monthlyPayment).toLocaleString()} ש"ח`
+                ]] : []),
+                ...(quoteData.monthlyPayment ? [[
+                  "מספר תשלומים:",
+                  `${quoteData.terms} חודשים`
+                ]] : [])
+              ]
+            },
+            layout: "lightHorizontalLines",
+            margin: [0, 0, 0, 20]
+          },
+          
+          // פרטים נוספים
+          ...(quoteData.additionalDetails ? [
+            {
+              text: "פרטים נוספים:",
+              style: "subheader",
+              margin: [0, 0, 0, 10]
+            },
+            {
+              text: quoteData.additionalDetails,
+              margin: [20, 0, 0, 20]
+            }
+          ] : []),
+          
+          // תוקף ותאריך
+          {
+            text: [
+              { text: "תוקף ההצעה: ", bold: true },
+              "30 ימים\n",
+              { text: "תאריך: ", bold: true },
+              new Date().toLocaleDateString("he-IL")
+            ],
+            margin: [0, 20, 0, 0]
           }
-        ] : []),
+        ],
         
-        // תוקף ותאריך
-        {
-          text: [
-            { text: 'תוקף ההצעה: ', bold: true },
-            '30 ימים\n',
-            { text: 'תאריך: ', bold: true },
-            new Date().toLocaleDateString('he-IL')
-          ],
-          margin: [0, 20, 0, 0]
-        }
-      ],
-      
-      styles: {
-        header: {
-          fontSize: 22,
-          bold: true,
-          color: '#1f2937'
+        styles: {
+          header: {
+            fontSize: 22,
+            bold: true,
+            color: "#1f2937"
+          },
+          subheader: {
+            fontSize: 16,
+            bold: true,
+            color: "#374151"
+          }
         },
-        subheader: {
-          fontSize: 16,
-          bold: true,
-          color: '#374151'
+        
+        defaultStyle: {
+          fontSize: 12,
+          font: "Roboto"
         }
-      },
-      
-      defaultStyle: {
-        fontSize: 12,
-        font: 'Roboto'
-      }
-    };
+      };
 
-    const fileName = `הצעת-מחיר-${selectedLead.name}-${selectedCar.make}-${selectedCar.model}.pdf`;
-    pdfMake.createPdf(docDefinition).download(fileName);
+      const fileName = `הצעת-מחיר-${selectedLead.name}-${selectedCar.make}-${selectedCar.model}.pdf`;
+      pdfMake.createPdf(docDefinition).download(fileName);
+      
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      // fallback - יצירת קובץ טקסט
+      const quoteText = `
+הצעת מחיר
+
+פרטי לקוח:
+שם: ${selectedLead.name}
+טלפון: ${selectedLead.phone || "לא צוין"}
+
+פרטי רכב:
+יצרן: ${selectedCar.make}
+דגם: ${selectedCar.model}
+שנה: ${selectedCar.year}
+מחיר מבוקש: ${selectedCar.price?.toLocaleString()} ש"ח
+
+הצעת מחיר:
+מחיר סופי: ${parseInt(quoteData.price).toLocaleString()} ש"ח
+${quoteData.downPayment ? `מקדמה: ${parseInt(quoteData.downPayment).toLocaleString()} ש"ח\n` : ""}
+${quoteData.monthlyPayment ? `תשלום חודשי: ${parseInt(quoteData.monthlyPayment).toLocaleString()} ש"ח\n` : ""}
+${quoteData.monthlyPayment ? `מספר תשלומים: ${quoteData.terms} חודשים\n` : ""}
+
+${quoteData.additionalDetails ? `פרטים נוספים:\n${quoteData.additionalDetails}\n\n` : ""}
+תוקף ההצעה: 30 ימים
+תאריך: ${new Date().toLocaleDateString("he-IL")}
+      `.trim();
+
+      const blob = new Blob([quoteText], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `הצעת-מחיר-${selectedLead.name}-${selectedCar.make}-${selectedCar.model}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   const isValid = quoteData.leadId && quoteData.carId && quoteData.price;
