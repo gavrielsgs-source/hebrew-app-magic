@@ -14,6 +14,7 @@ import {
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { FileText, Car, User, DollarSign } from "lucide-react";
+import jsPDF from "jspdf";
 
 interface QuoteBuilderProps {
   onClose: () => void;
@@ -53,42 +54,93 @@ export function QuoteBuilder({ onClose }: QuoteBuilderProps) {
   const generateQuote = () => {
     if (!selectedLead || !selectedCar) return;
 
-    const quoteContent = `
-הצעת מחיר
-
-פרטי לקוח:
-שם: ${selectedLead.name}
-טלפון: ${selectedLead.phone}
-
-פרטי רכב:
-יצרן: ${selectedCar.make}
-דגם: ${selectedCar.model}
-שנה: ${selectedCar.year}
-מחיר מבוקש: ₪${selectedCar.price?.toLocaleString()}
-
-הצעת מחיר:
-מחיר סופי: ₪${parseInt(quoteData.price).toLocaleString()}
-מקדמה: ₪${parseInt(quoteData.downPayment).toLocaleString()}
-תשלום חודשי: ₪${parseInt(quoteData.monthlyPayment).toLocaleString()}
-מספר תשלומים: ${quoteData.terms}
-
-פרטים נוספים:
-${quoteData.additionalDetails}
-
-תוקף ההצעה: 30 ימים
-תאריך: ${new Date().toLocaleDateString('he-IL')}
-    `.trim();
-
-    // יצירת קובץ PDF או הורדה
-    const blob = new Blob([quoteContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `הצעת-מחיר-${selectedLead.name}-${selectedCar.make}-${selectedCar.model}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const doc = new jsPDF();
+    
+    // הגדרת גופן עברי (משתמש בגופן ברירת מחדל שתומך בעברית)
+    doc.setFont("helvetica");
+    
+    // כותרת
+    doc.setFontSize(22);
+    doc.text("הצעת מחיר", 105, 30, { align: "center" });
+    
+    // קו מפריד
+    doc.setLineWidth(0.5);
+    doc.line(20, 40, 190, 40);
+    
+    let yPosition = 60;
+    
+    // פרטי לקוח
+    doc.setFontSize(16);
+    doc.text("פרטי לקוח:", 20, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(12);
+    doc.text(`שם: ${selectedLead.name}`, 30, yPosition);
+    yPosition += 8;
+    doc.text(`טלפון: ${selectedLead.phone || "לא צוין"}`, 30, yPosition);
+    yPosition += 15;
+    
+    // פרטי רכב
+    doc.setFontSize(16);
+    doc.text("פרטי רכב:", 20, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(12);
+    doc.text(`יצרן: ${selectedCar.make}`, 30, yPosition);
+    yPosition += 8;
+    doc.text(`דגם: ${selectedCar.model}`, 30, yPosition);
+    yPosition += 8;
+    doc.text(`שנה: ${selectedCar.year}`, 30, yPosition);
+    yPosition += 8;
+    doc.text(`מחיר מבוקש: ${selectedCar.price?.toLocaleString()} ש"ח`, 30, yPosition);
+    yPosition += 15;
+    
+    // הצעת מחיר
+    doc.setFontSize(16);
+    doc.text("הצעת מחיר:", 20, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`מחיר סופי: ${parseInt(quoteData.price).toLocaleString()} ש"ח`, 30, yPosition);
+    yPosition += 10;
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    if (quoteData.downPayment) {
+      doc.text(`מקדמה: ${parseInt(quoteData.downPayment).toLocaleString()} ש"ח`, 30, yPosition);
+      yPosition += 8;
+    }
+    if (quoteData.monthlyPayment) {
+      doc.text(`תשלום חודשי: ${parseInt(quoteData.monthlyPayment).toLocaleString()} ש"ח`, 30, yPosition);
+      yPosition += 8;
+      doc.text(`מספר תשלומים: ${quoteData.terms}`, 30, yPosition);
+      yPosition += 8;
+    }
+    yPosition += 10;
+    
+    // פרטים נוספים
+    if (quoteData.additionalDetails) {
+      doc.setFontSize(16);
+      doc.text("פרטים נוספים:", 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(12);
+      const splitText = doc.splitTextToSize(quoteData.additionalDetails, 160);
+      doc.text(splitText, 30, yPosition);
+      yPosition += splitText.length * 6 + 10;
+    }
+    
+    // תוקף ההצעה ותאריך
+    yPosition += 10;
+    doc.setFontSize(12);
+    doc.text("תוקף ההצעה: 30 ימים", 20, yPosition);
+    yPosition += 8;
+    doc.text(`תאריך: ${new Date().toLocaleDateString("he-IL")}`, 20, yPosition);
+    
+    // שמירת הקובץ
+    const fileName = `הצעת-מחיר-${selectedLead.name}-${selectedCar.make}-${selectedCar.model}.pdf`;
+    doc.save(fileName);
   };
 
   const isValid = quoteData.leadId && quoteData.carId && quoteData.price;
@@ -218,7 +270,7 @@ ${quoteData.additionalDetails}
             disabled={!isValid}
             className="bg-primary hover:bg-primary/90"
           >
-            צור הצעת מחיר
+            הורד הצעת מחיר כ-PDF
           </Button>
         </div>
       </CardContent>
