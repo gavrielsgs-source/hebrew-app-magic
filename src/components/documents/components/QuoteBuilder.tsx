@@ -54,12 +54,25 @@ export function QuoteBuilder({ onClose }: QuoteBuilderProps) {
     if (!selectedLead || !selectedCar) return;
 
     try {
-      // ייבוא דינמי של pdfmake
-      const pdfMake = (await import("pdfmake/build/pdfmake")).default;
-      const pdfFonts = (await import("pdfmake/build/vfs_fonts")).default;
+      const [pdfMakeModule, pdfFontsModule] = await Promise.all([
+        import("pdfmake/build/pdfmake"),
+        import("pdfmake/build/vfs_fonts"),
+      ]);
+
+      const pdfMakeAny: any = (pdfMakeModule as any).default || (pdfMakeModule as any);
+      const pdfFontsAny: any = (pdfFontsModule as any).default || (pdfFontsModule as any);
       
-      // הגדרת גופנים
-      pdfMake.vfs = pdfFonts.pdfMake.vfs;
+      const vfs =
+        pdfFontsAny?.vfs ||
+        pdfFontsAny?.pdfMake?.vfs ||
+        pdfFontsAny?.pdfmake?.vfs ||
+        pdfFontsAny?.default?.vfs;
+
+      if (vfs) {
+        pdfMakeAny.vfs = vfs;
+      } else {
+        console.warn("pdfMake vfs not found, continuing without embedded fonts");
+      }
 
       const docDefinition = {
         content: [
@@ -184,7 +197,7 @@ export function QuoteBuilder({ onClose }: QuoteBuilderProps) {
       };
 
       const fileName = `הצעת-מחיר-${selectedLead.name}-${selectedCar.make}-${selectedCar.model}.pdf`;
-      pdfMake.createPdf(docDefinition).download(fileName);
+      pdfMakeAny.createPdf(docDefinition).download(fileName);
       
     } catch (error) {
       console.error("Error generating PDF:", error);
