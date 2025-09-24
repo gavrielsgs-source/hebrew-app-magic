@@ -1,34 +1,12 @@
 
 export const getDocumentTypeLabel = (type: string) => {
   switch (type) {
-    // מסמכים קיימים
     case 'contract': return 'חוזה';
     case 'id': return 'תעודת זהות';
     case 'license': return 'רישיון נהיגה';
     case 'invoice': return 'חשבונית';
     case 'insurance': return 'פוליסת ביטוח';
     case 'other': return 'מסמך אחר';
-    
-    // הצעות ומכירות
-    case 'quote': return 'הצעת מחיר';
-    case 'sales_agreement': return 'הסכם מכר';
-    case 'purchase_agreement': return 'הסכם רכש';
-    case 'warranty': return 'אחריות';
-    
-    // מסמכי רכב חובה
-    case 'registration': return 'רישוי רכב';
-    case 'test_certificate': return 'תעודת בדיקה';
-    case 'ownership_certificate': return 'תעודת בעלות';
-    
-    // מסמכי מימון
-    case 'financing_agreement': return 'הסכם מימון';
-    case 'loan_document': return 'מסמך הלוואה';
-    case 'guarantee': return 'ערבות';
-    
-    // מסמכי תחזוקה
-    case 'service_record': return 'רישום שירות';
-    case 'maintenance_contract': return 'חוזה תחזוקה';
-    
     default: return 'מסמך';
   }
 };
