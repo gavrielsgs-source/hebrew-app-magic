@@ -14,6 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Feature flag for quotes functionality
+const ENABLE_QUOTES_FEATURE = true;
+
 export default function Documents() {
   const isMobile = useIsMobile();
   
@@ -42,6 +45,9 @@ export default function Documents() {
           <TabsList className={`flex ${isMobile ? 'grid grid-cols-2' : 'justify-start'}`}>
             <TabsTrigger value="all" className={isMobile ? 'text-sm' : ''}>כל המסמכים</TabsTrigger>
             <TabsTrigger value="templates" className={isMobile ? 'text-sm' : ''}>תבניות</TabsTrigger>
+            {ENABLE_QUOTES_FEATURE && (
+              <TabsTrigger value="quotes" className={isMobile ? 'text-sm' : ''}>הצעות ומכירות</TabsTrigger>
+            )}
             {!isMobile && (
               <>
                 <TabsTrigger value="leads">לפי לקוחות</TabsTrigger>
@@ -51,9 +57,12 @@ export default function Documents() {
           </TabsList>
           
           {isMobile && (
-            <TabsList className="grid grid-cols-2">
-              <TabsTrigger value="leads" className="text-sm">לפי לקוחות</TabsTrigger>
-              <TabsTrigger value="cars" className="text-sm">לפי רכבים</TabsTrigger>
+            <TabsList className={`grid ${ENABLE_QUOTES_FEATURE ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {ENABLE_QUOTES_FEATURE && (
+                <TabsTrigger value="quotes" className="text-sm">הצעות</TabsTrigger>
+              )}
+              <TabsTrigger value="leads" className="text-sm">לקוחות</TabsTrigger>
+              <TabsTrigger value="cars" className="text-sm">רכבים</TabsTrigger>
             </TabsList>
           )}
           
@@ -84,6 +93,33 @@ export default function Documents() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {ENABLE_QUOTES_FEATURE && (
+            <TabsContent value="quotes" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className={`text-right ${isMobile ? 'text-lg' : ''}`}>הצעות ומכירות</CardTitle>
+                  <CardDescription className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                    יצירת הצעות מחיר, הסכמי מכר ומסמכים עסקיים
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center p-8 text-muted-foreground">
+                    <div className={`mb-4 ${isMobile ? 'text-lg' : 'text-xl'}`}>🏷️</div>
+                    <h3 className={`font-semibold mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
+                      הצעות ומכירות
+                    </h3>
+                    <p className={isMobile ? 'text-sm' : ''}>
+                      כאן תוכל ליצור הצעות מחיר, הסכמי מכר והסכמי רכש בקלות
+                    </p>
+                    <div className={`mt-4 text-primary font-medium ${isMobile ? 'text-sm' : ''}`}>
+                      בקרוב - בונה הצעות מחיר חכם!
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
           
           <TabsContent value="leads" className="space-y-4">
             <Card>
