@@ -2,10 +2,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DocumentsManager } from "@/components/documents/DocumentsManager";
+import { QuoteBuilder } from "@/components/documents/components/QuoteBuilder";
 import { useEffect, useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -13,6 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Feature flag for quotes functionality
 const ENABLE_QUOTES_FEATURE = true;
@@ -28,6 +36,7 @@ export default function Documents() {
   
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
+  const [showQuoteBuilder, setShowQuoteBuilder] = useState(false);
   const { leads, isLoading: isLeadsLoading } = useLeads();
   const { cars, isLoading: isCarsLoading } = useCars();
   
@@ -112,8 +121,13 @@ export default function Documents() {
                     <p className={isMobile ? 'text-sm' : ''}>
                       כאן תוכל ליצור הצעות מחיר, הסכמי מכר והסכמי רכש בקלות
                     </p>
-                    <div className={`mt-4 text-primary font-medium ${isMobile ? 'text-sm' : ''}`}>
-                      בקרוב - בונה הצעות מחיר חכם!
+                    <div className={`mt-6 ${isMobile ? 'text-sm' : ''}`}>
+                      <Button 
+                        className="bg-primary hover:bg-primary/90"
+                        onClick={() => setShowQuoteBuilder(true)}
+                      >
+                        צור הצעת מחיר חדשה
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -213,6 +227,16 @@ export default function Documents() {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* דיאלוג בונה הצעות מחיר */}
+        <Dialog open={showQuoteBuilder} onOpenChange={setShowQuoteBuilder}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-right">בונה הצעות מחיר</DialogTitle>
+            </DialogHeader>
+            <QuoteBuilder onClose={() => setShowQuoteBuilder(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -43,12 +43,34 @@ export function DocumentFilters({
         </SelectTrigger>
         <SelectContent align="end">
           <SelectItem value="all">הכל</SelectItem>
+          
+          {/* מסמכים בסיסיים */}
           <SelectItem value="contract">חוזה</SelectItem>
           <SelectItem value="id">תעודת זהות</SelectItem>
           <SelectItem value="license">רישיון</SelectItem>
           <SelectItem value="invoice">חשבונית</SelectItem>
           <SelectItem value="insurance">ביטוח</SelectItem>
           <SelectItem value="other">אחר</SelectItem>
+          
+          {/* הצעות ומכירות */}
+          <SelectItem value="quote">הצעת מחיר</SelectItem>
+          <SelectItem value="sales_agreement">הסכם מכר</SelectItem>
+          <SelectItem value="purchase_agreement">הסכם רכש</SelectItem>
+          <SelectItem value="warranty">אחריות</SelectItem>
+          
+          {/* מסמכי רכב חובה */}
+          <SelectItem value="registration">רישוי רכב</SelectItem>
+          <SelectItem value="test_certificate">תעודת בדיקה</SelectItem>
+          <SelectItem value="ownership_certificate">תעודת בעלות</SelectItem>
+          
+          {/* מסמכי מימון */}
+          <SelectItem value="financing_agreement">הסכם מימון</SelectItem>
+          <SelectItem value="loan_document">מסמך הלוואה</SelectItem>
+          <SelectItem value="guarantee">ערבות</SelectItem>
+          
+          {/* מסמכי תחזוקה */}
+          <SelectItem value="service_record">רישום שירות</SelectItem>
+          <SelectItem value="maintenance_contract">חוזה תחזוקה</SelectItem>
         </SelectContent>
       </Select>
     </div>
