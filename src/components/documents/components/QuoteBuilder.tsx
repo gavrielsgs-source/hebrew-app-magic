@@ -14,7 +14,11 @@ import {
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { FileText, Car, User, DollarSign } from "lucide-react";
-import jsPDF from "jspdf";
+import * as pdfMake from "pdfmake/build/pdfmake";
+import * as pdfFonts from "pdfmake/build/vfs_fonts";
+
+// התקנת גופנים
+(pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
 
 interface QuoteBuilderProps {
   onClose: () => void;
@@ -54,93 +58,130 @@ export function QuoteBuilder({ onClose }: QuoteBuilderProps) {
   const generateQuote = () => {
     if (!selectedLead || !selectedCar) return;
 
-    const doc = new jsPDF();
-    
-    // הגדרת גופן עברי (משתמש בגופן ברירת מחדל שתומך בעברית)
-    doc.setFont("helvetica");
-    
-    // כותרת
-    doc.setFontSize(22);
-    doc.text("הצעת מחיר", 105, 30, { align: "center" });
-    
-    // קו מפריד
-    doc.setLineWidth(0.5);
-    doc.line(20, 40, 190, 40);
-    
-    let yPosition = 60;
-    
-    // פרטי לקוח
-    doc.setFontSize(16);
-    doc.text("פרטי לקוח:", 20, yPosition);
-    yPosition += 10;
-    
-    doc.setFontSize(12);
-    doc.text(`שם: ${selectedLead.name}`, 30, yPosition);
-    yPosition += 8;
-    doc.text(`טלפון: ${selectedLead.phone || "לא צוין"}`, 30, yPosition);
-    yPosition += 15;
-    
-    // פרטי רכב
-    doc.setFontSize(16);
-    doc.text("פרטי רכב:", 20, yPosition);
-    yPosition += 10;
-    
-    doc.setFontSize(12);
-    doc.text(`יצרן: ${selectedCar.make}`, 30, yPosition);
-    yPosition += 8;
-    doc.text(`דגם: ${selectedCar.model}`, 30, yPosition);
-    yPosition += 8;
-    doc.text(`שנה: ${selectedCar.year}`, 30, yPosition);
-    yPosition += 8;
-    doc.text(`מחיר מבוקש: ${selectedCar.price?.toLocaleString()} ש"ח`, 30, yPosition);
-    yPosition += 15;
-    
-    // הצעת מחיר
-    doc.setFontSize(16);
-    doc.text("הצעת מחיר:", 20, yPosition);
-    yPosition += 10;
-    
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text(`מחיר סופי: ${parseInt(quoteData.price).toLocaleString()} ש"ח`, 30, yPosition);
-    yPosition += 10;
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    if (quoteData.downPayment) {
-      doc.text(`מקדמה: ${parseInt(quoteData.downPayment).toLocaleString()} ש"ח`, 30, yPosition);
-      yPosition += 8;
-    }
-    if (quoteData.monthlyPayment) {
-      doc.text(`תשלום חודשי: ${parseInt(quoteData.monthlyPayment).toLocaleString()} ש"ח`, 30, yPosition);
-      yPosition += 8;
-      doc.text(`מספר תשלומים: ${quoteData.terms}`, 30, yPosition);
-      yPosition += 8;
-    }
-    yPosition += 10;
-    
-    // פרטים נוספים
-    if (quoteData.additionalDetails) {
-      doc.setFontSize(16);
-      doc.text("פרטים נוספים:", 20, yPosition);
-      yPosition += 10;
+    const docDefinition = {
+      content: [
+        // כותרת
+        {
+          text: 'הצעת מחיר',
+          style: 'header',
+          alignment: 'center',
+          margin: [0, 0, 0, 20]
+        },
+        
+        // קו מפריד
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
+          margin: [0, 0, 0, 20]
+        },
+        
+        // פרטי לקוח
+        {
+          text: 'פרטי לקוח:',
+          style: 'subheader',
+          margin: [0, 0, 0, 10]
+        },
+        {
+          ul: [
+            `שם: ${selectedLead.name}`,
+            `טלפון: ${selectedLead.phone || 'לא צוין'}`
+          ],
+          margin: [20, 0, 0, 15]
+        },
+        
+        // פרטי רכב
+        {
+          text: 'פרטי רכב:',
+          style: 'subheader',
+          margin: [0, 0, 0, 10]
+        },
+        {
+          ul: [
+            `יצרן: ${selectedCar.make}`,
+            `דגם: ${selectedCar.model}`,
+            `שנה: ${selectedCar.year}`,
+            `מחיר מבוקש: ${selectedCar.price?.toLocaleString()} ש"ח`
+          ],
+          margin: [20, 0, 0, 15]
+        },
+        
+        // הצעת מחיר
+        {
+          text: 'הצעת מחיר:',
+          style: 'subheader',
+          margin: [0, 0, 0, 10]
+        },
+        {
+          table: {
+            widths: ['*', 'auto'],
+            body: [
+              [
+                { text: 'מחיר סופי:', bold: true },
+                { text: `${parseInt(quoteData.price).toLocaleString()} ש"ח`, bold: true, color: '#22c55e' }
+              ],
+              ...(quoteData.downPayment ? [[
+                'מקדמה:',
+                `${parseInt(quoteData.downPayment).toLocaleString()} ש"ח`
+              ]] : []),
+              ...(quoteData.monthlyPayment ? [[
+                'תשלום חודשי:',
+                `${parseInt(quoteData.monthlyPayment).toLocaleString()} ש"ח`
+              ]] : []),
+              ...(quoteData.monthlyPayment ? [[
+                'מספר תשלומים:',
+                `${quoteData.terms} חודשים`
+              ]] : [])
+            ]
+          },
+          layout: 'lightHorizontalLines',
+          margin: [0, 0, 0, 20]
+        },
+        
+        // פרטים נוספים
+        ...(quoteData.additionalDetails ? [
+          {
+            text: 'פרטים נוספים:',
+            style: 'subheader',
+            margin: [0, 0, 0, 10]
+          },
+          {
+            text: quoteData.additionalDetails,
+            margin: [20, 0, 0, 20]
+          }
+        ] : []),
+        
+        // תוקף ותאריך
+        {
+          text: [
+            { text: 'תוקף ההצעה: ', bold: true },
+            '30 ימים\n',
+            { text: 'תאריך: ', bold: true },
+            new Date().toLocaleDateString('he-IL')
+          ],
+          margin: [0, 20, 0, 0]
+        }
+      ],
       
-      doc.setFontSize(12);
-      const splitText = doc.splitTextToSize(quoteData.additionalDetails, 160);
-      doc.text(splitText, 30, yPosition);
-      yPosition += splitText.length * 6 + 10;
-    }
-    
-    // תוקף ההצעה ותאריך
-    yPosition += 10;
-    doc.setFontSize(12);
-    doc.text("תוקף ההצעה: 30 ימים", 20, yPosition);
-    yPosition += 8;
-    doc.text(`תאריך: ${new Date().toLocaleDateString("he-IL")}`, 20, yPosition);
-    
-    // שמירת הקובץ
+      styles: {
+        header: {
+          fontSize: 22,
+          bold: true,
+          color: '#1f2937'
+        },
+        subheader: {
+          fontSize: 16,
+          bold: true,
+          color: '#374151'
+        }
+      },
+      
+      defaultStyle: {
+        fontSize: 12,
+        font: 'Roboto'
+      }
+    };
+
     const fileName = `הצעת-מחיר-${selectedLead.name}-${selectedCar.make}-${selectedCar.model}.pdf`;
-    doc.save(fileName);
+    pdfMake.createPdf(docDefinition).download(fileName);
   };
 
   const isValid = quoteData.leadId && quoteData.carId && quoteData.price;
