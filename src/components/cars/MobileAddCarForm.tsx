@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Car, Calendar, Fuel, Palette, Settings, FileText, Hash } from "lucide-react";
 import { NewCar } from "@/types/car";
 import { useTasks } from "@/hooks/use-tasks";
+import { ImageUploadInput } from "@/components/cars/ImageUploadInput";
 
 interface MobileAddCarFormProps {
   onSuccess?: () => void;
@@ -43,6 +44,16 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
     chassis_number: "",
     next_test_date: ""
   });
+
+  const [images, setImages] = useState<File[]>([]);
+
+  const handleImageChange = (files: FileList | null) => {
+    if (files) {
+      setImages(Array.from(files));
+    } else {
+      setImages([]);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +90,8 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
         license_number: formData.license_number || null,
         chassis_number: formData.chassis_number || null,
         next_test_date: formData.next_test_date || null,
+        // Images
+        images: images.length > 0 ? images : undefined,
       };
 
       const newCar = await addCar.mutateAsync(carData);
@@ -348,6 +361,17 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
           placeholder="פרטים נוספים על הרכב..."
           className="min-h-[80px] text-right"
           dir="rtl"
+        />
+      </div>
+
+      {/* Images Upload */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          תמונות הרכב
+        </Label>
+        <ImageUploadInput
+          onChange={handleImageChange}
+          value={images}
         />
       </div>
 
