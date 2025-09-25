@@ -55,18 +55,16 @@ export default function DocumentProductionSidebar() {
             const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
             return (
               <li key={doc.id}>
-                <NavLink
-                  to={`/document-production/${doc.id}`}
-                  end
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
-                      isActive ? "bg-accent text-accent-foreground" : ""
-                    }`
-                  }
-                >
-                  <IconComponent className="h-4 w-4" />
-                  <span className="ml-auto">{doc.name}</span>
-                </NavLink>
+          <NavLink
+            to="/document-production/tax-invoice"
+            end
+            className={({ isActive }) => `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
+              isActive ? "bg-accent text-accent-foreground" : ""
+            }`}
+          >
+            <Receipt className="h-4 w-4" />
+            <span className="ml-auto">חשבונית מס</span>
+          </NavLink>
               </li>
             );
           })}

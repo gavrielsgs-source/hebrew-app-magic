@@ -184,6 +184,36 @@ export type Database = {
           },
         ]
       }
+      document_sequences: {
+        Row: {
+          created_at: string
+          current_number: number
+          document_type: string
+          id: string
+          prefix: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_number?: number
+          document_type: string
+          id?: string
+          prefix?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_number?: number
+          document_type?: string
+          id?: string
+          prefix?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
@@ -556,6 +586,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tax_invoices: {
+        Row: {
+          car_id: string | null
+          company_address: string | null
+          company_authorized_dealer: boolean | null
+          company_hp: string | null
+          company_name: string | null
+          company_phone: string | null
+          created_at: string
+          currency: string
+          customer_address: string | null
+          customer_hp: string | null
+          customer_name: string
+          customer_phone: string | null
+          date: string
+          id: string
+          invoice_number: string
+          items: Json
+          lead_id: string | null
+          notes: string | null
+          subtotal: number
+          title: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+          vat_amount: number
+        }
+        Insert: {
+          car_id?: string | null
+          company_address?: string | null
+          company_authorized_dealer?: boolean | null
+          company_hp?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          created_at?: string
+          currency?: string
+          customer_address?: string | null
+          customer_hp?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          date: string
+          id?: string
+          invoice_number: string
+          items?: Json
+          lead_id?: string | null
+          notes?: string | null
+          subtotal?: number
+          title: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+          vat_amount?: number
+        }
+        Update: {
+          car_id?: string | null
+          company_address?: string | null
+          company_authorized_dealer?: boolean | null
+          company_hp?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          created_at?: string
+          currency?: string
+          customer_address?: string | null
+          customer_hp?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          date?: string
+          id?: string
+          invoice_number?: string
+          items?: Json
+          lead_id?: string | null
+          notes?: string | null
+          subtotal?: number
+          title?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+          vat_amount?: number
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

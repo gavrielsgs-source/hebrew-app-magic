@@ -266,7 +266,7 @@ serve(async (req) => {
             console.error("❌ Error handling individual lead:", err);
             results.push({
               success: false,
-              error: err.message,
+              error: err instanceof Error ? err.message : String(err),
             });
           }
         }
@@ -281,7 +281,7 @@ serve(async (req) => {
     } catch (error) {
       console.error("❌ Unhandled error in webhook:", error);
       return new Response(
-        JSON.stringify({ error: "Internal server error", details: error.message }),
+        JSON.stringify({ error: "Internal server error", details: error instanceof Error ? error.message : String(error) }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

@@ -184,7 +184,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in token check:", error);
     return new Response(
-      JSON.stringify({ error: "Token check failed", details: error.message }),
+      JSON.stringify({ error: "Token check failed", details: error instanceof Error ? error.message : String(error) }),
       { 
         status: 500, 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
