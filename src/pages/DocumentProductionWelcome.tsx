@@ -1,0 +1,24 @@
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText } from "lucide-react";
+
+export default function DocumentProductionWelcome() {
+  return (
+    <div className="container mx-auto py-6 px-4">
+      <Card className="max-w-3xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-right flex items-center gap-2">
+            <FileText className="h-6 w-6" />
+            ברוכים הבאים להפקת מסמכים
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-right space-y-3">
+            <p>בחרו סוג מסמך מתפריט הצד כדי להתחיל.</p>
+            <p className="text-muted-foreground">הפיצ׳ר בגרסת BETA — נשמח למשוב.</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

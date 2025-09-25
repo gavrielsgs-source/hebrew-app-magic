@@ -48,12 +48,12 @@ export function DocumentProductionMenu({ pathname }: DocumentProductionMenuProps
   const [isOpen, setIsOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+      window.clearTimeout(timeoutRef.current!);
     }
     setIsHovering(true);
     setIsOpen(true);
@@ -61,7 +61,7 @@ export function DocumentProductionMenu({ pathname }: DocumentProductionMenuProps
 
   const handleMouseLeave = () => {
     setIsHovering(false);
-    timeoutRef.current = setTimeout(() => {
+    timeoutRef.current = window.setTimeout(() => {
       if (!isHovering) {
         setIsOpen(false);
       }
@@ -70,20 +70,20 @@ export function DocumentProductionMenu({ pathname }: DocumentProductionMenuProps
 
   const handleDropdownMouseEnter = () => {
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+      window.clearTimeout(timeoutRef.current!);
     }
     setIsHovering(true);
   };
 
   const handleDropdownMouseLeave = () => {
     setIsHovering(false);
-    timeoutRef.current = setTimeout(() => {
+    timeoutRef.current = window.setTimeout(() => {
       setIsOpen(false);
     }, 200);
   };
 
   const handleDocumentClick = (documentId: string) => {
-    navigate(`/documents/production/${documentId}`);
+    navigate(`/document-production/${documentId}`);
     setIsOpen(false);
     setIsHovering(false);
   };
@@ -91,7 +91,7 @@ export function DocumentProductionMenu({ pathname }: DocumentProductionMenuProps
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        window.clearTimeout(timeoutRef.current!);
       }
     };
   }, []);
@@ -104,7 +104,7 @@ export function DocumentProductionMenu({ pathname }: DocumentProductionMenuProps
       onMouseLeave={handleMouseLeave}
     >
       <button
-        data-active={pathname.startsWith("/documents/production")}
+        data-active={pathname.startsWith("/document-production")}
         className="flex w-full items-center gap-3 rounded-xl p-2.5 mb-2 text-base font-semibold font-rubik transition-all duration-200 hover:bg-gradient-to-r hover:from-carslead-purple hover:to-carslead-blue hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-carslead-purple data-[active=true]:to-carslead-blue data-[active=true]:text-white text-sidebar-foreground shadow hover:shadow-lg"
       >
         <Sparkles className="h-6 w-6 min-w-[24px]" />

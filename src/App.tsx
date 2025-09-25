@@ -33,6 +33,8 @@ import NotFound from "./pages/NotFound";
 import Analytics from "./pages/Analytics";
 import Documents from "./pages/Documents";
 import DocumentProduction from "./pages/DocumentProduction";
+import DocumentProductionLayout from "./pages/DocumentProductionLayout";
+import DocumentProductionWelcome from "./pages/DocumentProductionWelcome";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
@@ -118,7 +120,13 @@ function AppLayout() {
                 <Route path="/templates" element={<Templates />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/documents" element={<Documents />} />
+                {/* Legacy route support (optional) */}
                 <Route path="/documents/production/:type" element={<DocumentProduction />} />
+                {/* New Document Production dedicated page with nested sidebar */}
+                <Route path="/document-production" element={<DocumentProductionLayout />}>
+                  <Route index element={<DocumentProductionWelcome />} />
+                  <Route path=":type" element={<DocumentProduction />} />
+                </Route>
                 <Route path="/subscription" element={<Subscription />} />
                 <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                 <Route path="/subscription/payment-success" element={<PaymentSuccess />} />

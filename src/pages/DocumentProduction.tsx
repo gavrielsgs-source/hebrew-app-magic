@@ -12,7 +12,7 @@ export default function DocumentProduction() {
   const documentType = DOCUMENT_TYPES.find(doc => doc.id === type);
 
   if (!documentType) {
-    return <Navigate to="/documents" replace />;
+    return <Navigate to="/document-production" replace />;
   }
 
   // Route to specific document component
