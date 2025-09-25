@@ -77,15 +77,6 @@ export default function Cars() {
               {viewMode === 'grid' ? 'טבלה' : 'גריד'}
             </MobileButton>
             
-            <MobileButton
-              variant="outline"
-              size="md"
-              onClick={handleAddCar}
-              icon={<Plus className="h-5 w-5" />}
-              className="flex-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-            >
-              הוסף רכב
-            </MobileButton>
           </div>
 
           {viewMode === "grid" ? (

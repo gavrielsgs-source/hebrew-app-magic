@@ -224,10 +224,10 @@ export default function Templates() {
 
   return (
     <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      <Card>
-        <CardHeader>
-          <CardTitle>ניהול תבניות וואטסאפ</CardTitle>
-          <CardDescription>
+      <Card className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <CardHeader className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <CardTitle className="text-foreground">ניהול תבניות וואטסאפ</CardTitle>
+          <CardDescription className="text-muted-foreground">
             צור ונהל תבניות הודעות לשליחה מהירה ללקוחות ולרכבים
           </CardDescription>
         </CardHeader>

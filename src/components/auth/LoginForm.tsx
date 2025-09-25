@@ -134,7 +134,7 @@ export default function LoginForm() {
 
         <Button 
           type="submit" 
-          className="w-full h-12 bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90 rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
+          className="w-full h-12 bg-brand-primary hover:bg-brand-primary/90 rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
           disabled={loading}
         >
           {loading ? 'מתחבר...' : 'התחבר למערכת'}

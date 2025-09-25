@@ -42,7 +42,7 @@ export default function Documents() {
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList className={`flex ${isMobile ? 'grid grid-cols-2' : 'justify-start'}`}>
+          <TabsList className={`flex ${isMobile ? 'grid grid-cols-2' : 'justify-end'}`}>
             <TabsTrigger value="all" className={isMobile ? 'text-sm' : ''}>כל המסמכים</TabsTrigger>
             <TabsTrigger value="templates" className={isMobile ? 'text-sm' : ''}>תבניות</TabsTrigger>
             {ENABLE_QUOTES_FEATURE && (
@@ -136,10 +136,10 @@ export default function Documents() {
                       value={selectedLeadId || ""} 
                       onValueChange={setSelectedLeadId}
                     >
-                      <SelectTrigger className="text-right">
-                        <SelectValue placeholder="בחר לקוח" />
-                      </SelectTrigger>
-                      <SelectContent align="end">
+                       <SelectTrigger className="text-right">
+                         <SelectValue placeholder="בחר לקוח" />
+                       </SelectTrigger>
+                       <SelectContent align="start">
                         {isLeadsLoading ? (
                           <SelectItem value="loading" disabled>טוען לקוחות...</SelectItem>
                         ) : leads?.length === 0 ? (
@@ -182,10 +182,10 @@ export default function Documents() {
                       value={selectedCarId || ""} 
                       onValueChange={setSelectedCarId}
                     >
-                      <SelectTrigger className="text-right">
-                        <SelectValue placeholder="בחר רכב" />
-                      </SelectTrigger>
-                      <SelectContent align="end">
+                       <SelectTrigger className="text-right">
+                         <SelectValue placeholder="בחר רכב" />
+                       </SelectTrigger>
+                       <SelectContent align="start">
                         {isCarsLoading ? (
                           <SelectItem value="loading" disabled>טוען רכבים...</SelectItem>
                         ) : cars?.length === 0 ? (
