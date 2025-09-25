@@ -139,7 +139,7 @@ export default function Documents() {
                        <SelectTrigger className="text-right">
                          <SelectValue placeholder="בחר לקוח" />
                        </SelectTrigger>
-                       <SelectContent align="start">
+                       <SelectContent align="end">
                         {isLeadsLoading ? (
                           <SelectItem value="loading" disabled>טוען לקוחות...</SelectItem>
                         ) : leads?.length === 0 ? (
@@ -185,7 +185,7 @@ export default function Documents() {
                        <SelectTrigger className="text-right">
                          <SelectValue placeholder="בחר רכב" />
                        </SelectTrigger>
-                       <SelectContent align="start">
+                       <SelectContent align="end">
                         {isCarsLoading ? (
                           <SelectItem value="loading" disabled>טוען רכבים...</SelectItem>
                         ) : cars?.length === 0 ? (

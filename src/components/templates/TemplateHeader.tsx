@@ -14,7 +14,7 @@ export function TemplateHeader({
   canAddTemplate = true 
 }: TemplateHeaderProps) {
   return (
-    <div className="bg-gradient-to-l from-carslead-purple to-carslead-lightpurple rounded-lg p-6 mb-8 text-white">
+    <div className="bg-brand-gradient rounded-lg p-6 mb-8 text-white">
       <div className="flex flex-col sm:flex-row justify-between items-center">
         {/* כותרת ותיאור - צד שמאל */}
         <div className="text-right order-1 sm:order-1">
@@ -43,7 +43,7 @@ export function TemplateHeader({
           </Button>
           <Button
             size="default"
-            className="bg-white text-carslead-purple hover:bg-white/90 flex items-center gap-2 font-semibold"
+            className="bg-white text-brand-primary hover:bg-white/90 flex items-center gap-2 font-semibold"
             onClick={onNewTemplate}
             disabled={!canAddTemplate}
           >

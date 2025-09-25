@@ -75,16 +75,15 @@ const DialogContent = React.forwardRef<
       >
         {/* Header with close button - fixed at top */}
         <div className="relative flex-shrink-0 p-4 pb-2 border-b border-gray-100">
-          <DialogPrimitive.Close className={cn(
-            "absolute ring-offset-background transition-all hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none rounded-full shadow-lg hover:shadow-xl",
-            "left-3 top-3 flex items-center justify-center z-10",
-            "bg-gradient-to-br from-carslead-purple to-carslead-blue text-white",
-            "hover:from-carslead-blue hover:to-carslead-purple",
-            "active:scale-95 transition-transform duration-150",
-            isMobile ? "h-14 w-14 min-h-14 min-w-14" : "h-10 w-10",
-            // Enhanced touch target for mobile
-            isMobile && "touch-manipulation select-none"
-          )} 
+           <DialogPrimitive.Close className={cn(
+             "absolute ring-offset-background transition-all hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none rounded-full shadow-lg hover:shadow-xl",
+             "left-3 top-3 flex items-center justify-center z-10",
+             "bg-brand-primary hover:bg-brand-primary/90 text-white",
+             "active:scale-95 transition-transform duration-150",
+             isMobile ? "h-14 w-14 min-h-14 min-w-14" : "h-10 w-10",
+             // Enhanced touch target for mobile
+             isMobile && "touch-manipulation select-none"
+           )}
           aria-label="סגור"
           style={isMobile ? {
             touchAction: 'manipulation',
