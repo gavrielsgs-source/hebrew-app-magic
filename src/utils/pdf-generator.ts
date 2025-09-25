@@ -20,9 +20,9 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
 
   try {
     const options = {
-      margin: [15, 10, 15, 10],
+      margin: [15, 10, 15, 10] as [number, number, number, number],
       filename: `הסכם_מכר_${data.buyer.name || 'לקוח'}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: 'jpeg' as const, quality: 0.98 },
       html2canvas: { 
         scale: 2,
         useCORS: true,
@@ -30,9 +30,9 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
         backgroundColor: '#ffffff'
       },
       jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait',
+        unit: 'mm' as const, 
+        format: 'a4' as const, 
+        orientation: 'portrait' as const,
         compress: true
       }
     };
