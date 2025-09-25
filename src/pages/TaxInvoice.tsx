@@ -109,9 +109,16 @@ export default function TaxInvoice() {
 
   // Update customer info when lead is selected
   useEffect(() => {
-    if (selectedLead) {
+    if (selectedLead && selectedLead.id !== 'no-lead') {
       form.setValue('customerName', selectedLead.name);
       form.setValue('customerPhone', selectedLead.phone || '');
+      // Clear other fields as they're not stored in leads table yet
+      if (!form.getValues('customerAddress')) {
+        form.setValue('customerAddress', '');
+      }
+      if (!form.getValues('customerHp')) {
+        form.setValue('customerHp', '');
+      }
     }
   }, [selectedLead, form]);
 
@@ -257,10 +264,16 @@ export default function TaxInvoice() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)]">
-      {/* Form Section */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <div className="max-w-4xl mx-auto">
+    <div className="min-h-[calc(100vh-64px)] p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">חשבונית מס</h1>
+          <p className="text-muted-foreground">יצירת חשבונית מס חדשה</p>
+        </div>
+
+        {/* Form Section */}
+        <div className="w-full">
           <div className="mb-6">
             <h1 className="text-3xl font-bold">חשבונית מס</h1>
             <p className="text-muted-foreground">יצירת חשבונית מס חדשה</p>
@@ -764,15 +777,17 @@ export default function TaxInvoice() {
             </form>
           </Form>
         </div>
-      </div>
 
-      {/* Preview Section */}
-      <div className="w-1/3 min-w-[400px] border-r bg-muted/30">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">תצוגה מקדימה</h2>
-        </div>
-        <div className="p-4 overflow-y-auto h-[calc(100vh-120px)]">
-          <TaxInvoicePreview data={previewData} />
+        {/* Preview Section - Now Below */}
+        <div className="w-full">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">תצוגה מקדימה</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TaxInvoicePreview data={previewData} />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
