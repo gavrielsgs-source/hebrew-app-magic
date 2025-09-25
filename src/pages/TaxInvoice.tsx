@@ -202,7 +202,14 @@ export default function TaxInvoice() {
           hp: data.customerHp,
           phone: data.customerPhone
         },
-        items: data.items,
+        items: data.items.map(item => ({
+          id: item.id || crypto.randomUUID(),
+          description: item.description || '',
+          quantity: item.quantity || 0,
+          unitPrice: item.unitPrice || 0,
+          vatRate: item.vatRate || 17,
+          total: item.total || 0
+        })),
         subtotal,
         vatAmount,
         totalAmount,

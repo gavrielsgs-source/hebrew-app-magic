@@ -42,6 +42,7 @@ import Payment from "./pages/Payment";
 import Welcome from "./pages/Welcome";
 import "./components/ui/mobile-responsive.css";
 import { useMemo } from "react";
+import TaxInvoice from "./pages/TaxInvoice";
 import AboutUs from "./pages/AboutUs";
 
 const App = () => {
@@ -125,6 +126,7 @@ function AppLayout() {
                 {/* New Document Production dedicated page with nested sidebar */}
                 <Route path="/document-production" element={<DocumentProductionLayout />}>
                   <Route index element={<DocumentProductionWelcome />} />
+                  <Route path="tax-invoice" element={<TaxInvoice />} />
                   <Route path=":type" element={<DocumentProduction />} />
                 </Route>
                 <Route path="/subscription" element={<Subscription />} />
