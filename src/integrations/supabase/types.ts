@@ -7,10 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
@@ -409,6 +409,48 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_logs: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string
+          success: boolean
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           active: boolean
@@ -554,22 +596,22 @@ export type Database = {
       get_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          email: string
           created_at: string
-          last_sign_in_at: string
+          email: string
           email_confirmed_at: string
+          id: string
+          last_sign_in_at: string
         }[]
       }
       get_facebook_tokens: {
         Args: { p_user_id: string }
         Returns: {
-          id: string
-          user_id: string
           access_token: string
+          created_at: string
+          id: string
           page_id: string
           page_name: string
-          created_at: string
+          user_id: string
         }[]
       }
       get_user_agencies: {
@@ -578,8 +620,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          role_name: Database["public"]["Enums"]["user_role"]
           agency_id_param?: string
+          role_name: Database["public"]["Enums"]["user_role"]
         }
         Returns: boolean
       }
@@ -591,12 +633,24 @@ export type Database = {
         Args: { agency_id_param: string }
         Returns: boolean
       }
+      log_security_event: {
+        Args: {
+          p_action_type: string
+          p_error_message?: string
+          p_metadata?: Json
+          p_resource_id?: string
+          p_resource_type: string
+          p_success?: boolean
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       save_facebook_token: {
         Args: {
-          p_user_id: string
           p_access_token: string
           p_page_id: string
           p_page_name: string
+          p_user_id: string
         }
         Returns: undefined
       }
