@@ -8,7 +8,7 @@ export default function DocumentProductionLayout() {
   }, []);
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] flex-row-reverse">
+    <div className="flex min-h-[calc(100vh-64px)]">
       <DocumentProductionSidebar />
       <main className="flex-1 p-4">
         <div className="max-w-5xl mx-auto">
