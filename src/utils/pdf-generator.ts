@@ -1,161 +1,199 @@
-import jsPDF from "jspdf";
+import html2pdf from 'html2pdf.js';
 import { SalesAgreementData } from "@/types/document-production";
 
-// Add Hebrew font support (you may need to add a custom Hebrew font)
 export async function generateSalesAgreementPDF(data: SalesAgreementData) {
-  const doc = new jsPDF();
+  // Create a temporary element for the PDF content
+  const element = document.createElement('div');
+  element.innerHTML = createPDFHTML(data);
   
-  // Set font for Hebrew (fallback to default for now)
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(12);
+  // Apply styles for PDF
+  element.style.fontFamily = '"Noto Sans Hebrew", "Rubik", Arial, sans-serif';
+  element.style.direction = 'rtl';
+  element.style.padding = '20px';
+  element.style.backgroundColor = 'white';
+  element.style.color = 'black';
+  element.style.fontSize = '14px';
+  element.style.lineHeight = '1.6';
   
-  let yPosition = 20;
-  const pageWidth = doc.internal.pageSize.width;
-  const margin = 20;
-  const rightMargin = pageWidth - margin;
-  
-  // Helper function to add right-aligned Hebrew text
-  const addRightAlignedText = (text: string, y: number, fontSize: number = 12) => {
-    doc.setFontSize(fontSize);
-    const textWidth = doc.getTextWidth(text);
-    doc.text(text, rightMargin - textWidth, y);
-    return y + (fontSize * 0.4) + 2;
-  };
+  // Append to body temporarily
+  document.body.appendChild(element);
 
-  // Helper function to add centered text
-  const addCenteredText = (text: string, y: number, fontSize: number = 12) => {
-    doc.setFontSize(fontSize);
-    const textWidth = doc.getTextWidth(text);
-    doc.text(text, (pageWidth - textWidth) / 2, y);
-    return y + (fontSize * 0.4) + 2;
-  };
+  try {
+    const options = {
+      margin: [15, 10, 15, 10],
+      filename: `הסכם_מכר_${data.buyer.name || 'לקוח'}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait',
+        compress: true
+      }
+    };
 
-  // Title
-  yPosition = addCenteredText("הסכם מכר", yPosition, 16);
-  yPosition += 10;
-
-  // Date and location
-  yPosition = addRightAlignedText(`שנערך ונחתם במקום בתאריך ${data.date}`, yPosition);
-  yPosition += 10;
-
-  // Seller information
-  yPosition = addRightAlignedText("בין:", yPosition, 14);
-  yPosition = addRightAlignedText(`מר ${data.seller.company}`, yPosition);
-  yPosition = addRightAlignedText(`ח.פ. ${data.seller.id}`, yPosition);
-  yPosition = addRightAlignedText(`טל ${data.seller.phone}`, yPosition);
-  yPosition = addRightAlignedText("כתובת:", yPosition);
-  yPosition = addRightAlignedText(`${data.seller.address.street}, ${data.seller.address.city}, ${data.seller.address.country}`, yPosition);
-  yPosition += 5;
-  yPosition = addRightAlignedText('להלן "המוכר"', yPosition);
-  yPosition += 10;
-
-  // Buyer information
-  yPosition = addRightAlignedText("לבין:", yPosition, 14);
-  yPosition = addRightAlignedText(`מר ${data.buyer.name}`, yPosition);
-  if (data.buyer.id) {
-    yPosition = addRightAlignedText(`ת.ז. ${data.buyer.id}`, yPosition);
+    await html2pdf().set(options).from(element).save();
+  } finally {
+    // Clean up
+    document.body.removeChild(element);
   }
-  if (data.buyer.phone) {
-    yPosition = addRightAlignedText(`טל ${data.buyer.phone}`, yPosition);
-  }
-  if (data.buyer.address) {
-    yPosition = addRightAlignedText(`כתובת: ${data.buyer.address}`, yPosition);
-  }
-  yPosition += 5;
-  yPosition = addRightAlignedText('להלן "הקונה"', yPosition);
-  yPosition += 15;
+}
 
-  // Car information (if provided)
-  if (data.car) {
-    yPosition = addRightAlignedText("המוכר הסכים למכור לקונה והקונה הסכים לקנות מהמוכר את המכונית מסוג:", yPosition);
-    yPosition = addRightAlignedText(`תוצר: ${data.car.make} דגם: ${data.car.model}`, yPosition);
-    if (data.car.licenseNumber) {
-      yPosition = addRightAlignedText(`מס' רישוי: ${data.car.licenseNumber}`, yPosition);
-    }
-    if (data.car.chassisNumber) {
-      yPosition = addRightAlignedText(`מס' שילדה: ${data.car.chassisNumber}`, yPosition);
-    }
-    yPosition = addRightAlignedText(`שנת ייצור: ${data.car.year}`, yPosition);
-    yPosition = addRightAlignedText(`מד אוץ: ${data.car.mileage.toLocaleString()}`, yPosition);
-    yPosition = addRightAlignedText(`יד: ${data.car.hand}`, yPosition);
-    yPosition = addRightAlignedText(`מקוריות: ${data.car.originality}`, yPosition);
-    yPosition += 5;
-    yPosition = addRightAlignedText('להלן "המכונית"', yPosition);
-    yPosition += 10;
-  }
+function createPDFHTML(data: SalesAgreementData): string {
+  return `
+    <div style="max-width: 800px; margin: 0 auto; font-size: 14px; line-height: 1.6; color: #000;">
+      <!-- Header -->
+      <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px;">
+        <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 10px 0;">הסכם מכר</h1>
+        <div style="font-size: 12px; color: #666;">
+          מס' הסכם: ${Date.now().toString().slice(-6)} | תאריך: ${data.date || new Date().toLocaleDateString('he-IL')}
+        </div>
+      </div>
 
-  // Legal declaration
-  const declaration = "המוכר מצהיר כי לאחר שבדק במשרד הרישוי מצא כי המכונית נקיה מכל חוב או שיעבוד או עיקול או צד ג' כלשהן.";
-  yPosition = addRightAlignedText(declaration, yPosition);
-  const declaration2 = "והיה בזמן כלשהו מתברר כי על המכונית רובץ מכל הנזכר להעיל,מתחייב המוכר לנקוט בהליכים משפטיים ע\"מ להמציא לקונה את שחרורו.";
-  yPosition = addRightAlignedText(declaration2, yPosition);
-  yPosition += 10;
+      <!-- Agreement Opening -->
+      <div style="margin-bottom: 20px; text-align: right;">
+        <p>שנערך ונחתם ב${data.seller.address?.city || '______'} בתאריך ${data.date || new Date().toLocaleDateString('he-IL')}</p>
+      </div>
 
-  // Financial terms
-  yPosition = addRightAlignedText(`תמורת המכונית ישלם הקונה למוכר ${data.financial.totalPrice.toLocaleString()} ש"ח`, yPosition);
-  yPosition += 5;
-  yPosition = addRightAlignedText("התנאים כדלקמן:", yPosition);
-  yPosition = addRightAlignedText(`עם חתימת הסכם זה סך: ${data.financial.downPayment.toLocaleString()} ש"ח`, yPosition);
-  
-  const remainingAmount = data.financial.remainingAmount || (data.financial.totalPrice - data.financial.downPayment);
-  if (remainingAmount > 0) {
-    yPosition = addRightAlignedText(`יתרת לתשלום: ${remainingAmount.toLocaleString()} ש"ח`, yPosition);
-  }
-  
-  if (data.financial.paymentTerms) {
-    yPosition = addRightAlignedText(`תנאי תשלום: ${data.financial.paymentTerms}`, yPosition);
-  }
-  
-  if (data.financial.specialTerms) {
-    yPosition = addRightAlignedText(`תנאים מיוחדים: ${data.financial.specialTerms}`, yPosition);
-  }
-  yPosition += 15;
+      <!-- Seller Information -->
+      <div style="background-color: #f8f9fa; padding: 15px; margin-bottom: 15px; border: 1px solid #dee2e6; border-radius: 5px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0;">בין:</h3>
+        <div style="text-align: right;">
+          <p style="margin: 5px 0;"><strong>מר ${data.seller.company || '______'}</strong></p>
+          <p style="margin: 5px 0;">ח.פ./ת.ז: ${data.seller.id || '______'}</p>
+          <p style="margin: 5px 0;">טלפון: ${data.seller.phone || '______'}</p>
+          <p style="margin: 5px 0;">כתובת: ${data.seller.address?.street || '______'}, ${data.seller.address?.city || '______'}, ${data.seller.address?.country || '______'}</p>
+          <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">להלן: <strong>"המוכר"</strong></p>
+        </div>
+      </div>
 
-  // Standard contract terms - Complete Hebrew text
-  const terms = [
-    "המכונית הינה רכוש המוכר עד פרעון התשלום האחרון. המוכר שומר לעצמו את הזכות לקחת מהקונה את המכונית ללא הודעה מוקדמת, במידה והקונה לא עמד בתנאי התשלום או המחאותיו לא כובדו על ידי הבנק.",
-    
-    "הקונה אינו רשאי לבטל את ההסכם, ואולם אם בהסכמת המוכר יבטל הקונה את ההסכם יוחזרו לו הסכומים ששילם ללא הצמדה וריבית, בניכוי הוצאות המוכר.",
-    
-    "העברת בעלות על שם הקונה עם גמר התשלום. המוכר מתחייב להעביר את הבעלות ברכב לקונה במשרד הרישוי תוך 14 יום מיום קבלת התשלום האחרון.",
-    
-    "הקונה מצהיר כי המוכר הסביר לו את מצבה הכללי של המכונית ככל הידוע לו, ולאחר שהבין את דבריו, בדק את המכונית ומצא אותה לשביעות רצונו המלאה.",
-    
-    "כל המיסים והאגרות והקנסות והתשלומים מכל סוג שהוא החלים על הרכב או על השימוש בו, מיום מסירת החזקה ברכב לקונה ואילך, יחולו על הקונה במלואם.",
-    
-    "הקונה מתחייב להחזיק את הרכב בביטוח מקיף כנגד נזקי צד שלישי ונזקי גוף, וזאת לכל תקופת ההתקשרות. פוליסת הביטוח תציין את זכויות המוכר ברכב.",
-    
-    "המוכר מתחייב למסור לקונה עם חתימת ההסכם את מפתחות הרכב, רישיון הרכב, תעודת הביטוח התקפה ואישור על תקינות הרכב (במידה וקיים).",
-    
-    "אם הקונה יפר איזה מתנאי ההסכם, רשאי המוכר לבטל את ההסכם לאלתר ולחזור לחזקת הרכב, וכל סכום ששילם הקונה יישאר בידי המוכר כפיצויים מוסכמים וקבועים מראש.",
-    
-    "כל שינוי בהסכם זה יהיה תקף רק אם נעשה בכתב ונחתם על ידי שני הצדדים. הסכם זה מבטל כל הסכם או הבנה קודמים בין הצדדים.",
-    
-    "מקום השיפוט היחיד בכל הנוגע לביצוע או הפרת חוזה זה נקבע בזה בבית המשפט המוסמך במקום מגורי המוכר.",
-    
-    "הסכם זה נכנס לתוקף עם חתימתו על ידי שני הצדדים ותשלום המקדמה. העתקים נוספים של הסכם זה יימצאו בידי שני הצדדים."
-  ];
+      <!-- Buyer Information -->
+      <div style="background-color: #f0f8f4; padding: 15px; margin-bottom: 20px; border: 1px solid #c3e6cb; border-radius: 5px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0;">לבין:</h3>
+        <div style="text-align: right;">
+          <p style="margin: 5px 0;"><strong>מר ${data.buyer.name || '______'}</strong></p>
+          ${data.buyer.id ? `<p style="margin: 5px 0;">ת.ז: ${data.buyer.id}</p>` : ''}
+          ${data.buyer.phone ? `<p style="margin: 5px 0;">טלפון: ${data.buyer.phone}</p>` : ''}
+          ${data.buyer.address ? `<p style="margin: 5px 0;">כתובת: ${data.buyer.address}</p>` : ''}
+          <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">להלן: <strong>"הקונה"</strong></p>
+        </div>
+      </div>
 
-  terms.forEach((term, index) => {
-    // Check if we need a new page
-    if (yPosition > doc.internal.pageSize.height - 30) {
-      doc.addPage();
-      yPosition = 20;
-    }
-    
-    yPosition = addRightAlignedText(`${index + 1}. ${term}`, yPosition, 10);
-    yPosition += 5;
-  });
+      ${data.car ? `
+      <!-- Car Details -->
+      <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0; text-align: right;">פרטי הרכב:</h3>
+        <p style="margin-bottom: 10px; text-align: right;">המוכר הסכים למכור לקונה והקונה הסכים לקנות מהמוכר את הרכב כדלקמן:</p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">תוצר:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.make || '______'}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">דגם:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.model || '______'}</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">שנת ייצור:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.year || '______'}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">מד קילומטרים:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${(data.car.mileage || 0).toLocaleString()}</td>
+          </tr>
+          ${data.car.licenseNumber || data.car.chassisNumber ? `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">מספר רישוי:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.licenseNumber || '______'}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">מספר שילדה:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.chassisNumber || '______'}</td>
+          </tr>
+          ` : ''}
+          ${data.car.hand || data.car.originality ? `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">יד:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.hand || '______'}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">מקוריות:</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.originality || '______'}</td>
+          </tr>
+          ` : ''}
+        </table>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666; text-align: right;">להלן: <strong>"הרכב"</strong></p>
+      </div>
+      ` : ''}
 
-  // Privacy notice
-  yPosition += 10;
-  const privacy1 = "* אני מאשר בזאת כי המידע שמסרתי ישמר במאגר הלקוחות וייאסף במסגרת התקשרותי עם החברה";
-  const privacy2 = "* אני מסכים ומאשר לקבל הטבות עדכונים סקירות מקצועיות והצעות למוצרים ומבצעים או שירותים נוספים באמצעות דוא\"ל ומסרונים";
-  
-  yPosition = addRightAlignedText(privacy1, yPosition, 8);
-  yPosition = addRightAlignedText(privacy2, yPosition, 8);
+      <!-- Financial Terms -->
+      <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0; text-align: right;">תנאים כספיים:</h3>
+        <div style="text-align: right;">
+          <p style="margin: 8px 0;"><strong>תמורת הרכב ישלם הקונה למוכר:</strong> ${(data.financial.totalPrice || 0).toLocaleString()} ש"ח</p>
+          <p style="margin: 8px 0;"><strong>עם חתימת ההסכם:</strong> ${(data.financial.downPayment || 0).toLocaleString()} ש"ח</p>
+          ${data.financial.remainingAmount && data.financial.remainingAmount > 0 ? 
+            `<p style="margin: 8px 0;"><strong>יתרה לתשלום:</strong> ${data.financial.remainingAmount.toLocaleString()} ש"ח</p>` : ''}
+          ${data.financial.paymentTerms ? 
+            `<p style="margin: 8px 0;"><strong>תנאי תשלום:</strong> ${data.financial.paymentTerms}</p>` : ''}
+          ${data.financial.specialTerms ? 
+            `<div style="margin: 8px 0;"><strong>תנאים מיוחדים:</strong><br><p style="background-color: #f8f9fa; padding: 8px; border-radius: 3px; margin-top: 5px;">${data.financial.specialTerms}</p></div>` : ''}
+        </div>
+      </div>
 
-  // Save the PDF
-  const fileName = `הסכם_מכר_${data.buyer.name}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`;
-  doc.save(fileName);
+      <!-- Legal Terms -->}
+      <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 15px 0; color: #2c5aa0; text-align: right; border-bottom: 1px solid #ccc; padding-bottom: 5px;">תנאי ההסכם:</h3>
+        
+        ${[
+          "המוכר מצהיר כי לאחר שבדק במשרד הרישוי מצא כי הרכב נקי מכל חוב או שיעבוד או עיקול או צד שלישי כלשהו. היה ומתברר בזמן כלשהו כי על הרכב רובץ מכל הנזכר לעיל, מתחייב המוכר לנקוט בהליכים משפטיים על מנת להמציא לקונה את שחרורו.",
+          
+          "הרכב הינו רכוש המוכר עד פרעון התשלום האחרון. המוכר שומר לעצמו את הזכות לקחת מהקונה את הרכב ללא הודעה מוקדמת, במידה והקונה לא עמד בתנאי התשלום או המחאותיו לא כובדו על ידי הבנק.",
+          
+          "הקונה אינו רשאי לבטל את ההסכם, ואולם אם בהסכמת המוכר יבטל הקונה את ההסכם יוחזרו לו הסכומים ששילם ללא הצמדה וריבית, בניכוי הוצאות המוכר.",
+          
+          "העברת בעלות על שם הקונה עם גמר התשלום. המוכר מתחייב להעביר את הבעלות ברכב לקונה במשרד הרישוי תוך 14 יום מיום קבלת התשלום האחרון.",
+          
+          "הקונה מצהיר כי המוכר הסביר לו את מצבו הכללי של הרכב ככל הידוע לו, ולאחר שהבין את דבריו, בדק את הרכב ומצא אותו לשביעות רצונו המלאה.",
+          
+          "כל המיסים והאגרות והקנסות והתשלומים מכל סוג שהוא החלים על הרכב או על השימוש בו, מיום מסירת החזקה ברכב לקונה ואילך, יחולו על הקונה במלואם.",
+          
+          "הקונה מתחייב להחזיק את הרכב בביטוח מקיף כנגד נזקי צד שלישי ונזקי גוף, וזאת לכל תקופת ההתקשרות. פוליסת הביטוח תציין את זכויות המוכר ברכב.",
+          
+          "המוכר מתחייב למסור לקונה עם חתימת ההסכם את מפתחות הרכב, רישיון הרכב, תעודת הביטוח התקפה ואישור על תקינות הרכב (במידה וקיים).",
+          
+          "אם הקונה יפר איזה מתנאי ההסכם, רשאי המוכר לבטל את ההסכם לאלתר ולחזור לחזקת הרכב, וכל סכום ששילם הקונה יישאר בידי המוכר כפיצויים מוסכמים וקבועים מראש.",
+          
+          "כל שינוי בהסכם זה יהיה תקף רק אם נעשה בכתב ונחתם על ידי שני הצדדים. הסכם זה מבטל כל הסכם או הבנה קודמים בין הצדדים.",
+          
+          "מקום השיפוט היחיד בכל הנוגע לביצוע או הפרת חוזה זה נקבע בזה בבית המשפט המוסמך במקום מגורי המוכר."
+        ].map((term, index) => 
+          `<div style="background-color: #f8f9fa; padding: 10px; margin-bottom: 8px; border-radius: 3px; border-right: 3px solid #007bff;">
+            <p style="margin: 0; text-align: right; font-size: 13px; line-height: 1.5;">
+              <strong>${index + 1}.</strong> ${term}
+            </p>
+          </div>`
+        ).join('')}
+      </div>
+
+      <!-- Privacy Notice -->
+      <div style="background-color: #e7f3ff; border: 1px solid #b3d9ff; padding: 10px; margin-bottom: 30px; border-radius: 3px; font-size: 11px;">
+        <p style="margin: 0 0 5px 0; text-align: right;">* אני מאשר בזאת כי המידע שמסרתי ישמר במאגר הלקוחות וייאסף במסגרת התקשרותי עם החברה</p>
+        <p style="margin: 0; text-align: right;">* אני מסכים ומאשר לקבל הטבות עדכונים סקירות מקצועיות והצעות למוצרים ומבצעים או שירותים נוספים באמצעות דוא"ל ומסרונים</p>
+      </div>
+
+      <!-- Signatures -->
+      <div style="display: table; width: 100%; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px;">
+        <div style="display: table-cell; width: 50%; text-align: center; padding: 0 20px;">
+          <div style="margin-top: 60px; border-top: 1px solid #333; padding-top: 8px;">
+            <p style="margin: 0; font-size: 12px; font-weight: bold;">חתימת הקונה</p>
+            <p style="margin: 5px 0 0 0; font-size: 10px; color: #666;">תאריך: _______</p>
+          </div>
+        </div>
+        <div style="display: table-cell; width: 50%; text-align: center; padding: 0 20px;">
+          <div style="margin-top: 60px; border-top: 1px solid #333; padding-top: 8px;">
+            <p style="margin: 0; font-size: 12px; font-weight: bold;">חתימת המוכר</p>
+            <p style="margin: 5px 0 0 0; font-size: 10px; color: #666;">תאריך: _______</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
-import { Calendar, Download, Send, Loader2 } from "lucide-react";
+import { Calendar, Download, Send, Loader2, User, Car, DollarSign, Eye, Save, CheckCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useProfile } from "@/hooks/use-profile";
