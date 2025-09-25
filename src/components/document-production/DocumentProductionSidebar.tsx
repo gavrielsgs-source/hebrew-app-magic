@@ -51,20 +51,39 @@ export default function DocumentProductionSidebar() {
       </div>
       <nav className="flex-1 overflow-auto py-2">
         <ul className="space-y-1 px-2">
+          {/* חשבונית מס - פריט מיוחד */}
+          <li>
+            <NavLink
+              to="/document-production/tax-invoice"
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
+                  isActive ? "bg-accent text-accent-foreground" : ""
+                }`
+              }
+            >
+              <Receipt className="h-4 w-4" />
+              <span className="ml-auto">חשבונית מס</span>
+            </NavLink>
+          </li>
+          
+          {/* שאר המסמכים מהרשימה */}
           {DOCUMENT_TYPES.map((doc) => {
             const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
             return (
               <li key={doc.id}>
-          <NavLink
-            to="/document-production/tax-invoice"
-            end
-            className={({ isActive }) => `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
-              isActive ? "bg-accent text-accent-foreground" : ""
-            }`}
-          >
-            <Receipt className="h-4 w-4" />
-            <span className="ml-auto">חשבונית מס</span>
-          </NavLink>
+                <NavLink
+                  to={`/document-production/${doc.id}`}
+                  end
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
+                      isActive ? "bg-accent text-accent-foreground" : ""
+                    }`
+                  }
+                >
+                  <IconComponent className="h-4 w-4" />
+                  <span className="ml-auto">{doc.name}</span>
+                </NavLink>
               </li>
             );
           })}

@@ -202,14 +202,14 @@ export default function TaxInvoice() {
           hp: data.customerHp,
           phone: data.customerPhone
         },
-        items: data.items.map(item => ({
+        items: data.items.map((item, index) => ({
           id: item.id || crypto.randomUUID(),
           description: item.description || '',
-          quantity: item.quantity || 0,
-          unitPrice: item.unitPrice || 0,
-          vatRate: item.vatRate || 17,
-          total: item.total || 0
-        })),
+          quantity: Number(item.quantity) || 0,
+          unitPrice: Number(item.unitPrice) || 0,
+          vatRate: Number(item.vatRate) || 17,
+          total: Number(item.total) || 0
+        })) as InvoiceItem[],
         subtotal,
         vatAmount,
         totalAmount,
