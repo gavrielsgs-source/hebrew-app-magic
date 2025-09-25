@@ -30,7 +30,7 @@ export function CarsMobileHeader({
       <div className="grid grid-cols-3 gap-2">
         <MobileButton
           onClick={onAddCar}
-          className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white hover:from-[#1A2347] hover:to-[#45A049] h-10 rounded-xl font-semibold text-sm shadow-md transition-all duration-300"
+          className="bg-gradient-primary text-primary-foreground hover:opacity-90 h-10 rounded-xl font-semibold text-sm shadow-md transition-all duration-300"
           icon={<Plus className="h-4 w-4" />}
         >
           הוסף רכב
@@ -38,7 +38,7 @@ export function CarsMobileHeader({
         
         <MobileButton
           onClick={onWhatsApp}
-          className="bg-green-500/90 text-white hover:bg-green-600/90 h-10 rounded-xl font-semibold text-sm shadow-md transition-all duration-300"
+          className="bg-success/90 text-success-foreground hover:bg-success h-10 rounded-xl font-semibold text-sm shadow-md transition-all duration-300"
           icon={<MessageSquare className="h-4 w-4" />}
         >
           וואטסאפ
@@ -46,7 +46,7 @@ export function CarsMobileHeader({
 
         <MobileButton
           onClick={onFilter}
-          className="bg-orange-500/90 text-white hover:bg-orange-600/90 h-10 rounded-xl font-semibold text-sm shadow-md transition-all duration-300"
+          className="bg-warning/90 text-warning-foreground hover:bg-warning h-10 rounded-xl font-semibold text-sm shadow-md transition-all duration-300"
           icon={<Filter className="h-4 w-4" />}
         >
           סינון

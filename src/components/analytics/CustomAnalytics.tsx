@@ -62,10 +62,10 @@ export function CustomAnalytics() {
   ];
 
   const pieData = [
-    { name: 'פייסבוק', value: 35, color: '#0088FE' },
-    { name: 'גוגל', value: 25, color: '#00C49F' },
-    { name: 'הפניה', value: 20, color: '#FFBB28' },
-    { name: 'ישיר', value: 20, color: '#FF8042' }
+    { name: 'פייסבוק', value: 35, color: 'hsl(var(--chart-primary))' },
+    { name: 'גוגל', value: 25, color: 'hsl(var(--chart-secondary))' },
+    { name: 'הפניה', value: 20, color: 'hsl(var(--chart-tertiary))' },
+    { name: 'ישיר', value: 20, color: 'hsl(var(--chart-quaternary))' }
   ];
 
   const predictionData = [

@@ -303,7 +303,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
             <a 
               href="/terms-of-service" 
               target="_blank"
-              className="text-[#2F3C7E] hover:text-[#4CAF50] underline"
+              className="text-brand-primary hover:text-brand-secondary underline"
             >
               תנאי השימוש
             </a>
@@ -311,7 +311,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
             <a 
               href="/privacy-policy" 
               target="_blank"
-              className="text-[#2F3C7E] hover:text-[#4CAF50] underline"
+              className="text-brand-primary hover:text-brand-secondary underline"
             >
               מדיניות הפרטיות
             </a>

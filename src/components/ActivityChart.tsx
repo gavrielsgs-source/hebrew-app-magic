@@ -76,8 +76,8 @@ export function ActivityChart() {
           <Legend 
             formatter={(value) => <span style={{ textAlign: 'right', direction: 'rtl' }}>{value}</span>}
           />
-          <Bar dataKey="לידים" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="מכירות" fill="#16a34a" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="לידים" fill="hsl(var(--chart-primary))" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="מכירות" fill="hsl(var(--chart-secondary))" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

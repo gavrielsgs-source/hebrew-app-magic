@@ -36,7 +36,7 @@ export function CarCardDesktop({
       <CardHeader className="p-6 pb-4 flex-shrink-0">
         <div className="flex justify-between items-start mb-3">
           <div className="text-right min-w-0 flex-1">
-            <CardTitle className="text-xl font-bold text-[#2F3C7E] mb-1 truncate">
+            <CardTitle className="text-xl font-bold text-brand-primary mb-1 truncate">
               {car.make} {car.model}
             </CardTitle>
             <CardDescription className="text-lg font-medium text-gray-600">

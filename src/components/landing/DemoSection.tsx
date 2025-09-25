@@ -22,7 +22,7 @@ export function DemoSection({ onVideoOpen }: DemoSectionProps) {
             ראה את המערכת בפעולה
           </h2>
           <div className="flex items-center justify-center gap-2 mb-8">
-            <Clock className="h-5 w-5 text-[#2F3C7E]" />
+            <Clock className="h-5 w-5 text-brand-primary" />
             <p className="text-lg text-gray-600 font-medium">
               הדגמה של 60 שניות בלבד
             </p>
@@ -51,7 +51,7 @@ export function DemoSection({ onVideoOpen }: DemoSectionProps) {
               <div className="absolute inset-0 flex items-center justify-center">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] hover:scale-110 transition-all duration-300 rounded-full w-20 h-20 shadow-2xl hover:shadow-3xl"
+                  className="bg-gradient-primary hover:scale-110 transition-all duration-300 rounded-full w-20 h-20 shadow-2xl hover:shadow-3xl"
                   onClick={onVideoOpen}
                 >
                   <Play className="h-8 w-8 mr-1" />

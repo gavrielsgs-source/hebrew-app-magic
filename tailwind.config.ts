@@ -23,11 +23,22 @@ export default {
 				rubik: ['Rubik', 'sans-serif'],
 			},
 			colors: {
+				/* System Colors */
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				
+				/* Brand Colors */
+				brand: {
+					primary: 'hsl(var(--brand-primary))',
+					'primary-light': 'hsl(var(--brand-primary-light))',
+					secondary: 'hsl(var(--brand-secondary))',
+					'secondary-light': 'hsl(var(--brand-secondary-light))'
+				},
+				
+				/* Core Theme Colors */
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -36,18 +47,42 @@ export default {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
-				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+				accent: {
+					DEFAULT: 'hsl(var(--accent))',
+					foreground: 'hsl(var(--accent-foreground))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'
 				},
-				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+				
+				/* Semantic Colors */
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
 				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				destructive: {
+					DEFAULT: 'hsl(var(--destructive))',
+					foreground: 'hsl(var(--destructive-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))'
+				},
+				
+				/* Status Colors */
+				status: {
+					available: 'hsl(var(--status-available))',
+					sold: 'hsl(var(--status-sold))',
+					reserved: 'hsl(var(--status-reserved))',
+					pending: 'hsl(var(--status-pending))'
+				},
+				
+				/* UI Colors */
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
@@ -66,13 +101,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				carslead: {
-					purple: '#6051A0',
-					lightpurple: '#9986E5',
-					blue: '#33C3F0',
-					lightblue: '#6AD9FF',
-					gray: '#F7F7F7',
-					darkgray: '#333333'
+				
+				/* Chart Colors */
+				chart: {
+					primary: 'hsl(var(--chart-primary))',
+					secondary: 'hsl(var(--chart-secondary))',
+					tertiary: 'hsl(var(--chart-tertiary))',
+					quaternary: 'hsl(var(--chart-quaternary))',
+					quinary: 'hsl(var(--chart-quinary))'
 				}
 			},
 			borderRadius: {
@@ -120,8 +156,10 @@ export default {
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-				'carslead-gradient': 'linear-gradient(135deg, #6051A0 0%, #9986E5 100%)',
-				'carslead-blue-gradient': 'linear-gradient(135deg, #33C3F0 0%, #6AD9FF 100%)',
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-subtle': 'var(--gradient-subtle)',
+				'brand-gradient': 'linear-gradient(135deg, hsl(var(--brand-primary)) 0%, hsl(var(--brand-secondary)) 100%)',
+				'brand-gradient-reverse': 'linear-gradient(135deg, hsl(var(--brand-secondary)) 0%, hsl(var(--brand-primary)) 100%)',
 			}
 		}
 	},

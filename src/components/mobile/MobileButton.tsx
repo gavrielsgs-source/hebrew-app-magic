@@ -25,11 +25,11 @@ export function MobileButton({
   disabled
 }: MobileButtonProps) {
   const variants = {
-    primary: "bg-[#2F3C7E] hover:bg-[#2F3C7E]/90 text-white",
-    secondary: "bg-gray-500 hover:bg-gray-600 text-white",
-    outline: "border-2 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white bg-white",
-    success: "bg-green-600 hover:bg-green-700 text-white",
-    danger: "bg-red-500 hover:bg-red-600 text-white"
+    primary: "bg-brand-primary hover:bg-brand-primary-light text-primary-foreground",
+    secondary: "bg-secondary hover:bg-secondary/80 text-secondary-foreground",
+    outline: "border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-primary-foreground bg-background",
+    success: "bg-success hover:bg-success/90 text-success-foreground",
+    danger: "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
   };
 
   const sizes = {

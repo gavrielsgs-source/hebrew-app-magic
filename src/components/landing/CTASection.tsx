@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 export function CTASection() {
   return (
-    <section className="py-12 md:py-20 bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] w-full">
+    <section className="py-12 md:py-20 bg-gradient-primary w-full">
       <div className="container mx-auto px-4 text-center">
         <div className="max-w-3xl mx-auto text-white">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
@@ -35,7 +35,7 @@ export function CTASection() {
               <Link to="/auth?intent=trial">
                 <Button 
                   size="lg" 
-                  className="w-full bg-white text-[#2F3C7E] hover:bg-gray-100 font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"
+                  className="w-full bg-background text-brand-primary hover:bg-secondary font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"
                 >
                   התחל ניסיון חינם עכשיו!
                 </Button>

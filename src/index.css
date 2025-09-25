@@ -5,58 +5,133 @@
 
 @layer base {
   :root {
+    /* Brand Colors - מערכת צבעי המותג */
+    --brand-primary: 231 46% 29%;        /* #2F3C7E - כחול מותג ראשי */
+    --brand-primary-light: 231 46% 40%;  /* גרסה בהירה יותר */
+    --brand-secondary: 120 61% 50%;      /* #4CAF50 - ירוק מותג משני */
+    --brand-secondary-light: 120 61% 60%; /* גרסה בהירה יותר */
+    
+    /* System Colors - צבעי מערכת */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    
+    /* Primary using brand colors */
+    --primary: 231 46% 29%;               /* Brand primary */
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    
+    /* Secondary using softer tones */
+    --secondary: 220 13% 96%;             /* Light neutral */
+    --secondary-foreground: 231 46% 29%;  /* Brand primary for text */
+    
+    /* Accent using brand secondary */
+    --accent: 120 61% 95%;                /* Very light green */
+    --accent-foreground: 120 61% 25%;     /* Dark green for text */
+    
+    /* Muted colors */
+    --muted: 220 13% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    /* Semantic Colors - צבעים סמנטיים */
+    --success: 120 61% 50%;               /* Success green */
+    --success-foreground: 0 0% 98%;
+    --warning: 43 96% 56%;                /* Warning amber */
+    --warning-foreground: 43 96% 15%;
+    --destructive: 0 84% 60%;             /* Error red */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --info: 217 91% 60%;                  /* Info blue */
+    --info-foreground: 0 0% 98%;
+    
+    /* Status Colors - צבעי סטטוס */
+    --status-available: 120 61% 50%;      /* זמין */
+    --status-sold: 0 84% 60%;             /* נמכר */
+    --status-reserved: 43 96% 56%;        /* שמור */
+    --status-pending: 217 91% 60%;        /* בהמתנה */
+    
+    /* UI Colors */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 231 46% 29%;                  /* Brand primary for focus */
+    
+    /* Chart Colors - צבעי גרפים */
+    --chart-primary: 231 46% 29%;         /* Brand primary */
+    --chart-secondary: 120 61% 50%;       /* Brand secondary */
+    --chart-tertiary: 217 91% 60%;        /* Info blue */
+    --chart-quaternary: 43 96% 56%;       /* Warning amber */
+    --chart-quinary: 0 84% 60%;           /* Error red */
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(231 46% 29%) 0%, hsl(120 61% 50%) 100%);
+    --gradient-subtle: linear-gradient(135deg, hsl(220 13% 98%) 0%, hsl(220 13% 96%) 100%);
+    
     --radius: 0.5rem;
   }
 
   .dark {
+    /* Brand Colors remain consistent in dark mode */
+    --brand-primary: 231 46% 65%;         /* Lighter brand primary for dark mode */
+    --brand-primary-light: 231 46% 75%;
+    --brand-secondary: 120 61% 60%;       /* Slightly lighter green */
+    --brand-secondary-light: 120 61% 70%;
+    
+    /* Dark mode system colors */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    
+    /* Primary in dark mode */
+    --primary: 231 46% 65%;
+    --primary-foreground: 240 10% 3.9%;
+    
+    /* Secondary in dark mode */
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
+    
+    /* Accent in dark mode */
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 231 46% 65%;
+    
+    /* Muted in dark mode */
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    
+    /* Semantic colors for dark mode */
+    --success: 120 61% 60%;
+    --success-foreground: 240 10% 3.9%;
+    --warning: 43 96% 66%;
+    --warning-foreground: 43 96% 15%;
+    --destructive: 0 84% 70%;
+    --destructive-foreground: 240 10% 3.9%;
+    --info: 217 91% 70%;
+    --info-foreground: 240 10% 3.9%;
+    
+    /* Status colors for dark mode */
+    --status-available: 120 61% 60%;
+    --status-sold: 0 84% 70%;
+    --status-reserved: 43 96% 66%;
+    --status-pending: 217 91% 70%;
+    
+    /* UI colors for dark mode */
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --ring: 231 46% 65%;
+    
+    /* Chart colors for dark mode */
+    --chart-primary: 231 46% 65%;
+    --chart-secondary: 120 61% 60%;
+    --chart-tertiary: 217 91% 70%;
+    --chart-quaternary: 43 96% 66%;
+    --chart-quinary: 0 84% 70%;
+    
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(231 46% 65%) 0%, hsl(120 61% 60%) 100%);
+    --gradient-subtle: linear-gradient(135deg, hsl(240 10% 8%) 0%, hsl(240 3.7% 15.9%) 100%);
   }
 }
 

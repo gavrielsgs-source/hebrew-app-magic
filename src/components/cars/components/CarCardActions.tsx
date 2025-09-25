@@ -34,7 +34,7 @@ export function CarCardActions({ car, onSendWhatsapp, onViewDetails }: CarCardAc
       {/* כפתור צפייה בפרטים */}
       <Button 
         variant="outline" 
-        className="flex-1 border-[#2F3C7E] text-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white rounded-xl font-medium py-3 h-auto"
+        className="flex-1 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-primary-foreground rounded-xl font-medium py-3 h-auto"
         onClick={handleDetailsClick}
       >
         <Eye className="h-4 w-4 ml-2" />

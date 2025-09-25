@@ -17,7 +17,7 @@ export function CarCardTechnicalDetails({ car, isMobile = false }: CarCardTechni
           <div className="font-medium text-gray-900 truncate">{car.kilometers.toLocaleString()}</div>
           <div className="text-xs text-gray-500">קילומטרים</div>
         </div>
-        <Gauge className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+        <Gauge className="h-5 w-5 text-brand-primary flex-shrink-0" />
       </div>
       
       <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
@@ -25,7 +25,7 @@ export function CarCardTechnicalDetails({ car, isMobile = false }: CarCardTechni
           <div className="font-medium text-gray-900 truncate">{car.fuel_type || 'לא צוין'}</div>
           <div className="text-xs text-gray-500">סוג דלק</div>
         </div>
-        <Fuel className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+        <Fuel className="h-5 w-5 text-brand-primary flex-shrink-0" />
       </div>
       
       {car.transmission && (
@@ -34,7 +34,7 @@ export function CarCardTechnicalDetails({ car, isMobile = false }: CarCardTechni
             <div className="font-medium text-gray-900 truncate">{car.transmission}</div>
             <div className="text-xs text-gray-500">תיבת הילוכים</div>
           </div>
-          <CarIcon className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+          <CarIcon className="h-5 w-5 text-brand-primary flex-shrink-0" />
         </div>
       )}
 
@@ -44,7 +44,7 @@ export function CarCardTechnicalDetails({ car, isMobile = false }: CarCardTechni
             <div className="font-medium text-gray-900 truncate">{new Date(car.entry_date).toLocaleDateString('he-IL')}</div>
             <div className="text-xs text-gray-500">כניסה למלאי</div>
           </div>
-          <Calendar className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+          <Calendar className="h-5 w-5 text-brand-primary flex-shrink-0" />
         </div>
       )}
 
@@ -54,7 +54,7 @@ export function CarCardTechnicalDetails({ car, isMobile = false }: CarCardTechni
             <div className="font-medium text-gray-900 truncate">{new Date(car.next_test_date).toLocaleDateString('he-IL')}</div>
             <div className="text-xs text-gray-500">טסט הבא</div>
           </div>
-          <Calendar className="h-5 w-5 text-[#2F3C7E] flex-shrink-0" />
+          <Calendar className="h-5 w-5 text-brand-primary flex-shrink-0" />
         </div>
       )}
     </div>

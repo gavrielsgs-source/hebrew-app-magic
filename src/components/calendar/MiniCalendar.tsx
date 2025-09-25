@@ -88,7 +88,7 @@ export function MiniCalendar() {
     <Card className="w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold text-[#2F3C7E] flex items-center gap-2">
+          <CardTitle className="text-lg font-bold text-brand-primary flex items-center gap-2">
             <Calendar className="h-5 w-5" />
             יומן משימות
           </CardTitle>

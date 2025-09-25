@@ -67,9 +67,9 @@ export function SalesAnalytics() {
                   }
                 }}
               />
-              <Bar dataKey="totalLeads" fill="#8884d8" name="סה״כ לידים" />
-              <Bar dataKey="convertedLeads" fill="#82ca9d" name="לידים שהומרו" />
-              <Bar dataKey="revenue" fill="#ffc658" name="הכנסות" />
+              <Bar dataKey="totalLeads" fill="hsl(var(--chart-primary))" name="סה״כ לידים" />
+              <Bar dataKey="convertedLeads" fill="hsl(var(--chart-secondary))" name="לידים שהומרו" />
+              <Bar dataKey="revenue" fill="hsl(var(--chart-tertiary))" name="הכנסות" />
             </BarChart>
           </ResponsiveContainer>
         </div>

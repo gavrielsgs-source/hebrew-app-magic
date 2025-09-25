@@ -37,7 +37,7 @@ export function CarCardMobile({
         {/* כותרת וסטטוס */}
         <div className="flex justify-between items-start">
           <div className="text-right min-w-0 flex-1">
-            <h3 className="text-xl font-bold text-[#2F3C7E] mb-1 truncate">
+            <h3 className="text-xl font-bold text-brand-primary mb-1 truncate">
               {car.make} {car.model}
             </h3>
             <p className="text-base text-gray-600">
