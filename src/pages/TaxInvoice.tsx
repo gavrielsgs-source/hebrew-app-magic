@@ -177,8 +177,8 @@ export default function TaxInvoice() {
     totalAmount,
     notes: watchedFields.notes,
     paymentTerms: watchedFields.paymentTerms,
-    leadId: watchedFields.leadId,
-    carId: watchedFields.carId
+    leadId: watchedFields.leadId && watchedFields.leadId !== 'no-lead' ? watchedFields.leadId : undefined,
+    carId: watchedFields.carId && watchedFields.carId !== 'no-car' ? watchedFields.carId : undefined
   };
 
   const onSubmit = async (data: TaxInvoiceFormData) => {
@@ -215,8 +215,8 @@ export default function TaxInvoice() {
         totalAmount,
         notes: data.notes,
         paymentTerms: data.paymentTerms,
-        leadId: data.leadId,
-        carId: data.carId
+          leadId: data.leadId === 'no-lead' ? undefined : data.leadId,
+          carId: data.carId === 'no-car' ? undefined : data.carId
       };
 
       const savedInvoice = await createTaxInvoice(invoiceData);
@@ -366,7 +366,7 @@ export default function TaxInvoice() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">ללא שיוך ללקוח</SelectItem>
+                              <SelectItem value="no-lead">ללא שיוך ללקוח</SelectItem>
                               {leads.map((lead) => (
                                 <SelectItem key={lead.id} value={lead.id}>
                                   {lead.name} - {lead.phone}
@@ -392,7 +392,7 @@ export default function TaxInvoice() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">ללא שיוך לרכב</SelectItem>
+                              <SelectItem value="no-car">ללא שיוך לרכב</SelectItem>
                               {cars.map((car) => (
                                 <SelectItem key={car.id} value={car.id}>
                                   {car.make} {car.model} - {car.year}

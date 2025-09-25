@@ -7,7 +7,7 @@ export interface DocumentType {
 }
 
 export const DOCUMENT_TYPES: DocumentType[] = [
-  { id: 'tax-invoice', name: 'חשבונית מס', icon: 'Receipt', category: 'invoice' },
+  // חשבונית מס הוסרה מכאן כי היא מטופלת בנפרד בתפריט
   { id: 'tax-invoice-receipt', name: 'חשבונית מס קבלה', icon: 'FileText', category: 'invoice' },
   { id: 'tax-invoice-credit', name: 'חשבונית מס זיכוי', icon: 'CreditCard', category: 'invoice' },
   { id: 'receipt', name: 'קבלה', icon: 'Receipt', category: 'receipt' },
