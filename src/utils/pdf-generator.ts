@@ -14,9 +14,20 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
   element.style.color = 'black';
   element.style.fontSize = '14px';
   element.style.lineHeight = '1.6';
+  element.style.width = '210mm'; // A4 width
+  element.style.boxSizing = 'border-box';
+  element.style.minHeight = 'auto'; // Allow dynamic height
   
   // Append to body temporarily
   document.body.appendChild(element);
+
+  // Wait for content to render properly
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // Log element dimensions for debugging
+  console.log('PDF element height:', element.scrollHeight, 'px');
+  console.log('PDF element width:', element.scrollWidth, 'px');
+  console.log('PDF content length:', element.innerHTML.length, 'characters');
 
   try {
     const options = {
@@ -24,12 +35,16 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
       filename: `הסכם_מכר_${data.buyer.name || 'לקוח'}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`,
       image: { type: 'jpeg' as const, quality: 0.95 },
       html2canvas: { 
-        scale: 1.5,
+        scale: 1.0, // Reduced scale to prevent oversized content
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        height: window.innerHeight,
-        windowHeight: window.innerHeight
+        scrollX: 0,
+        scrollY: 0,
+        letterRendering: true,
+        // Remove height restrictions to allow full content
+        windowWidth: 794, // A4 width in pixels at 96 DPI
+        windowHeight: element.scrollHeight + 100 // Dynamic height based on content
       },
       jsPDF: { 
         unit: 'mm' as const, 
@@ -37,7 +52,7 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
         orientation: 'portrait' as const,
         compress: true
       },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      pagebreak: { mode: 'css' } // Simplified pagebreak mode
     };
 
     await html2pdf().set(options).from(element).save();
