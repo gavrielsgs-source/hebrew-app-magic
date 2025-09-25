@@ -24,39 +24,40 @@ export function useSalesAnalytics(dateRange: { from: Date; to: Date }) {
 
         if (leadsError) throw leadsError;
         
-        const { data: profiles, error: profilesError } = await supabase
+        // Only fetch current user's profile for security
+        const { data: currentUser } = await supabase.auth.getUser();
+        if (!currentUser.user) throw new Error("משתמש לא מחובר");
+        
+        const { data: userProfile, error: profileError } = await supabase
           .from("profiles")
-          .select("*");
+          .select("*")
+          .eq("id", currentUser.user.id)
+          .single();
           
-        if (profilesError) throw profilesError;
+        if (profileError) throw profileError;
         
         const safeLeads = leads || [];
-        const safeProfiles = profiles || [];
         
-        // חישוב מכירות לפי סוכן
-        const salesByAgent = safeProfiles
-          .map((profile: any) => {
-            const agentLeads = safeLeads.filter(l => (l as any).assigned_to === profile.id);
-            const sales = agentLeads.filter(l => (l as any).status === "closed").length;
-            const amount = agentLeads
-              .filter(l => (l as any).status === "closed" && (l as any).cars && (l as any).cars.price)
-              .reduce((sum: number, l: any) => {
-                const carPrice = l.cars?.price;
-                return sum + (typeof carPrice === 'number' ? carPrice : 0);
-              }, 0);
-            
-            return {
-              agent: profile.full_name || profile.id,
-              sales,
-              amount,
-            };
-          })
-          .filter((agent: any) => agent.sales > 0);
+        // חישוב מכירות של המשתמש הנוכחי בלבד (אבטחה)
+        const userLeads = safeLeads.filter(l => (l as any).user_id === currentUser.user.id);
+        const userSales = userLeads.filter(l => (l as any).status === "closed").length;
+        const userAmount = userLeads
+          .filter(l => (l as any).status === "closed" && (l as any).cars && (l as any).cars.price)
+          .reduce((sum: number, l: any) => {
+            const carPrice = l.cars?.price;
+            return sum + (typeof carPrice === 'number' ? carPrice : 0);
+          }, 0);
         
-        // חישוב מכירות לאורך זמן
+        const salesByAgent = [{
+          agent: userProfile?.full_name || "אני",
+          sales: userSales,
+          amount: userAmount,
+        }].filter(agent => agent.sales > 0);
+        
+        // חישוב מכירות לאורך זמן - רק למשתמש הנוכחי (אבטחה)
         const salesByDate: Record<string, { sales: number; amount: number }> = {};
         
-        safeLeads.filter(l => (l as any).status === "closed").forEach((lead: any) => {
+        userLeads.filter(l => (l as any).status === "closed").forEach((lead: any) => {
           const createdAt = lead.created_at;
           if (typeof createdAt === 'string') {
             const date = createdAt.split("T")[0];
