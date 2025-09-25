@@ -19,6 +19,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { generateSalesAgreementPDF } from "@/utils/pdf-generator";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
 
 const salesAgreementSchema = z.object({
   date: z.date({
@@ -65,6 +66,46 @@ export default function SalesAgreement() {
   
   const selectedLead = leads.find(lead => lead.id === selectedLeadId);
   const selectedCar = cars.find(car => car.id === selectedCarId);
+
+  // Create preview data
+  const previewData = {
+    date: form.watch("date"),
+    seller: {
+      company: profile?.company_name || profile?.full_name || "חברת רכב בע\"מ",
+      id: "000000000", // TODO: Add business_id to profile
+      phone: profile?.phone || "052-0000000",
+      address: {
+        street: "רחוב ראשי 1", // TODO: Add address to profile
+        city: "תל אביב", // TODO: Add city to profile
+        country: "ישראל"
+      }
+    },
+    buyer: selectedLead ? {
+      name: selectedLead.name,
+      id: form.watch("buyerId"),
+      phone: selectedLead.phone || "",
+      address: form.watch("buyerAddress")
+    } : undefined,
+    car: selectedCar ? {
+      make: selectedCar.make,
+      model: selectedCar.model,
+      licenseNumber: selectedCar.license_number || "",
+      chassisNumber: selectedCar.chassis_number || "",
+      year: selectedCar.year,
+      mileage: selectedCar.kilometers,
+      hand: "1", // TODO: Add hand field to car model
+      originality: "מקורית"
+    } : undefined,
+    financial: {
+      totalPrice: form.watch("totalPrice") ? parseFloat(form.watch("totalPrice")) : undefined,
+      downPayment: form.watch("downPayment") ? parseFloat(form.watch("downPayment")) : undefined,
+      remainingAmount: form.watch("remainingAmount") ? parseFloat(form.watch("remainingAmount")) : 
+        (form.watch("totalPrice") && form.watch("downPayment")) ? 
+        parseFloat(form.watch("totalPrice")) - parseFloat(form.watch("downPayment")) : undefined,
+      paymentTerms: form.watch("paymentTerms"),
+      specialTerms: form.watch("specialTerms")
+    }
+  };
 
   const onSubmit = async (data: SalesAgreementFormData) => {
     try {
@@ -136,14 +177,16 @@ export default function SalesAgreement() {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <Card className="max-w-4xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-right flex items-center gap-2">
-            <Calendar className="h-6 w-6" />
-            הסכם מכר - הפקה אוטומטית
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-7xl mx-auto">
+        {/* Form Section */}
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle className="text-right flex items-center gap-2">
+              <Calendar className="h-6 w-6" />
+              הסכם מכר - הפקה אוטומטית
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -415,6 +458,12 @@ export default function SalesAgreement() {
           </Form>
         </CardContent>
       </Card>
+      
+      {/* Preview Section */}
+      <div className="xl:sticky xl:top-6">
+        <SalesAgreementPreview data={previewData} />
+      </div>
+    </div>
     </div>
   );
 }
