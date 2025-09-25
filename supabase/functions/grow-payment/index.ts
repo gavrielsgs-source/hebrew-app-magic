@@ -3,10 +3,51 @@ import { corsHeaders, GROW_CLIENT_ID, GROW_EC_PWD } from './config.ts';
 import { validatePayload, type PaymentPayload } from './validators.ts';
 import { processDirectDebitPayment, type GrowPaymentRequest } from './api-client.ts';
 
+// Rate limiting for security
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10;
+
+function isRateLimited(clientId: string): boolean {
+  const now = Date.now();
+  const clientData = rateLimitMap.get(clientId);
+  
+  if (!clientData || now - clientData.timestamp > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(clientId, { count: 1, timestamp: now });
+    return false;
+  }
+  
+  if (clientData.count >= MAX_REQUESTS_PER_WINDOW) {
+    return true;
+  }
+  
+  clientData.count++;
+  return false;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Get client identifier for rate limiting
+  const clientId = req.headers.get('x-forwarded-for') || 'unknown';
+  
+  // Apply rate limiting
+  if (isRateLimited(clientId)) {
+    console.error('Rate limit exceeded for client:', clientId);
+    return new Response(
+      JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), 
+      { 
+        status: 429, 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': '60'
+        }
+      }
+    );
   }
 
   try {
@@ -21,7 +62,7 @@ serve(async (req) => {
     } catch (e) {
       console.error("Error parsing JSON:", e);
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON', details: e.message }),
+        JSON.stringify({ error: 'Invalid JSON', details: e instanceof Error ? e.message : 'Unknown error' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

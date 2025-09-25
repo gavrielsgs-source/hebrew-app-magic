@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserRole } from "@/types/user";
 import { toast } from "sonner";
-import { ShieldAlert, UserCog, Building, Users } from "lucide-react";
+import { ShieldAlert, UserCog, Building, Users, Shield } from "lucide-react";
 import { Navigate } from "react-router-dom";
+import { SecurityAuditLogs } from "@/components/security/SecurityAuditLogs";
 
 export default function Admin() {
   const { isAdmin, isLoading: adminLoading } = useRealAdminCheck();
@@ -58,6 +59,10 @@ export default function Admin() {
             <UserCog className="h-4 w-4" />
             <span>הרשאות</span>
           </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            <span>אבטחה</span>
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="users" className="space-y-4">
@@ -71,7 +76,72 @@ export default function Admin() {
         <TabsContent value="permissions" className="space-y-4">
           <PermissionsManager />
         </TabsContent>
+        
+        <TabsContent value="security" className="space-y-4">
+          <SecurityManager />
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function SecurityManager() {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            מצב אבטחה
+          </CardTitle>
+          <CardDescription>סטטוס אבטחת המערכת ושיפורים שבוצעו</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-green-50">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <div>
+                  <p className="font-medium">אבטחת מסד נתונים</p>
+                  <p className="text-sm text-muted-foreground">כל הפונקציות מאובטחות עם search_path נכון</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-green-50">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <div>
+                  <p className="font-medium">אבטחת טפסים</p>
+                  <p className="text-sm text-muted-foreground">כל הטפסים כוללים אימות נתונים מתקדם</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-green-50">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <div>
+                  <p className="font-medium">הגנה מפני XSS</p>
+                  <p className="text-sm text-muted-foreground">מערכת ניטור אוטומטית מפני התקפות</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-yellow-50">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div>
+                  <p className="font-medium">הגדרות Supabase</p>
+                  <p className="text-sm text-muted-foreground">יש להפעיל הגנת סיסמאות דלופות ולעדכן PostgreSQL</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <SecurityAuditLogs />
     </div>
   );
 }

@@ -1,9 +1,16 @@
 
 import * as z from "zod";
+import { sanitizeInput } from "@/lib/security-utils";
 
 export const carFormSchema = z.object({
-  make: z.string().min(2, "נדרשות לפחות 2 אותיות"),
-  model: z.string().min(1, "שדה חובה"),
+  make: z.string()
+    .min(2, "נדרשות לפחות 2 אותיות")
+    .max(50, "יותר מדי תווים")
+    .transform(sanitizeInput),
+  model: z.string()
+    .min(1, "שדה חובה")
+    .max(50, "יותר מדי תווים")
+    .transform(sanitizeInput),
   year: z.string()
     .regex(/^\d+$/, "יש להזין מספרים בלבד")
     .refine(val => {
@@ -15,12 +22,24 @@ export const carFormSchema = z.object({
     .regex(/^\d+$/, "יש להזין מספרים בלבד"),
   price: z.string()
     .regex(/^\d+$/, "יש להזין מספרים בלבד"),
-  description: z.string().optional(),
-  interior_color: z.string().optional(),
-  exterior_color: z.string().optional(),
-  transmission: z.string().optional(),
-  fuel_type: z.string().optional(),
-  engine_size: z.string().optional(),
+  description: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
+  interior_color: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
+  exterior_color: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
+  transmission: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
+  fuel_type: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
+  engine_size: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
   registration_year: z.string()
     .regex(/^\d+$/, "יש להזין מספרים בלבד")
     .optional()
