@@ -279,29 +279,33 @@ export default function TaxInvoice() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">חשבונית מס</h1>
-          <p className="text-muted-foreground">יצירת חשבונית מס חדשה</p>
+        <div className="text-center mb-12">
+          <div className="relative inline-block">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent mb-4">
+              חשבונית מס
+            </h1>
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-primary to-accent rounded-full"></div>
+          </div>
+          <p className="text-lg text-muted-foreground mt-6 font-medium">יצירת חשבונית מס מקצועית ואלגנטית</p>
         </div>
 
         {/* Form Section */}
         <div className="w-full">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">חשבונית מס</h1>
-            <p className="text-muted-foreground">יצירת חשבונית מס חדשה</p>
-          </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Header Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>פרטי החשבונית</CardTitle>
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b border-border/50">
+                  <CardTitle className="text-xl font-semibold flex items-center gap-3">
+                    <div className="w-2 h-8 bg-gradient-to-b from-primary to-accent rounded-full"></div>
+                    פרטי החשבונית
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6 p-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
@@ -437,11 +441,14 @@ export default function TaxInvoice() {
               </Card>
 
               {/* Customer Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>פרטי הלקוח</CardTitle>
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b border-border/50">
+                  <CardTitle className="text-xl font-semibold flex items-center gap-3">
+                    <div className="w-2 h-8 bg-gradient-to-b from-primary to-accent rounded-full"></div>
+                    פרטי הלקוח
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6 p-8">
                   {/* Customer Type Selection */}
                   <FormField
                     control={form.control}
@@ -562,29 +569,41 @@ export default function TaxInvoice() {
                  </CardContent>
                </Card>
 
-               {/* Items */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    פריטים
-                    <Button type="button" onClick={addItem} size="sm" variant="outline">
+                {/* Items */}
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b border-border/50">
+                  <CardTitle className="text-xl font-semibold flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-8 bg-gradient-to-b from-primary to-accent rounded-full"></div>
+                      פריטים
+                    </div>
+                    <Button 
+                      type="button" 
+                      onClick={addItem} 
+                      size="sm" 
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       הוסף פריט
                     </Button>
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="p-8">
+                  <div className="space-y-6">
                     {fields.map((field, index) => (
-                      <div key={field.id} className="p-4 border rounded-lg space-y-4">
+                      <div key={field.id} className="p-6 bg-gradient-to-br from-muted/30 via-muted/20 to-background/50 border border-border/30 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 space-y-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium">פריט {index + 1}</h4>
+                          <h4 className="font-semibold text-lg flex items-center gap-2">
+                            <div className="w-1.5 h-6 bg-gradient-to-b from-primary to-accent rounded-full"></div>
+                            פריט {index + 1}
+                          </h4>
                           {fields.length > 1 && (
                             <Button
                               type="button"
                               onClick={() => removeItem(index)}
                               size="sm"
                               variant="destructive"
+                              className="hover:scale-105 transition-transform duration-200"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -678,19 +697,19 @@ export default function TaxInvoice() {
                     ))}
                   </div>
 
-                  <div className="mt-6 p-4 bg-muted rounded-lg">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>סכום ללא מע"מ:</span>
-                        <span>{subtotal.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                  <div className="mt-8 p-8 bg-gradient-to-br from-primary/5 via-accent/5 to-muted/20 rounded-xl border border-primary/20 shadow-inner">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-2 border-b border-border/30">
+                        <span className="text-lg font-medium">סכום ללא מע"מ:</span>
+                        <span className="text-lg font-semibold">{subtotal.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>מע"מ:</span>
-                        <span>{vatAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                      <div className="flex justify-between items-center py-2 border-b border-border/30">
+                        <span className="text-lg font-medium">מע"מ:</span>
+                        <span className="text-lg font-semibold">{vatAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
                       </div>
-                      <div className="flex justify-between font-bold text-lg border-t pt-2">
-                        <span>סכום כולל:</span>
-                        <span>{totalAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                      <div className="flex justify-between items-center py-4 border-t-2 border-primary/30 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-lg px-4">
+                        <span className="text-2xl font-bold text-primary">סכום כולל:</span>
+                        <span className="text-2xl font-bold text-primary">{totalAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
                       </div>
                     </div>
                   </div>
@@ -698,11 +717,14 @@ export default function TaxInvoice() {
               </Card>
 
               {/* Additional Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>מידע נוסף</CardTitle>
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b border-border/50">
+                  <CardTitle className="text-xl font-semibold flex items-center gap-3">
+                    <div className="w-2 h-8 bg-gradient-to-b from-primary to-accent rounded-full"></div>
+                    מידע נוסף
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6 p-8">
                   <FormField
                     control={form.control}
                     name="paymentTerms"
@@ -734,19 +756,22 @@ export default function TaxInvoice() {
               </Card>
 
               {/* Action Buttons */}
-              <div className="flex gap-4">
+              <div className="flex gap-6 pt-4">
                 <Button
                   type="submit"
                   disabled={isGenerating}
-                  className="flex-1"
+                  className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02]"
                 >
                   {isGenerating ? (
-                    <>טוען...</>
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>יוצר מסמך...</span>
+                    </div>
                   ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      יצירת מסמך
-                    </>
+                    <div className="flex items-center gap-3">
+                      <Download className="w-5 h-5" />
+                      <span>יצירת מסמך מקצועי</span>
+                    </div>
                   )}
                 </Button>
 
@@ -755,10 +780,12 @@ export default function TaxInvoice() {
                   variant="outline"
                   onClick={handleWhatsAppSend}
                   disabled={!watchedFields.customerPhone}
-                  className="flex-1"
+                  className="flex-1 h-14 text-lg font-semibold border-2 border-primary/30 bg-gradient-to-r from-background via-background to-muted/20 hover:from-primary/5 hover:via-primary/10 hover:to-accent/5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:border-primary/50"
                 >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  שלח וואטסאפ
+                  <div className="flex items-center gap-3">
+                    <MessageCircle className="w-5 h-5" />
+                    <span>שלח בוואטסאפ</span>
+                  </div>
                 </Button>
               </div>
             </form>
@@ -767,12 +794,23 @@ export default function TaxInvoice() {
 
         {/* Preview Section - Now Below */}
         <div className="w-full">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">תצוגה מקדימה</CardTitle>
+          <Card className="shadow-2xl border-0 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-accent/5 via-accent/10 to-primary/5 border-b border-border/50">
+              <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                <div className="w-2 h-8 bg-gradient-to-b from-accent to-primary rounded-full"></div>
+                תצוגה מקדימה
+                <div className="mr-auto px-3 py-1 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full text-sm font-medium text-primary">
+                  Preview
+                </div>
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <TaxInvoicePreview data={previewData} />
+            <CardContent className="p-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-xl"></div>
+                <div className="relative z-10">
+                  <TaxInvoicePreview data={previewData} />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
