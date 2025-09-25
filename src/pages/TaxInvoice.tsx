@@ -40,18 +40,25 @@ const taxInvoiceSchema = z.object({
   leadId: z.string().optional(),
   carId: z.string().optional(),
   
-  // Company info
+  // Company info (seller - your business)
   companyName: z.string().min(1, 'שם החברה נדרש'),
   companyAddress: z.string().min(1, 'כתובת החברה נדרשת'),
   companyHp: z.string().min(1, 'מספר עוסק מורשה נדרש'),
   companyPhone: z.string().min(1, 'טלפון החברה נדרש'),
   companyAuthorizedDealer: z.boolean(),
   
+  // Customer type selection
+  customerType: z.enum(['individual', 'business']),
+  
   // Customer info
   customerName: z.string().min(1, 'שם הלקוח נדרש'),
   customerAddress: z.string().min(1, 'כתובת הלקוח נדרשת'),
   customerHp: z.string().min(1, 'ח.פ/ת.ז הלקוח נדרש'),
   customerPhone: z.string().min(1, 'טלפון הלקוח נדרש'),
+  
+  // Business customer additional fields (conditional)
+  customerCompanyName: z.string().optional(),
+  customerContactPerson: z.string().optional(),
   
   // Items
   items: z.array(invoiceItemSchema).min(1, 'לפחות פריט אחד נדרש'),
@@ -76,15 +83,18 @@ export default function TaxInvoice() {
       date: new Date(),
       title: 'חשבונית מס',
       currency: 'ILS',
-      companyName: profile?.company_name || '',
-      companyAddress: '',
-      companyHp: '',
-      companyPhone: profile?.phone || '',
+      companyName: profile?.company_name || 'חברתי',
+      companyAddress: 'כתובת החברה',
+      companyHp: '123456789',
+      companyPhone: profile?.phone || '050-1234567',
       companyAuthorizedDealer: false,
+      customerType: 'individual' as const,
       customerName: '',
       customerAddress: '',
       customerHp: '',
       customerPhone: '',
+      customerCompanyName: '',
+      customerContactPerson: '',
       items: [{
         id: crypto.randomUUID(),
         description: '',
@@ -112,6 +122,7 @@ export default function TaxInvoice() {
     if (selectedLead && selectedLead.id !== 'no-lead') {
       form.setValue('customerName', selectedLead.name);
       form.setValue('customerPhone', selectedLead.phone || '');
+      form.setValue('customerType', 'individual');
       // Clear other fields as they're not stored in leads table yet
       if (!form.getValues('customerAddress')) {
         form.setValue('customerAddress', '');
@@ -173,7 +184,9 @@ export default function TaxInvoice() {
       authorizedDealer: watchedFields.companyAuthorizedDealer
     },
     customer: {
-      name: watchedFields.customerName,
+      name: watchedFields.customerType === 'business' && watchedFields.customerCompanyName 
+        ? `${watchedFields.customerCompanyName}${watchedFields.customerContactPerson ? ' (איש קשר: ' + watchedFields.customerContactPerson + ')' : ''}`
+        : watchedFields.customerName,
       address: watchedFields.customerAddress,
       hp: watchedFields.customerHp,
       phone: watchedFields.customerPhone
@@ -204,7 +217,9 @@ export default function TaxInvoice() {
           authorizedDealer: data.companyAuthorizedDealer
         },
         customer: {
-          name: data.customerName,
+          name: data.customerType === 'business' && data.customerCompanyName 
+            ? `${data.customerCompanyName}${data.customerContactPerson ? ' (איש קשר: ' + data.customerContactPerson + ')' : ''}`
+            : data.customerName,
           address: data.customerAddress,
           hp: data.customerHp,
           phone: data.customerPhone
@@ -421,109 +436,79 @@ export default function TaxInvoice() {
                 </CardContent>
               </Card>
 
-              {/* Company Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>פרטי החברה</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="companyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>שם החברה</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="שם החברה" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="companyHp"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>מספר עוסק מורשה</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="123456789" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="companyAddress"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>כתובת החברה</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="רחוב 123, עיר, מיקוד" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="companyPhone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>טלפון החברה</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="050-1234567" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="companyAuthorizedDealer"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>
-                              עוסק מורשה
-                            </FormLabel>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Customer Information */}
               <Card>
                 <CardHeader>
                   <CardTitle>פרטי הלקוח</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Customer Type Selection */}
+                  <FormField
+                    control={form.control}
+                    name="customerType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>סוג לקוח</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="בחר סוג לקוח" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="individual">לקוח פרטי</SelectItem>
+                            <SelectItem value="business">חברה/עסק</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Business Customer Fields */}
+                  {watchedFields.customerType === 'business' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+                      <FormField
+                        control={form.control}
+                        name="customerCompanyName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>שם החברה</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="שם החברה" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="customerContactPerson"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>איש קשר (אופציונלי)</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="שם איש הקשר" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="customerName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>שם הלקוח</FormLabel>
+                          <FormLabel>
+                            {watchedFields.customerType === 'business' ? 'שם איש קשר עיקרי' : 'שם מלא'}
+                          </FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="שם הלקוח" />
+                            <Input {...field} placeholder={watchedFields.customerType === 'business' ? 'שם איש הקשר' : 'שם מלא'} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -535,9 +520,11 @@ export default function TaxInvoice() {
                       name="customerHp"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>ח.פ / ת.ז</FormLabel>
+                          <FormLabel>
+                            {watchedFields.customerType === 'business' ? 'ח.פ החברה' : 'ת.ז'}
+                          </FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="123456789" />
+                            <Input {...field} placeholder={watchedFields.customerType === 'business' ? '123456789' : '123456789'} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -550,9 +537,9 @@ export default function TaxInvoice() {
                     name="customerAddress"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>כתובת הלקוח</FormLabel>
+                        <FormLabel>כתובת</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="רחוב 456, עיר, מיקוד" />
+                          <Textarea {...field} placeholder="כתובת מלאה" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -564,18 +551,18 @@ export default function TaxInvoice() {
                     name="customerPhone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>טלפון הלקוח</FormLabel>
+                        <FormLabel>טלפון</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="050-9876543" />
+                          <Input {...field} placeholder="050-1234567" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </CardContent>
-              </Card>
+                 </CardContent>
+               </Card>
 
-              {/* Items */}
+               {/* Items */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
