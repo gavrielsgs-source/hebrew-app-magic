@@ -28,12 +28,20 @@ const salesAgreementSchema = z.object({
     required_error: "בחירת לקוח נדרשת"
   }),
   carId: z.string().optional(),
+  buyerId: z.string({
+    required_error: "תעודת זהות קונה נדרשת"
+  }),
+  buyerAddress: z.string({
+    required_error: "כתובת קונה נדרשת"
+  }),
   totalPrice: z.string({
     required_error: "מחיר כולל נדרש"
   }),
   downPayment: z.string({
     required_error: "מקדמה נדרשת"
   }),
+  remainingAmount: z.string().optional(),
+  paymentTerms: z.string().optional(),
   specialTerms: z.string().optional(),
 });
 
@@ -74,20 +82,20 @@ export default function SalesAgreement() {
       const agreementData = {
         date: format(data.date, "dd MMMM yyyy", { locale: he }),
         seller: {
-          company: profile?.company_name || "ספיישל קארס בע\"מ",
-          id: "513208371",
-          phone: "6855*",
+          company: profile?.company_name || profile?.full_name || "חברת רכב בע\"מ",
+          id: "000000000", // This should be configured in profile
+          phone: profile?.phone || "052-0000000",
           address: {
-            street: "היצירה 15",
-            city: "רחובות", 
-            country: "Israel"
+            street: "רחוב ראשי 1", // This should be configured in profile
+            city: "תל אביב", // This should be configured in profile
+            country: "ישראל"
           }
         },
         buyer: {
           name: selectedLead.name,
-          id: "", // This should come from the lead data
+          id: data.buyerId,
           phone: selectedLead.phone || "",
-          address: ""
+          address: data.buyerAddress
         },
         car: selectedCar ? {
           make: selectedCar.make,
@@ -102,6 +110,8 @@ export default function SalesAgreement() {
         financial: {
           totalPrice: parseFloat(data.totalPrice),
           downPayment: parseFloat(data.downPayment),
+          remainingAmount: data.remainingAmount ? parseFloat(data.remainingAmount) : parseFloat(data.totalPrice) - parseFloat(data.downPayment),
+          paymentTerms: data.paymentTerms || "",
           specialTerms: data.specialTerms || ""
         }
       };
@@ -262,6 +272,71 @@ export default function SalesAgreement() {
                     </FormItem>
                   )}
                 />
+
+                {/* Buyer ID */}
+                <FormField
+                  control={form.control}
+                  name="buyerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">תעודת זהות קונה</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="הכנס תעודת זהות" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Buyer Address */}
+                <FormField
+                  control={form.control}
+                  name="buyerAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">כתובת קונה</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="הכנס כתובת מלאה" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Remaining Amount */}
+                <FormField
+                  control={form.control}
+                  name="remainingAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">יתרת תשלום (₪)</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="יחושב אוטומטית אם לא יוזן" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Payment Terms */}
+                <FormField
+                  control={form.control}
+                  name="paymentTerms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">תנאי תשלום</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="הכנס תנאי תשלום (מועדי תשלום, תנאים מיוחדים וכו')"
+                          className="text-right"
+                          rows={3}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Special Terms */}
@@ -319,7 +394,22 @@ export default function SalesAgreement() {
                   {isGenerating ? "יוצר הסכם..." : "יצירת PDF"}
                 </Button>
                 
-                {/* Future: WhatsApp and Email buttons */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!selectedLead?.phone}
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    if (selectedLead?.phone) {
+                      const message = `שלום ${selectedLead.name}, מצורף הסכם המכר עבור הרכב. נשמח לקבוע פגישה לחתימה על ההסכם.`;
+                      const whatsappUrl = `https://wa.me/${selectedLead.phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`;
+                      window.open(whatsappUrl, '_blank');
+                    }
+                  }}
+                >
+                  <Send className="h-4 w-4" />
+                  שליחה לווטסאפ
+                </Button>
               </div>
             </form>
           </Form>

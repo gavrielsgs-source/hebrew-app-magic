@@ -56,6 +56,8 @@ export interface SalesAgreementData {
   financial: {
     totalPrice: number;
     downPayment: number;
+    remainingAmount?: number;
+    paymentTerms: string;
     specialTerms: string;
   };
 }
