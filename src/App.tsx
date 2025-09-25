@@ -32,6 +32,7 @@ import PaymentError from "./pages/PaymentError";
 import NotFound from "./pages/NotFound";
 import Analytics from "./pages/Analytics";
 import Documents from "./pages/Documents";
+import DocumentProduction from "./pages/DocumentProduction";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
@@ -117,6 +118,7 @@ function AppLayout() {
                 <Route path="/templates" element={<Templates />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/documents" element={<Documents />} />
+                <Route path="/documents/production/:type" element={<DocumentProduction />} />
                 <Route path="/subscription" element={<Subscription />} />
                 <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                 <Route path="/subscription/payment-success" element={<PaymentSuccess />} />

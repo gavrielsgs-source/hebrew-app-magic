@@ -22,6 +22,7 @@ import {
   FileBarChart,
   FileText,
 } from "lucide-react";
+import { DocumentProductionMenu } from "@/components/document-production/DocumentProductionMenu";
 
 export function AppSidebar() {
   const { pathname } = useLocation();
@@ -122,6 +123,10 @@ export function AppSidebar() {
                 <FileText className="h-5 w-5" />
                 <span className="group-data-[collapsible=icon]:hidden">מסמכים</span>
               </button>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <DocumentProductionMenu pathname={pathname} />
             </SidebarMenuItem>
 
             {isAdmin && (
