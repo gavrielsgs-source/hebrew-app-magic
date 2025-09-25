@@ -20,21 +20,24 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
 
   try {
     const options = {
-      margin: [15, 10, 15, 10] as [number, number, number, number],
+      margin: [10, 8, 10, 8] as [number, number, number, number],
       filename: `הסכם_מכר_${data.buyer.name || 'לקוח'}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 },
+      image: { type: 'jpeg' as const, quality: 0.95 },
       html2canvas: { 
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        height: window.innerHeight,
+        windowHeight: window.innerHeight
       },
       jsPDF: { 
         unit: 'mm' as const, 
         format: 'a4' as const, 
         orientation: 'portrait' as const,
         compress: true
-      }
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     await html2pdf().set(options).from(element).save();
@@ -46,9 +49,50 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
 
 function createPDFHTML(data: SalesAgreementData): string {
   return `
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      
+      .pdf-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 15px;
+      }
+      
+      .pdf-legal-item {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 8px;
+      }
+      
+      .pdf-table {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      
+      .pdf-signatures {
+        page-break-before: auto;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-top: 30px;
+      }
+      
+      .pdf-header {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      
+      h1, h2, h3 {
+        page-break-after: avoid;
+        break-after: avoid;
+        margin-bottom: 10px;
+      }
+    </style>
+    
     <div style="max-width: 800px; margin: 0 auto; font-size: 14px; line-height: 1.6; color: #000;">
       <!-- Header -->
-      <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px;">
+      <div class="pdf-header pdf-section" style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px;">
         <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 10px 0;">הסכם מכר</h1>
         <div style="font-size: 12px; color: #666;">
           מס' הסכם: ${Date.now().toString().slice(-6)} | תאריך: ${data.date || new Date().toLocaleDateString('he-IL')}
@@ -56,12 +100,12 @@ function createPDFHTML(data: SalesAgreementData): string {
       </div>
 
       <!-- Agreement Opening -->
-      <div style="margin-bottom: 20px; text-align: right;">
+      <div class="pdf-section" style="text-align: right;">
         <p>שנערך ונחתם ב${data.seller.address?.city || '______'} בתאריך ${data.date || new Date().toLocaleDateString('he-IL')}</p>
       </div>
 
       <!-- Seller Information -->
-      <div style="background-color: #f8f9fa; padding: 15px; margin-bottom: 15px; border: 1px solid #dee2e6; border-radius: 5px;">
+      <div class="pdf-section" style="background-color: #f8f9fa; padding: 15px; border: 1px solid #dee2e6; border-radius: 5px;">
         <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0;">בין:</h3>
         <div style="text-align: right;">
           <p style="margin: 5px 0;"><strong>מר ${data.seller.company || '______'}</strong></p>
@@ -73,7 +117,7 @@ function createPDFHTML(data: SalesAgreementData): string {
       </div>
 
       <!-- Buyer Information -->
-      <div style="background-color: #f0f8f4; padding: 15px; margin-bottom: 20px; border: 1px solid #c3e6cb; border-radius: 5px;">
+      <div class="pdf-section" style="background-color: #f0f8f4; padding: 15px; border: 1px solid #c3e6cb; border-radius: 5px;">
         <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0;">לבין:</h3>
         <div style="text-align: right;">
           <p style="margin: 5px 0;"><strong>מר ${data.buyer.name || '______'}</strong></p>
@@ -86,10 +130,10 @@ function createPDFHTML(data: SalesAgreementData): string {
 
       ${data.car ? `
       <!-- Car Details -->
-      <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+      <div class="pdf-section" style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
         <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0; text-align: right;">פרטי הרכב:</h3>
         <p style="margin-bottom: 10px; text-align: right;">המוכר הסכים למכור לקונה והקונה הסכים לקנות מהמוכר את הרכב כדלקמן:</p>
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <table class="pdf-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
           <tr>
             <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">תוצר:</td>
             <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${data.car.make || '______'}</td>
@@ -124,7 +168,7 @@ function createPDFHTML(data: SalesAgreementData): string {
       ` : ''}
 
       <!-- Financial Terms -->
-      <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+      <div class="pdf-section" style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px;">
         <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; color: #2c5aa0; text-align: right;">תנאים כספיים:</h3>
         <div style="text-align: right;">
           <p style="margin: 8px 0;"><strong>תמורת הרכב ישלם הקונה למוכר:</strong> ${(data.financial.totalPrice || 0).toLocaleString()} ש"ח</p>
@@ -138,8 +182,8 @@ function createPDFHTML(data: SalesAgreementData): string {
         </div>
       </div>
 
-      <!-- Legal Terms -->}
-      <div style="margin-bottom: 20px;">
+      <!-- Legal Terms -->
+      <div class="pdf-section">
         <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 15px 0; color: #2c5aa0; text-align: right; border-bottom: 1px solid #ccc; padding-bottom: 5px;">תנאי ההסכם:</h3>
         
         ${[
@@ -165,7 +209,7 @@ function createPDFHTML(data: SalesAgreementData): string {
           
           "מקום השיפוט היחיד בכל הנוגע לביצוע או הפרת חוזה זה נקבע בזה בבית המשפט המוסמך במקום מגורי המוכר."
         ].map((term, index) => 
-          `<div style="background-color: #f8f9fa; padding: 10px; margin-bottom: 8px; border-radius: 3px; border-right: 3px solid #007bff;">
+          `<div class="pdf-legal-item" style="background-color: #f8f9fa; padding: 10px; border-radius: 3px; border-right: 3px solid #007bff;">
             <p style="margin: 0; text-align: right; font-size: 13px; line-height: 1.5;">
               <strong>${index + 1}.</strong> ${term}
             </p>
@@ -174,13 +218,13 @@ function createPDFHTML(data: SalesAgreementData): string {
       </div>
 
       <!-- Privacy Notice -->
-      <div style="background-color: #e7f3ff; border: 1px solid #b3d9ff; padding: 10px; margin-bottom: 30px; border-radius: 3px; font-size: 11px;">
+      <div class="pdf-section" style="background-color: #e7f3ff; border: 1px solid #b3d9ff; padding: 10px; border-radius: 3px; font-size: 11px;">
         <p style="margin: 0 0 5px 0; text-align: right;">* אני מאשר בזאת כי המידע שמסרתי ישמר במאגר הלקוחות וייאסף במסגרת התקשרותי עם החברה</p>
         <p style="margin: 0; text-align: right;">* אני מסכים ומאשר לקבל הטבות עדכונים סקירות מקצועיות והצעות למוצרים ומבצעים או שירותים נוספים באמצעות דוא"ל ומסרונים</p>
       </div>
 
       <!-- Signatures -->
-      <div style="display: table; width: 100%; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px;">
+      <div class="pdf-signatures" style="display: table; width: 100%; border-top: 1px solid #ccc; padding-top: 20px;">
         <div style="display: table-cell; width: 50%; text-align: center; padding: 0 20px;">
           <div style="margin-top: 60px; border-top: 1px solid #333; padding-top: 8px;">
             <p style="margin: 0; font-size: 12px; font-weight: bold;">חתימת הקונה</p>
