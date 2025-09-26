@@ -279,51 +279,63 @@ export default function TaxInvoice() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-safe">
-      {/* Clean Header Section */}
-      <div className="bg-card border-b">
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+    <div className="min-h-screen bg-gradient-to-bl from-slate-50 via-blue-50 to-indigo-100 pb-safe">
+      {/* Modern Header Section */}
+      <div className="relative bg-gradient-to-br from-brand-primary via-brand-primary to-brand-secondary overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-white/10 to-transparent rounded-full transform rotate-12"></div>
+          <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-white/10 to-transparent rounded-full transform -rotate-12"></div>
+        </div>
+        
+        <div className="relative z-10 container mx-auto px-4 py-12 md:py-20 text-center">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium text-white/90 border border-white/20 mb-6">
+            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+            מערכת חשבוניות מתקדמת
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             חשבונית מס
+            <span className="block text-2xl md:text-3xl font-medium text-white/80 mt-2">
+              יצירה מקצועית ומהירה
+            </span>
           </h1>
-          <p className="text-lg text-muted-foreground">
-            צור חשבוניות מס מקצועיות בקליק אחד
+          
+          <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
+            צור חשבוניות מס מקצועיות בקליק אחד עם התאמה אוטומטית ללקוחות ורכבים שלך
           </p>
         </div>
       </div>
 
-      {/* Main Container with grid layout */}
+      {/* Main Container with better spacing */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="space-y-8">
           
-          {/* Form Section */}
-          <div className="space-y-8">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               
               {/* Header Information Card */}
-              <Card className="shadow-lg border rounded-2xl overflow-hidden">
-                <CardHeader className="bg-muted/30 border-b">
-                  <CardTitle className="text-xl font-bold flex items-center gap-3 text-foreground">
-                    <div className="w-3 h-8 bg-primary rounded-full"></div>
+              <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/50">
+                  <CardTitle className="text-xl font-bold flex items-center gap-3 text-brand-primary">
+                    <div className="w-3 h-8 bg-gradient-to-b from-brand-primary to-brand-secondary rounded-full"></div>
                     פרטי החשבונית
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6 p-6">
+                <CardContent className="space-y-8 p-8 md:p-10">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="date"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel className="text-base font-semibold text-foreground">תאריך</FormLabel>
+                          <FormLabel className="text-base font-semibold text-slate-700">תאריך</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
                                   variant="outline"
                                   className={cn(
-                                    "w-full pl-3 text-right font-normal h-12 rounded-xl border-2 border-border hover:border-primary transition-all",
+                                    "w-full pl-3 text-right font-normal h-12 rounded-xl border-2 border-slate-200 hover:border-brand-primary transition-all",
                                     !field.value && "text-muted-foreground"
                                   )}
                                 >
@@ -357,12 +369,12 @@ export default function TaxInvoice() {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base font-semibold text-foreground">כותרת</FormLabel>
+                          <FormLabel className="text-base font-semibold text-slate-700">כותרת</FormLabel>
                           <FormControl>
                             <Input 
                               {...field} 
                               placeholder="חשבונית מס" 
-                              className="h-12 rounded-xl border-2 border-border focus:border-primary transition-all"
+                              className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
                             />
                           </FormControl>
                           <FormMessage />
@@ -375,10 +387,10 @@ export default function TaxInvoice() {
                       name="currency"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base font-semibold text-foreground">מטבע</FormLabel>
+                          <FormLabel className="text-base font-semibold text-slate-700">מטבע</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="h-12 rounded-xl border-2 border-border focus:border-primary transition-all">
+                              <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all">
                                 <SelectValue placeholder="בחר מטבע" />
                               </SelectTrigger>
                             </FormControl>
@@ -399,7 +411,7 @@ export default function TaxInvoice() {
                       name="leadId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base font-semibold text-foreground">שיוך ללקוח (אופציונלי)</FormLabel>
+                          <FormLabel className="text-base font-semibold text-slate-700">שיוך ללקוח (אופציונלי)</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all">
@@ -763,51 +775,56 @@ export default function TaxInvoice() {
                       <div className="flex justify-between items-center py-6 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-xl px-6 text-white shadow-lg">
                         <span className="text-2xl font-bold">סכום כולל:</span>
                         <span className="text-3xl font-bold">{totalAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                       </div>
-                     </div>
-                   </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Notes Field - moved from Additional Information */}
-                <div className="mt-6 p-6 bg-muted/30 rounded-xl border">
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base font-semibold text-foreground">הערות</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            {...field} 
-                            placeholder="הערות נוספות..." 
-                            className="min-h-[120px] rounded-xl border-2 border-border focus:border-primary transition-all resize-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Payment Terms */}
-                <div className="mt-4 p-6 bg-muted/30 rounded-xl border">
+              {/* Additional Information Card */}
+              <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/50">
+                  <CardTitle className="text-xl font-bold flex items-center gap-3 text-brand-primary">
+                    <div className="w-3 h-8 bg-gradient-to-b from-brand-primary to-brand-secondary rounded-full"></div>
+                    מידע נוסף
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-8 p-8 md:p-10">
                   <FormField
                     control={form.control}
                     name="paymentTerms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base font-semibold text-foreground">תנאי תשלום</FormLabel>
+                        <FormLabel className="text-base font-semibold text-slate-700">תנאי תשלום</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             placeholder="תשלום מיידי" 
-                            className="h-12 rounded-xl border-2 border-border focus:border-primary transition-all"
+                            className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
+
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold text-slate-700">הערות</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            {...field} 
+                            placeholder="הערות נוספות..." 
+                            className="min-h-[120px] rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all resize-none"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 
@@ -817,7 +834,7 @@ export default function TaxInvoice() {
                   type="submit"
                   disabled={isGenerating}
                   size="lg"
-                  className="flex-1 h-16 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] rounded-xl"
+                  className="flex-1 h-16 text-lg font-bold bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-primary/90 hover:to-brand-secondary/90 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02] rounded-2xl"
                 >
                   {isGenerating ? (
                     <div className="flex items-center gap-3">
@@ -838,7 +855,7 @@ export default function TaxInvoice() {
                   onClick={handleWhatsAppSend}
                   disabled={!watchedFields.customerPhone}
                   size="lg"
-                  className="flex-1 h-16 text-lg font-bold border-2 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] rounded-xl"
+                  className="flex-1 h-16 text-lg font-bold border-2 border-brand-primary/30 bg-white hover:bg-brand-primary/5 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:border-brand-primary/60 rounded-2xl text-brand-primary"
                 >
                   <div className="flex items-center gap-3">
                     <MessageCircle className="w-6 h-6" />
@@ -848,29 +865,28 @@ export default function TaxInvoice() {
               </div>
             </form>
           </Form>
-          </div>
+        </div>
 
-          {/* Preview Section */}
-          <div className="xl:sticky xl:top-8">
-            <Card className="shadow-lg border rounded-2xl overflow-hidden">
-              <CardHeader className="bg-muted/30 border-b">
-                <CardTitle className="text-xl font-bold flex items-center justify-between text-foreground">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-8 bg-primary rounded-full"></div>
-                    תצוגה מקדימה
-                  </div>
-                  <div className="px-4 py-2 bg-primary/10 rounded-full text-sm font-semibold text-primary border border-primary/20">
-                    Preview
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="relative bg-muted/20 rounded-xl p-4 border">
-                  <TaxInvoicePreview data={previewData} />
+        {/* Modern Preview Section */}
+        <div className="w-full">
+          <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/50">
+              <CardTitle className="text-xl font-bold flex items-center justify-between text-brand-primary">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-8 bg-gradient-to-b from-brand-primary to-brand-secondary rounded-full"></div>
+                  תצוגה מקדימה
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="px-4 py-2 bg-gradient-to-r from-brand-primary/10 to-brand-secondary/10 rounded-full text-sm font-semibold text-brand-primary border border-brand-primary/20">
+                  Preview
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8 md:p-10">
+              <div className="relative bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-6 border border-slate-200">
+                <TaxInvoicePreview data={previewData} />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
