@@ -41,9 +41,9 @@ export function CarSearchSelect({
   }, [cars, searchQuery]);
 
   return (
-    <Select onValueChange={onValueChange} defaultValue={value}>
+    <Select onValueChange={onValueChange} value={value}>
       <FormControl>
-        <SelectTrigger className="text-right [&>span]:w-full [&>span]:text-right">
+        <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all text-right [&>span]:w-full [&>span]:text-right">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
       </FormControl>
@@ -53,9 +53,9 @@ export function CarSearchSelect({
         align="end" 
         avoidCollisions={false}
         sideOffset={6}
-        className="text-right z-[1000]"
+        className="rounded-xl border-2 text-right z-[1000] w-[var(--radix-select-trigger-width)] min-w-[250px]"
       >
-        <div className="sticky top-0 bg-background border-b p-2">
+        <div className="sticky top-0 bg-background border-b p-2 z-50">
           <div className="relative">
             <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
