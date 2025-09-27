@@ -740,19 +740,17 @@ export default function TaxInvoice() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-base font-semibold text-slate-700">מע"מ</FormLabel>
-                                <div className="flex items-center justify-center h-12">
+                                <div className="flex flex-col items-center justify-center h-12 space-y-1">
                                   <FormControl>
-                                    <div className="flex items-center space-x-2">
-                                      <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                        className="data-[state=checked]:bg-brand-primary"
-                                      />
-                                      <span className="text-sm font-medium text-slate-600">
-                                        {field.value ? 'עם מע"מ' : 'ללא מע"מ'}
-                                      </span>
-                                    </div>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                      className="data-[state=checked]:bg-brand-primary"
+                                    />
                                   </FormControl>
+                                  <span className="text-xs font-medium text-slate-600">
+                                    {field.value ? 'עם מע"מ' : 'ללא מע"מ'}
+                                  </span>
                                 </div>
                                 <FormMessage />
                               </FormItem>
