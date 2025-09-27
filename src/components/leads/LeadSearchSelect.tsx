@@ -63,7 +63,7 @@ export function LeadSearchSelect({
         </div>
         
         {includeNoneOption && (
-          <SelectItem value="no-lead" className="!text-right">
+          <SelectItem value="no-lead" className="text-center">
             ללא שיוך ללקוח
           </SelectItem>
         )}
@@ -74,13 +74,13 @@ export function LeadSearchSelect({
           </div>
         ) : (
           filteredLeads?.map((lead) => (
-            <SelectItem key={lead.id} value={lead.id} className="!text-right">
-              <div className="flex flex-col text-right w-full items-end">
-                <span className="font-medium text-right">
+            <SelectItem key={lead.id} value={lead.id} className="text-center">
+              <div className="flex flex-col text-center w-full items-center">
+                <span className="font-medium">
                   {lead.name}
                 </span>
-                <div className="text-xs text-muted-foreground text-right">
-                  <div className="flex flex-col text-right items-end">
+                <div className="text-xs text-muted-foreground">
+                  <div className="flex flex-col text-center items-center">
                     {lead.phone && <span>טלפון: {lead.phone}</span>}
                     {lead.email && <span>אימייל: {lead.email}</span>}
                   </div>
