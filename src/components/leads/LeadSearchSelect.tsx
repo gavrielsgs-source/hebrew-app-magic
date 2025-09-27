@@ -40,14 +40,17 @@ export function LeadSearchSelect({
   return (
     <Select onValueChange={onValueChange} value={value}>
       <FormControl>
-        <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all">
+        <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all text-right [&>span]:w-full [&>span]:text-right">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
       </FormControl>
       <SelectContent 
-        align="start" 
-        sideOffset={4}
-        className="rounded-xl border-2 w-[var(--radix-select-trigger-width)] min-w-[250px]"
+        dir="rtl"
+        side="bottom"
+        align="end" 
+        avoidCollisions={false}
+        sideOffset={6}
+        className="rounded-xl border-2 w-[var(--radix-select-trigger-width)] min-w-[250px] z-[1000]"
       >
         <div className="sticky top-0 bg-background border-b p-2 z-50">
           <div className="relative">
