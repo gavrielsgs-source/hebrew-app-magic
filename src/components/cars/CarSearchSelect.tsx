@@ -43,26 +43,26 @@ export function CarSearchSelect({
   return (
     <Select onValueChange={onValueChange} defaultValue={value}>
       <FormControl>
-        <SelectTrigger className="text-start">
+        <SelectTrigger className="text-right">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
       </FormControl>
-      <SelectContent align="end" className="text-start" dir="rtl">
+      <SelectContent align="end" className="text-right" dir="rtl">
         <div className="sticky top-0 bg-background border-b p-2">
           <div className="relative">
-            <Search className="absolute start-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="חפש לפי מספר שלדה, מספר רכב או שם רכב..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="ps-8 text-start"
+              className="pr-8 text-right"
               dir="rtl"
             />
           </div>
         </div>
         
         {includeNoneOption && (
-          <SelectItem value="none" className="text-start justify-end" dir="rtl">
+          <SelectItem value="none" className="text-right justify-end" dir="rtl">
             <span>ללא רכב</span>
           </SelectItem>
         )}
@@ -73,13 +73,13 @@ export function CarSearchSelect({
           </div>
         ) : (
           filteredCars?.map((car) => (
-            <SelectItem key={car.id as string} value={car.id as string} className="text-start justify-end" dir="rtl">
-              <div className="flex flex-col text-start w-full items-end">
-                <span className="font-medium text-start">
+            <SelectItem key={car.id as string} value={car.id as string} className="text-right justify-end" dir="rtl">
+              <div className="flex flex-col text-right w-full items-end">
+                <span className="font-medium text-right">
                   {car.make as string} {car.model as string} ({car.year as number})
                 </span>
-                <div className="text-xs text-muted-foreground text-start">
-                  <div className="flex flex-col text-start items-end">
+                <div className="text-xs text-muted-foreground text-right">
+                  <div className="flex flex-col text-right items-end">
                     {car.license_number && <span>רכב: {car.license_number}</span>}
                     {car.chassis_number && <span>שלדה: {car.chassis_number}</span>}
                   </div>
