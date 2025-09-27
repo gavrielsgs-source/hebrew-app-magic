@@ -19,6 +19,7 @@ import { he } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useLeads } from '@/hooks/use-leads';
+import { LeadSearchSelect } from '@/components/leads/LeadSearchSelect';
 import { useCars } from '@/hooks/use-cars';
 import { useProfile } from '@/hooks/use-profile';
 import { TaxInvoicePreview } from '@/components/tax-invoice/TaxInvoicePreview';
@@ -421,21 +422,12 @@ export default function TaxInvoice() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-base font-semibold text-slate-700">שיוך ללקוח (אופציונלי)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all">
-                                <SelectValue placeholder="בחר לקוח מהרשימה" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent side="bottom" className="rounded-xl border-2">
-                              <SelectItem value="no-lead" className="!text-right">ללא שיוך ללקוח</SelectItem>
-                              {leads.map((lead) => (
-                                <SelectItem key={lead.id} value={lead.id} className="!text-right">
-                                  {lead.name} - {lead.phone}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <LeadSearchSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="בחר לקוח מהרשימה"
+                            includeNoneOption={true}
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
