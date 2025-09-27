@@ -63,6 +63,11 @@ const taxInvoiceSchema = z.object({
   // Items
   items: z.array(invoiceItemSchema).min(1, 'לפחות פריט אחד נדרש'),
   
+  // Allocation number
+  allocationType: z.enum(['manual', 'request']),
+  allocationNumber: z.string().optional(),
+  allocationCustomerType: z.enum(['individual', 'business']).optional(),
+  
   // Additional
   notes: z.string().optional(),
   paymentTerms: z.string().optional(),
@@ -103,6 +108,9 @@ export default function TaxInvoice() {
         vatRate: 17,
         total: 0
       }] as InvoiceItem[],
+      allocationType: 'manual' as const,
+      allocationNumber: '',
+      allocationCustomerType: 'individual' as const,
       notes: '',
       paymentTerms: 'תשלום מיידי'
     }
@@ -280,14 +288,9 @@ export default function TaxInvoice() {
 
   return (
     <div className="min-h-screen bg-background pb-safe">
-      {/* Modern Header Section */}
-      <div className="relative bg-gradient-to-br from-brand-primary via-brand-primary to-brand-secondary overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-white/10 to-transparent rounded-full transform rotate-12"></div>
-          <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-white/10 to-transparent rounded-full transform -rotate-12"></div>
-        </div>
-        
-        <div className="relative z-10 container mx-auto px-4 py-12 md:py-20 text-center">
+      {/* Header Section */}
+      <div className="bg-brand-primary">
+        <div className="container mx-auto px-4 py-12 md:py-20 text-center">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium text-white/90 border border-white/20 mb-6">
             <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
             מערכת חשבוניות מתקדמת
@@ -634,7 +637,7 @@ export default function TaxInvoice() {
                       type="button" 
                       onClick={addItem} 
                       size="lg" 
-                      className="bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-primary/90 hover:to-brand-secondary/90 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6"
+                      className="bg-brand-primary hover:bg-brand-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-6"
                     >
                       <Plus className="h-5 w-5 mr-2" />
                       הוסף פריט
@@ -755,32 +758,86 @@ export default function TaxInvoice() {
                         </div>
                       </div>
                     ))}
-                  </div>
+                   </div>
 
-                  {/* Financial Summary */}
-                  <div className="mt-10 p-8 bg-gradient-to-br from-brand-primary/10 via-brand-secondary/10 to-indigo-50 rounded-2xl border-2 border-brand-primary/20 shadow-lg">
+                  {/* Allocation Number Section */}
+                  <div className="mt-10 p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 rounded-2xl border-2 border-slate-200 shadow-lg">
                     <h3 className="text-xl font-bold text-brand-primary mb-6 flex items-center gap-2">
                       <div className="w-2 h-6 bg-brand-primary rounded-full"></div>
-                      סיכום פיננסי
+                      מספר הקצאה
                     </h3>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center py-3 border-b border-slate-200">
-                        <span className="text-lg font-semibold text-slate-700">סכום ללא מע"מ:</span>
-                        <span className="text-lg font-bold text-slate-800">{subtotal.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-3 border-b border-slate-200">
-                        <span className="text-lg font-semibold text-slate-700">מע"מ:</span>
-                        <span className="text-lg font-bold text-slate-800">{vatAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-6 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-xl px-6 text-white shadow-lg">
-                        <span className="text-2xl font-bold">סכום כולל:</span>
-                        <span className="text-3xl font-bold">{totalAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                      </div>
+                    
+                    <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="allocationType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-semibold text-slate-700">סוג הקצאה</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all">
+                                  <SelectValue placeholder="בחר סוג הקצאה" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="rounded-xl border-2">
+                                <SelectItem value="manual">הוסף מספר הקצאה ידני</SelectItem>
+                                <SelectItem value="request">בקש מספר הקצאה</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {watchedFields.allocationType === 'manual' && (
+                        <FormField
+                          control={form.control}
+                          name="allocationNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-semibold text-slate-700">מספר הקצאה</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  placeholder="הזן מספר הקצאה" 
+                                  className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                      {watchedFields.allocationType === 'request' && (
+                        <FormField
+                          control={form.control}
+                          name="allocationCustomerType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-semibold text-slate-700">הלקוח הוא</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all">
+                                    <SelectValue placeholder="בחר סוג לקוח" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="rounded-xl border-2">
+                                  <SelectItem value="individual">עוסק</SelectItem>
+                                  <SelectItem value="business">חברה</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
                     </div>
                   </div>
 
-                  {/* Notes Section */}
-                  <div className="mt-8">
+                  {/* Notes and Payment Terms Section */}
+                  <div className="mt-8 space-y-6">
                     <FormField
                       control={form.control}
                       name="notes"
@@ -798,10 +855,7 @@ export default function TaxInvoice() {
                         </FormItem>
                       )}
                     />
-                  </div>
 
-                  {/* Payment Terms Section */}
-                  <div className="mt-6">
                     <FormField
                       control={form.control}
                       name="paymentTerms"
@@ -820,6 +874,28 @@ export default function TaxInvoice() {
                       )}
                     />
                   </div>
+
+                  {/* Financial Summary */}
+                  <div className="mt-10 p-8 bg-gradient-to-br from-brand-primary/10 via-brand-secondary/10 to-indigo-50 rounded-2xl border-2 border-brand-primary/20 shadow-lg">
+                    <h3 className="text-xl font-bold text-brand-primary mb-6 flex items-center gap-2">
+                      <div className="w-2 h-6 bg-brand-primary rounded-full"></div>
+                      סיכום פיננסי
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span className="text-lg font-semibold text-slate-700">סכום ללא מע"מ:</span>
+                        <span className="text-lg font-bold text-slate-800">{subtotal.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span className="text-lg font-semibold text-slate-700">מע"מ:</span>
+                         <span className="text-lg font-bold text-slate-800">{vatAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                       </div>
+                       <div className="flex justify-between items-center py-6 bg-brand-primary rounded-xl px-6 text-white shadow-lg">
+                         <span className="text-2xl font-bold">סכום כולל:</span>
+                         <span className="text-3xl font-bold">{totalAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                       </div>
+                    </div>
+                   </div>
                 </CardContent>
               </Card>
 
@@ -829,7 +905,7 @@ export default function TaxInvoice() {
                   type="submit"
                   disabled={isGenerating}
                   size="lg"
-                  className="flex-1 h-16 text-lg font-bold bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-primary/90 hover:to-brand-secondary/90 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02] rounded-2xl"
+                  className="flex-1 h-16 text-lg font-bold bg-brand-primary hover:bg-brand-primary/90 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02] rounded-2xl"
                 >
                   {isGenerating ? (
                     <div className="flex items-center gap-3">
