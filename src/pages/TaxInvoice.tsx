@@ -427,7 +427,7 @@ export default function TaxInvoice() {
                                 <SelectValue placeholder="בחר לקוח מהרשימה" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="rounded-xl border-2">
+                            <SelectContent side="bottom" className="rounded-xl border-2">
                               <SelectItem value="no-lead" className="!text-right">ללא שיוך ללקוח</SelectItem>
                               {leads.map((lead) => (
                                 <SelectItem key={lead.id} value={lead.id} className="!text-right">
