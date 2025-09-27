@@ -273,7 +273,7 @@ export default function SalesAgreement() {
                       <CarSearchSelect
                         value={field.value}
                         onValueChange={field.onChange}
-                        placeholder="בחר رכב"
+                        placeholder="בחר רכב"
                       />
                       <FormMessage />
                     </FormItem>

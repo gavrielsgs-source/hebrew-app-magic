@@ -47,7 +47,7 @@ export function CarSearchSelect({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
       </FormControl>
-      <SelectContent align="end" className="text-right">
+      <SelectContent align="end" className="text-right" dir="rtl">
         <div className="sticky top-0 bg-background border-b p-2">
           <div className="relative">
             <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -56,12 +56,15 @@ export function CarSearchSelect({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pr-8 text-right"
+              dir="rtl"
             />
           </div>
         </div>
         
         {includeNoneOption && (
-          <SelectItem value="none" className="text-right">ללא רכב</SelectItem>
+          <SelectItem value="none" className="text-right justify-end" dir="rtl">
+            <span>ללא רכב</span>
+          </SelectItem>
         )}
         
         {filteredCars?.length === 0 && searchQuery ? (
@@ -70,13 +73,13 @@ export function CarSearchSelect({
           </div>
         ) : (
           filteredCars?.map((car) => (
-            <SelectItem key={car.id as string} value={car.id as string} className="text-right">
-              <div className="flex flex-col text-right w-full">
+            <SelectItem key={car.id as string} value={car.id as string} className="text-right justify-end" dir="rtl">
+              <div className="flex flex-col text-right w-full items-end">
                 <span className="font-medium text-right">
                   {car.make as string} {car.model as string} ({car.year as number})
                 </span>
                 <div className="text-xs text-muted-foreground text-right">
-                  <div className="flex flex-col text-right">
+                  <div className="flex flex-col text-right items-end">
                     {car.license_number && <span>רכב: {car.license_number}</span>}
                     {car.chassis_number && <span>שלדה: {car.chassis_number}</span>}
                   </div>
