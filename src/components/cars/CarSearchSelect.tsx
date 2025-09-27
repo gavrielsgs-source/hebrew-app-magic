@@ -43,11 +43,18 @@ export function CarSearchSelect({
   return (
     <Select onValueChange={onValueChange} defaultValue={value}>
       <FormControl>
-        <SelectTrigger className="text-right">
+        <SelectTrigger className="text-right [&>span]:w-full [&>span]:text-right">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
       </FormControl>
-      <SelectContent align="end" className="text-right" dir="rtl">
+      <SelectContent 
+        dir="rtl"
+        side="bottom"
+        align="end" 
+        avoidCollisions={false}
+        sideOffset={6}
+        className="text-right z-[1000]"
+      >
         <div className="sticky top-0 bg-background border-b p-2">
           <div className="relative">
             <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
