@@ -439,12 +439,13 @@ export default function TaxInvoice() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-base font-semibold text-slate-700">שיוך לרכב (אופציונלי)</FormLabel>
-                          <CarSearchSelect
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            placeholder="בחר רכב מהרשימה"
-                            includeNoneOption={true}
-                          />
+<CarSearchSelect
+  value={field.value}
+  onValueChange={field.onChange}
+  placeholder="בחר רכב מהרשימה"
+  includeNoneOption={true}
+  noneValue="no-car"
+/>
                           <FormMessage />
                         </FormItem>
                       )}

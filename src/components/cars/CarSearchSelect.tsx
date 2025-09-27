@@ -10,13 +10,15 @@ interface CarSearchSelectProps {
   onValueChange: (value: string) => void;
   placeholder?: string;
   includeNoneOption?: boolean;
+  noneValue?: string;
 }
 
 export function CarSearchSelect({ 
   value, 
   onValueChange, 
   placeholder = "בחר רכב",
-  includeNoneOption = false 
+  includeNoneOption = false,
+  noneValue = "none"
 }: CarSearchSelectProps) {
   const { cars } = useCars();
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,11 +70,11 @@ export function CarSearchSelect({
           </div>
         </div>
         
-        {includeNoneOption && (
-          <SelectItem value="none" className="text-right justify-end" dir="rtl">
-            <span>ללא רכב</span>
-          </SelectItem>
-        )}
+{includeNoneOption && (
+  <SelectItem value={noneValue} className="text-center">
+    ללא שיוך לרכב
+  </SelectItem>
+)}
         
         {filteredCars?.length === 0 && searchQuery ? (
           <div className="p-2 text-center text-muted-foreground text-sm">
@@ -80,13 +82,13 @@ export function CarSearchSelect({
           </div>
         ) : (
           filteredCars?.map((car) => (
-            <SelectItem key={car.id as string} value={car.id as string} className="text-right justify-end" dir="rtl">
-              <div className="flex flex-col text-right w-full items-end">
-                <span className="font-medium text-right">
+            <SelectItem key={car.id as string} value={car.id as string} className="text-center">
+              <div className="flex flex-col text-center w-full items-center">
+                <span className="font-medium">
                   {car.make as string} {car.model as string} ({car.year as number})
                 </span>
-                <div className="text-xs text-muted-foreground text-right">
-                  <div className="flex flex-col text-right items-end">
+                <div className="text-xs text-muted-foreground">
+                  <div className="flex flex-col text-center items-center">
                     {car.license_number && <span>רכב: {car.license_number}</span>}
                     {car.chassis_number && <span>שלדה: {car.chassis_number}</span>}
                   </div>
