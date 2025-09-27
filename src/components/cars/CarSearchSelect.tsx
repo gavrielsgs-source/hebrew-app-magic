@@ -43,11 +43,11 @@ export function CarSearchSelect({
   return (
     <Select onValueChange={onValueChange} defaultValue={value}>
       <FormControl>
-        <SelectTrigger>
+        <SelectTrigger className="text-right">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
       </FormControl>
-      <SelectContent>
+      <SelectContent align="end" className="text-right">
         <div className="sticky top-0 bg-background border-b p-2">
           <div className="relative">
             <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -55,13 +55,13 @@ export function CarSearchSelect({
               placeholder="חפש לפי מספר שלדה, מספר רכב או שם רכב..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-8"
+              className="pr-8 text-right"
             />
           </div>
         </div>
         
         {includeNoneOption && (
-          <SelectItem value="none">ללא רכב</SelectItem>
+          <SelectItem value="none" className="text-right">ללא רכב</SelectItem>
         )}
         
         {filteredCars?.length === 0 && searchQuery ? (
@@ -70,14 +70,16 @@ export function CarSearchSelect({
           </div>
         ) : (
           filteredCars?.map((car) => (
-            <SelectItem key={car.id as string} value={car.id as string}>
-              <div className="flex flex-col text-right">
-                <span className="font-medium">
+            <SelectItem key={car.id as string} value={car.id as string} className="text-right">
+              <div className="flex flex-col text-right w-full">
+                <span className="font-medium text-right">
                   {car.make as string} {car.model as string} ({car.year as number})
                 </span>
-                <div className="text-xs text-muted-foreground space-x-2">
-                  {car.license_number && <span>רכב: {car.license_number}</span>}
-                  {car.chassis_number && <span>שלדה: {car.chassis_number}</span>}
+                <div className="text-xs text-muted-foreground text-right">
+                  <div className="flex flex-col text-right">
+                    {car.license_number && <span>רכב: {car.license_number}</span>}
+                    {car.chassis_number && <span>שלדה: {car.chassis_number}</span>}
+                  </div>
                 </div>
               </div>
             </SelectItem>
