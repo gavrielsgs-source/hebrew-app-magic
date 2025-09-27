@@ -279,7 +279,7 @@ export default function TaxInvoice() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-bl from-slate-50 via-blue-50 to-indigo-100 pb-safe">
+    <div className="min-h-screen bg-background pb-safe">
       {/* Modern Header Section */}
       <div className="relative bg-gradient-to-br from-brand-primary via-brand-primary to-brand-secondary overflow-hidden">
         <div className="absolute inset-0">
@@ -591,10 +591,10 @@ export default function TaxInvoice() {
                       <FormItem>
                         <FormLabel className="text-base font-semibold text-slate-700">כתובת</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Input 
                             {...field} 
                             placeholder="כתובת מלאה" 
-                            className="min-h-[100px] rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all resize-none"
+                            className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
                           />
                         </FormControl>
                         <FormMessage />
@@ -778,53 +778,48 @@ export default function TaxInvoice() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Additional Information Card */}
-              <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm rounded-3xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/50">
-                  <CardTitle className="text-xl font-bold flex items-center gap-3 text-brand-primary">
-                    <div className="w-3 h-8 bg-gradient-to-b from-brand-primary to-brand-secondary rounded-full"></div>
-                    מידע נוסף
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-8 p-8 md:p-10">
-                  <FormField
-                    control={form.control}
-                    name="paymentTerms"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base font-semibold text-slate-700">תנאי תשלום</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            placeholder="תשלום מיידי" 
-                            className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Notes Section */}
+                  <div className="mt-8">
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-semibold text-slate-700">הערות</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              placeholder="הערות נוספות..." 
+                              className="min-h-[100px] rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all resize-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base font-semibold text-slate-700">הערות</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            {...field} 
-                            placeholder="הערות נוספות..." 
-                            className="min-h-[120px] rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all resize-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Payment Terms Section */}
+                  <div className="mt-6">
+                    <FormField
+                      control={form.control}
+                      name="paymentTerms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-semibold text-slate-700">תנאי תשלום</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="תשלום מיידי" 
+                              className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
