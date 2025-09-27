@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { useLeads, useUpdateLead } from "@/hooks/use-leads";
-import { useCars } from "@/hooks/use-cars";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -24,7 +23,6 @@ interface EditLeadFormProps {
 export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
   const { user } = useAuth();
   const updateLead = useUpdateLead();
-  const { cars } = useCars();
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -92,7 +90,7 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
           <EditLeadNameField control={context.form.control} />
           <EditLeadPhoneField control={context.form.control} />
           <EditLeadEmailField control={context.form.control} />
-          <EditLeadCarField control={context.form.control} cars={cars || []} />
+          <EditLeadCarField control={context.form.control} />
           <EditLeadStatusField control={context.form.control} />
           <EditLeadSourceField control={context.form.control} />
           {context.canAssignLeads && (

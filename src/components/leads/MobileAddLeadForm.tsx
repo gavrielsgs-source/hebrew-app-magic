@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CarSearchSelect } from "@/components/cars/CarSearchSelect";
 import { useAuth } from "@/hooks/use-auth";
 import { useCreateLead } from "@/hooks/leads/use-create-lead";
 import { useCars } from "@/hooks/use-cars";
@@ -178,18 +179,11 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
             <Car className="h-4 w-4" />
             רכב מעוניין
           </Label>
-          <Select value={formData.car_id} onValueChange={(value) => setFormData({ ...formData, car_id: value })}>
-            <SelectTrigger className="h-12" dir="rtl">
-              <SelectValue placeholder="בחר רכב (אופציונלי)" />
-            </SelectTrigger>
-            <SelectContent dir="rtl">
-              {cars?.map((car) => (
-                <SelectItem key={car.id} value={car.id as string}>
-                  {car.make} {car.model} {car.year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CarSearchSelect
+            value={formData.car_id}
+            onValueChange={(value) => setFormData({ ...formData, car_id: value })}
+            placeholder="בחר רכב (אופציונלי)"
+          />
         </div>
       )}
 

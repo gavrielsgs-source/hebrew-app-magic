@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useCreateLead } from '@/hooks/leads/use-create-lead';
 import { useLeads } from '@/hooks/use-leads';
-import { useCars } from '@/hooks/use-cars';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
 import { useAuth } from '@/hooks/use-auth';
 import { LeadFormBase, FormContextValue } from './LeadFormBase';
@@ -24,7 +23,6 @@ interface AddLeadFormProps {
 export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
   const { user } = useAuth();
   const { leads } = useLeads();
-  const { cars } = useCars();
   const { mutate: addLead, isPending: isLoading } = useCreateLead();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,7 +105,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
           <AddLeadPhoneField control={form.control} />
           <AddLeadEmailField control={form.control} />
           <AddLeadSourceField control={form.control} />
-          <AddLeadCarField control={form.control} cars={cars || []} />
+          <AddLeadCarField control={form.control} />
           <AddLeadNotesField control={form.control} />
           {canAssignLeads && (
             <AddLeadAssignedField control={form.control} salesAgents={salesAgents} />

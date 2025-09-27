@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DocumentsManager } from "@/components/documents/DocumentsManager";
+import { CarSearchSelect } from "@/components/cars/CarSearchSelect";
 import { useEffect, useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
@@ -178,27 +179,11 @@ export default function Documents() {
               <CardContent>
                 <div className="space-y-4">
                   <div className={isMobile ? 'w-full' : 'w-full md:w-1/2'}>
-                    <Select 
-                      value={selectedCarId || ""} 
+                    <CarSearchSelect
+                      value={selectedCarId || ""}
                       onValueChange={setSelectedCarId}
-                    >
-                       <SelectTrigger className="text-right">
-                         <SelectValue placeholder="בחר רכב" />
-                       </SelectTrigger>
-                       <SelectContent align="end" className="rtl:text-right">
-                        {isCarsLoading ? (
-                          <SelectItem value="loading" disabled>טוען רכבים...</SelectItem>
-                        ) : cars?.length === 0 ? (
-                          <SelectItem value="empty" disabled>אין רכבים</SelectItem>
-                        ) : (
-                          cars?.map(car => (
-                            <SelectItem key={car.id as string} value={car.id as string}>
-                              {(car.make as string)} {(car.model as string)} {(car.year as number)}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
+                      placeholder="בחר רכב"
+                    />
                   </div>
                   
                   {!selectedCarId ? (
