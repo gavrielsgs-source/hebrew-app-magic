@@ -72,6 +72,7 @@ export function TaxInvoicePreview({ data }: TaxInvoicePreviewProps) {
                   <th className="border border-gray-300 p-3 text-right">תיאור</th>
                   <th className="border border-gray-300 p-3 text-right">כמות</th>
                   <th className="border border-gray-300 p-3 text-right">מחיר יחידה</th>
+                  <th className="border border-gray-300 p-3 text-right">מע"מ</th>
                   <th className="border border-gray-300 p-3 text-right">אחוז מע"מ</th>
                   <th className="border border-gray-300 p-3 text-right">סכום כולל</th>
                 </tr>
@@ -85,7 +86,16 @@ export function TaxInvoicePreview({ data }: TaxInvoicePreviewProps) {
                     <td className="border border-gray-300 p-3 text-center">
                       {item.unitPrice.toFixed(2)} {currencySymbol}
                     </td>
-                    <td className="border border-gray-300 p-3 text-center">{item.vatRate}%</td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      {item.includeVat ? (
+                        <Badge className="bg-green-100 text-green-800">עם מע"מ</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-gray-100 text-gray-800">ללא מע"מ</Badge>
+                      )}
+                    </td>
+                    <td className="border border-gray-300 p-3 text-center">
+                      {item.includeVat ? `${item.vatRate}%` : '-'}
+                    </td>
                     <td className="border border-gray-300 p-3 text-center font-semibold">
                       {item.total.toFixed(2)} {currencySymbol}
                     </td>

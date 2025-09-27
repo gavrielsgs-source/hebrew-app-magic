@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Plus, Trash2, Download, MessageCircle } from 'lucide-react';
@@ -31,6 +32,7 @@ const invoiceItemSchema = z.object({
   unitPrice: z.number().min(0, 'מחיר יחידה חייב להיות חיובי'),
   vatRate: z.number().min(0).max(100, 'אחוז מע"מ חייב להיות בין 0 ל-100'),
   total: z.number(),
+  includeVat: z.boolean(),
 });
 
 const taxInvoiceSchema = z.object({
@@ -106,7 +108,8 @@ export default function TaxInvoice() {
         quantity: 1,
         unitPrice: 0,
         vatRate: 17,
-        total: 0
+        total: 0,
+        includeVat: true
       }] as InvoiceItem[],
       allocationType: 'manual' as const,
       allocationNumber: '',
@@ -146,7 +149,7 @@ export default function TaxInvoice() {
     const items = watchedFields.items as InvoiceItem[];
     items.forEach((item, index) => {
       const subtotal = item.quantity * item.unitPrice;
-      const vatAmount = subtotal * (item.vatRate / 100);
+      const vatAmount = item.includeVat ? subtotal * (item.vatRate / 100) : 0;
       const total = subtotal + vatAmount;
       
       if (item.total !== total) {
@@ -162,7 +165,8 @@ export default function TaxInvoice() {
       quantity: 1,
       unitPrice: 0,
       vatRate: 17,
-      total: 0
+      total: 0,
+      includeVat: true
     });
   };
 
@@ -175,7 +179,7 @@ export default function TaxInvoice() {
   // Calculate financial summary
   const items = watchedFields.items as InvoiceItem[];
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-  const vatAmount = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice * item.vatRate / 100), 0);
+  const vatAmount = items.reduce((sum, item) => sum + (item.includeVat ? item.quantity * item.unitPrice * item.vatRate / 100 : 0), 0);
   const totalAmount = subtotal + vatAmount;
 
   // Prepare preview data
@@ -238,7 +242,8 @@ export default function TaxInvoice() {
           quantity: Number(item.quantity) || 0,
           unitPrice: Number(item.unitPrice) || 0,
           vatRate: Number(item.vatRate) || 17,
-          total: Number(item.total) || 0
+          total: Number(item.total) || 0,
+          includeVat: Boolean(item.includeVat)
         })) as InvoiceItem[],
         subtotal,
         vatAmount,
@@ -666,7 +671,7 @@ export default function TaxInvoice() {
                           )}
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
                           <div className="lg:col-span-2">
                             <FormField
                               control={form.control}
@@ -731,25 +736,52 @@ export default function TaxInvoice() {
 
                           <FormField
                             control={form.control}
-                            name={`items.${index}.vatRate`}
+                            name={`items.${index}.includeVat`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-base font-semibold text-slate-700">אחוז מע"מ</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    max="100"
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                    className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
-                                  />
-                                </FormControl>
+                                <FormLabel className="text-base font-semibold text-slate-700">מע"מ</FormLabel>
+                                <div className="flex items-center justify-center h-12">
+                                  <FormControl>
+                                    <div className="flex items-center space-x-2">
+                                      <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        className="data-[state=checked]:bg-brand-primary"
+                                      />
+                                      <span className="text-sm font-medium text-slate-600">
+                                        {field.value ? 'עם מע"מ' : 'ללא מע"מ'}
+                                      </span>
+                                    </div>
+                                  </FormControl>
+                                </div>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
+
+                          {watchedFields.items[index]?.includeVat && (
+                            <FormField
+                              control={form.control}
+                              name={`items.${index}.vatRate`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-semibold text-slate-700">אחוז מע"מ</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      min="0"
+                                      max="100"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                      className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
                         </div>
 
                         <div className="text-center bg-gradient-to-r from-brand-primary/10 to-brand-secondary/10 p-4 rounded-xl border border-brand-primary/20">

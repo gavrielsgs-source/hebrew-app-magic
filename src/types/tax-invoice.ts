@@ -5,6 +5,7 @@ export interface InvoiceItem {
   unitPrice: number;
   vatRate: number;
   total: number;
+  includeVat: boolean;
 }
 
 export interface TaxInvoiceData {

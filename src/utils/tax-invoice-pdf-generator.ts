@@ -94,6 +94,7 @@ function createTaxInvoicePDFHTML(data: TaxInvoiceData): string {
               <th style="border: 1px solid #ddd; padding: 12px; text-align: right; font-weight: bold;">תיאור</th>
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">כמות</th>
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">מחיר יחידה</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">מע"מ</th>
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">אחוז מע"מ</th>
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">סכום כולל</th>
             </tr>
@@ -105,7 +106,12 @@ function createTaxInvoicePDFHTML(data: TaxInvoiceData): string {
                 <td style="border: 1px solid #ddd; padding: 12px; text-align: right;">${item.description}</td>
                 <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${item.quantity}</td>
                 <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${item.unitPrice.toFixed(2)} ${currencySymbol}</td>
-                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${item.vatRate}%</td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
+                  <span style="background-color: ${item.includeVat ? '#dcfce7' : '#f3f4f6'}; color: ${item.includeVat ? '#16a34a' : '#374151'}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                    ${item.includeVat ? 'עם מע"מ' : 'ללא מע"מ'}
+                  </span>
+                </td>
+                <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${item.includeVat ? item.vatRate + '%' : '-'}</td>
                 <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">${item.total.toFixed(2)} ${currencySymbol}</td>
               </tr>
             `).join('')}
