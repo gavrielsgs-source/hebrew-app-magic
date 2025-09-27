@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CarSearchSelect } from '@/components/cars/CarSearchSelect';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
@@ -446,21 +447,12 @@ export default function TaxInvoice() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-base font-semibold text-slate-700">שיוך לרכב (אופציונלי)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all">
-                                <SelectValue placeholder="בחר רכב מהרשימה" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="rounded-xl border-2">
-                              <SelectItem value="no-car">ללא שיוך לרכב</SelectItem>
-                              {cars.map((car) => (
-                                <SelectItem key={car.id} value={car.id}>
-                                  {car.make} {car.model} - {car.year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <CarSearchSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="בחר רכב מהרשימה"
+                            includeNoneOption={true}
+                          />
                           <FormMessage />
                         </FormItem>
                       )}

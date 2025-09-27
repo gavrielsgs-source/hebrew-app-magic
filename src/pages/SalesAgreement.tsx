@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CarSearchSelect } from "@/components/cars/CarSearchSelect";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -269,20 +270,11 @@ export default function SalesAgreement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-right">שיוך רכב (אופציונלי)</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="text-right">
-                            <SelectValue placeholder="בחר רכב" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent align="end">
-                          {cars.map((car) => (
-                            <SelectItem key={car.id} value={car.id}>
-                              {car.make} {car.model} - {car.year}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <CarSearchSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="בחר رכב"
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
