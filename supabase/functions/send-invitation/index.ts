@@ -156,9 +156,13 @@ const handler = async (req: Request): Promise<Response> => {
     const senderEmail = Deno.env.get("RESEND_FROM_EMAIL") || user.email || "onboarding@resend.dev";
     const fromAddress = `מערכת CRM <${senderEmail}>`;
 
+    // In Resend test mode you can only send to your own email. Allow overriding the recipient via secret.
+    const forceTestTo = Deno.env.get("RESEND_FORCE_TEST_TO");
+    const toAddress = forceTestTo ? forceTestTo : email;
+
     const emailResponse = await resend.emails.send({
       from: fromAddress,
-      to: [email],
+      to: [toAddress],
       subject: `הזמנה להצטרף ל-${companyName}`,
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
