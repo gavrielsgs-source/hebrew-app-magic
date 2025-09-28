@@ -5,18 +5,20 @@ import { ArrowRight, Users } from "lucide-react";
 import { UserInvitations } from "@/components/company/UserInvitations";
 import { useCompanies } from "@/hooks/use-companies";
 import { useAuth } from "@/hooks/use-auth";
+import { useRealAdminCheck } from "@/hooks/use-real-admin-check";
 
 export default function CompanyUsers() {
   const { companyId } = useParams<{ companyId: string }>();
   const { companies, isLoading } = useCompanies();
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin, isLoading: adminLoading } = useRealAdminCheck();
 
   if (!companyId) {
     return <Navigate to="/companies" replace />;
   }
 
   // Show loading while auth is being checked
-  if (authLoading) {
+  if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
@@ -32,6 +34,11 @@ export default function CompanyUsers() {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Only admins can access this page
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (isLoading) {

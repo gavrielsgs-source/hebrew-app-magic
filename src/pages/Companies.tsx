@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
+import { useRealAdminCheck } from "@/hooks/use-real-admin-check";
 import { useCompanies } from "@/hooks/use-companies";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 
 export default function AccessManagement() {
   const { user, loading } = useAuth();
+  const { isAdmin, isLoading: adminLoading } = useRealAdminCheck();
   const { companies, isLoading: companiesLoading, createCompany, error: companiesError } = useCompanies();
   const { subscription } = useSubscription();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
@@ -34,7 +36,7 @@ export default function AccessManagement() {
     }
   };
 
-  if (loading) {
+  if (loading || adminLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -52,6 +54,11 @@ export default function AccessManagement() {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Only admins can access this page
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Show error state if there's an error fetching companies
