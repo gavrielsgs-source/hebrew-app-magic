@@ -9,7 +9,7 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { User, Phone, Building, Briefcase, Save, Bell, Building2, Users2, ArrowRight } from "lucide-react";
+import { Shield, Mail, User, Eye, Phone, Building, ChevronRight, MapPin, Calendar, Save, Users, Bell, Briefcase } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useRoles } from "@/hooks/use-roles";
@@ -255,26 +255,26 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Quick Access to Companies */}
+        {/* Quick Access to Access Management */}
         {!companiesLoading && companies.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div className="bg-card rounded-xl border shadow-sm">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <Building2 className="h-6 w-6 text-blue-600" />
-                  <h3 className="text-xl font-semibold text-gray-900">החברות שלי</h3>
+                  <Shield className="h-6 w-6 text-primary" />
+                  <h3 className="text-xl font-semibold text-foreground">ניהול הרשאות</h3>
                 </div>
                 <Button
                   variant="outline"
                   onClick={() => navigate("/companies")}
-                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  className="text-primary border-primary/20 hover:bg-primary/10"
                 >
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                  נהל חברות
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                  נהל הרשאות
                 </Button>
               </div>
-              <div className="text-gray-600">
-                יש לך {companies.length} {companies.length === 1 ? 'חברה רשומה' : 'חברות רשומות'} במערכת
+              <div className="text-muted-foreground">
+                יש לך {companies.length} {companies.length === 1 ? 'קבוצת הרשאות רשומה' : 'קבוצות הרשאות רשומות'} במערכת
               </div>
             </div>
           </div>

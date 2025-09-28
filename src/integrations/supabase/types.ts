@@ -850,10 +850,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
-      get_user_company_ids: {
-        Args: { _user_id: string }
-        Returns: string[]
-      }
       has_role: {
         Args: {
           agency_id_param?: string

@@ -22,7 +22,7 @@ import {
   FileBarChart,
   FileText,
   Sparkles,
-  Building2,
+  Shield,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 // import { DocumentProductionMenu } from "@/components/document-production/DocumentProductionMenu";
@@ -148,8 +148,8 @@ export function AppSidebar() {
                 data-active={pathname.startsWith("/company") || pathname === "/companies"}
                 className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
-                <Building2 className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">ניהול חברות</span>
+                <Shield className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">ניהול הרשאות</span>
               </button>
             </SidebarMenuItem>
 
