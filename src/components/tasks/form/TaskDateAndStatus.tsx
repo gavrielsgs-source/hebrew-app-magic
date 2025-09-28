@@ -13,7 +13,7 @@ import { useState } from "react";
 
 export function TaskDateAndStatus() {
   const form = useFormContext<TaskFormValues>();
-  const [timeHour, setTimeHour] = useState<string>("");
+  const [timeHour, setTimeHour] = useState<string>("none");
   const [timeMinute, setTimeMinute] = useState<string>("00");
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -23,7 +23,7 @@ export function TaskDateAndStatus() {
     }
 
     // If we have time values, combine them with the date
-    if (timeHour) {
+    if (timeHour && timeHour !== "none") {
       const hour = parseInt(timeHour);
       const minute = parseInt(timeMinute);
       const dateWithTime = new Date(date);
@@ -40,7 +40,7 @@ export function TaskDateAndStatus() {
     setTimeMinute(minute);
     
     const currentDate = form.getValues("due_date");
-    if (currentDate && hour) {
+    if (currentDate && hour && hour !== "none") {
       const dateWithTime = new Date(currentDate);
       dateWithTime.setHours(parseInt(hour), parseInt(minute), 0, 0);
       form.setValue("due_date", dateWithTime);
@@ -67,7 +67,7 @@ export function TaskDateAndStatus() {
                       )}
                     >
                       {field.value ? (
-                        timeHour ? 
+                        timeHour && timeHour !== "none" ? 
                           format(field.value, "dd/MM/yyyy HH:mm") :
                           format(field.value, "dd/MM/yyyy")
                       ) : (
@@ -102,7 +102,7 @@ export function TaskDateAndStatus() {
                       align="center" 
                       className="z-50 bg-background"
                     >
-                      <SelectItem value="" className="text-center">ללא</SelectItem>
+                      <SelectItem value="none" className="text-center">ללא</SelectItem>
                       {Array.from({ length: 24 }, (_, i) => (
                         <SelectItem key={i} value={i.toString().padStart(2, '0')} className="text-center">
                           {i.toString().padStart(2, '0')}
