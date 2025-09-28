@@ -13,6 +13,7 @@ export interface Subscription {
   templateLimit?: number;
   whatsappMessageLimit?: number;
   taskLimit?: number;
+  companyLimit?: number;
   analyticsLevel?: 'basic' | 'full' | 'custom';
 }
 
@@ -26,6 +27,7 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     templateLimit: 5, // עודכן מ-3 ל-5
     whatsappMessageLimit: 100,
     taskLimit: 20,
+    companyLimit: 3,
     analyticsLevel: 'basic'
   },
   business: {
@@ -37,6 +39,7 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     templateLimit: 10,
     whatsappMessageLimit: 500,
     taskLimit: 100,
+    companyLimit: 10,
     analyticsLevel: 'full'
   },
   enterprise: {
@@ -48,6 +51,7 @@ export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {
     templateLimit: Infinity,
     whatsappMessageLimit: 2000,
     taskLimit: Infinity,
+    companyLimit: Infinity,
     analyticsLevel: 'custom'
   }
 };

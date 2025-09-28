@@ -13,21 +13,58 @@ export function useRoles() {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select(`
-          *,
-          agencies(name, company_id),
-          companies(name)
-        `)
-        .eq("user_id", user.id);
+      try {
+        // Use basic select to avoid foreign key issues
+        const { data, error } = await supabase
+          .from("user_roles")
+          .select("*")
+          .eq("user_id", user.id);
 
-      if (error) {
-        console.error("Error fetching user roles:", error);
+        if (error) {
+          console.error("Error fetching user roles:", error);
+          return [];
+        }
+
+        // Enrich with agency and company names if needed
+        if (data && data.length > 0) {
+          const enrichedRoles = await Promise.all(
+            data.map(async (role) => {
+              let agencies = null;
+              let companies = null;
+
+              if (role.agency_id) {
+                const { data: agencyData } = await supabase
+                  .from("agencies")
+                  .select("name, company_id")
+                  .eq("id", role.agency_id)
+                  .single();
+                agencies = agencyData;
+              }
+
+              if (role.company_id) {
+                const { data: companyData } = await supabase
+                  .from("companies")
+                  .select("name")
+                  .eq("id", role.company_id)
+                  .single();
+                companies = companyData;
+              }
+
+              return {
+                ...role,
+                agencies,
+                companies
+              };
+            })
+          );
+          return enrichedRoles;
+        }
+
+        return data || [];
+      } catch (error) {
+        console.error("Error in user roles query:", error);
         return [];
       }
-
-      return data || [];
     },
     enabled: !!user?.id,
   });

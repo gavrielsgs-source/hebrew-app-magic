@@ -51,6 +51,14 @@ export function UserInvitations({ companyId, companyName }: UserInvitationsProps
     try {
       emailSchema.parse({ email });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+    try {
+      emailSchema.parse({ email });
+    } catch (error) {
       toast.error("נא להזין כתובת אימייל תקינה");
       return;
     }

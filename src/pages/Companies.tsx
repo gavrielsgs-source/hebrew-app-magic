@@ -7,12 +7,32 @@ import { Badge } from "@/components/ui/badge";
 import { UserCheck, Users, Settings, Plus, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/contexts/subscription-context";
+import { useSubscriptionLimits } from "@/hooks/use-subscription-limits";
+import { UsageBar } from "@/components/subscription/UsageBar";
+import { toast } from "sonner";
 
 export default function AccessManagement() {
   const { user, loading } = useAuth();
   const { companies, isLoading: companiesLoading, createCompany } = useCompanies();
   const { subscription } = useSubscription();
+  const { checkAndNotifyLimit } = useSubscriptionLimits();
   const navigate = useNavigate();
+
+  const handleCreateCompany = async () => {
+    // Check company limit before creating
+    if (!checkAndNotifyLimit('company', companies.length, async () => {
+      try {
+        const companyName = `קבוצת גישה ${companies.length + 1}`;
+        await createCompany.mutateAsync(companyName);
+        toast.success("קבוצת גישה נוצרה בהצלחה");
+      } catch (error) {
+        console.error("Error creating company:", error);
+        toast.error("שגיאה ביצירת קבוצת גישה");
+      }
+    })) {
+      return; // Limit exceeded, notification already shown
+    }
+  };
 
   if (loading) {
     return (
@@ -53,12 +73,12 @@ export default function AccessManagement() {
                 {subscription.tier} • {companies.length} קבוצות
               </Badge>
               <Button
-                onClick={() => createCompany.mutateAsync("קבוצת גישה חדשה")}
+                onClick={handleCreateCompany}
                 disabled={createCompany.isPending}
                 className="bg-primary hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4 ml-2" />
-                קבוצת גישה חדשה
+                {createCompany.isPending ? "יוצר..." : "קבוצת גישה חדשה"}
               </Button>
             </div>
           </div>
@@ -67,6 +87,22 @@ export default function AccessManagement() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto p-6">
+        {/* Usage Bar for Company Limit */}
+        {subscription.companyLimit !== Infinity && (
+          <div className="mb-6">
+            <UsageBar
+              used={companies.length}
+              limit={subscription.companyLimit || 0}
+              label="קבוצות גישה"
+              className="mb-2"
+            />
+            {user?.email === 'gavrielsgs@gmail.com' && (
+              <p className="text-xs text-muted-foreground">
+                💡 בחשבון מנהל-על (Super Admin) המגבלות מבוטלות לצורכי ניהול ובדיקות
+              </p>
+            )}
+          </div>
+        )}
         {companiesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
@@ -90,12 +126,12 @@ export default function AccessManagement() {
                 צור קבוצת גישה ראשונה כדי להתחיל לנהל הרשאות משתמשים
               </p>
               <Button
-                onClick={() => createCompany.mutateAsync("קבוצת הגישה שלי")}
+                onClick={handleCreateCompany}
                 disabled={createCompany.isPending}
                 className="bg-primary hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4 ml-2" />
-                צור קבוצת גישה ראשונה
+                {createCompany.isPending ? "יוצר..." : "צור קבוצת גישה ראשונה"}
               </Button>
             </CardContent>
           </Card>

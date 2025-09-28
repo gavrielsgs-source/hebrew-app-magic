@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { SubscriptionTier } from '@/types/subscription';
 
-export type ResourceType = 'car' | 'lead' | 'user' | 'template' | 'whatsappMessage' | 'task';
+export type ResourceType = 'car' | 'lead' | 'user' | 'template' | 'whatsappMessage' | 'task' | 'company';
 
 /**
  * Hook לבדיקת מגבלות מנוי לפני יצירה או עדכון של משאבים
@@ -69,7 +69,8 @@ export function useSubscriptionLimits() {
           user: 'משתמשים',
           template: 'תבניות',
           whatsappMessage: 'הודעות וואטסאפ',
-          task: 'משימות'
+          task: 'משימות',
+          company: 'קבוצות גישה'
         };
 
         const limitKey = `${resourceType}Limit` as keyof typeof subscription;
@@ -158,7 +159,8 @@ export function useSubscriptionLimits() {
           user: 'משתמשים',
           template: 'תבניות',
           whatsappMessage: 'הודעות וואטסאפ',
-          task: 'משימות'
+          task: 'משימות',
+          company: 'קבוצות גישה'
         };
 
         toast.warning(
