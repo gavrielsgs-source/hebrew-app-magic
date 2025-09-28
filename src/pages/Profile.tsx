@@ -255,95 +255,30 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Company Management Section - Always show for testing */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-2">
-              <Building2 className="h-5 w-5 text-blue-600" />
-              ניהול חברות ומשתמשים
-            </h3>
-            <p className="text-gray-600 text-sm">נהל את החברות שלך ואת המשתמשים</p>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/companies")}
-                className="h-auto p-4 flex items-center justify-between hover:bg-blue-50"
-              >
+        {/* Quick Access to Companies */}
+        {!companiesLoading && companies.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <Building2 className="h-5 w-5 text-blue-600" />
-                  <div className="text-right">
-                    <div className="font-medium">ניהול חברות</div>
-                    <div className="text-sm text-gray-500">צור וערוך חברות</div>
-                  </div>
+                  <Building2 className="h-6 w-6 text-blue-600" />
+                  <h3 className="text-xl font-semibold text-gray-900">החברות שלי</h3>
                 </div>
-                <ArrowRight className="h-4 w-4 text-gray-400" />
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => navigate("/admin")}
-                className="h-auto p-4 flex items-center justify-between hover:bg-green-50"
-              >
-                <div className="flex items-center gap-3">
-                  <Users2 className="h-5 w-5 text-green-600" />
-                  <div className="text-right">
-                    <div className="font-medium">ניהול משתמשים</div>
-                    <div className="text-sm text-gray-500">הזמן והגדר משתמשים</div>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-gray-400" />
-              </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/companies")}
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                >
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                  נהל חברות
+                </Button>
+              </div>
+              <div className="text-gray-600">
+                יש לך {companies.length} {companies.length === 1 ? 'חברה רשומה' : 'חברות רשומות'} במערכת
+              </div>
             </div>
-            
-            {subscription && (
-              <div className="p-4 border rounded-lg bg-gray-50">
-                <div className="flex items-center gap-3 mb-2">
-                  <Users2 className="h-5 w-5 text-green-600" />
-                  <div className="font-medium">סטטוס מנוי</div>
-                </div>
-                <div className="text-sm text-gray-600">
-                  <div>מגבלת משתמשים: {subscription.userLimit === Infinity ? 'אין הגבלה' : subscription.userLimit}</div>
-                  <div>רמת מנוי: {subscription.tier}</div>
-                  {subscription.trialEndsAt && (
-                    <div className="text-orange-600">תקופת ניסיון עד: {new Date(subscription.trialEndsAt).toLocaleDateString('he-IL')}</div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {!companiesLoading && companies.length > 0 && (
-              <div className="border-t pt-4">
-                <div className="text-sm font-medium text-gray-700 mb-2">החברות שלך:</div>
-                <div className="space-y-2">
-                  {companies.slice(0, 3).map((company) => (
-                    <Button
-                      key={company.id}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/company/${company.id}/settings`)}
-                      className="w-full justify-between text-right"
-                    >
-                      <span>{company.name}</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </Button>
-                  ))}
-                  {companies.length > 3 && (
-                    <Button
-                      variant="link"
-                      size="sm"
-                      onClick={() => navigate("/companies")}
-                      className="text-blue-600 text-xs"
-                    >
-                      +{companies.length - 3} חברות נוספות
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
         {/* Tabs Section */}
         <Tabs defaultValue="profile" className="space-y-6">
