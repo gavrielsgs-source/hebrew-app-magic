@@ -22,7 +22,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto items-stretch">
           <PricingCard
             title="פרימיום"
             price={199}
