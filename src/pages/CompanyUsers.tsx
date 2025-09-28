@@ -9,14 +9,29 @@ import { useAuth } from "@/hooks/use-auth";
 export default function CompanyUsers() {
   const { companyId } = useParams<{ companyId: string }>();
   const { companies, isLoading } = useCompanies();
-  const { user } = useAuth();
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  const { user, loading: authLoading } = useAuth();
 
   if (!companyId) {
     return <Navigate to="/companies" replace />;
+  }
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="space-y-4">
+            <div className="h-8 bg-muted animate-pulse rounded" />
+            <div className="h-32 bg-muted animate-pulse rounded" />
+            <div className="h-64 bg-muted animate-pulse rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   if (isLoading) {
