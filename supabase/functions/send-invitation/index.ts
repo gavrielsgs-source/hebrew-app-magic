@@ -53,19 +53,50 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending invitation to ${email} for role ${role} in company ${companyName}`);
 
-    // Verify user has permission to invite (is owner of company)
-    const { data: company, error: companyError } = await supabaseClient
+    // Check if user is Super Admin
+    const { data: isAdminResult, error: adminError } = await supabaseClient
+      .rpc("is_admin");
+
+    if (adminError) {
+      console.error("Error checking admin status:", adminError);
+      return new Response(
+        JSON.stringify({ error: "Failed to verify permissions" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Verify user has permission to invite (is Super Admin OR owner of company)
+    if (!isAdminResult) {
+      const { data: company, error: companyError } = await supabaseClient
+        .from("companies")
+        .select("*")
+        .eq("id", companyId)
+        .eq("owner_id", user.id)
+        .single();
+
+      if (companyError || !company) {
+        console.error("Company verification error:", companyError);
+        return new Response(
+          JSON.stringify({ error: "Unauthorized to invite for this company" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    }
+
+    console.log(`User permission verified: ${isAdminResult ? 'Super Admin' : 'Company Owner'}`);
+
+    // Verify the target company exists
+    const { data: targetCompany, error: targetError } = await supabaseClient
       .from("companies")
-      .select("*")
+      .select("id, name")
       .eq("id", companyId)
-      .eq("owner_id", user.id)
       .single();
 
-    if (companyError || !company) {
-      console.error("Company verification error:", companyError);
+    if (targetError || !targetCompany) {
+      console.error("Target company not found:", targetError);
       return new Response(
-        JSON.stringify({ error: "Unauthorized to invite for this company" }),
-        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ error: "Company not found" }),
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
