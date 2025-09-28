@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { useRole } from "@/hooks/use-role";
+import { useRoles } from "@/hooks/use-roles";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,7 @@ import {
   FileBarChart,
   FileText,
   Sparkles,
+  Building2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 // import { DocumentProductionMenu } from "@/components/document-production/DocumentProductionMenu";
@@ -29,10 +30,10 @@ import { Badge } from "@/components/ui/badge";
 export function AppSidebar() {
   const { pathname } = useLocation();
   const { user } = useAuth();
-  const { data: roleData } = useRole();
+  const { isAdmin, isCompanyOwner, canManageLeads } = useRoles();
   const navigate = useNavigate();
 
-  const isAdmin = roleData?.name === "admin";
+  const canAccessCompanyManagement = isAdmin() || isCompanyOwner();
 
   return (
     <Sidebar className="border-l z-40">
@@ -141,7 +142,20 @@ export function AppSidebar() {
               </button>
             </SidebarMenuItem>
 
-            {isAdmin && (
+            {canAccessCompanyManagement && (
+              <SidebarMenuItem>
+                <button
+                  onClick={() => navigate("/companies")}
+                  data-active={pathname.startsWith("/company") || pathname === "/companies"}
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
+                >
+                  <Building2 className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">ניהול חברות</span>
+                </button>
+              </SidebarMenuItem>
+            )}
+
+            {isAdmin() && (
               <SidebarMenuItem>
                 <button
                   onClick={() => navigate("/admin")}

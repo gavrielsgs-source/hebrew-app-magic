@@ -9,14 +9,22 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { User, Phone, Building, Briefcase, Save, Bell } from "lucide-react";
+import { User, Phone, Building, Briefcase, Save, Bell, Building2, Users2, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
+import { useRoles } from "@/hooks/use-roles";
+import { useCompanies } from "@/hooks/use-companies";
+import { useNavigate } from "react-router-dom";
+import { useSubscription } from "@/contexts/subscription-context";
 
 export default function Profile() {
   const { profile, updateProfile, isLoading } = useProfile();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { isAdmin, isCompanyOwner } = useRoles();
+  const { companies, isLoading: companiesLoading } = useCompanies();
+  const navigate = useNavigate();
+  const { subscription } = useSubscription();
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -246,6 +254,83 @@ export default function Profile() {
             </div>
           </div>
         </div>
+
+        {/* Company Management Section */}
+        {(isAdmin() || isCompanyOwner()) && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-2">
+                <Building2 className="h-5 w-5 text-blue-600" />
+                ניהול חברות ומשתמשים
+              </h3>
+              <p className="text-gray-600 text-sm">נהל את החברות שלך ואת המשתמשים</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/companies")}
+                  className="h-auto p-4 flex items-center justify-between hover:bg-blue-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <Building2 className="h-5 w-5 text-blue-600" />
+                    <div className="text-right">
+                      <div className="font-medium">ניהול חברות</div>
+                      <div className="text-sm text-gray-500">צור וערוך חברות</div>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-gray-400" />
+                </Button>
+                
+                <div className="p-4 border rounded-lg bg-gray-50">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Users2 className="h-5 w-5 text-green-600" />
+                    <div className="font-medium">סטטוס מנוי</div>
+                  </div>
+                  {subscription && (
+                    <div className="text-sm text-gray-600">
+                      <div>מגבלת משתמשים: {subscription.userLimit === Infinity ? 'אין הגבלה' : subscription.userLimit}</div>
+                      <div>רמת מנוי: {subscription.tier}</div>
+                      {subscription.trialEndsAt && (
+                        <div className="text-orange-600">תקופת ניסיון עד: {new Date(subscription.trialEndsAt).toLocaleDateString('he-IL')}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {!companiesLoading && companies.length > 0 && (
+                <div className="border-t pt-4">
+                  <div className="text-sm font-medium text-gray-700 mb-2">החברות שלך:</div>
+                  <div className="space-y-2">
+                    {companies.slice(0, 3).map((company) => (
+                      <Button
+                        key={company.id}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/company/${company.id}/settings`)}
+                        className="w-full justify-between text-right"
+                      >
+                        <span>{company.name}</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </Button>
+                    ))}
+                    {companies.length > 3 && (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => navigate("/companies")}
+                        className="text-blue-600 text-xs"
+                      >
+                        +{companies.length - 3} חברות נוספות
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Tabs Section */}
         <Tabs defaultValue="profile" className="space-y-6">
