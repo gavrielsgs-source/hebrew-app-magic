@@ -8,12 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, FileText, Download, UserPlus } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { Plus, Trash2, FileText, Download, UserPlus, Calendar as CalendarIcon } from "lucide-react";
+import { cn, formatPrice } from "@/lib/utils";
 import { NewCarOrderData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
 import { LeadSearchSelect } from "@/components/leads/LeadSearchSelect";
 import { useLeads } from "@/hooks/use-leads";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const newCarOrderSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
@@ -78,6 +80,7 @@ export default function NewCarOrder() {
   });
 
   const watchedItems = form.watch("items");
+  const selectedDate = form.watch("date") ? new Date(form.watch("date")) : undefined;
   
   // Calculate totals
   const subtotal = watchedItems.reduce((sum, item) => sum + (item.netPrice * item.quantity), 0);
@@ -146,15 +149,34 @@ export default function NewCarOrder() {
             </CardHeader>
             <CardContent className="space-y-6">
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Date */}
                 <div className="space-y-2">
                   <Label htmlFor="date">תאריך</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    {...form.register("date")}
-                    className="text-right"
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-between text-right font-normal",
+                          !form.watch("date") && "text-muted-foreground"
+                        )}
+                      >
+                        <span>{form.watch("date") ? new Date(form.watch("date")).toLocaleDateString('he-IL') : "בחר תאריך"}</span>
+                        <CalendarIcon className="h-4 w-4 opacity-60" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => {
+                          if (date) {
+                            form.setValue("date", date.toISOString().split('T')[0]);
+                          }
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   {form.formState.errors.date && (
                     <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
                   )}
