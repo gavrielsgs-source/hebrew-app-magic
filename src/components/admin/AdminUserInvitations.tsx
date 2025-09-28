@@ -121,11 +121,23 @@ export function AdminUserInvitations() {
         payload.agencyId = defaultAgencyId.id;
       }
 
-      const { error } = await supabase.functions.invoke('send-invitation', {
+      const { data, error } = await supabase.functions.invoke('send-invitation', {
         body: payload,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific error status codes
+        if (error.message?.includes('401') || error.message?.includes('Unauthorized') || error.message?.includes('authentication')) {
+          throw new Error('נדרש אימות מחדש - אנא התחבר שוב למערכת');
+        } else if (error.message?.includes('403') || error.message?.includes('permission') || error.message?.includes('Unauthorized to invite')) {
+          throw new Error('אין הרשאה לשלוח הזמנות לחברה זו');
+        } else if (error.message?.includes('404') || error.message?.includes('not found')) {
+          throw new Error('החברה הנבחרת לא נמצאה');
+        } else if (error.message?.includes('500') || error.message?.includes('Failed to send')) {
+          throw new Error('שגיאה בשליחת מייל ההזמנה - נסה שוב מאוחר יותר');
+        }
+        throw error;
+      }
 
       // Reset form
       setEmail("");
