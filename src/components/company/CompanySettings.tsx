@@ -51,16 +51,18 @@ export function CompanySettings({ companyId }: CompanySettingsProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Company Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-right">
-            <Building2 className="h-5 w-5" />
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
+          <CardTitle className="flex items-center gap-3 text-right text-xl">
+            <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-2 rounded-xl">
+              <Building2 className="h-6 w-6 text-blue-600" />
+            </div>
             פרטי החברה
           </CardTitle>
-          <CardDescription className="text-right">
-            נהל את פרטי החברה שלך
+          <CardDescription className="text-right text-slate-600">
+            נהל את פרטי החברה שלך ועדכן מידע בסיסי
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -94,14 +96,16 @@ export function CompanySettings({ companyId }: CompanySettingsProps) {
       </Card>
 
       {/* Subscription Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-right">
-            <CreditCard className="h-5 w-5" />
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-t-lg">
+          <CardTitle className="flex items-center gap-3 text-right text-xl">
+            <div className="bg-gradient-to-br from-emerald-100 to-teal-100 p-2 rounded-xl">
+              <CreditCard className="h-6 w-6 text-emerald-600" />
+            </div>
             פרטי המנוי
           </CardTitle>
-          <CardDescription className="text-right">
-            מידע על המנוי הנוכחי של החברה
+          <CardDescription className="text-right text-slate-600">
+            מידע על המנוי הנוכחי, מגבלות והטבות של החברה
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -154,14 +158,16 @@ export function CompanySettings({ companyId }: CompanySettingsProps) {
       </div>
 
       {/* Current Users */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-right">
-            <Users className="h-5 w-5" />
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg">
+          <CardTitle className="flex items-center gap-3 text-right text-xl">
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-2 rounded-xl">
+              <Users className="h-6 w-6 text-purple-600" />
+            </div>
             משתמשים פעילים
           </CardTitle>
-          <CardDescription className="text-right">
-            רשימת המשתמשים הרשומים בחברה
+          <CardDescription className="text-right text-slate-600">
+            רשימת המשתמשים הרשומים בחברה ותפקידיהם
           </CardDescription>
         </CardHeader>
         <CardContent>
