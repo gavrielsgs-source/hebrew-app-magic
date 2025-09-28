@@ -17,6 +17,7 @@ import { UserRole } from "@/types/user";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 
 interface UserInvitationsProps {
   companyId: string;
@@ -37,6 +38,25 @@ export function UserInvitations({ companyId, companyName }: UserInvitationsProps
   const { data: companyUsers = [] } = useCompanyUsers(companyId);
   const { subscription, checkEntitlement } = useSubscription();
 
+  // Fetch default agency for this company (first by creation time)
+  const { data: defaultAgencyId } = useQuery<{ id: string } | null>({
+    queryKey: ["default-agency", companyId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("agencies")
+        .select("id")
+        .eq("company_id", companyId)
+        .order("created_at", { ascending: true })
+        .maybeSingle();
+      if (error) {
+        console.error("Error fetching default agency:", error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!companyId,
+  });
+
   // Calculate current usage (active users + pending invitations)
   const activeUsersCount = companyUsers.length;
   const pendingInvitationsCount = invitations.filter(inv => 
@@ -44,7 +64,7 @@ export function UserInvitations({ companyId, companyName }: UserInvitationsProps
   ).length;
   const totalUsage = activeUsersCount + pendingInvitationsCount;
   const userLimit = subscription.userLimit || 2;
-  const canInviteMore = checkEntitlement('userLimit', totalUsage + 1);
+  const canInviteMore = checkEntitlement('userLimit', totalUsage + 1) && (!!defaultAgencyId || !["agency_manager", "sales_agent", "viewer"].includes(role));
 
   const handleSendInvitation = async () => {
     // Validate email
@@ -66,14 +86,20 @@ export function UserInvitations({ companyId, companyName }: UserInvitationsProps
     setIsLoading(true);
     
     try {
-      // Call edge function to send invitation
+      // Build payload and include default agency when role is agency-scoped
+      const payload: any = {
+        email: email.trim(),
+        role,
+        companyId,
+        companyName,
+      };
+
+      if (["agency_manager", "sales_agent", "viewer"].includes(role) && defaultAgencyId?.id) {
+        payload.agencyId = defaultAgencyId.id;
+      }
+
       const { error } = await supabase.functions.invoke('send-invitation', {
-        body: {
-          email: email.trim(),
-          role,
-          companyId,
-          companyName
-        }
+        body: payload,
       });
 
       if (error) throw error;
