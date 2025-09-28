@@ -153,9 +153,11 @@ const handler = async (req: Request): Promise<Response> => {
       'sales_agent': 'איש מכירות',
       'agency_manager': 'מנהל סוכנות'
     };
+    const senderEmail = Deno.env.get("RESEND_FROM_EMAIL") || user.email || "onboarding@resend.dev";
+    const fromAddress = `מערכת CRM <${senderEmail}>`;
 
     const emailResponse = await resend.emails.send({
-      from: "מערכת CRM <onboarding@resend.dev>",
+      from: fromAddress,
       to: [email],
       subject: `הזמנה להצטרף ל-${companyName}`,
       html: `
