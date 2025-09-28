@@ -37,6 +37,7 @@ export type Database = {
       }
       agencies: {
         Row: {
+          company_id: string | null
           created_at: string | null
           id: string
           name: string
@@ -44,6 +45,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          company_id?: string | null
           created_at?: string | null
           id?: string
           name: string
@@ -51,13 +53,22 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          company_id?: string | null
           created_at?: string | null
           id?: string
           name?: string
           owner_id?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "agencies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
@@ -183,6 +194,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       document_sequences: {
         Row: {
@@ -484,35 +519,52 @@ export type Database = {
       subscriptions: {
         Row: {
           active: boolean
+          active_users_count: number | null
+          company_id: string | null
           created_at: string
           expires_at: string | null
           id: string
+          max_users: number | null
           subscription_tier: string
           trial_ends_at: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           active?: boolean
+          active_users_count?: number | null
+          company_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
+          max_users?: number | null
           subscription_tier?: string
           trial_ends_at?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           active?: boolean
+          active_users_count?: number | null
+          company_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
+          max_users?: number | null
           subscription_tier?: string
           trial_ends_at?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
@@ -668,9 +720,64 @@ export type Database = {
         }
         Relationships: []
       }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          agency_id: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: Database["public"]["Enums"]["user_role"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          agency_id?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          role: Database["public"]["Enums"]["user_role"]
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          agency_id?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           agency_id: string | null
+          company_id: string | null
           created_at: string | null
           id: string
           role: Database["public"]["Enums"]["user_role"]
@@ -679,6 +786,7 @@ export type Database = {
         }
         Insert: {
           agency_id?: string | null
+          company_id?: string | null
           created_at?: string | null
           id?: string
           role: Database["public"]["Enums"]["user_role"]
@@ -687,13 +795,22 @@ export type Database = {
         }
         Update: {
           agency_id?: string | null
+          company_id?: string | null
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -729,6 +846,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      get_user_companies: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
       has_role: {
         Args: {
           agency_id_param?: string
@@ -742,6 +863,10 @@ export type Database = {
       }
       is_agency_manager_or_admin: {
         Args: { agency_id_param: string }
+        Returns: boolean
+      }
+      is_company_owner: {
+        Args: { company_id_param: string }
         Returns: boolean
       }
       log_security_event: {
@@ -767,7 +892,12 @@ export type Database = {
       }
     }
     Enums: {
-      user_role: "admin" | "agency_manager" | "sales_agent" | "viewer"
+      user_role:
+        | "admin"
+        | "agency_manager"
+        | "sales_agent"
+        | "viewer"
+        | "company_owner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -895,7 +1025,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["admin", "agency_manager", "sales_agent", "viewer"],
+      user_role: [
+        "admin",
+        "agency_manager",
+        "sales_agent",
+        "viewer",
+        "company_owner",
+      ],
     },
   },
 } as const
