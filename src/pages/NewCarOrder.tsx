@@ -190,7 +190,7 @@ export default function NewCarOrder() {
 
                   {useExistingLead && (
                     <div className="space-y-2">
-                      <Label>בחר לקוח מהרשימה</Label>
+                      <Label htmlFor="leadId">בחר לקוח מהרשימה</Label>
                       <LeadSearchSelect
                         value={form.watch("leadId") || ""}
                         onValueChange={handleLeadSelect}
