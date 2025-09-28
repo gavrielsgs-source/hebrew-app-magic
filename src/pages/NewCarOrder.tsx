@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, FileText, Download } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2, FileText, Download, UserPlus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { NewCarOrderData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
+import { LeadSearchSelect } from "@/components/leads/LeadSearchSelect";
+import { useLeads } from "@/hooks/use-leads";
 
 const newCarOrderSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
+  leadId: z.string().optional(),
   customer: z.object({
     fullName: z.string().min(2, "שם מלא נדרש"),
     firstName: z.string().min(2, "שם פרטי נדרש"),
@@ -31,6 +35,7 @@ const newCarOrderSchema = z.object({
     finalPrice: z.number().min(0, "מחיר סופי חייב להיות חיובי"),
     route: z.string().min(1, "מסלול נדרש"),
   })).min(1, "חובה להוסיף לפחות פריט אחד"),
+  notes: z.string().optional(),
 });
 
 type NewCarOrderFormValues = z.infer<typeof newCarOrderSchema>;
@@ -38,11 +43,14 @@ type NewCarOrderFormValues = z.infer<typeof newCarOrderSchema>;
 export default function NewCarOrder() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
+  const [useExistingLead, setUseExistingLead] = useState(true);
+  const { leads } = useLeads();
 
   const form = useForm<NewCarOrderFormValues>({
     resolver: zodResolver(newCarOrderSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
+      leadId: "",
       customer: {
         fullName: "",
         firstName: "",
@@ -60,6 +68,7 @@ export default function NewCarOrder() {
         finalPrice: 0,
         route: "",
       }],
+      notes: "",
     },
   });
 
@@ -95,6 +104,19 @@ export default function NewCarOrder() {
     }
   };
 
+  const handleLeadSelect = (leadId: string) => {
+    const selectedLead = leads?.find(lead => lead.id === leadId);
+    if (selectedLead) {
+      form.setValue("leadId", leadId);
+      form.setValue("customer.fullName", selectedLead.name || "");
+      form.setValue("customer.firstName", selectedLead.name?.split(" ")[0] || "");
+      form.setValue("customer.city", "");
+      form.setValue("customer.address", "");
+      form.setValue("customer.birthYear", "");
+      form.setValue("customer.idNumber", "");
+    }
+  };
+
   const onSubmit = (data: NewCarOrderFormValues) => {
     toast({
       title: "הצלחה",
@@ -111,10 +133,10 @@ export default function NewCarOrder() {
   };
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="min-h-screen bg-background">
+      <div className="w-full max-w-none">
         {/* Form Section */}
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-right flex items-center gap-2">
@@ -142,9 +164,42 @@ export default function NewCarOrder() {
 
                 {/* Customer Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-right">פרטי הלקוח</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant={useExistingLead ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setUseExistingLead(true)}
+                      >
+                        בחר לקוח קיים
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={!useExistingLead ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setUseExistingLead(false)}
+                        className="flex items-center gap-2"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        לקוח חדש
+                      </Button>
+                    </div>
+                    <h3 className="text-lg font-semibold">פרטי הלקוח</h3>
+                  </div>
+
+                  {useExistingLead && (
+                    <div className="space-y-2">
+                      <Label>בחר לקוח מהרשימה</Label>
+                      <LeadSearchSelect
+                        value={form.watch("leadId") || ""}
+                        onValueChange={handleLeadSelect}
+                        placeholder="חפש לקוח..."
+                      />
+                    </div>
+                  )}
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="fullName">שם מלא</Label>
                       <Input
@@ -260,8 +315,8 @@ export default function NewCarOrder() {
                           <h4 className="font-medium">פריט {index + 1}</h4>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div className="space-y-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                          <div className="space-y-2 lg:col-span-2">
                             <Label>תיאור</Label>
                             <Input
                               {...form.register(`items.${index}.description`)}
@@ -311,16 +366,6 @@ export default function NewCarOrder() {
                           </div>
 
                           <div className="space-y-2">
-                            <Label>מחיר סופי</Label>
-                            <Input
-                              type="number"
-                              {...form.register(`items.${index}.finalPrice`, { valueAsNumber: true })}
-                              className="text-right bg-muted"
-                              readOnly
-                            />
-                          </div>
-
-                          <div className="space-y-2">
                             <Label>מסלול</Label>
                             <Input
                               {...form.register(`items.${index}.route`)}
@@ -329,8 +374,25 @@ export default function NewCarOrder() {
                             />
                           </div>
                         </div>
+                        
+                        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                          <div className="text-lg font-semibold text-right">
+                            מחיר סופי: {formatPrice(watchedItems[index]?.finalPrice || 0)}
+                          </div>
+                        </div>
                       </Card>
                     ))}
+                  </div>
+
+                  {/* Notes Section */}
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">הערות</Label>
+                    <Textarea
+                      id="notes"
+                      {...form.register("notes")}
+                      className="text-right min-h-[100px]"
+                      placeholder="הערות נוספות להזמנה..."
+                    />
                   </div>
                 </div>
 
@@ -355,7 +417,7 @@ export default function NewCarOrder() {
                   </CardContent>
                 </Card>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <Button type="submit" className="flex-1">
                     שמור הזמנה
                   </Button>
@@ -374,12 +436,10 @@ export default function NewCarOrder() {
               </form>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Preview Section */}
-        {showPreview && (
-          <div className="space-y-6">
-            <Card>
+          {/* Preview Section */}
+          {showPreview && (
+            <Card className="mt-6">
               <CardHeader>
                 <CardTitle className="text-right">תצוגה מקדימה</CardTitle>
               </CardHeader>
@@ -416,6 +476,13 @@ export default function NewCarOrder() {
                     ))}
                   </div>
 
+                  {form.watch("notes") && (
+                    <div className="border-b pb-4">
+                      <h3 className="font-semibold mb-2">הערות:</h3>
+                      <p className="text-sm whitespace-pre-wrap">{form.watch("notes")}</p>
+                    </div>
+                  )}
+
                   <div className="border-t pt-4 space-y-2 font-semibold">
                     <div className="flex justify-between">
                       <span>{formatPrice(subtotal)}</span>
@@ -433,8 +500,8 @@ export default function NewCarOrder() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
