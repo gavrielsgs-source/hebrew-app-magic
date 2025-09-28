@@ -61,23 +61,30 @@ export default function AcceptInvitation() {
 
   const fetchInvitation = async () => {
     try {
-      const { data, error } = await supabase
-        .from("user_invitations")
-        .select(`
-          *,
-          companies!inner(name)
-        `)
-        .eq("token", token)
-        .eq("accepted_at", null)
-        .gt("expires_at", new Date().toISOString())
-        .single();
+      const { data, error } = await supabase.functions.invoke('accept-invitation', {
+        body: {
+          action: 'info',
+          token: token
+        }
+      });
 
       if (error || !data) {
-        setError("הזמנה לא נמצאה או שפגה תוקפה");
+        setError(error?.message || "הזמנה לא נמצאה או שפגה תוקפה");
         return;
       }
 
-      setInvitation(data);
+      // Transform data to match expected format
+      setInvitation({
+        id: '', // Not needed for display
+        email: data.email,
+        role: data.role,
+        company_id: '', // Not needed for display
+        agency_id: '', // Not needed for display
+        expires_at: data.expiresAt,
+        companies: {
+          name: data.companyName
+        }
+      });
     } catch (err) {
       console.error("Error fetching invitation:", err);
       setError("שגיאה בטעינת ההזמנה");
@@ -139,31 +146,23 @@ export default function AcceptInvitation() {
         throw new Error("Failed to authenticate user");
       }
 
-      // Create user role
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert([{
-          user_id: currentUser.id,
-          role: invitation.role as any,
-          company_id: invitation.company_id,
-          agency_id: invitation.agency_id
-        }]);
-
-      if (roleError) {
-        throw roleError;
-      }
-
-      // Mark invitation as accepted
-      const { error: acceptError } = await supabase
-        .from("user_invitations")
-        .update({ accepted_at: new Date().toISOString() })
-        .eq("id", invitation.id);
+      // Accept invitation using Edge Function
+      const { data: acceptData, error: acceptError } = await supabase.functions.invoke('accept-invitation', {
+        body: {
+          action: 'accept',
+          token: token
+        }
+      });
 
       if (acceptError) {
-        throw acceptError;
+        throw new Error(acceptError.message || "שגיאה בקבלת ההזמנה");
       }
 
-      toast.success("התצטרפת בהצלחה לחברה!");
+      if (!acceptData?.success) {
+        throw new Error(acceptData?.error || "שגיאה בקבלת ההזמנה");
+      }
+
+      toast.success(acceptData.message || "התצטרפת בהצלחה לחברה!");
       navigate("/");
     } catch (err: any) {
       console.error("Error accepting invitation:", err);

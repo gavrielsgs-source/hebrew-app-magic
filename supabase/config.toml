@@ -36,6 +36,9 @@ port = 54325
 smtp_port = 54326
 pop3_port = 54327
 
+[functions.accept-invitation]
+verify_jwt = false
+
 [functions.facebook-leads]
 verify_jwt = false
 

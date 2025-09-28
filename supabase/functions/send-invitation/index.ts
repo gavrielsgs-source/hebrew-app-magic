@@ -91,7 +91,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send invitation email
-    const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace('//', '//').replace('supabase.co', 'lovable.app')}/accept-invitation?token=${invitation.token}`;
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.split("/").slice(0, 3).join("/") || "https://carsleadapp.com";
+    const inviteUrl = `${origin}/accept-invitation?token=${invitation.token}`;
+    
+    console.log(`Generated invite URL: ${inviteUrl}`);
     
     const roleNames = {
       'viewer': 'צפייה בלבד',
