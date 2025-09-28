@@ -139,7 +139,7 @@ export default function AccessManagement() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/company/${company.id}/settings`)}
+                        onClick={() => navigate(`/company/${company.id}/users`)}
                         className="flex-1"
                       >
                         <Users className="h-4 w-4 ml-2" />
