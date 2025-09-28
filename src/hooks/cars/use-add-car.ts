@@ -54,9 +54,11 @@ export function useAddCar() {
           throw carError;
         }
 
+        // Upload images in background to improve performance
         if (car.images && car.images.length > 0 && data.id) {
           const carId = data.id;
           
+          // Upload images in parallel for better performance
           const uploadPromises = car.images.map(async (image, index) => {
             const fileExt = image.name.split('.').pop();
             const filePath = `${carId}/${index}-${Date.now()}.${fileExt}`;
@@ -69,23 +71,21 @@ export function useAddCar() {
               });
               
             if (uploadError) {
-              toast.error(`שגיאה בהעלאת תמונה ${index + 1}`, {
-                description: uploadError.message
-              });
+              console.error(`Error uploading image ${index + 1}:`, uploadError);
               return { success: false, error: uploadError };
             }
             
             return { success: true, path: filePath };
           });
           
-          const uploadResults = await Promise.all(uploadPromises);
-          const failedUploads = uploadResults.filter(result => !result.success).length;
-          
-          if (failedUploads > 0) {
-            toast.error(`${failedUploads} תמונות לא הועלו בהצלחה`);
-          } else if (uploadResults.length > 0) {
-            toast.success(`הועלו ${uploadResults.length} תמונות בהצלחה`);
-          }
+          // Don't wait for image uploads to complete before showing success
+          Promise.all(uploadPromises).then((uploadResults) => {
+            const failedUploads = uploadResults.filter(result => !result.success).length;
+            
+            if (failedUploads > 0) {
+              toast.error(`${failedUploads} תמונות לא הועלו בהצלחה`);
+            }
+          });
         }
 
         return data;

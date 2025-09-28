@@ -68,11 +68,18 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
     }
 
     try {
+      // Helper function to parse price with comma support
+      const parsePrice = (priceStr: string): number => {
+        if (!priceStr) return 0;
+        // Remove commas and convert to number
+        return parseInt(priceStr.replace(/,/g, ''));
+      };
+
       const carData: NewCar = {
         make: formData.make,
         model: formData.model,
         year: formData.year,
-        price: formData.price ? parseInt(formData.price) : 0,
+        price: parsePrice(formData.price),
         kilometers: formData.kilometers ? parseInt(formData.kilometers) : 0,
         exterior_color: formData.exterior_color || null,
         interior_color: formData.interior_color || null,
@@ -115,11 +122,7 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
         }
       }
       
-      toast({
-        title: "רכב נוסף",
-        description: "הרכב נוסף בהצלחה למלאי",
-      });
-
+      // Don't show toast here - let useAddCar handle success notification
       if (onSuccess) {
         onSuccess();
       }
@@ -192,10 +195,14 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
           </Label>
           <Input
             id="price"
-            type="number"
+            type="text"
             value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-            placeholder="120000"
+            onChange={(e) => {
+              // Allow only digits and commas
+              const value = e.target.value.replace(/[^0-9,]/g, '');
+              setFormData({ ...formData, price: value });
+            }}
+            placeholder="120,000 או 120000"
             className="h-11 text-right"
             dir="rtl"
           />

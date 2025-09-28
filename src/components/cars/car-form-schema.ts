@@ -21,7 +21,8 @@ export const carFormSchema = z.object({
   kilometers: z.string()
     .regex(/^\d+$/, "יש להזין מספרים בלבד"),
   price: z.string()
-    .regex(/^\d+$/, "יש להזין מספרים בלבד"),
+    .regex(/^[\d,]+$/, "יש להזין מספרים ופסיקים בלבד")
+    .transform((val) => val.replace(/,/g, '')), // Remove commas for processing
   description: z.string()
     .optional()
     .transform((val) => val ? sanitizeInput(val) : val),
