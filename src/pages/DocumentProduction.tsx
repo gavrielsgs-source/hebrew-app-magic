@@ -2,6 +2,7 @@ import React from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { DOCUMENT_TYPES } from "@/types/document-production";
 import SalesAgreement from "./SalesAgreement";
+import NewCarOrder from "./NewCarOrder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 
@@ -19,6 +20,9 @@ export default function DocumentProduction() {
   switch (type) {
     case 'sales-agreement':
       return <SalesAgreement />;
+    
+    case 'new-car-order':
+      return <NewCarOrder />;
     
     // Future document types will be handled here
     default:

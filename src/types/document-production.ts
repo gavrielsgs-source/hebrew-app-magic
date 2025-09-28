@@ -62,6 +62,32 @@ export interface SalesAgreementData {
   };
 }
 
+export interface NewCarOrderData {
+  date: string;
+  customer: {
+    fullName: string;
+    firstName: string;
+    birthYear: string;
+    idNumber: string;
+    city: string;
+    address: string;
+  };
+  items: Array<{
+    id: string;
+    description: string;
+    netPrice: number;
+    discount: number;
+    quantity: number;
+    finalPrice: number;
+    route: string;
+  }>;
+  financial: {
+    subtotal: number;
+    discount: number;
+    total: number;
+  };
+}
+
 export interface DocumentFormData {
   type: string;
   leadId?: string;
