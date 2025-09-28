@@ -164,7 +164,7 @@ export default function NewCarOrder() {
                         <CalendarIcon className="h-4 w-4 opacity-60" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
+                    <PopoverContent className="w-auto p-0" align="start" side="bottom">
                       <Calendar
                         mode="single"
                         selected={selectedDate}
@@ -174,6 +174,7 @@ export default function NewCarOrder() {
                           }
                         }}
                         initialFocus
+                        dir="rtl"
                       />
                     </PopoverContent>
                   </Popover>
