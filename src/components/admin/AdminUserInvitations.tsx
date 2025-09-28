@@ -126,17 +126,25 @@ export function AdminUserInvitations() {
       });
 
       if (error) {
-        // Handle specific error status codes
-        if (error.message?.includes('401') || error.message?.includes('Unauthorized') || error.message?.includes('authentication')) {
+        const ctx: any = (error as any).context || {};
+        const serverMsg: string | undefined = ctx.error || ctx.message || ctx?.details?.message;
+        const status = (error as any).status || ctx.status;
+
+        if (status === 401 || /unauthorized|authentication/i.test(serverMsg || error.message)) {
           throw new Error('נדרש אימות מחדש - אנא התחבר שוב למערכת');
-        } else if (error.message?.includes('403') || error.message?.includes('permission') || error.message?.includes('Unauthorized to invite')) {
-          throw new Error('אין הרשאה לשלוח הזמנות לחברה זו');
-        } else if (error.message?.includes('404') || error.message?.includes('not found')) {
-          throw new Error('החברה הנבחרת לא נמצאה');
-        } else if (error.message?.includes('500') || error.message?.includes('Failed to send')) {
-          throw new Error('שגיאה בשליחת מייל ההזמנה - נסה שוב מאוחר יותר');
         }
-        throw error;
+        if (status === 403 || /Unauthorized to invite|permission/i.test(serverMsg || '')) {
+          throw new Error('אין הרשאה לשלוח הזמנות לחברה זו');
+        }
+        if (status === 404 || /Company not found/i.test(serverMsg || '')) {
+          throw new Error('החברה הנבחרת לא נמצאה');
+        }
+        if (status === 500 || /Failed to send invitation email/i.test(serverMsg || '')) {
+          throw new Error('שגיאה בשליחת מייל ההזמנה - בדקו אימות דומיין ב-Resend או החליפו מפתח API');
+        }
+
+        // Fallback generic
+        throw new Error(serverMsg || error.message || 'שגיאה בשליחת ההזמנה');
       }
 
       // Reset form

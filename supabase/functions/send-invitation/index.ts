@@ -206,14 +206,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (emailResponse.error) {
       console.error("Error sending email:", emailResponse.error);
-      // Delete the invitation if email failed
+      // Clean up the created invitation to avoid dead tokens
       await supabaseClient
         .from("user_invitations")
         .delete()
         .eq("id", invitation.id);
-        
+
+      // Return detailed error to the client
       return new Response(
-        JSON.stringify({ error: "Failed to send invitation email" }),
+        JSON.stringify({ 
+          error: "Failed to send invitation email",
+          details: emailResponse.error
+        }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
