@@ -400,6 +400,7 @@ function PermissionsManager() {
   
   const roleLabels: Record<UserRole, string> = {
     'admin': 'מנהל מערכת',
+    'company_owner': 'בעלים של חברה', 
     'agency_manager': 'מנהל סוכנות',
     'sales_agent': 'סוכן מכירות',
     'viewer': 'צפייה בלבד'

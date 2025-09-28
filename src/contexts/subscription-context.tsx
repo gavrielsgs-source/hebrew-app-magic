@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Subscription, SubscriptionTier, subscriptionFeatures } from '@/types/subscription';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,123 +24,160 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [daysLeftInTrial, setDaysLeftInTrial] = useState(14);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
 
-  const fetchSubscription = async () => {
-    console.log('🔍 [SubscriptionContext] fetchSubscription called', { user: user?.id });
-    
-    if (!user) {
-      console.log('🔍 [SubscriptionContext] No user, setting premium subscription');
-      const premiumSub = { ...subscriptionFeatures.premium };
-      console.log('🔍 [SubscriptionContext] Setting subscription to premium:', {
-        tier: premiumSub.tier,
-        leadLimit: premiumSub.leadLimit,
-        carLimit: premiumSub.carLimit,
-        active: premiumSub.active
-      });
-      setSubscription(premiumSub);
-      return;
-    }
+  const fetchSubscription = useCallback(async () => {
+    if (!user) return;
     
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('🔍 [SubscriptionContext] Fetching subscription for user:', user.id);
+      console.log("Fetching subscription for user:", user.id);
       
-      const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('subscriptions')
-        .select('subscription_tier, active, expires_at, trial_ends_at')
-        .eq('user_id', user.id)
+      // Special case for Super Admin
+      if (user.email === "gavrielsgs@gmail.com") {
+        console.log("Super Admin detected, granting unlimited access");
+        const superAdminSubscription: Subscription = {
+          tier: 'enterprise',
+          active: true,
+          carLimit: Infinity,
+          leadLimit: Infinity,
+          userLimit: Infinity,
+          templateLimit: Infinity,
+          whatsappMessageLimit: Infinity,
+          taskLimit: Infinity,
+          analyticsLevel: 'custom'
+        };
+        setSubscription(superAdminSubscription);
+        setDaysLeftInTrial(null);
+        setIsTrialExpired(false);
+        return;
+      }
+
+      // First try to get subscription via company ownership
+      const { data: companyData } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('owner_id', user.id)
         .single();
 
-      console.log('🔍 [SubscriptionContext] Raw subscription data:', subscriptionData);
-      console.log('🔍 [SubscriptionContext] Subscription error:', subscriptionError);
+      let subscriptionData = null;
 
-      if (subscriptionError) {
-        if (subscriptionError.code === 'PGRST116') {
-      console.log('🔍 [SubscriptionContext] No subscription found, this should not happen after the migration');
-          // Super Admin gets Enterprise tier automatically
-          if (user.email === 'gavrielsgs@gmail.com') {
-            console.log('🔍 [SubscriptionContext] Super Admin detected, setting Enterprise subscription');
-            const enterpriseSub: Subscription = {
-              ...subscriptionFeatures.enterprise,
-              active: true,
-              isTrialActive: false
-            };
-            setSubscription(enterpriseSub);
-            return;
-          }
-          throw new Error('No subscription found - this should not happen');
-        } else {
-          throw subscriptionError;
+      if (companyData) {
+        // User is a company owner, get company subscription
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('company_id', companyData.id)
+          .single();
+
+        if (!error && data) {
+          subscriptionData = data;
         }
-      } else {
-        // Super Admin gets Enterprise tier override
-        if (user.email === 'gavrielsgs@gmail.com') {
-          console.log('🔍 [SubscriptionContext] Super Admin detected, overriding with Enterprise subscription');
-          const enterpriseSub: Subscription = {
-            ...subscriptionFeatures.enterprise,
-            active: true,
-            isTrialActive: false,
-            trialEndsAt: subscriptionData.trial_ends_at,
-            expiresAt: subscriptionData.expires_at
-          };
-          setSubscription(enterpriseSub);
-          return;
-        }
-        const now = new Date();
-        const trialEndDate = subscriptionData.trial_ends_at ? new Date(subscriptionData.trial_ends_at) : null;
-        const isTrialActive = trialEndDate && trialEndDate > now;
-        const trialExpired = trialEndDate && trialEndDate <= now && !subscriptionData.expires_at;
-        
-        if (isTrialActive && trialEndDate) {
-          const daysLeft = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          setDaysLeftInTrial(Math.max(0, daysLeft));
-        } else {
-          setDaysLeftInTrial(0);
-        }
-        
-        setIsTrialExpired(!!trialExpired);
-        
-        const tier = subscriptionData.subscription_tier as SubscriptionTier;
-        const currentSubscription: Subscription = {
-          ...subscriptionFeatures[tier],
-          active: subscriptionData.active && !trialExpired,
-          isTrialActive,
-          trialEndsAt: subscriptionData.trial_ends_at,
-          expiresAt: subscriptionData.expires_at
-        };
-        
-        console.log('🔍 [SubscriptionContext] Subscription loaded:', {
-          tier,
-          active: currentSubscription.active,
-          isTrialActive,
-          trialExpired,
-          leadLimit: currentSubscription.leadLimit,
-          carLimit: currentSubscription.carLimit,
-          daysLeft: isTrialActive ? daysLeftInTrial : 0,
-          subscription: currentSubscription
-        });
-        
-        setSubscription(currentSubscription);
       }
-    } catch (err) {
-      console.error("🔍 [SubscriptionContext] Error fetching subscription:", err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch subscription'));
+
+      // Fallback to user-based subscription (legacy)
+      if (!subscriptionData) {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!error && data) {
+          subscriptionData = data;
+        }
+      }
+
+      // If still no subscription, check if user belongs to a company
+      if (!subscriptionData) {
+        const { data: userRoleData } = await supabase
+          .from('user_roles')
+          .select('company_id')
+          .eq('user_id', user.id)
+          .limit(1)
+          .single();
+
+        if (userRoleData && userRoleData.company_id) {
+          const { data, error } = await supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('company_id', userRoleData.company_id)
+            .single();
+
+          if (!error && data) {
+            subscriptionData = data;
+          }
+        }
+      }
+
+      console.log("Subscription data received:", subscriptionData);
       
-      // במקרה של שגיאה, נגדיר מנוי פרימיום כברירת מחדל (ניסיון)
-      const fallbackSub: Subscription = {
-        ...subscriptionFeatures.premium,
-        isTrialActive: true,
-        active: true
+      if (!subscriptionData) {
+        console.log("No subscription data, using default premium trial");
+        const defaultSubscription: Subscription = {
+          tier: 'premium',
+          active: true,
+          isTrialActive: true,
+          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          ...subscriptionFeatures.premium
+        };
+        setSubscription(defaultSubscription);
+        calculateTrialDays(defaultSubscription.trialEndsAt);
+        return;
+      }
+
+      // Build subscription object from database data
+      const tier = subscriptionData.subscription_tier as SubscriptionTier;
+      const baseSubscription = subscriptionFeatures[tier] || subscriptionFeatures.premium;
+      
+      const subscription: Subscription = {
+        ...baseSubscription,
+        tier,
+        active: subscriptionData.active,
+        expiresAt: subscriptionData.expires_at,
+        trialEndsAt: subscriptionData.trial_ends_at,
+        isTrialActive: subscriptionData.trial_ends_at ? new Date(subscriptionData.trial_ends_at) > new Date() : false,
+        // Override user limit with database value if available
+        userLimit: subscriptionData.max_users || baseSubscription.userLimit
       };
-      console.log('🔍 [SubscriptionContext] Setting fallback premium subscription:', {
-        tier: fallbackSub.tier,
-        leadLimit: fallbackSub.leadLimit,
-        carLimit: fallbackSub.carLimit
-      });
-      setSubscription(fallbackSub);
+      
+      console.log("Final subscription object:", subscription);
+      setSubscription(subscription);
+      
+      // Calculate trial days
+      if (subscription.trialEndsAt) {
+        calculateTrialDays(subscription.trialEndsAt);
+      } else {
+        setDaysLeftInTrial(null);
+        setIsTrialExpired(false);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      setError(error as Error);
     } finally {
       setIsLoading(false);
+    }
+  }, [user]);
+
+  const calculateTrialDays = (trialEndsAt?: string) => {
+    if (!trialEndsAt) {
+      setDaysLeftInTrial(0);
+      setIsTrialExpired(false);
+      return;
+    }
+
+    const trialEnd = new Date(trialEndsAt);
+    const now = new Date();
+    const diffTime = trialEnd.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+      setDaysLeftInTrial(0);
+      setIsTrialExpired(true);
+    } else {
+      setDaysLeftInTrial(diffDays);
+      setIsTrialExpired(false);
     }
   };
   

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/types/user";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AuthUser {
   id: string;
@@ -17,12 +18,14 @@ interface UserRoleData {
   user_id: string;
   role: UserRole;
   agency_id: string | null;
+  company_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export function useRealUserManagement() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Fetch all users from auth.users (admin only)
   const { data: allUsers = [], isLoading: usersLoading, error: usersError } = useQuery({
@@ -42,7 +45,7 @@ export function useRealUserManagement() {
     },
   });
 
-  // Fetch user roles
+  // Fetch user roles with company information
   const { data: userRoles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ["admin-user-roles"],
     queryFn: async (): Promise<UserRoleData[]> => {
@@ -50,7 +53,11 @@ export function useRealUserManagement() {
       
       const { data, error } = await supabase
         .from("user_roles")
-        .select("*")
+        .select(`
+          *,
+          agencies(name, company_id),
+          companies(name)
+        `)
         .order("created_at", { ascending: false });
       
       if (error) {
@@ -66,7 +73,11 @@ export function useRealUserManagement() {
   const getUserRoles = async (userId: string): Promise<UserRoleData[]> => {
     const { data, error } = await supabase
       .from("user_roles")
-      .select("*")
+      .select(`
+        *,
+        agencies(name, company_id),
+        companies(name)
+      `)
       .eq("user_id", userId);
     
     if (error) {
@@ -77,20 +88,27 @@ export function useRealUserManagement() {
     return data || [];
   };
 
-  // Assign role to user
+  // Assign role to user (now company-aware)
   const assignRole = useMutation({
-    mutationFn: async ({ userId, role, agencyId }: { 
+    mutationFn: async ({ 
+      userId, 
+      role, 
+      agencyId, 
+      companyId 
+    }: { 
       userId: string; 
       role: UserRole; 
-      agencyId?: string 
+      agencyId?: string;
+      companyId?: string;
     }) => {
       const { data, error } = await supabase
         .from("user_roles")
-        .insert({
+        .insert([{
           user_id: userId,
           role: role,
           agency_id: agencyId || null,
-        });
+          company_id: companyId || null,
+        }]);
       
       if (error) {
         console.error("Error assigning role:", error);

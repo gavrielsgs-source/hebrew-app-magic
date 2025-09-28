@@ -40,6 +40,8 @@ import { useAuth } from "@/hooks/use-auth";
 import Admin from "./pages/Admin";
 import Payment from "./pages/Payment";
 import Welcome from "./pages/Welcome";
+import Companies from "./pages/Companies";
+import CompanySettings from "./pages/CompanySettings";
 import "./components/ui/mobile-responsive.css";
 import { useMemo } from "react";
 import TaxInvoice from "./pages/TaxInvoice";
@@ -133,6 +135,8 @@ function AppLayout() {
                 <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                 <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
                 <Route path="/subscription/payment-error" element={<PaymentError />} />
+                <Route path="/companies" element={<Companies />} />
+                <Route path="/company/:companyId/settings" element={<CompanySettings />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="*" element={<NotFound />} />
