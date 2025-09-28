@@ -154,7 +154,7 @@ export function CompanySettings({ companyId }: CompanySettingsProps) {
         <h3 className="text-xl font-semibold text-gray-900 mb-4 text-right">
           ניהול משתמשים
         </h3>
-        <UserInvitations companyId={companyId} />
+        <UserInvitations companyId={companyId} companyName={company.name} />
       </div>
 
       {/* Current Users */}

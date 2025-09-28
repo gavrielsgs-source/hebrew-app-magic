@@ -1,0 +1,194 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { Resend } from "https://esm.sh/resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+interface InvitationRequest {
+  email: string;
+  role: string;
+  companyId: string;
+  agencyId?: string;
+  companyName: string;
+}
+
+const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      {
+        global: {
+          headers: { Authorization: req.headers.get("Authorization")! },
+        },
+      }
+    );
+
+    // Get the authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseClient.auth.getUser();
+
+    if (authError || !user) {
+      console.error("Authentication error:", authError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const { email, role, companyId, agencyId, companyName }: InvitationRequest = await req.json();
+
+    console.log(`Sending invitation to ${email} for role ${role} in company ${companyName}`);
+
+    // Verify user has permission to invite (is owner of company)
+    const { data: company, error: companyError } = await supabaseClient
+      .from("companies")
+      .select("*")
+      .eq("id", companyId)
+      .eq("owner_id", user.id)
+      .single();
+
+    if (companyError || !company) {
+      console.error("Company verification error:", companyError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized to invite for this company" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Create invitation record
+    const { data: invitation, error: inviteError } = await supabaseClient
+      .from("user_invitations")
+      .insert({
+        email,
+        role,
+        company_id: companyId,
+        agency_id: agencyId,
+        invited_by: user.id,
+      })
+      .select()
+      .single();
+
+    if (inviteError) {
+      console.error("Error creating invitation:", inviteError);
+      return new Response(
+        JSON.stringify({ error: "Failed to create invitation" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Send invitation email
+    const inviteUrl = `${Deno.env.get("SUPABASE_URL")?.replace('//', '//').replace('supabase.co', 'lovable.app')}/accept-invitation?token=${invitation.token}`;
+    
+    const roleNames = {
+      'viewer': 'צפייה בלבד',
+      'sales_agent': 'איש מכירות',
+      'agency_manager': 'מנהל סוכנות'
+    };
+
+    const emailResponse = await resend.emails.send({
+      from: "מערכת CRM <onboarding@resend.dev>",
+      to: [email],
+      subject: `הזמנה להצטרף ל-${companyName}`,
+      html: `
+        <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; color: white; text-align: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🎉 הוזמנת להצטרף!</h1>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: #2d3748; margin-bottom: 20px;">שלום!</h2>
+            
+            <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              הוזמנת להצטרף לחברת <strong>${companyName}</strong> במערכת ניהול הלקוחות שלנו.
+            </p>
+            
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+              <p style="margin: 0; color: #2d3748;"><strong>התפקיד שלך:</strong> ${roleNames[role as keyof typeof roleNames] || role}</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${inviteUrl}" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; 
+                        padding: 15px 40px; 
+                        text-decoration: none; 
+                        border-radius: 25px; 
+                        font-weight: bold; 
+                        font-size: 16px;
+                        display: inline-block;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
+                🚀 קבל הזמנה
+              </a>
+            </div>
+            
+            <p style="color: #718096; font-size: 14px; text-align: center; margin-top: 25px;">
+              הקישור תקף ל-7 ימים מיום שליחת המייל.
+            </p>
+            
+            <hr style="border: none; height: 1px; background: #e2e8f0; margin: 25px 0;">
+            
+            <p style="color: #a0aec0; font-size: 12px; text-align: center; margin: 0;">
+              אם לא ביקשת הזמנה זו, ניתן להתעלם מהמייל הזה.
+            </p>
+          </div>
+        </div>
+      `,
+    });
+
+    if (emailResponse.error) {
+      console.error("Error sending email:", emailResponse.error);
+      // Delete the invitation if email failed
+      await supabaseClient
+        .from("user_invitations")
+        .delete()
+        .eq("id", invitation.id);
+        
+      return new Response(
+        JSON.stringify({ error: "Failed to send invitation email" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Invitation email sent successfully:", emailResponse);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        invitationId: invitation.id,
+        message: "ההזמנה נשלחה בהצלחה!"
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error("Error in send-invitation function:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+serve(handler);

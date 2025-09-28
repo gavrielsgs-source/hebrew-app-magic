@@ -9,22 +9,53 @@ export function useCompanies() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  // Fetch user's companies
+  // Fetch user's companies (only owned by user or user has roles in)
   const { data: companies = [], isLoading, error } = useQuery({
-    queryKey: ["companies"],
+    queryKey: ["companies", user?.id],
     queryFn: async (): Promise<Company[]> => {
-      const { data, error } = await supabase
+      if (!user?.id) return [];
+
+      // Get companies owned by user
+      const { data: ownedCompanies, error: ownedError } = await supabase
         .from("companies")
         .select("*")
+        .eq("owner_id", user.id)
         .order("created_at", { ascending: false });
       
-      if (error) {
-        console.error("Error fetching companies:", error);
-        throw error;
+      if (ownedError) {
+        console.error("Error fetching owned companies:", ownedError);
+        throw ownedError;
       }
-      
-      return data || [];
+
+      // Get companies user has roles in through user_roles table
+      const { data: userRoles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select(`
+          company_id,
+          companies!inner(*)
+        `)
+        .eq("user_id", user.id)
+        .not("company_id", "is", null);
+
+      if (rolesError) {
+        console.error("Error fetching user role companies:", rolesError);
+        throw rolesError;
+      }
+
+      // Extract companies from user roles
+      const roleCompanies = userRoles?.map(ur => ur.companies).filter(Boolean) || [];
+
+      // Merge and deduplicate companies
+      const allCompanies = [...(ownedCompanies || []), ...roleCompanies];
+      const uniqueCompanies = allCompanies.filter((company, index, arr) => 
+        arr.findIndex(c => c.id === company.id) === index
+      );
+
+      return uniqueCompanies.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     },
+    enabled: !!user?.id,
   });
 
   // Create company
@@ -46,7 +77,7 @@ export function useCompanies() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.invalidateQueries({ queryKey: ["companies", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["subscription"] });
       toast.success("החברה נוצרה בהצלחה");
     },
@@ -74,7 +105,7 @@ export function useCompanies() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      queryClient.invalidateQueries({ queryKey: ["companies", user?.id] });
       toast.success("החברה עודכנה בהצלחה");
     },
     onError: (error) => {

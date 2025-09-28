@@ -7,44 +7,84 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPlus, Mail, Clock, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UserPlus, Mail, Clock, CheckCircle, XCircle, Trash2, AlertCircle, Users } from "lucide-react";
 import { useUserInvitations } from "@/hooks/use-user-invitations";
+import { useCompanyUsers } from "@/hooks/use-companies";
+import { useSubscription } from "@/contexts/subscription-context";
+import { UsageBar } from "@/components/subscription/UsageBar";
 import { UserRole } from "@/types/user";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 
 interface UserInvitationsProps {
   companyId: string;
+  companyName: string;
 }
 
-export function UserInvitations({ companyId }: UserInvitationsProps) {
+const emailSchema = z.object({
+  email: z.string().email("נא להזין כתובת אימייל תקינה")
+});
+
+export function UserInvitations({ companyId, companyName }: UserInvitationsProps) {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<UserRole>("sales_agent");
+  const [isLoading, setIsLoading] = useState(false);
   
-  const { invitations, isLoading, sendInvitation, cancelInvitation } = useUserInvitations(companyId);
+  const { invitations, isLoading: invitationsLoading, cancelInvitation } = useUserInvitations(companyId);
+  const { data: companyUsers = [] } = useCompanyUsers(companyId);
+  const { subscription, checkEntitlement } = useSubscription();
+
+  // Calculate current usage (active users + pending invitations)
+  const activeUsersCount = companyUsers.length;
+  const pendingInvitationsCount = invitations.filter(inv => 
+    !inv.accepted_at && new Date(inv.expires_at) > new Date()
+  ).length;
+  const totalUsage = activeUsersCount + pendingInvitationsCount;
+  const userLimit = subscription.userLimit || 2;
+  const canInviteMore = checkEntitlement('userLimit', totalUsage + 1);
 
   const handleSendInvitation = async () => {
-    if (!email.trim()) {
-      toast.error("נא להזין כתובת אימייל");
-      return;
-    }
-
-    if (!email.includes("@")) {
+    // Validate email
+    try {
+      emailSchema.parse({ email });
+    } catch (error) {
       toast.error("נא להזין כתובת אימייל תקינה");
       return;
     }
 
+    // Check subscription limits
+    if (!canInviteMore) {
+      toast.error(`הגעת למגבלת המשתמשים (${userLimit}). שדרג את המנוי להוספת משתמשים נוספים.`);
+      return;
+    }
+
+    setIsLoading(true);
+    
     try {
-      await sendInvitation.mutateAsync({
-        companyId,
-        email: email.trim(),
-        role,
+      // Call edge function to send invitation
+      const { error } = await supabase.functions.invoke('send-invitation', {
+        body: {
+          email: email.trim(),
+          role,
+          companyId,
+          companyName
+        }
       });
+
+      if (error) throw error;
+
       setEmail("");
       setRole("sales_agent");
       setIsInviteOpen(false);
-    } catch (error) {
+      toast.success("ההזמנה נשלחה בהצלחה!");
+    } catch (error: any) {
       console.error("Error sending invitation:", error);
+      toast.error(error.message || "שגיאה בשליחת ההזמנה");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -154,10 +194,10 @@ export function UserInvitations({ companyId }: UserInvitationsProps) {
                 </Button>
                 <Button
                   onClick={handleSendInvitation}
-                  disabled={sendInvitation.isPending || !email.trim()}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={isLoading || !email.trim() || !canInviteMore}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {sendInvitation.isPending ? "שולח..." : "שלח הזמנה"}
+                  {isLoading ? "שולח..." : "שלח הזמנה"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -166,7 +206,32 @@ export function UserInvitations({ companyId }: UserInvitationsProps) {
       </CardHeader>
 
       <CardContent>
-        {isLoading ? (
+        {/* Usage Bar */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">שימוש במשתמשים</span>
+            <span className="text-sm text-gray-600">{totalUsage} מתוך {userLimit}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all duration-300 ${
+                totalUsage >= userLimit ? 'bg-red-500' : 
+                totalUsage >= userLimit * 0.8 ? 'bg-yellow-500' : 'bg-blue-500'
+              }`}
+              style={{ width: `${Math.min((totalUsage / userLimit) * 100, 100)}%` }}
+            />
+          </div>
+          {!canInviteMore && (
+            <Alert className="mt-3 border-amber-200 bg-amber-50">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-700 text-right">
+                הגעת למגבלת המשתמשים. שדרג את המנוי להוספת משתמשים נוספים.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        {invitationsLoading ? (
           <div className="space-y-2">
             <div className="h-4 bg-gray-200 animate-pulse rounded" />
             <div className="h-4 bg-gray-200 animate-pulse rounded" />

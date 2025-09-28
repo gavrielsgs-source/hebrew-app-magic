@@ -44,8 +44,9 @@ import Companies from "./pages/Companies";
 import CompanySettings from "./pages/CompanySettings";
 import "./components/ui/mobile-responsive.css";
 import { useMemo } from "react";
-import TaxInvoice from "./pages/TaxInvoice";
+import AcceptInvitation from "./pages/AcceptInvitation";
 import AboutUs from "./pages/AboutUs";
+import TaxInvoice from "./pages/TaxInvoice";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -78,6 +79,7 @@ const App = () => {
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/accept-invitation" element={<AcceptInvitation />} />
               <Route path="/welcome" element={
                 <ProtectedRoute>
                   <Welcome />
