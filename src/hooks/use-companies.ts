@@ -27,23 +27,37 @@ export function useCompanies() {
         throw ownedError;
       }
 
-      // Get companies user has roles in through user_roles table
+      // Get company IDs where user has roles
       const { data: userRoles, error: rolesError } = await supabase
         .from("user_roles")
-        .select(`
-          company_id,
-          companies!inner(*)
-        `)
+        .select("company_id")
         .eq("user_id", user.id)
         .not("company_id", "is", null);
 
       if (rolesError) {
-        console.error("Error fetching user role companies:", rolesError);
-        throw rolesError;
+        console.error("Error fetching user role company IDs:", rolesError);
+        // Don't throw error, just log and continue with owned companies only
+        console.warn("Continuing with owned companies only");
       }
 
-      // Extract companies from user roles
-      const roleCompanies = userRoles?.map(ur => ur.companies).filter(Boolean) || [];
+      // Get companies by IDs if we have role companies
+      let roleCompanies: Company[] = [];
+      if (userRoles && userRoles.length > 0) {
+        const companyIds = userRoles.map(ur => ur.company_id).filter(Boolean);
+        if (companyIds.length > 0) {
+          const { data: companiesData, error: companiesError } = await supabase
+            .from("companies")
+            .select("*")
+            .in("id", companyIds);
+          
+          if (companiesError) {
+            console.error("Error fetching role companies:", companiesError);
+            // Don't throw, continue with owned companies only
+          } else {
+            roleCompanies = companiesData || [];
+          }
+        }
+      }
 
       // Merge and deduplicate companies
       const allCompanies = [...(ownedCompanies || []), ...roleCompanies];
@@ -127,25 +141,45 @@ export function useCompanyUsers(companyId: string) {
   return useQuery({
     queryKey: ["company-users", companyId],
     queryFn: async () => {
-      // Fetch users through agencies and user_roles
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select(`
-          *,
-          agencies!inner(
-            id,
-            name,
-            company_id
-          )
-        `)
-        .eq("agencies.company_id", companyId);
-      
-      if (error) {
-        console.error("Error fetching company users:", error);
-        throw error;
+      try {
+        // First get agencies for this company
+        const { data: agencies, error: agenciesError } = await supabase
+          .from("agencies")
+          .select("id, name")
+          .eq("company_id", companyId);
+        
+        if (agenciesError) {
+          console.error("Error fetching company agencies:", agenciesError);
+          throw agenciesError;
+        }
+
+        if (!agencies || agencies.length === 0) {
+          return [];
+        }
+
+        // Then get user roles for these agencies
+        const agencyIds = agencies.map(a => a.id);
+        const { data: userRoles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("*")
+          .in("agency_id", agencyIds);
+        
+        if (rolesError) {
+          console.error("Error fetching user roles:", rolesError);
+          throw rolesError;
+        }
+
+        // Combine the data
+        const result = userRoles?.map(role => ({
+          ...role,
+          agencies: agencies.find(a => a.id === role.agency_id)
+        })) || [];
+        
+        return result;
+      } catch (error) {
+        console.error("Error in useCompanyUsers:", error);
+        return [];
       }
-      
-      return data || [];
     },
     enabled: !!companyId,
   });

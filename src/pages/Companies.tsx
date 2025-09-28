@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 export default function AccessManagement() {
   const { user, loading } = useAuth();
-  const { companies, isLoading: companiesLoading, createCompany } = useCompanies();
+  const { companies, isLoading: companiesLoading, createCompany, error: companiesError } = useCompanies();
   const { subscription } = useSubscription();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const navigate = useNavigate();
@@ -52,6 +52,41 @@ export default function AccessManagement() {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Show error state if there's an error fetching companies
+  if (companiesError) {
+    return (
+      <div className="min-h-screen bg-background" dir="rtl">
+        <div className="max-w-6xl mx-auto p-6">
+          <Card className="text-center p-8">
+            <CardHeader>
+              <CardTitle className="text-destructive">שגיאה בטעינת קבוצות הגישה</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                אירעה שגיאה בטעינת קבוצות הגישה שלך. נסה לרענן את הדף או בדוק את החיבור לאינטרנט.
+              </p>
+              <div className="space-y-2">
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  variant="outline"
+                  className="mr-2"
+                >
+                  רענן דף
+                </Button>
+                <Button 
+                  onClick={() => navigate("/dashboard")} 
+                  variant="secondary"
+                >
+                  חזור ללוח הבקרה
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   return (

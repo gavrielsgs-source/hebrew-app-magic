@@ -56,12 +56,6 @@ export function UserInvitations({ companyId, companyName }: UserInvitationsProps
         return;
       }
     }
-    try {
-      emailSchema.parse({ email });
-    } catch (error) {
-      toast.error("נא להזין כתובת אימייל תקינה");
-      return;
-    }
 
     // Check subscription limits
     if (!canInviteMore) {
