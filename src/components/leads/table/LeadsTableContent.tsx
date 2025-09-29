@@ -29,17 +29,17 @@ export function LeadsTableContent({
   setIsEditLeadOpen
 }: LeadsTableContentProps) {
   return (
-    <div className="lead-enhanced bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="lead-enhanced bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gradient-primary/20 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="leads-table-header bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b border-blue-100">
-            <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">שם</TableHead>
-            <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">טלפון</TableHead>
-            <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">אימייל</TableHead>
-            <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">מקור</TableHead>
-            <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">תאריך</TableHead>
-            <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">סטטוס</TableHead>
-            <TableHead className="text-right font-semibold text-[#2F3C7E] py-4 px-6">פעולות</TableHead>
+          <TableRow className="leads-table-header bg-gradient-to-l from-primary/5 via-secondary/10 to-primary/5 border-b border-primary/15 backdrop-blur-sm">
+            <TableHead className="text-right font-bold text-primary py-5 px-8 text-sm tracking-wide uppercase">שם</TableHead>
+            <TableHead className="text-right font-bold text-primary py-5 px-8 text-sm tracking-wide uppercase">טלפון</TableHead>
+            <TableHead className="text-right font-bold text-primary py-5 px-8 text-sm tracking-wide uppercase">אימייל</TableHead>
+            <TableHead className="text-right font-bold text-primary py-5 px-8 text-sm tracking-wide uppercase">מקור</TableHead>
+            <TableHead className="text-right font-bold text-primary py-5 px-8 text-sm tracking-wide uppercase">תאריך</TableHead>
+            <TableHead className="text-right font-bold text-primary py-5 px-8 text-sm tracking-wide uppercase">סטטוס</TableHead>
+            <TableHead className="text-right font-bold text-primary py-5 px-8 text-sm tracking-wide uppercase">פעולות</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

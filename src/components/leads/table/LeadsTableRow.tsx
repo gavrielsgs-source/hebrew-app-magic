@@ -32,39 +32,39 @@ export function LeadsTableRow({
   return (
     <TableRow 
       key={lead.id} 
-      className={`leads-table-row hover:bg-blue-50/50 transition-colors border-b border-gray-50 ${
-        index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
+      className={`leads-table-row hover:bg-primary/5 hover:shadow-md hover:scale-[1.01] transition-all duration-300 border-b border-muted/30 ${
+        index % 2 === 0 ? 'bg-background/50' : 'bg-muted/20'
       }`}
     >
-      <TableCell className="font-medium text-right py-4 px-6">
-        <div className="font-semibold text-[#2F3C7E]">{lead.name as string}</div>
+      <TableCell className="font-medium text-right py-5 px-8">
+        <div className="font-bold text-primary text-lg">{lead.name as string}</div>
       </TableCell>
-      <TableCell className="text-right py-4 px-6">
-        <div className="text-gray-700">{(lead.phone as string) || '-'}</div>
+      <TableCell className="text-right py-5 px-8">
+        <div className="text-foreground/80 font-medium">{(lead.phone as string) || '-'}</div>
       </TableCell>
-      <TableCell className="text-right py-4 px-6">
-        <div className="text-gray-700 truncate max-w-[200px]">{(lead.email as string) || '-'}</div>
+      <TableCell className="text-right py-5 px-8">
+        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{(lead.email as string) || '-'}</div>
       </TableCell>
-      <TableCell className="text-right py-4 px-6">
+      <TableCell className="text-right py-5 px-8">
         <Badge 
           variant="secondary" 
           className={`${lead.source ? 
-            'bg-gradient-to-r from-blue-100 to-purple-100 text-[#2F3C7E] border-blue-200' : 
-            'bg-gray-100 text-gray-600 border-gray-200'
-          } font-medium`}
+            'bg-gradient-to-r from-accent/20 to-primary/20 text-primary border-primary/30 shadow-sm' : 
+            'bg-muted/50 text-muted-foreground border-muted/50'
+          } font-semibold px-3 py-1 rounded-full text-xs`}
         >
           {(lead.source as string) || "ידני"}
         </Badge>
       </TableCell>
-      <TableCell className="text-right py-4 px-6">
-        <div className="text-sm text-gray-600">
+      <TableCell className="text-right py-5 px-8">
+        <div className="text-sm text-muted-foreground font-medium">
           {new Date(lead.created_at as string).toLocaleDateString('he-IL')}
         </div>
       </TableCell>
-      <TableCell className="text-right py-4 px-6">
+      <TableCell className="text-right py-5 px-8">
         <QuickStatusChange lead={lead} />
       </TableCell>
-      <TableCell className="py-4 px-6">
+      <TableCell className="py-5 px-8">
         <LeadsTableActions
           lead={lead}
           selectedLeadId={selectedLeadId}

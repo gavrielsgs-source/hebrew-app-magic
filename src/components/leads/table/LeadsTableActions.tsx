@@ -33,11 +33,11 @@ export function LeadsTableActions({
   const selectedLead = selectedLeadId === lead.id ? lead : null;
 
   return (
-    <div className="flex space-x-1 space-x-reverse justify-end">
+    <div className="flex space-x-2 space-x-reverse justify-end">
       <Button 
         variant="ghost" 
         size="icon"
-        className="h-8 w-8 hover:bg-green-100 hover:text-green-600 transition-colors"
+        className="h-10 w-10 rounded-full hover:bg-success/10 hover:text-success hover:scale-110 transition-all duration-200 shadow-sm border border-transparent hover:border-success/20"
         onClick={() => {
           if (lead.phone) {
             window.open(`tel:${lead.phone}`, '_blank');
@@ -45,7 +45,7 @@ export function LeadsTableActions({
         }}
         disabled={!lead.phone}
       >
-        <Phone className="h-4 w-4" />
+        <Phone className="h-5 w-5" />
       </Button>
       
       <SwipeDialog open={isWhatsappOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
@@ -56,10 +56,10 @@ export function LeadsTableActions({
           <Button 
             variant="ghost" 
             size="icon"
-            className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+            className="h-10 w-10 rounded-full hover:bg-info/10 hover:text-info hover:scale-110 transition-all duration-200 shadow-sm border border-transparent hover:border-info/20"
             onClick={() => setSelectedLeadId(lead.id as string)}
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5" />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[600px]" dir="rtl">
@@ -86,10 +86,10 @@ export function LeadsTableActions({
           <Button 
             variant="ghost" 
             size="icon"
-            className="h-8 w-8 hover:bg-purple-100 hover:text-purple-600 transition-colors"
+            className="h-10 w-10 rounded-full hover:bg-warning/10 hover:text-warning hover:scale-110 transition-all duration-200 shadow-sm border border-transparent hover:border-warning/20"
             onClick={() => setSelectedLeadId(lead.id as string)}
           >
-            <Calendar className="h-4 w-4" />
+            <Calendar className="h-5 w-5" />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[500px]" dir="rtl">
@@ -111,10 +111,10 @@ export function LeadsTableActions({
           <Button 
             variant="ghost" 
             size="icon"
-            className="h-8 w-8 hover:bg-orange-100 hover:text-orange-600 transition-colors"
+            className="h-10 w-10 rounded-full hover:bg-destructive/10 hover:text-destructive hover:scale-110 transition-all duration-200 shadow-sm border border-transparent hover:border-destructive/20"
             onClick={() => setSelectedLeadId(lead.id as string)}
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-5 w-5" />
           </Button>
         </DialogTrigger>
         <DialogContent className="w-[400px]" dir="rtl">
