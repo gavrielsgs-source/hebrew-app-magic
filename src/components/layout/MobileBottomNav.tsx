@@ -196,7 +196,9 @@ export function MobileBottomNav() {
           <SheetHeader className="pb-6">
             <SheetTitle className="text-right text-xl font-bold text-[#2F3C7E]">תפריט נוסף</SheetTitle>
           </SheetHeader>
-          <div className="grid grid-cols-1 gap-4 pb-6 max-h-[50vh] overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 touch-pan-y">
+          <div 
+            className="grid grid-cols-1 gap-4 pb-6 max-h-[50vh] overflow-y-auto scroll-smooth touch-pan-y custom-scrollbar custom-scrollbar-mobile"
+          >
             {menuItems.map((item) => {
               const Icon = item.icon;
               const active = item.path ? isActive(item.path) : false;

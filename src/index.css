@@ -354,3 +354,56 @@ button, input, select, textarea {
 .lead-enhanced .leads-notes {
   @apply bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm;
 }
+
+/* Custom Scrollbar Styles - עיצוב מותאם אישית לסקרולבר */
+@layer utilities {
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, hsl(var(--brand-secondary)) 0%, hsl(var(--brand-primary)) 100%);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, hsl(var(--brand-secondary-light)) 0%, hsl(var(--brand-primary-light)) 100%);
+    width: 8px;
+  }
+
+  /* Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--brand-secondary)) rgba(255, 255, 255, 0.1);
+  }
+
+  /* Mobile specific scrollbar */
+  @media (max-width: 768px) {
+    .custom-scrollbar-mobile::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    .custom-scrollbar-mobile::-webkit-scrollbar-track {
+      background: hsl(var(--muted));
+      border-radius: 10px;
+    }
+
+    .custom-scrollbar-mobile::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, hsl(var(--brand-secondary)) 0%, hsl(var(--brand-primary)) 100%);
+      border-radius: 10px;
+    }
+
+    .custom-scrollbar-mobile::-webkit-scrollbar-thumb:active {
+      background: hsl(var(--brand-primary));
+    }
+  }
+}
