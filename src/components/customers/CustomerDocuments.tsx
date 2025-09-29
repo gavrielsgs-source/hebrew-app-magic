@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreateCustomerDocumentDialog } from "./CreateCustomerDocumentDialog";
 import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocumentStatus } from "@/hooks/customers";
-
+import { useFetchDocuments } from "@/hooks/documents/use-fetch-documents";
+import type { Document as AppDocument } from "@/hooks/documents/types";
 interface CustomerDocumentsProps {
   customerId: string;
 }
@@ -14,8 +15,8 @@ interface CustomerDocumentsProps {
 export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   const { data: documents = [], isLoading: documentsLoading } = useCustomerDocuments(customerId);
   const { data: documentReturns = [], isLoading: returnsLoading } = useCustomerDocumentReturns(customerId);
+  const { data: attachedDocs = [], isLoading: attachedLoading } = useFetchDocuments('customer', customerId);
   const updateDocumentStatus = useUpdateCustomerDocumentStatus();
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':

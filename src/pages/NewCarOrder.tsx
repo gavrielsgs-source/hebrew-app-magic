@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, FileText, Download, UserPlus, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, Trash2, FileText, Download, UserPlus, Calendar as CalendarIcon, Send } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { NewCarOrderData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import { LeadSearchSelect } from "@/components/leads/LeadSearchSelect";
 import { useLeads } from "@/hooks/use-leads";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 
 const newCarOrderSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
@@ -46,7 +47,9 @@ export default function NewCarOrder() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
   const [useExistingLead, setUseExistingLead] = useState(true);
+  const [includeVAT, setIncludeVAT] = useState(false);
   const { leads } = useLeads();
+  const selectedLead = leads?.find(l => l.id === (form.getValues("leadId") || ""));
 
   const form = useForm<NewCarOrderFormValues>({
     resolver: zodResolver(newCarOrderSchema),
@@ -86,6 +89,8 @@ export default function NewCarOrder() {
   const subtotal = watchedItems.reduce((sum, item) => sum + (item.netPrice * item.quantity), 0);
   const totalDiscount = watchedItems.reduce((sum, item) => sum + item.discount, 0);
   const total = subtotal - totalDiscount;
+  const vatAmount = includeVAT ? total * 0.19 : 0;
+  const grandTotal = total + vatAmount;
 
   const addItem = () => {
     append({
@@ -421,7 +426,11 @@ export default function NewCarOrder() {
 
                 {/* Financial Summary */}
                 <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="pt-6">
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="flex items-center justify-end gap-3">
+                      <span className="text-sm">כולל מע"מ (19%)</span>
+                      <Switch checked={includeVAT} onCheckedChange={setIncludeVAT} />
+                    </div>
                     <div className="space-y-2 text-right">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">{formatPrice(subtotal)}</span>
@@ -431,9 +440,15 @@ export default function NewCarOrder() {
                         <span className="font-semibold text-destructive">-{formatPrice(totalDiscount)}</span>
                         <span>הנחה:</span>
                       </div>
+                      {includeVAT && (
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold">{formatPrice(vatAmount)}</span>
+                          <span>מע"מ (19%):</span>
+                        </div>
+                      )}
                       <Separator />
                       <div className="flex justify-between items-center text-lg font-bold">
-                        <span>{formatPrice(total)}</span>
+                        <span>{formatPrice(grandTotal)}</span>
                         <span>סה"כ לתשלום:</span>
                       </div>
                     </div>
@@ -455,6 +470,22 @@ export default function NewCarOrder() {
                       הורד PDF
                     </Button>
                   )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!selectedLead?.phone}
+                    className="flex items-center gap-2"
+                    onClick={() => {
+                      if (selectedLead?.phone) {
+                        const message = `שלום ${selectedLead.name},\nהזמנה חדשה הוכנה עבורך. סה\"כ לתשלום: ${formatPrice(grandTotal)}${includeVAT ? ' (כולל מע\"מ)' : ''}.`;
+                        const whatsappUrl = `https://wa.me/${selectedLead.phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+                      }
+                    }}
+                  >
+                    <Send className="h-4 w-4" />
+                    שליחה לוואטסאפ
+                  </Button>
                 </div>
               </form>
             </CardContent>
