@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Car, Share2, Edit, Plus, UserPlus, Send, Eye } from "lucide-react";
+import { Car, Share2, Edit, Plus, UserPlus, Send, Eye, MessageCircle } from "lucide-react";
 import { useCars } from "@/hooks/use-cars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AddCarForm } from "./cars/AddCarForm";
@@ -33,61 +33,64 @@ export function CarsTable() {
 
   return (
     <div dir="rtl">
-      <div className="rounded-md border border-border/40">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-border/40">
-              <TableHead className="text-right font-medium h-12">דגם</TableHead>
-              <TableHead className="text-right font-medium h-12">שנה</TableHead>
-              <TableHead className="text-right font-medium h-12">ק"מ</TableHead>
-              <TableHead className="text-right font-medium h-12">מחיר</TableHead>
-              <TableHead className="text-right font-medium h-12">סטטוס</TableHead>
-              <TableHead className="text-right font-medium h-12">פעולות</TableHead>
+            <TableRow className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20">
+              <TableHead className="text-right font-semibold text-primary uppercase tracking-wide py-5 px-8">דגם</TableHead>
+              <TableHead className="text-right font-semibold text-primary uppercase tracking-wide py-5 px-8">שנה</TableHead>
+              <TableHead className="text-right font-semibold text-primary uppercase tracking-wide py-5 px-8">ק"מ</TableHead>
+              <TableHead className="text-right font-semibold text-primary uppercase tracking-wide py-5 px-8">מחיר</TableHead>
+              <TableHead className="text-right font-semibold text-primary uppercase tracking-wide py-5 px-8">סטטוס</TableHead>
+              <TableHead className="text-right font-semibold text-primary uppercase tracking-wide py-5 px-8">פעולות</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center h-16">
-                  טוען...
+              <TableRow className="border-b border-gray-100/50">
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <Car className="h-8 w-8 animate-spin text-muted-foreground/50" />
+                    <span>טוען רכבים...</span>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : cars.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-16">
-                  אין רכבים במלאי
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <Car className="h-12 w-12 text-muted-foreground/50" />
+                    <span>אין רכבים במלאי</span>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               cars.map((car, index) => (
                 <TableRow 
                   key={car.id}
-                  className={`
-                    border-border/40 h-16
-                    ${index % 2 === 0 ? 'bg-muted/20' : 'bg-background'}
-                    hover:bg-muted/40 transition-colors
-                  `}
+                  className="hover:bg-primary/5 transition-colors border-b border-gray-100/50"
                 >
-                  <TableCell className="font-medium text-right py-4">
+                  <TableCell className="font-medium text-right py-5 px-8">
                     {car.make} {car.model}
                   </TableCell>
-                  <TableCell className="text-right py-4">{car.year}</TableCell>
-                  <TableCell className="text-right py-4">{car.kilometers.toLocaleString()}</TableCell>
-                  <TableCell className="text-right py-4 font-medium">{car.price.toLocaleString()} ₪</TableCell>
-                  <TableCell className="text-right py-4">
+                  <TableCell className="text-right py-5 px-8">{car.year}</TableCell>
+                  <TableCell className="text-right py-5 px-8">{car.kilometers.toLocaleString()}</TableCell>
+                  <TableCell className="text-right py-5 px-8 font-semibold">{car.price.toLocaleString()} ₪</TableCell>
+                  <TableCell className="text-right py-5 px-8">
                     <CarStatusChanger car={car} compact={true} />
                   </TableCell>
-                  <TableCell className="py-4">
-                    <div className="flex items-center gap-1 justify-end">
+                  <TableCell className="py-5 px-8">
+                    <div className="flex items-center gap-2 justify-end">
                       <Sheet>
                         <SheetTrigger asChild>
                           <Button 
-                            variant="ghost" 
+                            variant="outline" 
                             size="sm" 
-                            className="h-8 w-8 p-0 hover:bg-primary/10"
+                            className="hover:bg-primary/10 hover:border-primary/20"
                             title="הוסף ליד"
                           >
-                            <UserPlus className="h-4 w-4" />
+                            <UserPlus className="h-4 w-4 ml-1" />
+                            הוסף ליד
                           </Button>
                         </SheetTrigger>
                         <SheetContent className="w-[400px]">
@@ -98,40 +101,43 @@ export function CarsTable() {
                         </SheetContent>
                       </Sheet>
                       <Button 
-                        variant="ghost" 
+                        variant="outline" 
                         size="sm" 
-                        className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        className="hover:bg-primary/10 hover:border-primary/20"
                         title="שלח בוואטסאפ"
                         onClick={() => {
                           setSelectedCar(car);
                           setIsWhatsappOpen(true);
                         }}
                       >
-                        <Send className="h-4 w-4" />
+                        <MessageCircle className="h-4 w-4 ml-1" />
+                        שלח בוואטסאפ
                       </Button>
                       <Button 
-                        variant="ghost" 
+                        variant="outline"
                         size="sm"
-                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                        className="hover:bg-primary/10 hover:border-primary/20"
                         title="צפה בפרטים"
                         onClick={() => {
                           setSelectedCar(car);
                           setIsDetailsOpen(true);
                         }}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4 ml-1" />
+                        צפה
                       </Button>
                       <Button 
-                        variant="ghost" 
+                        variant="outline"
                         size="sm" 
-                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                        className="hover:bg-primary/10 hover:border-primary/20"
                         title="ערוך"
                         onClick={() => {
                           setSelectedCar(car);
                           setIsEditOpen(true);
                         }}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-4 w-4 ml-1" />
+                        ערוך
                       </Button>
                     </div>
                   </TableCell>

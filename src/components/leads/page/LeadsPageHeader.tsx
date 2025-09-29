@@ -40,16 +40,21 @@ export function LeadsPageHeader({
         currentCount={currentLeadCount} 
       />
       
-      <StandardPageHeader
-        title="ניהול לקוחות"
-        subtitle="נהל את כל הלקוחות והלידים שלך במקום אחד"
-        icon={Users}
-        actionButton={{
-          label: "הוסף לקוח חדש",
-          onClick: handleAddLead,
-          icon: Plus
-        }}
-      />
+      <div className="page-header mb-8" dir="rtl">
+        <div className="flex items-center justify-between">
+          <div className="title-wrapper">
+            <h1 className="page-title text-3xl font-bold text-foreground mb-2">ניהול לקוחות</h1>
+            <p className="page-subtitle text-muted-foreground">נהל את כל הלקוחות והלידים שלך במקום אחד - מערכת ניהול מקצועית עם בקרה מלאה ונתונים בזמן אמת</p>
+          </div>
+          <button
+            onClick={handleAddLead}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            הוסף לקוח חדש
+          </button>
+        </div>
+      </div>
       
       <Dialog open={isAddingLead} onOpenChange={setIsAddingLead}>
         <DialogContent className="w-[400px]" dir="rtl">
