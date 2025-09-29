@@ -88,49 +88,108 @@ export default function Customers() {
   return (
     <div className="container mx-auto p-6 space-y-6" dir="rtl">
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-xl">
-            <Users className="h-6 w-6 text-primary" />
+      <div className="bg-gradient-to-r from-primary/5 via-background to-accent/5 rounded-2xl p-6 border border-primary/10 shadow-lg">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-4 rounded-2xl shadow-md border border-primary/20">
+              <Users className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ניהול לקוחות מתקדם
+              </h1>
+              <p className="text-muted-foreground text-lg font-medium">
+                מערכת ניהול מקצועית לכל הלקוחות שלך • בקרה מלאה ונתונים בזמן אמת
+              </p>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>מערכת פעילה</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span>נתונים מסונכרנים</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">ניהול לקוחות</h1>
-            <p className="text-muted-foreground">נהל את כל הלקוחות שלך במקום אחד</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              variant="outline"
+              className="rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+            >
+              📊 דוחות
+            </Button>
+            <Button 
+              onClick={() => setShowCreateDialog(true)}
+              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg rounded-xl px-8 h-12 font-bold text-base transition-all duration-300 hover:shadow-xl hover:scale-105 border-0"
+            >
+              <Plus className="h-5 w-5 ml-2" />
+              הוסף לקוח חדש
+            </Button>
           </div>
         </div>
-        <Button 
-          onClick={() => setShowCreateDialog(true)}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md rounded-xl px-6 h-11 font-medium transition-all hover:shadow-lg"
-        >
-          <Plus className="h-4 w-4 ml-2" />
-          הוסף לקוח חדש
-        </Button>
       </div>
 
       {/* Search Section */}
-      <Card className="rounded-xl shadow-sm border">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="חפש לפי שם, טלפון, אימייל או מספר לקוח..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pr-10 h-11 rounded-lg border-muted bg-background"
-            />
+      <Card className="rounded-2xl shadow-lg border-0 bg-gradient-to-r from-background via-muted/10 to-background">
+        <CardContent className="p-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Search className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold text-foreground">חיפוש מתקדם</h3>
+            </div>
+            <div className="relative">
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="הקלד שם לקוח, מספר טלפון, כתובת אימייל או מספר לקוח..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pr-12 h-12 rounded-xl border-2 border-muted bg-background hover:border-primary/30 focus:border-primary transition-all duration-300 text-base shadow-sm"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Results Section */}
       {filteredCustomers.length === 0 && searchTerm ? (
-        <Card className="rounded-xl shadow-sm border">
-          <CardContent className="p-12 text-center">
-            <div className="bg-muted/50 p-4 rounded-full w-fit mx-auto mb-4">
-              <Search className="h-8 w-8 text-muted-foreground" />
+        <Card className="rounded-2xl shadow-lg border-0 bg-gradient-to-br from-background via-muted/10 to-background">
+          <CardContent className="p-16 text-center">
+            <div className="space-y-6">
+              <div className="w-24 h-24 mx-auto bg-gradient-to-br from-orange-100 to-red-50 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-4xl">🔍</span>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-foreground mb-3">לא נמצאו תוצאות התואמות</h3>
+                <p className="text-muted-foreground text-lg mb-4">
+                  חיפשנו עבור: <strong className="text-primary">"{searchTerm}"</strong>
+                </p>
+                <div className="bg-muted/30 rounded-xl p-4 max-w-md mx-auto">
+                  <p className="text-sm text-muted-foreground">
+                    💡 טיפים לחיפוש טוב יותר:
+                    <br />• נסה מילים קצרות יותר
+                    <br />• בדוק איות
+                    <br />• השתמש במספר לקוח במקום שם
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setSearchTerm("")}
+                  className="mt-4 rounded-xl border-primary/20 hover:bg-primary/5"
+                >
+                  נקה חיפוש
+                </Button>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">לא נמצאו תוצאות</h3>
-            <p className="text-muted-foreground">נסה לשנות את מונחי החיפוש או לנקות את השדה</p>
           </CardContent>
         </Card>
       ) : (

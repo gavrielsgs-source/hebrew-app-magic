@@ -51,147 +51,228 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
 
   if (customers.length === 0) {
     return (
-      <Card className="p-12 text-center rounded-xl shadow-sm border">
-        <div className="text-muted-foreground">
-          <p className="text-lg font-medium mb-2">אין לקוחות במערכת</p>
-          <p className="text-sm">התחל בהוספת הלקוח הראשון שלך</p>
+      <Card className="p-16 text-center rounded-2xl shadow-lg border-0 bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="space-y-4">
+          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl flex items-center justify-center">
+            <span className="text-3xl">👥</span>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-foreground mb-2">ברוכים הבאים לניהול הלקוחות</h3>
+            <p className="text-muted-foreground text-lg">התחל לבנות את בסיס הלקוחות שלך עכשיו</p>
+          </div>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="rounded-xl shadow-sm border overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/50 hover:bg-muted/50">
-            <TableHead className="text-right font-semibold">מספר לקוח</TableHead>
-            <TableHead className="text-right font-semibold">שם מלא</TableHead>
-            <TableHead className="text-right font-semibold">טלפון</TableHead>
-            <TableHead className="text-right font-semibold">אימייל</TableHead>
-            <TableHead className="text-right font-semibold">סוג לקוח</TableHead>
-            <TableHead className="text-right font-semibold">קרדיט</TableHead>
-            <TableHead className="text-center font-semibold">פעולות</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {customers.map((customer, index) => (
-            <TableRow 
-              key={customer.id} 
-              className={`transition-colors hover:bg-muted/30 ${
-                index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
-              }`}
-            >
-              <TableCell className="text-right">
-                <span className="font-mono text-sm bg-muted/50 px-2 py-1 rounded-md">
-                  #{customer.customer_number}
-                </span>
-              </TableCell>
-              
-              <TableCell className="text-right">
-                <div className="font-medium">{customer.full_name}</div>
-              </TableCell>
-              
-              <TableCell className="text-right">
-                {customer.phone ? (
-                  <div className="flex items-center justify-end gap-2">
-                    <span className="font-mono text-sm">{customer.phone}</span>
-                    <Phone className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground text-sm">לא צוין</span>
-                )}
-              </TableCell>
-              
-              <TableCell className="text-right">
-                {customer.email ? (
-                  <span className="text-sm">{customer.email}</span>
-                ) : (
-                  <span className="text-muted-foreground text-sm">לא צוין</span>
-                )}
-              </TableCell>
-              
-              <TableCell className="text-right">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  customer.customer_type === 'private' 
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                    : 'bg-purple-50 text-purple-700 border border-purple-200'
-                }`}>
-                  {customer.customer_type === 'private' ? 'פרטי' : 'עסקי'}
-                </span>
-              </TableCell>
-              
-              <TableCell className="text-right">
-                {customer.credit_amount > 0 ? (
-                  <span className="font-semibold text-green-600">
-                    {formatCurrency(customer.credit_amount)}
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground text-sm">ללא קרדיט</span>
-                )}
-              </TableCell>
-              
-              <TableCell className="text-center">
-                <div className="flex items-center justify-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
-                  >
-                    <Link to={`/customers/${customer.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-                    onClick={() => {
-                      // TODO: Implement edit functionality
-                      console.log('Edit customer:', customer.id);
-                    }}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-                        disabled={deletingId === customer.id}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="max-w-md">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>מחיקת לקוח</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          האם אתה בטוח שברצונך למחוק את הלקוח {customer.full_name}?
-                          פעולה זו לא ניתנת לביטול.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter className="gap-2">
-                        <AlertDialogCancel>ביטול</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(customer.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          מחק
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+    <div className="space-y-4">
+      {/* Table Stats Header */}
+      <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-accent/5 rounded-xl p-4 border border-primary/10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <span className="text-lg">📊</span>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">סהכ לקוחות במערכת</h3>
+              <p className="text-sm text-muted-foreground">רשומים ופעילים</p>
+            </div>
+          </div>
+          <div className="text-left">
+            <div className="text-2xl font-bold text-primary">{customers.length}</div>
+            <div className="text-xs text-muted-foreground">לקוחות</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Table */}
+      <Card className="rounded-2xl shadow-lg border-0 overflow-hidden bg-gradient-to-br from-background to-muted/20">
+        <div className="bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-4 border-b border-border/50">
+          <h4 className="font-semibold text-foreground text-lg">רשימת הלקוחות</h4>
+          <p className="text-sm text-muted-foreground">כל הפרטים וכלי הניהול במקום אחד</p>
+        </div>
+        
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gradient-to-r from-muted/40 via-muted/30 to-muted/40 hover:from-muted/50 hover:via-muted/40 hover:to-muted/50 border-b border-border/30">
+              <TableHead className="text-right font-bold text-foreground py-4 px-6">
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-xs">🔢</span>
+                  <span>מספר לקוח</span>
                 </div>
-              </TableCell>
+              </TableHead>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6">
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-xs">👤</span>
+                  <span>שם מלא</span>
+                </div>
+              </TableHead>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6">
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-xs">📞</span>
+                  <span>טלפון</span>
+                </div>
+              </TableHead>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6">
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-xs">✉️</span>
+                  <span>אימייל</span>
+                </div>
+              </TableHead>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6">
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-xs">🏷️</span>
+                  <span>סוג לקוח</span>
+                </div>
+              </TableHead>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6">
+                <div className="flex items-center justify-end gap-2">
+                  <span className="text-xs">💰</span>
+                  <span>יתרת קרדיט</span>
+                </div>
+              </TableHead>
+              <TableHead className="text-center font-bold text-foreground py-4 px-6">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs">⚙️</span>
+                  <span>פעולות</span>
+                </div>
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Card>
+          </TableHeader>
+          <TableBody>
+            {customers.map((customer, index) => (
+              <TableRow 
+                key={customer.id} 
+                className={`group transition-all duration-300 hover:bg-gradient-to-r hover:from-primary/5 hover:via-background hover:to-accent/5 hover:shadow-md ${
+                  index % 2 === 0 ? 'bg-background' : 'bg-muted/5'
+                } border-b border-border/20 last:border-b-0`}
+              >
+                <TableCell className="text-right py-4 px-6">
+                  <div className="bg-gradient-to-r from-primary/10 to-accent/10 px-3 py-2 rounded-xl border border-primary/20 inline-block">
+                    <span className="font-bold text-primary text-sm">#{customer.customer_number}</span>
+                  </div>
+                </TableCell>
+                
+                <TableCell className="text-right py-4 px-6">
+                  <div className="space-y-1">
+                    <div className="font-bold text-foreground text-base">{customer.full_name}</div>
+                    <div className="text-xs text-muted-foreground">לקוח רשום</div>
+                  </div>
+                </TableCell>
+                
+                <TableCell className="text-right py-4 px-6">
+                  {customer.phone ? (
+                    <div className="bg-muted/30 p-2 rounded-lg inline-flex items-center gap-2">
+                      <Phone className="h-3 w-3 text-primary" />
+                      <span className="font-mono text-sm font-medium text-foreground">{customer.phone}</span>
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg inline-block">
+                      לא הוזן מספר
+                    </div>
+                  )}
+                </TableCell>
+                
+                <TableCell className="text-right py-4 px-6">
+                  {customer.email ? (
+                    <div className="bg-muted/30 p-2 rounded-lg inline-block">
+                      <span className="text-sm font-medium text-foreground max-w-[150px] truncate block">{customer.email}</span>
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg inline-block">
+                      לא הוזן אימייל
+                    </div>
+                  )}
+                </TableCell>
+                
+                <TableCell className="text-right py-4 px-6">
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 ${
+                    customer.customer_type === 'private' 
+                      ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-blue-200' 
+                      : 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-purple-200'
+                  }`}>
+                    <span className="text-xs">{customer.customer_type === 'private' ? '👤' : '🏢'}</span>
+                    <span>{customer.customer_type === 'private' ? 'לקוח פרטי' : 'לקוח עסקי'}</span>
+                  </div>
+                </TableCell>
+                
+                <TableCell className="text-right py-4 px-6">
+                  {customer.credit_amount > 0 ? (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 px-4 py-2 rounded-xl inline-block">
+                      <div className="font-bold text-green-700 text-base">{formatCurrency(customer.credit_amount)}</div>
+                      <div className="text-xs text-green-600">יתרה זמינה</div>
+                    </div>
+                  ) : (
+                    <div className="bg-muted/30 border border-muted px-4 py-2 rounded-xl inline-block">
+                      <div className="text-muted-foreground text-sm font-medium">₪0</div>
+                      <div className="text-xs text-muted-foreground">ללא יתרה</div>
+                    </div>
+                  )}
+                </TableCell>
+                
+                <TableCell className="text-center py-4 px-6">
+                  <div className="flex items-center justify-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      asChild
+                      className="h-10 w-10 p-0 hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/20 hover:text-primary rounded-xl transition-all duration-300 border border-transparent hover:border-primary/20"
+                    >
+                      <Link to={`/customers/${customer.id}`}>
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-10 w-10 p-0 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-600 rounded-xl transition-all duration-300 border border-transparent hover:border-blue-200"
+                      onClick={() => {
+                        console.log('Edit customer:', customer.id);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-10 w-10 p-0 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 rounded-xl transition-all duration-300 border border-transparent hover:border-red-200"
+                          disabled={deletingId === customer.id}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="max-w-md rounded-2xl">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-xl">🗑️ מחיקת לקוח</AlertDialogTitle>
+                          <AlertDialogDescription className="text-base">
+                            האם אתה בטוח שברצונך למחוק את <strong>{customer.full_name}</strong>?
+                            <br />
+                            <span className="text-red-600 font-medium">פעולה זו לא ניתנת לביטול והנתונים יאבדו לצמיתות.</span>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="gap-3">
+                          <AlertDialogCancel className="rounded-xl">ביטול</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(customer.id)}
+                            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl"
+                          >
+                            מחק לקוח
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
   );
 }
