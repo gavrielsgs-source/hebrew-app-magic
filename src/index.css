@@ -385,25 +385,36 @@ button, input, select, textarea {
     scrollbar-color: hsl(var(--brand-secondary)) rgba(255, 255, 255, 0.1);
   }
 
-  /* Mobile specific scrollbar */
+  /* Mobile specific scrollbar - עדין ושקוף */
   @media (max-width: 768px) {
     .custom-scrollbar-mobile::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
+      width: 3px;
+      height: 3px;
     }
 
     .custom-scrollbar-mobile::-webkit-scrollbar-track {
-      background: hsl(var(--muted));
+      background: transparent;
       border-radius: 10px;
     }
 
     .custom-scrollbar-mobile::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, hsl(var(--brand-secondary)) 0%, hsl(var(--brand-primary)) 100%);
+      background: rgba(76, 175, 80, 0.3);
       border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .custom-scrollbar-mobile::-webkit-scrollbar-thumb:hover {
+      background: rgba(76, 175, 80, 0.5);
     }
 
     .custom-scrollbar-mobile::-webkit-scrollbar-thumb:active {
-      background: hsl(var(--brand-primary));
+      background: rgba(76, 175, 80, 0.7);
+    }
+
+    /* Firefox */
+    .custom-scrollbar-mobile {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(76, 175, 80, 0.3) transparent;
     }
   }
 }

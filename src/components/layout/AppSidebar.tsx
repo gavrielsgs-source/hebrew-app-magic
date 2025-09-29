@@ -200,7 +200,8 @@ export function AppSidebar() {
               
               {docProductionOpen && (
                 <div 
-                  className="max-h-[200px] overflow-y-auto scroll-smooth px-1 custom-scrollbar"
+                  className="max-h-[200px] overflow-y-auto scroll-smooth px-1 [&::-webkit-scrollbar]:hidden"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                   <SidebarMenuSub>
                     {DOCUMENT_TYPES.map((doc) => {
