@@ -20,12 +20,15 @@ export function useTeamManagement() {
     queryFn: async (): Promise<TeamUser[]> => {
       if (!user) return [];
 
-      // First, get or create company for the user
-      let { data: company } = await supabase
+      // First, get or create company for the user - use limit(1) to avoid 406 errors
+      let { data: companies } = await supabase
         .from("companies")
         .select("*")
         .eq("owner_id", user.id)
-        .single();
+        .order("created_at", { ascending: true })
+        .limit(1);
+
+      let company = companies?.[0];
 
       // If no company exists, create one
       if (!company) {
@@ -40,9 +43,21 @@ export function useTeamManagement() {
 
         if (companyError) {
           console.error("Error creating company:", companyError);
-          throw companyError;
+          // Try to fetch again in case company was created by trigger
+          const { data: existingCompanies } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("owner_id", user.id)
+            .order("created_at", { ascending: true })
+            .limit(1);
+          
+          company = existingCompanies?.[0];
+          if (!company) {
+            throw new Error("Failed to create or find company");
+          }
+        } else {
+          company = newCompany;
         }
-        company = newCompany;
       }
 
       // Get user profile for better name display
@@ -95,12 +110,15 @@ export function useTeamManagement() {
     mutationFn: async (userData: AddTeamUserData) => {
       if (!user) throw new Error("User not authenticated");
 
-      // Get or create company first
-      let { data: company } = await supabase
+      // Get or create company first - use limit(1) to avoid 406 errors
+      let { data: companies } = await supabase
         .from("companies")
         .select("*")
         .eq("owner_id", user.id)
-        .single();
+        .order("created_at", { ascending: true })
+        .limit(1);
+
+      let company = companies?.[0];
 
       if (!company) {
         const { data: newCompany, error: companyError } = await supabase
@@ -113,17 +131,32 @@ export function useTeamManagement() {
           .single();
 
         if (companyError) {
-          throw new Error("Failed to create company");
+          // Try to fetch again in case company was created by trigger
+          const { data: existingCompanies } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("owner_id", user.id)
+            .order("created_at", { ascending: true })
+            .limit(1);
+          
+          company = existingCompanies?.[0];
+          if (!company) {
+            throw new Error("Failed to create or find company");
+          }
+        } else {
+          company = newCompany;
         }
-        company = newCompany;
       }
 
-      // Get or create default agency
-      let { data: agency } = await supabase
+      // Get or create default agency - use limit(1) to avoid 406 errors
+      let { data: agencies } = await supabase
         .from("agencies")
         .select("*")
         .eq("company_id", company.id)
-        .single();
+        .order("created_at", { ascending: true })
+        .limit(1);
+
+      let agency = agencies?.[0];
 
       if (!agency) {
         const { data: newAgency, error: agencyError } = await supabase
@@ -137,6 +170,7 @@ export function useTeamManagement() {
           .single();
 
         if (agencyError) {
+          console.error("Error creating agency:", agencyError);
           throw new Error("Failed to create agency");
         }
         agency = newAgency;
@@ -155,18 +189,20 @@ export function useTeamManagement() {
 
       if (error) {
         console.error("Error sending invitation:", error);
-        throw new Error(error.message || "Failed to send invitation");
+        throw new Error(error.message || "שגיאה בשליחת ההזמנה");
       }
+
+      console.log("Invitation sent successfully:", data);
 
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-users"] });
-      toast.success("המשתמש נוסף בהצלחה! הזמנה נשלחה באימייל.");
+      toast.success("ההזמנה נשלחה בהצלחה! בדוק את תיבת הדואר (כולל דואר זבל)");
     },
     onError: (error: any) => {
       console.error("Error adding team user:", error);
-      toast.error(error.message || "שגיאה בהוספת המשתמש");
+      toast.error(error.message || "שגיאה בשליחת ההזמנה - נסה שוב");
     },
   });
 
