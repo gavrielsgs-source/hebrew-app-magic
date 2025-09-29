@@ -13,6 +13,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   BarChart3, 
   CalendarDays, 
@@ -198,23 +199,25 @@ export function AppSidebar() {
               </SidebarMenuButton>
               
               {docProductionOpen && (
-                <SidebarMenuSub>
-                  {DOCUMENT_TYPES.map((doc) => {
-                    const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
-                    return (
-                      <SidebarMenuSubItem key={doc.id}>
-                        <SidebarMenuSubButton
-                          onClick={() => navigate(`/document-production/${doc.id}`)}
-                          isActive={pathname === `/document-production/${doc.id}`}
-                          className="text-gray-300 hover:text-white"
-                        >
-                          <IconComponent className="h-4 w-4" />
-                          <span>{doc.name}</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    );
-                  })}
-                </SidebarMenuSub>
+                <ScrollArea className="max-h-[400px]">
+                  <SidebarMenuSub>
+                    {DOCUMENT_TYPES.map((doc) => {
+                      const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
+                      return (
+                        <SidebarMenuSubItem key={doc.id}>
+                          <SidebarMenuSubButton
+                            onClick={() => navigate(`/document-production/${doc.id}`)}
+                            isActive={pathname === `/document-production/${doc.id}`}
+                            className="text-gray-300 hover:text-white"
+                          >
+                            <IconComponent className="h-4 w-4" />
+                            <span>{doc.name}</span>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      );
+                    })}
+                  </SidebarMenuSub>
+                </ScrollArea>
               )}
             </SidebarMenuItem>
 

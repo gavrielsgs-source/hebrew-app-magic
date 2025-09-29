@@ -13,12 +13,45 @@ import {
   BarChart,
   FileText,
   Settings,
-  CreditCard
+  CreditCard,
+  ChevronDown,
+  Sparkles,
+  Receipt,
+  ShoppingCart,
+  RefreshCw,
+  Zap,
+  Truck,
+  Calculator,
+  Package,
+  FileCheck,
+  FilePlus,
+  Handshake,
+  Eye,
+  CheckSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import { DOCUMENT_TYPES } from "@/types/document-production";
+
+const iconMap = {
+  Receipt,
+  FileText,
+  CreditCard,
+  ShoppingCart,
+  RefreshCw,
+  Zap,
+  Truck,
+  Car,
+  Calculator,
+  Package,
+  FileCheck,
+  FilePlus,
+  Handshake,
+  Eye,
+  CheckSquare,
+};
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -26,6 +59,7 @@ export function MobileBottomNav() {
   const { data: dashboardData } = useDashboardData();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [docProductionExpanded, setDocProductionExpanded] = useState(false);
 
   if (!isMobile) return null;
 
@@ -72,7 +106,7 @@ export function MobileBottomNav() {
     { id: "team-management", label: "ניהול צוות", icon: Users, path: "/team-management" },
     { id: "analytics", label: "אנליטיקה", icon: BarChart, path: "/analytics" },
     { id: "documents", label: "מסמכים", icon: FileText, path: "/documents" },
-    { id: "document-production", label: "הפקת מסמכים", icon: FileText, path: "/document-production" },
+    { id: "document-production", label: "הפקת מסמכים", icon: Sparkles, path: null, expandable: true, badge: "BETA" },
     { id: "templates", label: "תבניות", icon: Settings, path: "/templates" },
     { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" }
   ];
@@ -97,9 +131,13 @@ export function MobileBottomNav() {
     }
   };
 
-  const handleMenuItemClick = (path: string) => {
-    navigate(path);
-    setIsMenuOpen(false);
+  const handleMenuItemClick = (path: string | null, expandable?: boolean) => {
+    if (expandable) {
+      setDocProductionExpanded(!docProductionExpanded);
+    } else if (path) {
+      navigate(path);
+      setIsMenuOpen(false);
+    }
   };
 
   return (
@@ -161,19 +199,54 @@ export function MobileBottomNav() {
           <div className="grid grid-cols-1 gap-4 pb-6">
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const active = isActive(item.path);
+              const active = item.path ? isActive(item.path) : false;
               
               return (
-                <MobileButton
-                  key={item.id}
-                  variant={active ? "primary" : "outline"}
-                  size="xl"
-                  onClick={() => handleMenuItemClick(item.path)}
-                  icon={<Icon className="h-6 w-6" />}
-                  className="justify-start"
-                >
-                  {item.label}
-                </MobileButton>
+                <div key={item.id}>
+                  <MobileButton
+                    variant={active ? "primary" : "outline"}
+                    size="xl"
+                    onClick={() => handleMenuItemClick(item.path, item.expandable)}
+                    icon={<Icon className="h-6 w-6" />}
+                    className="justify-start w-full relative"
+                  >
+                    <span className="flex-1 text-right">{item.label}</span>
+                    {item.badge && (
+                      <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 mr-2">
+                        {item.badge}
+                      </Badge>
+                    )}
+                    {item.expandable && (
+                      <ChevronDown 
+                        className={`h-5 w-5 transition-transform duration-200 ${
+                          docProductionExpanded ? 'rotate-180' : ''
+                        }`}
+                      />
+                    )}
+                  </MobileButton>
+                  
+                  {item.expandable && docProductionExpanded && (
+                    <div className="flex flex-col gap-2 mt-3 pr-4">
+                      {DOCUMENT_TYPES.map((doc) => {
+                        const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
+                        const docPath = `/document-production/${doc.id}`;
+                        const docActive = location.pathname === docPath;
+                        return (
+                          <MobileButton
+                            key={doc.id}
+                            variant={docActive ? "primary" : "outline"}
+                            size="lg"
+                            onClick={() => handleMenuItemClick(docPath)}
+                            icon={<IconComponent className="h-4 w-4" />}
+                            className="justify-start text-sm"
+                          >
+                            {doc.name}
+                          </MobileButton>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
