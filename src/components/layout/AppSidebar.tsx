@@ -86,6 +86,17 @@ export function AppSidebar() {
 
             <SidebarMenuItem>
               <button
+                onClick={() => navigate("/customers")}
+                data-active={pathname.startsWith("/customers")}
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
+              >
+                <User className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">לקוחות</span>
+              </button>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <button
                 onClick={() => navigate("/tasks")}
                 data-active={pathname === "/tasks"}
                 className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"

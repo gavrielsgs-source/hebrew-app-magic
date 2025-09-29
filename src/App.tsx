@@ -49,6 +49,8 @@ import { useMemo } from "react";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import AboutUs from "./pages/AboutUs";
 import TaxInvoice from "./pages/TaxInvoice";
+import Customers from "./pages/Customers";
+import CustomerProfile from "./pages/CustomerProfile";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -124,6 +126,8 @@ function AppLayout() {
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/cars" element={<Cars />} />
                 <Route path="/leads" element={<Leads />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/customers/:customerId" element={<CustomerProfile />} />
                 <Route path="/templates" element={<Templates />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/documents" element={<Documents />} />

@@ -219,6 +219,270 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_document_returns: {
+        Row: {
+          created_at: string
+          customer_document_id: string
+          file_path: string
+          id: string
+          uploaded_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_document_id: string
+          file_path: string
+          id?: string
+          uploaded_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_document_id?: string
+          file_path?: string
+          id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_document_returns_customer_document_id_fkey"
+            columns: ["customer_document_id"]
+            isOneToOne: false
+            referencedRelation: "customer_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_documents: {
+        Row: {
+          amount: number | null
+          created_at: string
+          customer_id: string
+          date: string | null
+          document_number: string
+          file_path: string | null
+          id: string
+          status: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          customer_id: string
+          date?: string | null
+          document_number: string
+          file_path?: string | null
+          id?: string
+          status?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          customer_id?: string
+          date?: string | null
+          document_number?: string
+          file_path?: string | null
+          id?: string
+          status?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_documents_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_notes: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          note: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          note: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          note?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_vehicle_purchases: {
+        Row: {
+          car_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          purchase_date: string | null
+          purchase_price: number | null
+        }
+        Insert: {
+          car_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          purchase_date?: string | null
+          purchase_price?: number | null
+        }
+        Update: {
+          car_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          purchase_date?: string | null
+          purchase_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_vehicle_purchases_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_vehicle_purchases_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_vehicle_sales: {
+        Row: {
+          car_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          sale_date: string | null
+          sale_price: number | null
+        }
+        Insert: {
+          car_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          sale_date?: string | null
+          sale_price?: number | null
+        }
+        Update: {
+          car_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          sale_date?: string | null
+          sale_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_vehicle_sales_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_vehicle_sales_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          credit_amount: number | null
+          customer_number: number
+          customer_type: string | null
+          email: string | null
+          fax: string | null
+          full_name: string
+          id: string
+          id_number: string | null
+          join_date: string | null
+          phone: string | null
+          source: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          credit_amount?: number | null
+          customer_number?: number
+          customer_type?: string | null
+          email?: string | null
+          fax?: string | null
+          full_name: string
+          id?: string
+          id_number?: string | null
+          join_date?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          credit_amount?: number | null
+          customer_number?: number
+          customer_type?: string | null
+          email?: string | null
+          fax?: string | null
+          full_name?: string
+          id?: string
+          id_number?: string | null
+          join_date?: string | null
+          phone?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_sequences: {
         Row: {
           created_at: string
