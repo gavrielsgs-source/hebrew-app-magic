@@ -10,6 +10,7 @@ import { CustomerNotes } from "@/components/customers/CustomerNotes";
 import { CustomerCredit } from "@/components/customers/CustomerCredit";
 import { CustomerVehicles } from "@/components/customers/CustomerVehicles";
 import { CustomerDocuments } from "@/components/customers/CustomerDocuments";
+import { EditCustomerDialog } from "@/components/customers/EditCustomerDialog";
 import { Link } from "react-router-dom";
 
 export default function CustomerProfile() {
@@ -85,10 +86,7 @@ export default function CustomerProfile() {
               </div>
             </div>
             <div className="mr-auto">
-              <Button variant="outline" size="lg" className="rounded-2xl border-2 hover:shadow-lg transition-all duration-300 bg-white/50 backdrop-blur-sm">
-                <Edit className="h-5 w-5 ml-2" />
-                <span className="text-lg font-medium">ערוך פרטים</span>
-              </Button>
+              <EditCustomerDialog customer={customer} />
             </div>
           </div>
         </div>

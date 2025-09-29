@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CreateCustomerDocumentDialog } from "./CreateCustomerDocumentDialog";
 
 interface CustomerDocumentsProps {
   customerId: string;
@@ -76,9 +77,13 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="documents" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="documents">מסמכים</TabsTrigger>
-            <TabsTrigger value="returns">מסמכים שהוחזרו</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-2xl p-1 shadow-inner">
+            <TabsTrigger value="returns" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 text-lg">
+              מסמכים שהוחזרו
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 text-lg">
+              מסמכים
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="documents" className="space-y-4">
@@ -101,10 +106,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                   סינון
                 </Button>
               </div>
-              <Button>
-                <Plus className="h-4 w-4 ml-2" />
-                יצור מסמך חדש
-              </Button>
+              <CreateCustomerDocumentDialog customerId={customerId} />
             </div>
             
             {documents.length === 0 ? (
@@ -112,10 +114,15 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">אין מסמכים עדיין</h3>
                 <p className="mb-4">צור מסמך ראשון עבור הלקוח</p>
-                <Button>
-                  <Plus className="h-4 w-4 ml-2" />
-                  יצור מסמך ראשון
-                </Button>
+                <CreateCustomerDocumentDialog 
+                  customerId={customerId}
+                  trigger={
+                    <Button>
+                      <Plus className="h-4 w-4 ml-2" />
+                      יצור מסמך ראשון
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <div className="space-y-3">
