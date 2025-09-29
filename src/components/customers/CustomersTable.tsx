@@ -96,23 +96,35 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
         <Table>
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-muted/40 via-muted/30 to-muted/40 hover:from-muted/50 hover:via-muted/40 hover:to-muted/50 border-b border-border/30">
-              <TableHead className="text-right font-bold text-foreground py-4 pl-6 pr-6 w-[120px]">
-                <span className="text-base block text-right">מספר לקוח</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[120px]">
+                <div className="text-right pr-3">
+                  <span className="text-base">מספר לקוח</span>
+                </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 pl-6 pr-6 w-[200px]">
-                <span className="text-base block text-right">שם מלא</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[200px]">
+                <div className="text-right">
+                  <span className="text-base">שם מלא</span>
+                </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 pl-6 pr-6 w-[180px]">
-                <span className="text-base block text-right">טלפון</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[180px]">
+                <div className="text-right pr-4">
+                  <span className="text-base">טלפון</span>
+                </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 pl-6 pr-6 w-[220px]">
-                <span className="text-base block text-right">אימייל</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[220px]">
+                <div className="text-right pr-3">
+                  <span className="text-base">אימייל</span>
+                </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 pl-6 pr-6 w-[140px]">
-                <span className="text-base block text-right">סוג לקוח</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[140px]">
+                <div className="text-right pr-4">
+                  <span className="text-base">סוג לקוח</span>
+                </div>
               </TableHead>
-              <TableHead className="text-center font-bold text-foreground py-4 pl-6 pr-6 w-[140px]">
-                <span className="text-base block text-center">פעולות</span>
+              <TableHead className="text-center font-bold text-foreground py-4 px-6 w-[140px]">
+                <div className="text-center">
+                  <span className="text-base">פעולות</span>
+                </div>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -124,60 +136,60 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                   index % 2 === 0 ? 'bg-background' : 'bg-muted/5'
                 } border-b border-border/20 last:border-b-0`}
               >
-                <TableCell className="text-right py-4 pl-6 pr-6">
-                  <div className="flex justify-end">
-                    <div className="bg-gradient-to-r from-primary/10 to-primary/10 px-3 py-2 rounded-xl border border-primary/20">
+                <TableCell className="py-4 px-6 text-right">
+                  <div className="text-right pr-3">
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/10 px-3 py-2 rounded-xl border border-primary/20 inline-block">
                       <span className="font-bold text-primary text-sm">#{customer.customer_number}</span>
                     </div>
                   </div>
                 </TableCell>
                 
-                <TableCell className="text-right py-4 pl-6 pr-6">
+                <TableCell className="py-4 px-6 text-right">
                   <div className="text-right">
                     <Link to={`/customers/${customer.id}`} className="block hover:text-primary transition-colors">
-                      <div className="space-y-1">
-                        <div className="font-bold text-foreground text-base hover:text-primary transition-colors cursor-pointer text-right">
+                      <div className="space-y-1 text-right">
+                        <div className="font-bold text-foreground text-base hover:text-primary transition-colors cursor-pointer">
                           {customer.full_name}
                         </div>
-                        <div className="text-xs text-muted-foreground text-right">לקוח רשום</div>
+                        <div className="text-xs text-muted-foreground">לקוח רשום</div>
                       </div>
                     </Link>
                   </div>
                 </TableCell>
                 
-                <TableCell className="text-right py-4 pl-6 pr-6">
-                  <div className="flex justify-end">
+                <TableCell className="py-4 px-6 text-right">
+                  <div className="text-right pr-4">
                     {customer.phone ? (
                       <div className="bg-muted/30 p-3 rounded-lg inline-flex items-center gap-2">
                         <span className="text-base font-semibold text-foreground">{customer.phone}</span>
                         <Phone className="h-4 w-4 text-primary" />
                       </div>
                     ) : (
-                      <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg">
+                      <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg inline-block">
                         לא הוזן מספר
                       </div>
                     )}
                   </div>
                 </TableCell>
                 
-                <TableCell className="text-right py-4 pl-6 pr-6">
-                  <div className="flex justify-end">
+                <TableCell className="py-4 px-6 text-right">
+                  <div className="text-right pr-3">
                     {customer.email ? (
-                      <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="bg-muted/30 p-3 rounded-lg inline-block">
                         <span className="text-base font-semibold text-foreground max-w-[180px] truncate block text-right" title={customer.email}>
                           {customer.email}
                         </span>
                       </div>
                     ) : (
-                      <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg">
+                      <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg inline-block">
                         לא הוזן אימייל
                       </div>
                     )}
                   </div>
                 </TableCell>
                 
-                <TableCell className="text-right py-4 pl-6 pr-6">
-                  <div className="flex justify-end">
+                <TableCell className="py-4 px-6 text-right">
+                  <div className="text-right pr-4">
                     <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 ${
                       customer.customer_type === 'private' 
                         ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-blue-200' 
@@ -188,7 +200,7 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                   </div>
                 </TableCell>
                 
-                <TableCell className="text-center py-4 pl-6 pr-6">
+                <TableCell className="py-4 px-6 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Button
                       variant="ghost"
