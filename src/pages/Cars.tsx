@@ -65,28 +65,30 @@ export default function Cars() {
           carsCount={cars.length}
         />
         
-        <div className="px-4 mt-6">
-          <div className="flex gap-3 mb-6">
-            <MobileButton 
-              variant="outline" 
-              size="md"
-              fullWidth={false}
-              className="flex-1"
-              onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-              icon={viewMode === 'grid' ? <TableIcon className="h-5 w-5" /> : <LayoutGridIcon className="h-5 w-5" />}
-            >
-              {viewMode === 'grid' ? 'טבלה' : 'גריד'}
-            </MobileButton>
-            
+        <div className="mt-6">
+          <div className="px-4">
+            <div className="flex gap-3 mb-6">
+              <MobileButton 
+                variant="outline" 
+                size="md"
+                fullWidth={false}
+                className="flex-1"
+                onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+                icon={viewMode === 'grid' ? <TableIcon className="h-5 w-5" /> : <LayoutGridIcon className="h-5 w-5" />}
+              >
+                {viewMode === 'grid' ? 'טבלה' : 'גריד'}
+              </MobileButton>
+              
+            </div>
           </div>
 
-          <div className={viewMode === "grid" ? "" : "px-4"}>
-            {viewMode === "grid" ? (
-              <CarGrid cars={cars} isLoading={isLoading} />
-            ) : (
+          {viewMode === "grid" ? (
+            <CarGrid cars={cars} isLoading={isLoading} />
+          ) : (
+            <div className="px-4">
               <CarsTable />
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Add Car Dialog for Mobile */}
@@ -120,78 +122,81 @@ export default function Cars() {
         currentCount={cars.length} 
       />
       
-      <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      <div className="bg-gradient-to-r from-primary/5 via-background to-primary/5 rounded-2xl p-6 border border-primary/10 shadow-lg">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary/10 p-4 rounded-2xl shadow-md border border-primary/20">
-              <Car className="h-8 w-8 text-primary" />
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold text-primary">
-                מלאי רכבים מתקדם
-              </h1>
-              <p className="text-muted-foreground text-lg font-medium">
-                מערכת ניהול מקצועית לכל הרכבים שלך • בקרה מלאה ונתונים בזמן אמת
-              </p>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span>מערכת פעילה</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                  <span>נתונים מסונכרנים</span>
+      {/* Header inside container */}
+      <div className="container mx-auto p-6" dir="rtl">
+        <div className="bg-gradient-to-r from-primary/5 via-background to-primary/5 rounded-2xl p-6 border border-primary/10 shadow-lg">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-primary/10 p-4 rounded-2xl shadow-md border border-primary/20">
+                <Car className="h-8 w-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold text-primary">
+                  מלאי רכבים מתקדם
+                </h1>
+                <p className="text-muted-foreground text-lg font-medium">
+                  מערכת ניהול מקצועית לכל הרכבים שלך • בקרה מלאה ונתונים בזמן אמת
+                </p>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>מערכת פעילה</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    <span>נתונים מסונכרנים</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              variant="outline"
-              className="rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
-            >
-              דוחות
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-2 rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
-              onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-            >
-              {viewMode === 'grid' ? (
-                <>
-                  <TableIcon className="h-4 w-4 mr-1" />
-                  תצוגת טבלה
-                </>
-              ) : (
-                <>
-                  <LayoutGridIcon className="h-4 w-4 mr-1" />
-                  תצוגת גריד
-                </>
-              )}
-            </Button>
-            <Button 
-              onClick={handleAddCar}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-xl px-8 h-12 font-bold text-base transition-all duration-300 hover:shadow-xl hover:scale-105 border-0"
-              disabled={!canAddCar}
-            >
-              <Plus className="h-5 w-5 ml-2" />
-              הוסף רכב חדש
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                variant="outline"
+                className="rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+              >
+                דוחות
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2 rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+                onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+              >
+                {viewMode === 'grid' ? (
+                  <>
+                    <TableIcon className="h-4 w-4 mr-1" />
+                    תצוגת טבלה
+                  </>
+                ) : (
+                  <>
+                    <LayoutGridIcon className="h-4 w-4 mr-1" />
+                    תצוגת גריד
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={handleAddCar}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-xl px-8 h-12 font-bold text-base transition-all duration-300 hover:shadow-xl hover:scale-105 border-0"
+                disabled={!canAddCar}
+              >
+                <Plus className="h-5 w-5 ml-2" />
+                הוסף רכב חדש
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-6">
-
-      <div className={viewMode === "grid" ? "mx-0" : "container mx-auto"}>
-        {viewMode === "grid" ? (
+      {/* Content: full-width grid or contained table */}
+      {viewMode === "grid" ? (
+        <div className="w-full">
           <CarGrid cars={cars} isLoading={isLoading} />
-        ) : (
+        </div>
+      ) : (
+        <div className="container mx-auto p-6" dir="rtl">
           <CarsTable />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Add Car Dialog for Desktop */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -212,8 +217,6 @@ export default function Cars() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
-      </div>
     </>
   );
 }
