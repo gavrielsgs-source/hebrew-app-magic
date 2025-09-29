@@ -32,67 +32,61 @@ export function CarsTable() {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2"
-              disabled={!canAddCar}
-            >
-              <Plus className="h-4 w-4" /> הוסף רכב חדש
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-[90%] sm:w-[600px] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>הוסף רכב חדש</SheetTitle>
-            </SheetHeader>
-            <AddCarForm />
-          </SheetContent>
-        </Sheet>
-      </div>
-      
-      <div className="rounded-md border">
+    <div dir="rtl">
+      <div className="rounded-md border border-border/40">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">דגם</TableHead>
-              <TableHead className="text-right">שנה</TableHead>
-              <TableHead className="text-right">ק"מ</TableHead>
-              <TableHead className="text-right">מחיר</TableHead>
-              <TableHead className="text-right">סטטוס</TableHead>
-              <TableHead className="text-left">פעולות</TableHead>
+            <TableRow className="border-border/40">
+              <TableHead className="text-right font-medium h-12">דגם</TableHead>
+              <TableHead className="text-right font-medium h-12">שנה</TableHead>
+              <TableHead className="text-right font-medium h-12">ק"מ</TableHead>
+              <TableHead className="text-right font-medium h-12">מחיר</TableHead>
+              <TableHead className="text-right font-medium h-12">סטטוס</TableHead>
+              <TableHead className="text-right font-medium h-12">פעולות</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={6} className="text-center h-16">
                   טוען...
                 </TableCell>
               </TableRow>
             ) : cars.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={6} className="text-center h-16">
                   אין רכבים במלאי
                 </TableCell>
               </TableRow>
             ) : (
-              cars.map((car) => (
-                <TableRow key={car.id}>
-                  <TableCell className="font-medium text-right">{car.make} {car.model}</TableCell>
-                  <TableCell className="text-right">{car.year}</TableCell>
-                  <TableCell className="text-right">{car.kilometers.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{car.price.toLocaleString()} ₪</TableCell>
-                  <TableCell className="text-right">
+              cars.map((car, index) => (
+                <TableRow 
+                  key={car.id}
+                  className={`
+                    border-border/40 h-16
+                    ${index % 2 === 0 ? 'bg-muted/20' : 'bg-background'}
+                    hover:bg-muted/40 transition-colors
+                  `}
+                >
+                  <TableCell className="font-medium text-right py-4">
+                    {car.make} {car.model}
+                  </TableCell>
+                  <TableCell className="text-right py-4">{car.year}</TableCell>
+                  <TableCell className="text-right py-4">{car.kilometers.toLocaleString()}</TableCell>
+                  <TableCell className="text-right py-4 font-medium">{car.price.toLocaleString()} ₪</TableCell>
+                  <TableCell className="text-right py-4">
                     <CarStatusChanger car={car} compact={true} />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2 rtl:space-x-reverse">
+                  <TableCell className="py-4">
+                    <div className="flex items-center gap-1 justify-end">
                       <Sheet>
                         <SheetTrigger asChild>
-                          <Button variant="ghost" size="icon" title="הוסף ליד">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 hover:bg-primary/10"
+                            title="הוסף ליד"
+                          >
                             <UserPlus className="h-4 w-4" />
                           </Button>
                         </SheetTrigger>
@@ -105,9 +99,9 @@ export function CarsTable() {
                       </Sheet>
                       <Button 
                         variant="ghost" 
-                        size="icon" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
                         title="שלח בוואטסאפ"
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
                         onClick={() => {
                           setSelectedCar(car);
                           setIsWhatsappOpen(true);
@@ -117,7 +111,8 @@ export function CarsTable() {
                       </Button>
                       <Button 
                         variant="ghost" 
-                        size="icon"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-primary/10"
                         title="צפה בפרטים"
                         onClick={() => {
                           setSelectedCar(car);
@@ -128,7 +123,8 @@ export function CarsTable() {
                       </Button>
                       <Button 
                         variant="ghost" 
-                        size="icon" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 hover:bg-primary/10"
                         title="ערוך"
                         onClick={() => {
                           setSelectedCar(car);

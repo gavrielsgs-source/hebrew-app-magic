@@ -110,7 +110,7 @@ export default function Cars() {
     );
   }
 
-  // Desktop view - with StandardPageHeader
+  // Desktop view - simple clean header
   return (
     <>
       <SubscriptionLimitAlert 
@@ -118,39 +118,45 @@ export default function Cars() {
         currentCount={cars.length} 
       />
       
-      <StandardPageHeader
-        title="מלאי רכבים"
-        subtitle="ניהול רכבים זמינים למכירה"
-        icon={Car}
-        actionButton={{
-          label: "הוסף רכב חדש",
-          onClick: handleAddCar,
-          icon: Plus
-        }}
-      >
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex items-center gap-2"
-            onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-          >
-            {viewMode === 'grid' ? (
-              <>
-                <TableIcon className="h-4 w-4 mr-1" />
-                תצוגת טבלה
-              </>
-            ) : (
-              <>
-                <LayoutGridIcon className="h-4 w-4 mr-1" />
-                תצוגת גריד
-              </>
-            )}
-          </Button>
+      {/* Page Header */}
+      <div className="page-header p-6 pb-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <div className="title-wrapper text-right">
+            <h1 className="page-title text-3xl font-bold tracking-tight text-foreground">מלאי רכבים</h1>
+            <p className="page-subtitle text-muted-foreground mt-2">מערכת ניהול מקצועית לכל הרכבים שלך – בקרה מלאה ונתונים בזמן אמת</p>
+          </div>
+          <div className="flex gap-2 mt-4 sm:mt-0">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-2"
+              onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+            >
+              {viewMode === 'grid' ? (
+                <>
+                  <TableIcon className="h-4 w-4 mr-1" />
+                  תצוגת טבלה
+                </>
+              ) : (
+                <>
+                  <LayoutGridIcon className="h-4 w-4 mr-1" />
+                  תצוגת גריד
+                </>
+              )}
+            </Button>
+            <Button 
+              onClick={handleAddCar}
+              className="flex items-center gap-2"
+              disabled={!canAddCar}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              הוסף רכב חדש
+            </Button>
+          </div>
         </div>
-      </StandardPageHeader>
+      </div>
 
-      <div className="p-6">
+      <div className="p-6 pt-4">
 
       {viewMode === "grid" ? (
         <CarGrid cars={cars} isLoading={isLoading} />
