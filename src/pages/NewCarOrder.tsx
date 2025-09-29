@@ -27,7 +27,7 @@ const newCarOrderSchema = z.object({
     birthYear: z.string().regex(/^\d{4}$/, "שנת לידה תקינה נדרשת"),
     idNumber: z.string().min(9, "תעודת זהות תקינה נדרשת"),
     city: z.string().min(2, "עיר נדרשת"),
-    address: z.string().min(5, "כתובת מלאה נדרשת"),
+    address: z.string().min(2, "כתובת נדרשת"),
   }),
   items: z.array(z.object({
     id: z.string(),
@@ -36,7 +36,6 @@ const newCarOrderSchema = z.object({
     discount: z.number().min(0, "הנחה חייבת להיות חיובית"),
     quantity: z.number().min(1, "כמות חייבת להיות לפחות 1"),
     finalPrice: z.number().min(0, "מחיר סופי חייב להיות חיובי"),
-    route: z.string().min(1, "מסלול נדרש"),
   })).min(1, "חובה להוסיף לפחות פריט אחד"),
   notes: z.string().optional(),
 });
@@ -70,7 +69,6 @@ export default function NewCarOrder() {
         discount: 0,
         quantity: 1,
         finalPrice: 0,
-        route: "",
       }],
       notes: "",
     },
@@ -90,7 +88,7 @@ export default function NewCarOrder() {
   const subtotal = watchedItems.reduce((sum, item) => sum + (item.netPrice * item.quantity), 0);
   const totalDiscount = watchedItems.reduce((sum, item) => sum + item.discount, 0);
   const total = subtotal - totalDiscount;
-  const vatAmount = includeVAT ? total * 0.19 : 0;
+  const vatAmount = includeVAT ? total * 0.18 : 0;
   const grandTotal = total + vatAmount;
 
   const addItem = () => {
@@ -101,7 +99,6 @@ export default function NewCarOrder() {
       discount: 0,
       quantity: 1,
       finalPrice: 0,
-      route: "",
     });
   };
 
@@ -300,7 +297,7 @@ export default function NewCarOrder() {
                         id="address"
                         {...form.register("customer.address")}
                         className="text-right"
-                        placeholder="רחוב הרצל 1"
+                        placeholder="הכנס כתובת"
                       />
                       {form.formState.errors.customer?.address && (
                         <p className="text-sm text-destructive">{form.formState.errors.customer.address.message}</p>
@@ -344,7 +341,7 @@ export default function NewCarOrder() {
                           <h4 className="font-medium">פריט {index + 1}</h4>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                           <div className="space-y-2 lg:col-span-2">
                             <Label>תיאור</Label>
                             <Input
@@ -393,15 +390,6 @@ export default function NewCarOrder() {
                               placeholder="1"
                             />
                           </div>
-
-                          <div className="space-y-2">
-                            <Label>מסלול</Label>
-                            <Input
-                              {...form.register(`items.${index}.route`)}
-                              className="text-right"
-                              placeholder="מסלול"
-                            />
-                          </div>
                         </div>
                         
                         <div className="mt-4 p-3 bg-muted/50 rounded-lg">
@@ -429,7 +417,7 @@ export default function NewCarOrder() {
                 <Card className="bg-primary/5 border-primary/20">
                   <CardContent className="pt-6 space-y-4">
                     <div className="flex items-center justify-end gap-3">
-                      <span className="text-sm">כולל מע"מ (19%)</span>
+                      <span className="text-sm">כולל מע"מ (18%)</span>
                       <Switch checked={includeVAT} onCheckedChange={setIncludeVAT} />
                     </div>
                     <div className="space-y-2 text-right">
@@ -444,7 +432,7 @@ export default function NewCarOrder() {
                       {includeVAT && (
                         <div className="flex justify-between items-center">
                           <span className="font-semibold">{formatPrice(vatAmount)}</span>
-                          <span>מע"מ (19%):</span>
+                          <span>מע"מ (18%):</span>
                         </div>
                       )}
                       <Separator />
@@ -526,7 +514,6 @@ export default function NewCarOrder() {
                         <p><strong>כמות:</strong> {item.quantity}</p>
                         <p><strong>הנחה:</strong> {formatPrice(item.discount)}</p>
                         <p><strong>מחיר סופי:</strong> {formatPrice(item.finalPrice)}</p>
-                        <p><strong>מסלול:</strong> {item.route}</p>
                       </div>
                     ))}
                   </div>

@@ -112,7 +112,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                   סינון
                 </Button>
               </div>
-              <CreateCustomerDocumentDialog customerId={customerId} />
             </div>
             
             {documentsLoading ? (
@@ -123,85 +122,116 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                   </div>
                 ))}
               </div>
-            ) : documents.length === 0 ? (
+            ) : documents.length === 0 && attachedDocs.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">אין מסמכים עדיין</h3>
-                <p className="mb-4">צור מסמך ראשון עבור הלקוח</p>
-                <CreateCustomerDocumentDialog 
-                  customerId={customerId}
-                  trigger={
-                    <Button>
-                      <Plus className="h-4 w-4 ml-2" />
-                      יצור מסמך ראשון
-                    </Button>
-                  }
-                />
+                <p className="mb-4">מסמכים שנוצרים למען הלקוח יופיעו כאן</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {documents.map((doc) => (
-                  <div key={doc.id} className="border rounded-2xl p-6 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="font-semibold text-lg text-slate-800">{doc.title}</h4>
-                        <p className="text-base text-slate-600">
-                          מס' {doc.document_number} • {doc.type}
-                        </p>
+              <div className="space-y-4" dir="rtl">
+                {/* Combined documents from both sources */}
+                {[...documents, ...attachedDocs.map(doc => ({
+                  id: doc.id,
+                  title: doc.name,
+                  document_number: `DOC-${doc.id.slice(0, 8)}`,
+                  type: doc.type,
+                  amount: 0,
+                  date: doc.created_at,
+                  created_at: doc.created_at,
+                  status: 'attached' as const
+                }))].map((doc) => (
+                  <div key={doc.id} className="border-2 border-slate-200 rounded-2xl p-6 bg-gradient-to-bl from-white via-slate-50/30 to-blue-50/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="text-right flex-1">
+                        <h4 className="font-bold text-xl text-slate-800 mb-2">{doc.title}</h4>
+                        <div className="space-y-1">
+                          <p className="text-lg text-slate-600 flex items-center gap-2">
+                            <span className="font-semibold">מספר מסמך:</span>
+                            <span className="font-mono bg-slate-100 px-2 py-1 rounded">{doc.document_number}</span>
+                          </p>
+                          <p className="text-lg text-slate-600">
+                            <span className="font-semibold">סוג:</span> {doc.type}
+                          </p>
+                        </div>
                       </div>
-                      {getStatusBadge(doc.status)}
+                      <div className="mr-4">
+                        {doc.status === 'attached' ? (
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 shadow-sm text-base px-3 py-1">
+                            <FileText className="h-4 w-4 ml-1" />
+                            מצורף
+                          </Badge>
+                        ) : (
+                          getStatusBadge(doc.status)
+                        )}
+                      </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 text-base text-slate-600 mb-4">
-                      <div>
-                        <span className="font-medium">סכום: </span>
-                        ₪{doc.amount?.toLocaleString() || 'לא צוין'}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg text-slate-700 mb-6 bg-white/50 p-4 rounded-xl border border-slate-100">
+                      <div className="text-right">
+                        <span className="font-bold text-slate-800">סכום: </span>
+                        <span className="font-semibold text-green-700">
+                          {doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}
+                        </span>
                       </div>
-                      <div>
-                        <span className="font-medium">תאריך: </span>
-                        {new Date(doc.date || doc.created_at).toLocaleDateString('he-IL')}
+                      <div className="text-right">
+                        <span className="font-bold text-slate-800">תאריך: </span>
+                        <span className="font-semibold">
+                          {new Date(doc.date || doc.created_at).toLocaleDateString('he-IL')}
+                        </span>
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="rounded-xl">
-                          <Eye className="h-4 w-4 ml-2" />
-                          תצוגה מקדימה
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="rounded-xl"
-                          onClick={() => handleStatusUpdate(doc.id, 'sent')}
-                          disabled={updateDocumentStatus.isPending}
-                        >
-                          <Send className="h-4 w-4 ml-2" />
-                          שלח ללקוח
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="rounded-xl"
-                          onClick={() => handleStatusUpdate(doc.id, 'signed')}
-                          disabled={updateDocumentStatus.isPending}
-                        >
-                          <Upload className="h-4 w-4 ml-2" />
-                          סמן כחתום
-                        </Button>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-destructive rounded-xl"
-                          onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
-                          disabled={updateDocumentStatus.isPending}
-                        >
-                          <X className="h-4 w-4 ml-2" />
-                          בטל
-                        </Button>
-                      </div>
+                    <div className="flex items-center justify-between pt-4 border-t-2 border-slate-100">
+                      {doc.status !== 'attached' ? (
+                        <>
+                          <div className="flex gap-3">
+                            <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-blue-50 hover:border-blue-300">
+                              <Eye className="h-5 w-5 ml-2" />
+                              תצוגה מקדימה
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="lg" 
+                              className="rounded-xl text-base px-6 hover:bg-green-50 hover:border-green-300"
+                              onClick={() => handleStatusUpdate(doc.id, 'sent')}
+                              disabled={updateDocumentStatus.isPending}
+                            >
+                              <Send className="h-5 w-5 ml-2" />
+                              שלח ללקוח
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="lg" 
+                              className="rounded-xl text-base px-6 hover:bg-emerald-50 hover:border-emerald-300"
+                              onClick={() => handleStatusUpdate(doc.id, 'signed')}
+                              disabled={updateDocumentStatus.isPending}
+                            >
+                              <Upload className="h-5 w-5 ml-2" />
+                              סמן כחתום
+                            </Button>
+                          </div>
+                          <div className="flex gap-3">
+                            <Button 
+                              variant="outline" 
+                              size="lg" 
+                              className="text-destructive rounded-xl text-base px-6 hover:bg-red-50 hover:border-red-300"
+                              onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
+                              disabled={updateDocumentStatus.isPending}
+                            >
+                              <X className="h-5 w-5 ml-2" />
+                              בטל
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex gap-3 w-full justify-center">
+                          <Button variant="outline" size="lg" className="rounded-xl text-base px-8 hover:bg-blue-50 hover:border-blue-300">
+                            <Eye className="h-5 w-5 ml-2" />
+                            צפה במסמך
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

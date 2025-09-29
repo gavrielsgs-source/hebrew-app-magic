@@ -24,6 +24,7 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
 import { useCustomers, useCreateCustomerDocument } from "@/hooks/customers";
+import { Search } from "lucide-react";
 
 const salesAgreementSchema = z.object({
   date: z.date({
@@ -264,13 +265,28 @@ export default function SalesAgreement() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger dir="rtl" className="text-right">
-                            <SelectValue placeholder="בחר לקוח" />
+                            <SelectValue placeholder="חפש או בחר לקוח" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right">
+                        <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right w-[var(--radix-select-trigger-width)] min-w-[300px]">
+                          <div className="sticky top-0 bg-background border-b p-2 z-50">
+                            <div className="relative">
+                              <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="חפש לקוח לפי שם או טלפון..."
+                                className="pr-8 text-right"
+                                dir="rtl"
+                              />
+                            </div>
+                          </div>
                           {leads.map((lead) => (
                             <SelectItem key={lead.id} value={lead.id} className="text-right">
-                              {lead.name}
+                              <div className="flex flex-col text-right w-full">
+                                <span className="font-medium">{lead.name}</span>
+                                {lead.phone && (
+                                  <span className="text-xs text-muted-foreground">{lead.phone}</span>
+                                )}
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
