@@ -199,7 +199,7 @@ export function AppSidebar() {
               </SidebarMenuButton>
               
               {docProductionOpen && (
-                <ScrollArea className="max-h-[400px]">
+                <div className="max-h-[400px] overflow-y-auto">
                   <SidebarMenuSub>
                     {DOCUMENT_TYPES.map((doc) => {
                       const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
@@ -217,7 +217,7 @@ export function AppSidebar() {
                       );
                     })}
                   </SidebarMenuSub>
-                </ScrollArea>
+                </div>
               )}
             </SidebarMenuItem>
 
