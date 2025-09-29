@@ -69,6 +69,7 @@ export function MobileBottomNav() {
 
   const menuItems = [
     { id: "profile", label: "פרופיל", icon: User, path: "/profile" },
+    { id: "team-management", label: "ניהול צוות", icon: Users, path: "/team-management" },
     { id: "analytics", label: "אנליטיקה", icon: BarChart, path: "/analytics" },
     { id: "documents", label: "מסמכים", icon: FileText, path: "/documents" },
     { id: "templates", label: "תבניות", icon: Settings, path: "/templates" },

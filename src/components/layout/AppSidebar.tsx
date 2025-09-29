@@ -143,6 +143,17 @@ export function AppSidebar() {
             </SidebarMenuItem>
 
 
+            <SidebarMenuItem>
+              <button
+                onClick={() => navigate("/team-management")}
+                data-active={pathname === "/team-management"}
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
+              >
+                <Users className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">ניהול צוות</span>
+              </button>
+            </SidebarMenuItem>
+
             {isAdmin() && (
               <SidebarMenuItem>
                 <button
@@ -150,7 +161,7 @@ export function AppSidebar() {
                   data-active={pathname === "/admin"}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
                 >
-                  <Settings className="h-5 w-5" />
+                  <Shield className="h-5 w-5" />
                   <span className="group-data-[collapsible=icon]:hidden">ניהול מערכת</span>
                 </button>
               </SidebarMenuItem>

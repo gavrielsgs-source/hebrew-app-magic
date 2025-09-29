@@ -43,6 +43,7 @@ import Welcome from "./pages/Welcome";
 import AccessManagement from "./pages/Companies";
 import CompanySettings from "./pages/CompanySettings";
 import CompanyUsers from "./pages/CompanyUsers";
+import TeamManagement from "./pages/TeamManagement";
 import "./components/ui/mobile-responsive.css";
 import { useMemo } from "react";
 import AcceptInvitation from "./pages/AcceptInvitation";
@@ -141,6 +142,7 @@ function AppLayout() {
                 <Route path="/companies" element={<AccessManagement />} />
                 <Route path="/company/:companyId/settings" element={<CompanySettings />} />
                 <Route path="/company/:companyId/users" element={<CompanyUsers />} />
+                <Route path="/team-management" element={<TeamManagement />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="*" element={<NotFound />} />
