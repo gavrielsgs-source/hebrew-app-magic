@@ -23,6 +23,7 @@ import { generateSalesAgreementPDF } from "@/utils/pdf-generator";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
+import { useCustomers, useCreateCustomerDocument } from "@/hooks/customers";
 
 const salesAgreementSchema = z.object({
   date: z.date({
@@ -56,6 +57,8 @@ export default function SalesAgreement() {
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
+  const { data: customers = [] } = useCustomers();
+  const createCustomerDocument = useCreateCustomerDocument();
 
   const form = useForm<SalesAgreementFormData>({
     resolver: zodResolver(salesAgreementSchema),
@@ -161,6 +164,20 @@ export default function SalesAgreement() {
       };
 
       await generateSalesAgreementPDF(agreementData);
+
+      // Attach the agreement to an existing customer by phone or name when possible
+      const normalizePhone = (p?: string) => (p || '').replace(/[^\d]/g, '');
+      const matchedCustomer = customers.find(c => normalizePhone(c.phone) && normalizePhone(selectedLead.phone || '') && normalizePhone(c.phone) === normalizePhone(selectedLead.phone || ''))
+        || customers.find(c => c.full_name === selectedLead.name);
+      if (matchedCustomer) {
+        createCustomerDocument.mutate({
+          customerId: matchedCustomer.id,
+          title: 'הסכם מכר',
+          type: 'contract',
+          amount: parseFloat(data.totalPrice),
+          date: format(data.date, 'yyyy-MM-dd')
+        });
+      }
       
       toast({
         title: "הצלחה",
@@ -246,13 +263,13 @@ export default function SalesAgreement() {
                       <FormLabel className="text-right">בחירת לקוח</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="text-right">
+                          <SelectTrigger dir="rtl" className="text-right">
                             <SelectValue placeholder="בחר לקוח" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent align="end">
+                        <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right">
                           {leads.map((lead) => (
-                            <SelectItem key={lead.id} value={lead.id}>
+                            <SelectItem key={lead.id} value={lead.id} className="text-right">
                               {lead.name}
                             </SelectItem>
                           ))}

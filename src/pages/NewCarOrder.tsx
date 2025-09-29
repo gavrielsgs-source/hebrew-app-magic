@@ -49,7 +49,6 @@ export default function NewCarOrder() {
   const [useExistingLead, setUseExistingLead] = useState(true);
   const [includeVAT, setIncludeVAT] = useState(false);
   const { leads } = useLeads();
-  const selectedLead = leads?.find(l => l.id === (form.getValues("leadId") || ""));
 
   const form = useForm<NewCarOrderFormValues>({
     resolver: zodResolver(newCarOrderSchema),
@@ -76,6 +75,8 @@ export default function NewCarOrder() {
       notes: "",
     },
   });
+
+  const selectedLead = leads?.find(l => l.id === (form.watch("leadId") || ""));
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
