@@ -88,6 +88,36 @@ export interface NewCarOrderData {
   };
 }
 
+export interface PriceQuoteData {
+  date: string;
+  quoteNumber: string;
+  customer: {
+    fullName: string;
+    firstName: string;
+    phone?: string;
+    email?: string;
+    city: string;
+    address: string;
+  };
+  items: Array<{
+    id: string;
+    description: string;
+    unitPrice: number;
+    quantity: number;
+    discount: number;
+    totalPrice: number;
+    notes?: string;
+  }>;
+  validUntil: string;
+  terms?: string;
+  notes?: string;
+  financial: {
+    subtotal: number;
+    totalDiscount: number;
+    total: number;
+  };
+}
+
 export interface DocumentFormData {
   type: string;
   leadId?: string;
