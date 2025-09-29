@@ -1,4 +1,4 @@
-import { FileText, Plus, Filter, Eye, Send, Upload, X } from "lucide-react";
+import { FileText, Plus, Filter, Eye, Send, Upload, X, Clock, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,28 +17,62 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="outline">טיוטה</Badge>;
+        return (
+          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 shadow-sm">
+            <Clock className="h-3 w-3 ml-1" />
+            טיוטה
+          </Badge>
+        );
       case 'sent':
-        return <Badge variant="default">נשלח</Badge>;
+        return (
+          <Badge variant="default" className="bg-blue-600 hover:bg-blue-700 shadow-md">
+            <Send className="h-3 w-3 ml-1" />
+            נשלח
+          </Badge>
+        );
       case 'signed':
-        return <Badge variant="default" className="bg-green-600">חתום</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-600 hover:bg-green-700 shadow-md">
+            <CheckCircle className="h-3 w-3 ml-1" />
+            חתום
+          </Badge>
+        );
       case 'cancelled':
-        return <Badge variant="destructive">בוטל</Badge>;
+        return (
+          <Badge variant="destructive" className="shadow-md">
+            <XCircle className="h-3 w-3 ml-1" />
+            בוטל
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return (
+          <Badge variant="secondary" className="shadow-sm">
+            <AlertCircle className="h-3 w-3 ml-1" />
+            {status}
+          </Badge>
+        );
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          מסמכים דיגיטליים
-        </CardTitle>
-        <CardDescription>
-          ניהול מסמכים דיגיטליים של הלקוח
-        </CardDescription>
+    <Card className="shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/95 to-slate-50/95 backdrop-blur-md hover:shadow-3xl transition-all duration-500">
+      <CardHeader className="pb-6">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl blur-sm"></div>
+            <div className="relative bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-4 rounded-2xl">
+              <FileText className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          <div>
+            <CardTitle className="text-3xl font-bold text-slate-800 mb-2">
+              📄 מסמכים דיגיטליים
+            </CardTitle>
+            <CardDescription className="text-xl text-slate-600">
+              ניהול חכם ומתקדם של כל המסמכים והחוזים
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="documents" className="w-full">

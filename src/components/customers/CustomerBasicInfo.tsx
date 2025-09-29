@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Calendar, User, CreditCard } from "lucide-react";
+import { Mail, Phone, MapPin, Calendar, UserCheck, CreditCard, Building, DollarSign, TrendingUp, Target } from "lucide-react";
 import type { Customer } from "@/types/customer";
 
 interface CustomerBasicInfoProps {
@@ -12,91 +12,139 @@ export function CustomerBasicInfo({ customer }: CustomerBasicInfoProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {/* Contact Information */}
       <div className="space-y-6">
-        <h3 className="font-bold text-lg text-slate-800 border-b-2 border-primary/20 pb-2">
-          פרטי יצירת קשר
+        <h3 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl">
+            <Phone className="h-6 w-6 text-blue-600" />
+          </div>
+          פרטי התקשרות
         </h3>
-        <div className="space-y-4">
-          {customer.phone && (
-            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl">
-              <Phone className="h-5 w-5 text-primary" />
-              <span className="text-lg font-medium">{customer.phone}</span>
+        
+        {customer.phone && (
+          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-blue-100 rounded-xl">
+              <Phone className="h-5 w-5 text-blue-600" />
             </div>
-          )}
-          {customer.email && (
-            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl">
-              <Mail className="h-5 w-5 text-primary" />
-              <span className="break-all text-lg font-medium">{customer.email}</span>
+            <div>
+              <p className="text-lg font-medium text-slate-800">{customer.phone}</p>
+              <p className="text-base text-slate-600">טלפון</p>
             </div>
-          )}
-          {customer.address && (
-            <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div>
-                <div>{customer.address}</div>
-                {customer.city && customer.country && (
-                  <div className="text-sm text-muted-foreground">
-                    {customer.city}, {customer.country}
-                  </div>
-                )}
-              </div>
+          </div>
+        )}
+        
+        {customer.email && (
+          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-green-100 rounded-xl">
+              <Mail className="h-5 w-5 text-green-600" />
             </div>
-          )}
-          {customer.fax && (
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">פקס:</span>
-              <span>{customer.fax}</span>
+            <div>
+              <p className="text-lg font-medium text-slate-800 break-all">{customer.email}</p>
+              <p className="text-base text-slate-600">אימייל</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+        
+        {customer.address && (
+          <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-purple-100 rounded-xl">
+              <MapPin className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-lg font-medium text-slate-800">{customer.address}</p>
+              {customer.city && customer.country && (
+                <p className="text-base text-slate-600">{customer.city}, {customer.country}</p>
+              )}
+              <p className="text-base text-slate-600">כתובת</p>
+            </div>
+          </div>
+        )}
+
+        {customer.fax && (
+          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-gray-100 rounded-xl">
+              <Phone className="h-5 w-5 text-gray-600" />
+            </div>
+            <div>
+              <p className="text-lg font-medium text-slate-800">{customer.fax}</p>
+              <p className="text-base text-slate-600">פקס</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Personal Information */}
       <div className="space-y-6">
-        <h3 className="font-bold text-lg text-slate-800 border-b-2 border-primary/20 pb-2">
+        <h3 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-br from-emerald-500/10 to-green-500/10 rounded-2xl">
+            <UserCheck className="h-6 w-6 text-emerald-600" />
+          </div>
           פרטים אישיים
         </h3>
-        <div className="space-y-3">
-          {customer.id_number && (
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span>ת.ז: {customer.id_number}</span>
+        
+        {customer.id_number && (
+          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-emerald-100 rounded-xl">
+              <CreditCard className="h-5 w-5 text-emerald-600" />
             </div>
-          )}
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">סוג לקוח:</span>
-            <Badge variant="outline">
-              {customer.customer_type === 'private' ? 'פרטי' : 'עסקי'}
+            <div>
+              <p className="text-lg font-medium text-slate-800">{customer.id_number}</p>
+              <p className="text-base text-slate-600">מספר זהות</p>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+          <div className="p-2 bg-orange-100 rounded-xl">
+            <Building className="h-5 w-5 text-orange-600" />
+          </div>
+          <div>
+            <Badge variant={customer.customer_type === 'private' ? 'default' : 'secondary'} className="text-lg px-4 py-2 rounded-full">
+              {customer.customer_type === 'private' ? 'לקוח פרטי' : 'לקוח עסקי'}
             </Badge>
+            <p className="text-base text-slate-600 mt-1">סוג לקוח</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>
-              הצטרף ב-{new Date(customer.join_date || customer.created_at).toLocaleDateString('he-IL')}
-            </span>
-          </div>
-          {customer.source && (
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">מקור:</span>
-              <Badge variant="secondary">{customer.source}</Badge>
-            </div>
-          )}
         </div>
+
+        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+          <div className="p-2 bg-blue-100 rounded-xl">
+            <Calendar className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-lg font-medium text-slate-800">
+              {new Date(customer.join_date || customer.created_at).toLocaleDateString('he-IL')}
+            </p>
+            <p className="text-base text-slate-600">תאריך הצטרפות</p>
+          </div>
+        </div>
+
+        {customer.source && (
+          <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-indigo-100 rounded-xl">
+              <Target className="h-5 w-5 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-lg font-medium text-slate-800">{customer.source}</p>
+              <p className="text-base text-slate-600">מקור הליד</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Financial Information */}
       <div className="space-y-6">
-        <h3 className="font-bold text-lg text-slate-800 border-b-2 border-primary/20 pb-2">
-          מידע כספי
+        <h3 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-2xl">
+            <DollarSign className="h-6 w-6 text-yellow-600" />
+          </div>
+          מידע פיננסי
         </h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <div className="font-medium">
-                ₪{customer.credit_amount.toLocaleString()}
-              </div>
-              <div className="text-xs text-muted-foreground">יתרת קרדיט</div>
-            </div>
+        
+        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-2xl shadow-sm hover:shadow-md transition-all">
+          <div className="p-2 bg-yellow-100 rounded-xl">
+            <TrendingUp className="h-5 w-5 text-yellow-600" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-slate-800">₪{customer.credit_amount.toLocaleString()}</p>
+            <p className="text-base text-slate-600">יתרת קרדיט</p>
           </div>
         </div>
       </div>

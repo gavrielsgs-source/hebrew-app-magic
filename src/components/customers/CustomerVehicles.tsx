@@ -1,4 +1,4 @@
-import { Car, Plus, Calendar, DollarSign } from "lucide-react";
+import { Car, Plus, Calendar, DollarSign, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,21 +14,36 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
   const sales: any[] = [];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Car className="h-5 w-5" />
-          רכבים
-        </CardTitle>
-        <CardDescription>
-          רכבים שנמכרו ללקוח ורכבים שנרכשו מהלקוח
-        </CardDescription>
+    <Card className="shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/95 to-orange-50/95 backdrop-blur-md hover:shadow-3xl transition-all duration-500">
+      <CardHeader className="pb-6">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl blur-sm"></div>
+            <div className="relative bg-gradient-to-br from-orange-500/10 to-red-500/10 p-4 rounded-2xl">
+              <Car className="h-8 w-8 text-orange-600" />
+            </div>
+          </div>
+          <div>
+            <CardTitle className="text-3xl font-bold text-slate-800 mb-2">
+              🚗 רכבים ועסקאות
+            </CardTitle>
+            <CardDescription className="text-xl text-slate-600">
+              מעקב אחר כל רכישות ומכירות הרכבים
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="purchases" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="purchases">נמכרו ללקוח</TabsTrigger>
-            <TabsTrigger value="sales">נרכשו מהלקוח</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-2xl p-1 shadow-inner">
+            <TabsTrigger value="purchases" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 flex items-center gap-2 text-lg">
+              <TrendingUp className="h-4 w-4" />
+              נמכרו ללקוח
+            </TabsTrigger>
+            <TabsTrigger value="sales" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 flex items-center gap-2 text-lg">
+              <TrendingDown className="h-4 w-4" />
+              נרכשו מהלקוח
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="purchases" className="space-y-4">

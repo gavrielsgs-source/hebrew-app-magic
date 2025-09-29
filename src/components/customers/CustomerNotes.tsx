@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Plus, Calendar } from "lucide-react";
+import { MessageSquare, Plus, Calendar, Sparkles, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,25 +32,33 @@ export function CustomerNotes({ customerId }: CustomerNotesProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/95 to-blue-50/95 backdrop-blur-md hover:shadow-3xl transition-all duration-500">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              הערות לקוח
-            </CardTitle>
-            <CardDescription>
-              {notes.length > 0 ? `${notes.length} הערות` : 'אין הערות עדיין'}
-            </CardDescription>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl blur-sm"></div>
+              <div className="relative bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-4 rounded-2xl">
+                <Sparkles className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+            <div>
+              <CardTitle className="text-3xl font-bold text-slate-800 mb-2">
+                💬 הערות לקוח
+              </CardTitle>
+              <CardDescription className="text-xl text-slate-600">
+                {notes.length > 0 ? `${notes.length} הערות נרשמו` : 'טרם נוספו הערות'}
+              </CardDescription>
+            </div>
           </div>
           <Button 
             variant="outline" 
-            size="sm"
+            size="lg"
             onClick={() => setIsAdding(!isAdding)}
+            className="rounded-2xl border-2 hover:shadow-lg transition-all duration-300"
           >
-            <Plus className="h-4 w-4 ml-2" />
-            הוסף הערה
+            <Plus className="h-5 w-5 ml-2" />
+            <span className="text-lg font-medium">הוסף הערה</span>
           </Button>
         </div>
       </CardHeader>
@@ -95,25 +103,30 @@ export function CustomerNotes({ customerId }: CustomerNotesProps) {
             ))}
           </div>
         ) : notes.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>אין הערות עדיין</p>
-            <p className="text-sm">הוסף הערה ראשונה כדי להתחיל לעקוב אחרי הלקוח</p>
+          <div className="text-center py-16 text-muted-foreground">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-lg opacity-10"></div>
+              <div className="relative">
+                <MessageSquare className="h-16 w-16 mx-auto mb-4 text-blue-400" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-700 mb-3">אין הערות עדיין</h3>
+            <p className="text-lg mb-6 bg-slate-50 rounded-2xl px-6 py-3 inline-block">הוסף הערה ראשונה כדי להתחיל לעקוב אחרי הלקוח</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {notes.map((note) => (
-              <div key={note.id} className="border rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="text-xs">
-                    <Calendar className="h-3 w-3 ml-1" />
+              <div key={note.id} className="group border rounded-2xl p-6 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <Badge variant="outline" className="text-base bg-blue-50 text-blue-700 border-blue-200 shadow-sm px-4 py-2 rounded-full">
+                    <Clock className="h-4 w-4 ml-2" />
                     {formatDistanceToNow(new Date(note.created_at), { 
                       addSuffix: true, 
                       locale: he 
                     })}
                   </Badge>
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{note.note}</p>
+                <p className="text-lg leading-relaxed whitespace-pre-wrap text-slate-700">{note.note}</p>
               </div>
             ))}
           </div>
