@@ -151,14 +151,18 @@ const handler = async (req: Request): Promise<Response> => {
     const roleNames = {
       'viewer': 'צפייה בלבד',
       'sales_agent': 'איש מכירות',
-      'agency_manager': 'מנהל סוכנות'
+      'agency_manager': 'מנהל סוכנות',
+      'admin': 'מנהל מערכת'
     };
-    const senderEmail = Deno.env.get("RESEND_FROM_EMAIL") || user.email || "onboarding@resend.dev";
-    const fromAddress = `מערכת CRM <${senderEmail}>`;
+    
+    // Use Resend's test domain - works without domain verification
+    const fromAddress = "CRM System <onboarding@resend.dev>";
 
     // In Resend test mode you can only send to your own email. Allow overriding the recipient via secret.
     const forceTestTo = Deno.env.get("RESEND_FORCE_TEST_TO");
     const toAddress = forceTestTo ? forceTestTo : email;
+    
+    console.log(`Email will be sent from: ${fromAddress} to: ${toAddress} (original: ${email})`);
 
     const emailResponse = await resend.emails.send({
       from: fromAddress,
