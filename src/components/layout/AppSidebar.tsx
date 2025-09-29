@@ -8,6 +8,10 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 import { 
   BarChart3, 
@@ -23,15 +27,49 @@ import {
   FileText,
   Sparkles,
   Shield,
+  ChevronDown,
+  Receipt,
+  ShoppingCart,
+  RefreshCw,
+  Zap,
+  Truck,
+  Calculator,
+  Package,
+  FileCheck,
+  FilePlus,
+  Handshake,
+  Eye,
+  CheckSquare,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-// import { DocumentProductionMenu } from "@/components/document-production/DocumentProductionMenu";
+import { DOCUMENT_TYPES } from "@/types/document-production";
+
+const iconMap = {
+  Receipt,
+  FileText,
+  CreditCard,
+  ShoppingCart,
+  RefreshCw,
+  Zap,
+  Truck,
+  Car,
+  Calculator,
+  Package,
+  FileCheck,
+  FilePlus,
+  Handshake,
+  Eye,
+  CheckSquare,
+};
 
 export function AppSidebar() {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const { isAdmin, isCompanyOwner, canManageLeads } = useRoles();
   const navigate = useNavigate();
+  const [docProductionOpen, setDocProductionOpen] = React.useState(
+    pathname.startsWith("/document-production")
+  );
 
   const canAccessCompanyManagement = isAdmin() || isCompanyOwner();
 
@@ -140,17 +178,44 @@ export function AppSidebar() {
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <button
-                onClick={() => navigate("/document-production")}
+              <SidebarMenuButton
+                onClick={() => setDocProductionOpen(!docProductionOpen)}
                 data-active={pathname.startsWith("/document-production")}
                 className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
                 <Sparkles className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden flex items-center gap-2">
+                <span className="group-data-[collapsible=icon]:hidden flex items-center gap-2 flex-1">
                   הפקת מסמכים
-                  <Badge variant="secondary" className="text-xs">BETA</Badge>
+                  <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-300 border-blue-400/30">
+                    BETA
+                  </Badge>
                 </span>
-              </button>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
+                    docProductionOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </SidebarMenuButton>
+              
+              {docProductionOpen && (
+                <SidebarMenuSub>
+                  {DOCUMENT_TYPES.map((doc) => {
+                    const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
+                    return (
+                      <SidebarMenuSubItem key={doc.id}>
+                        <SidebarMenuSubButton
+                          onClick={() => navigate(`/document-production/${doc.id}`)}
+                          isActive={pathname === `/document-production/${doc.id}`}
+                          className="text-gray-300 hover:text-white"
+                        >
+                          <IconComponent className="h-4 w-4" />
+                          <span>{doc.name}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
+                </SidebarMenuSub>
+              )}
             </SidebarMenuItem>
 
 
