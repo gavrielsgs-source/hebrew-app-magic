@@ -80,11 +80,13 @@ export default function Cars() {
             
           </div>
 
-          {viewMode === "grid" ? (
-            <CarGrid cars={cars} isLoading={isLoading} />
-          ) : (
-            <CarsTable />
-          )}
+          <div className={viewMode === "grid" ? "" : "px-4"}>
+            {viewMode === "grid" ? (
+              <CarGrid cars={cars} isLoading={isLoading} />
+            ) : (
+              <CarsTable />
+            )}
+          </div>
         </div>
 
         {/* Add Car Dialog for Mobile */}
@@ -183,11 +185,13 @@ export default function Cars() {
 
       <div className="space-y-6">
 
-      {viewMode === "grid" ? (
-        <CarGrid cars={cars} isLoading={isLoading} />
-      ) : (
-        <CarsTable />
-      )}
+      <div className={viewMode === "grid" ? "mx-0" : "container mx-auto"}>
+        {viewMode === "grid" ? (
+          <CarGrid cars={cars} isLoading={isLoading} />
+        ) : (
+          <CarsTable />
+        )}
+      </div>
 
       {/* Add Car Dialog for Desktop */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
