@@ -199,7 +199,7 @@ export function AppSidebar() {
               </SidebarMenuButton>
               
               {docProductionOpen && (
-                <div className="max-h-[300px] overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/30 hover:scrollbar-thumb-gray-500">
+                <div className="max-h-[200px] overflow-y-auto scroll-smooth px-1" style={{scrollbarWidth: 'thin', scrollbarColor: '#64748b #1e293b'}}>
                   <SidebarMenuSub>
                     {DOCUMENT_TYPES.map((doc) => {
                       const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
