@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { AddLeadForm } from "../AddLeadForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Plus, Users } from "lucide-react";
 import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
 import { SubscriptionLimitAlert } from "@/components/subscription/SubscriptionLimitAlert";
 import { useLeads } from "@/hooks/use-leads";
-import { StandardPageHeader } from "@/components/common/StandardPageHeader";
 
 interface LeadsPageHeaderProps {
   isAddingLead: boolean;
@@ -40,19 +40,46 @@ export function LeadsPageHeader({
         currentCount={currentLeadCount} 
       />
       
-      <div className="page-header mb-8" dir="rtl">
-        <div className="flex items-center justify-between">
-          <div className="title-wrapper">
-            <h1 className="page-title text-3xl font-bold text-foreground mb-2">ניהול לקוחות</h1>
-            <p className="page-subtitle text-muted-foreground">נהל את כל הלקוחות והלידים שלך במקום אחד - מערכת ניהול מקצועית עם בקרה מלאה ונתונים בזמן אמת</p>
+      <div className="bg-gradient-to-r from-primary/5 via-background to-primary/5 rounded-2xl p-6 border border-primary/10 shadow-lg">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-primary/10 p-4 rounded-2xl shadow-md border border-primary/20">
+              <Users className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold text-primary">
+                ניהול לקוחות מתקדם
+              </h1>
+              <p className="text-muted-foreground text-lg font-medium">
+                מערכת ניהול מקצועית לכל הלקוחות שלך • בקרה מלאה ונתונים בזמן אמת
+              </p>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span>מערכת פעילה</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span>נתונים מסונכרנים</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={handleAddLead}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
-          >
-            <Plus className="h-5 w-5" />
-            הוסף לקוח חדש
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              variant="outline"
+              className="rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+            >
+              דוחות
+            </Button>
+            <Button 
+              onClick={handleAddLead}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-xl px-8 h-12 font-bold text-base transition-all duration-300 hover:shadow-xl hover:scale-105 border-0"
+            >
+              <Plus className="h-5 w-5 ml-2" />
+              הוסף לקוח חדש
+            </Button>
+          </div>
         </div>
       </div>
       
