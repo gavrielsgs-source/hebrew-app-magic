@@ -25,8 +25,8 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
             </div>
           </div>
           <div>
-            <CardTitle className="text-3xl font-bold text-slate-800 mb-2">
-              🚗 רכבים ועסקאות
+            <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
+              רכבים ועסקאות
             </CardTitle>
             <CardDescription className="text-xl text-slate-600">
               מעקב אחר כל רכישות ומכירות הרכבים

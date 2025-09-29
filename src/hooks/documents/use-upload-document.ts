@@ -89,6 +89,13 @@ export function useUploadDocument() {
       // Invalidate all document queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       
+      // If this is a customer document, also invalidate customer documents
+      if (newDocument.entity_type === 'customer' && newDocument.entity_id) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['customer-documents', newDocument.entity_id] 
+        });
+      }
+      
       // Also update specific queries with the new document for immediate feedback
       const entityType = newDocument.entity_type;
       const entityId = newDocument.entity_id;

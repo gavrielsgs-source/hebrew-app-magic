@@ -131,8 +131,12 @@ export function useCreateCustomerDocument() {
       return result;
     },
     onSuccess: (_, variables) => {
+      // Invalidate both customer documents and general documents
       queryClient.invalidateQueries({ 
         queryKey: ['customer-documents', variables.customerId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['documents'] 
       });
       toast.success('מסמך נוצר בהצלחה');
     },
@@ -163,8 +167,12 @@ export function useUpdateCustomerDocumentStatus() {
       return result;
     },
     onSuccess: (_, variables) => {
+      // Invalidate both customer documents and general documents
       queryClient.invalidateQueries({ 
         queryKey: ['customer-documents', variables.customerId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['documents'] 
       });
       toast.success('סטטוס המסמך עודכן בהצלחה');
     },

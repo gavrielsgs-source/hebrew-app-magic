@@ -71,8 +71,8 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
             </div>
           </div>
           <div>
-            <CardTitle className="text-3xl font-bold text-slate-800 mb-2">
-              📄 מסמכים דיגיטליים
+            <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
+              מסמכים דיגיטליים
             </CardTitle>
             <CardDescription className="text-xl text-slate-600">
               ניהול חכם ומתקדם של כל המסמכים והחוזים

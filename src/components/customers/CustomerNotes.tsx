@@ -43,8 +43,8 @@ export function CustomerNotes({ customerId }: CustomerNotesProps) {
               </div>
             </div>
             <div>
-              <CardTitle className="text-3xl font-bold text-slate-800 mb-2">
-                💬 הערות לקוח
+              <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
+                הערות לקוח
               </CardTitle>
               <CardDescription className="text-xl text-slate-600">
                 {notes.length > 0 ? `${notes.length} הערות נרשמו` : 'טרם נוספו הערות'}
