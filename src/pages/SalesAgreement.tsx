@@ -5,6 +5,9 @@ import * as z from "zod";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { Calendar, Download, Send, Loader2, User, Car, DollarSign, Eye, Save, CheckCircle, FileText } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileContainer } from "@/components/mobile/MobileContainer";
+import { MobileDocumentHeader } from "@/components/mobile/MobileDocumentHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,6 +63,7 @@ export default function SalesAgreement() {
   const { profile } = useProfile();
   const { data: customers = [] } = useCustomers();
   const createCustomerDocument = useCreateCustomerDocument();
+  const isMobile = useIsMobile();
 
   const form = useForm<SalesAgreementFormData>({
     resolver: zodResolver(salesAgreementSchema),
@@ -196,9 +200,282 @@ export default function SalesAgreement() {
     }
   };
 
+  if (isMobile) {
+    return (
+      <MobileContainer withPadding={false} withBottomNav={false}>
+        <MobileDocumentHeader 
+          title="הסכם מכר" 
+          icon={<Calendar className="h-5 w-5" />}
+        />
+        <div className="p-4 space-y-6">
+          <Card className="shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-right flex items-center gap-2 text-lg">
+                <Calendar className="h-5 w-5" />
+                הסכם מכר - הפקה אוטומטית
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  {/* Mobile optimized form fields */}
+                  <div className="space-y-4">
+                    {/* Date Selection - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-right">תאריך ההסכם</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full h-12 pl-3 text-right font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "dd/MM/yyyy", { locale: he })
+                                  ) : (
+                                    <span>בחר תאריך</span>
+                                  )}
+                                  <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="end">
+                              <CalendarComponent
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Lead Selection - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="leadId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">בחירת לקוח</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger dir="rtl" className="text-right h-12">
+                                <SelectValue placeholder="חפש או בחר לקוח" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right">
+                              {leads.map((lead) => (
+                                <SelectItem key={lead.id} value={lead.id} className="text-right">
+                                  <div className="flex flex-col text-right w-full">
+                                    <span className="font-medium">{lead.name}</span>
+                                    {lead.phone && (
+                                      <span className="text-xs text-muted-foreground">{lead.phone}</span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Car Selection - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="carId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">שיוך רכב (אופציונלי)</FormLabel>
+                          <CarSearchSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="בחר רכב"
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Total Price - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="totalPrice"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">מחיר כולל (₪)</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="הכנס מחיר כולל" className="text-right h-12 text-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Down Payment - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="downPayment"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">מקדמה (₪)</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="הכנס סכום מקדמה" className="text-right h-12 text-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Buyer ID - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="buyerId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">תעודת זהות קונה</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="הכנס תעודת זהות" className="text-right h-12" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Buyer Address - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="buyerAddress"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">כתובת קונה</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="הכנס כתובת מלאה" className="text-right h-12" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Remaining Amount - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="remainingAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">יתרת תשלום (₪)</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="יחושב אוטומטית אם לא יוזן" className="text-right h-12" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Payment Terms - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="paymentTerms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">תנאי תשלום</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder="הכנס תנאי תשלום (מועדי תשלום, תנאים מיוחדים וכו')"
+                              className="text-right min-h-[80px] resize-none"
+                              rows={3}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Special Terms - Mobile */}
+                    <FormField
+                      control={form.control}
+                      name="specialTerms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">תנאים מיוחדים</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder="הכנס תנאים מיוחדים (אופציונלי)"
+                              className="text-right min-h-[100px] resize-none"
+                              rows={4}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Mobile Action Buttons */}
+                  <div className="pt-4 space-y-3 border-t">
+                    <Button
+                      type="submit"
+                      disabled={isGenerating}
+                      className="w-full h-12 text-lg"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          יוצר הסכם...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-5 w-5" />
+                          צור הסכם מכר
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+
+          {/* Preview Section - Mobile (shown below form) */}
+          {(previewData.buyer || previewData.car) && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-right flex items-center gap-2 text-lg">
+                  <Eye className="h-5 w-5" />
+                  תצוגה מקדימה
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SalesAgreementPreview data={previewData} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </MobileContainer>
+    );
+  }
+
+  // Desktop Layout
   return (
-    <div className="container mx-auto py-6 px-4">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-7xl mx-auto">
+    <div className="w-full max-w-none">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Form Section */}
         <Card className="h-fit">
           <CardHeader>
