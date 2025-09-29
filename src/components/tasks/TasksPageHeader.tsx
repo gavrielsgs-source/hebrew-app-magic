@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TaskForm } from "./TaskForm";
-import { Calendar, Plus, List, Grid } from "lucide-react";
+import { Calendar, Plus, List, Grid, CheckSquare } from "lucide-react";
+import { StandardPageHeader } from "@/components/common/StandardPageHeader";
 
 type ViewMode = "calendar" | "table" | "cards";
 
@@ -16,11 +17,18 @@ export function TasksPageHeader({ viewMode, onViewModeChange }: TasksPageHeaderP
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
 
   return (
-    <div className="flex justify-between items-center">
-      <h2 className="text-2xl font-bold text-[#2F3C7E]">ניהול משימות</h2>
-      
+    <StandardPageHeader
+      title="ניהול משימות"
+      subtitle="נהל את כל המשימות והפגישות שלך במקום אחד"
+      icon={CheckSquare}
+      actionButton={{
+        label: "הוסף משימה חדשה",
+        onClick: () => setIsAddTaskOpen(true),
+        icon: Plus
+      }}
+    >
       <div className="flex items-center gap-3">
-        <div className="flex border rounded-lg p-1 bg-gray-50">
+        <div className="flex border rounded-lg p-1 bg-white shadow-sm">
           <Button
             variant={viewMode === "calendar" ? "default" : "ghost"}
             size="sm"
@@ -49,22 +57,16 @@ export function TasksPageHeader({ viewMode, onViewModeChange }: TasksPageHeaderP
             טבלה
           </Button>
         </div>
-        
-        <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-[#2F3C7E] to-[#4A5A8C] hover:from-[#1F2C5E] hover:to-[#3A4A7C] text-white shadow-lg">
-              <Plus className="ml-2 h-4 w-4" />
-              הוסף משימה חדשה
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>הוסף משימה חדשה</DialogTitle>
-            </DialogHeader>
-            <TaskForm onSuccess={() => setIsAddTaskOpen(false)} />
-          </DialogContent>
-        </Dialog>
       </div>
-    </div>
+      
+      <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>הוסף משימה חדשה</DialogTitle>
+          </DialogHeader>
+          <TaskForm onSuccess={() => setIsAddTaskOpen(false)} />
+        </DialogContent>
+      </Dialog>
+    </StandardPageHeader>
   );
 }
