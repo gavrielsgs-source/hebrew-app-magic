@@ -3,7 +3,7 @@ import { useCars } from "@/hooks/use-cars";
 import { CarsTable } from "@/components/CarsTable";
 import { CarGrid } from "@/components/cars/CarGrid";
 import { Button } from "@/components/ui/button";
-import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon } from "lucide-react";
+import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon, Car } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddCarForm } from "@/components/cars/AddCarForm";
 import { MobileAddCarForm } from "@/components/cars/MobileAddCarForm";
@@ -17,6 +17,7 @@ import { MobileButton } from "@/components/mobile/MobileButton";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { StandardPageHeader } from "@/components/common/StandardPageHeader";
 
 export default function Cars() {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -109,22 +110,25 @@ export default function Cars() {
     );
   }
 
-  // Desktop view - fixed both buttons
+  // Desktop view - with StandardPageHeader
   return (
-    <div className="p-6">
+    <>
       <SubscriptionLimitAlert 
         resourceType="car" 
         currentCount={cars.length} 
       />
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <div className="text-right">
-          <h1 className="text-2xl font-bold tracking-tight">מלאי רכבים</h1>
-          <p className="text-muted-foreground mt-1">
-            ניהול רכבים זמינים למכירה
-          </p>
-        </div>
-        <div className="flex gap-2 mt-4 sm:mt-0">
+      <StandardPageHeader
+        title="מלאי רכבים"
+        subtitle="ניהול רכבים זמינים למכירה"
+        icon={Car}
+        actionButton={{
+          label: "הוסף רכב חדש",
+          onClick: handleAddCar,
+          icon: Plus
+        }}
+      >
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
             size="sm" 
@@ -143,18 +147,10 @@ export default function Cars() {
               </>
             )}
           </Button>
-          <LimitAwareButton
-            resourceType="car"
-            currentCount={cars.length}
-            onAction={handleAddCar}
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            הוסף רכב
-          </LimitAwareButton>
         </div>
-      </div>
+      </StandardPageHeader>
+
+      <div className="p-6">
 
       {viewMode === "grid" ? (
         <CarGrid cars={cars} isLoading={isLoading} />
@@ -181,6 +177,7 @@ export default function Cars() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 }
