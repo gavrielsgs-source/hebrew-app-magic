@@ -5,9 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreateCustomerDocumentDialog } from "./CreateCustomerDocumentDialog";
+import { UploadDocumentDialog } from "./UploadDocumentDialog";
+import { DocumentPreviewDialog } from "./DocumentPreviewDialog";
 import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocumentStatus } from "@/hooks/customers";
 import { useFetchDocuments } from "@/hooks/documents/use-fetch-documents";
+import { useCustomer } from "@/hooks/customers/use-customer";
 import type { Document as AppDocument } from "@/hooks/documents/types";
+import { toast } from "sonner";
 interface CustomerDocumentsProps {
   customerId: string;
 }
@@ -16,6 +20,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   const { data: documents = [], isLoading: documentsLoading } = useCustomerDocuments(customerId);
   const { data: documentReturns = [], isLoading: returnsLoading } = useCustomerDocumentReturns(customerId);
   const { data: attachedDocs = [], isLoading: attachedLoading } = useFetchDocuments('customer', customerId);
+  const { data: customer } = useCustomer(customerId);
   const updateDocumentStatus = useUpdateCustomerDocumentStatus();
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -59,6 +64,23 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
   const handleStatusUpdate = (documentId: string, status: 'draft' | 'sent' | 'signed' | 'cancelled') => {
     updateDocumentStatus.mutate({ documentId, customerId, status });
+  };
+
+  const handleSendToWhatsApp = (doc: any) => {
+    if (!customer?.phone) {
+      toast.error('לא נמצא מספר טלפון ללקוח');
+      return;
+    }
+
+    const message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}`;
+    const phoneNumber = customer.phone.replace(/[^\d]/g, '');
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    
+    // Update status to sent
+    handleStatusUpdate(doc.id, 'sent');
+    
+    // Open WhatsApp
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -186,20 +208,37 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                       {doc.status !== 'attached' ? (
                         <>
                           <div className="flex gap-3">
-                            <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-blue-50 hover:border-blue-300">
-                              <Eye className="h-5 w-5 ml-2" />
-                              תצוגה מקדימה
-                            </Button>
+                            <DocumentPreviewDialog
+                              documentId={doc.id}
+                              documentTitle={doc.title}
+                              documentType={doc.type}
+                              trigger={
+                                <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-blue-50 hover:border-blue-300">
+                                  <Eye className="h-5 w-5 ml-2" />
+                                  תצוגה מקדימה
+                                </Button>
+                              }
+                            />
                             <Button 
                               variant="outline" 
                               size="lg" 
                               className="rounded-xl text-base px-6 hover:bg-green-50 hover:border-green-300"
-                              onClick={() => handleStatusUpdate(doc.id, 'sent')}
-                              disabled={updateDocumentStatus.isPending}
+                              onClick={() => handleSendToWhatsApp(doc)}
+                              disabled={updateDocumentStatus.isPending || !customer?.phone}
                             >
                               <Send className="h-5 w-5 ml-2" />
-                              שלח ללקוח
+                              שלח לוואטסאפ
                             </Button>
+                            <UploadDocumentDialog
+                              customerId={customerId}
+                              documentId={doc.id}
+                              trigger={
+                                <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-purple-50 hover:border-purple-300">
+                                  <Upload className="h-5 w-5 ml-2" />
+                                  העלה מסמך חתום
+                                </Button>
+                              }
+                            />
                             <Button 
                               variant="outline" 
                               size="lg" 
@@ -207,7 +246,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                               onClick={() => handleStatusUpdate(doc.id, 'signed')}
                               disabled={updateDocumentStatus.isPending}
                             >
-                              <Upload className="h-5 w-5 ml-2" />
+                              <CheckCircle className="h-5 w-5 ml-2" />
                               סמן כחתום
                             </Button>
                           </div>
