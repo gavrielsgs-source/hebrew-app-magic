@@ -14,12 +14,12 @@ import { PriceQuoteData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
 import { LeadSearchSelect } from "@/components/leads/LeadSearchSelect";
 import { useLeads } from "@/hooks/use-leads";
+import { usePriceQuote } from "@/hooks/price-quote/use-price-quote";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const priceQuoteSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
-  quoteNumber: z.string().min(1, "מספר הצעת מחיר נדרש"),
   leadId: z.string().optional(),
   customer: z.object({
     fullName: z.string().min(2, "שם מלא נדרש"),
@@ -49,22 +49,14 @@ export default function PriceQuote() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
   const [useExistingLead, setUseExistingLead] = useState(true);
+  const [savedQuoteData, setSavedQuoteData] = useState<PriceQuoteData | null>(null);
   const { leads } = useLeads();
-
-  // Generate next quote number (PQ-YYYYMMDD-001 format)
-  const generateQuoteNumber = () => {
-    const today = new Date();
-    const dateStr = today.getFullYear().toString() + 
-                   (today.getMonth() + 1).toString().padStart(2, '0') + 
-                   today.getDate().toString().padStart(2, '0');
-    return `PQ-${dateStr}-001`;
-  };
+  const { createPriceQuote, isCreating } = usePriceQuote();
 
   const form = useForm<PriceQuoteFormValues>({
     resolver: zodResolver(priceQuoteSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
-      quoteNumber: generateQuoteNumber(),
       leadId: "",
       customer: {
         fullName: "",
@@ -136,12 +128,47 @@ export default function PriceQuote() {
     }
   };
 
-  const onSubmit = (data: PriceQuoteFormValues) => {
-    toast({
-      title: "הצלחה",
-      description: "הצעת המחיר נשמרה בהצלחה",
-    });
-    setShowPreview(true);
+  const onSubmit = async (data: PriceQuoteFormValues) => {
+    try {
+      const quoteData = await createPriceQuote({
+        date: data.date,
+        customer: {
+          fullName: data.customer.fullName || '',
+          firstName: data.customer.firstName || '',
+          phone: data.customer.phone,
+          email: data.customer.email,
+          city: data.customer.city || '',
+          address: data.customer.address || '',
+        },
+        items: data.items.map(item => ({
+          id: item.id || '',
+          description: item.description || '',
+          unitPrice: item.unitPrice || 0,
+          quantity: item.quantity || 1,
+          discount: item.discount || 0,
+          totalPrice: item.totalPrice || 0,
+          notes: item.notes,
+        })),
+        validUntil: data.validUntil,
+        terms: data.terms,
+        notes: data.notes,
+        financial: {
+          subtotal: subtotal,
+          totalDiscount: totalDiscount,
+          total: total,
+        },
+      });
+      
+      setSavedQuoteData(quoteData);
+      setShowPreview(true);
+      
+      toast({
+        title: "הצלחה",
+        description: "הצעת המחיר נשמרה בהצלחה",
+      });
+    } catch (error) {
+      console.error('Error saving price quote:', error);
+    }
   };
 
   const handleDownloadPDF = () => {
@@ -202,15 +229,36 @@ export default function PriceQuote() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="quoteNumber">מספר הצעת מחיר</Label>
-                    <Input
-                      id="quoteNumber"
-                      {...form.register("quoteNumber")}
-                      className="text-right"
-                      placeholder="PQ-20241201-001"
-                    />
-                    {form.formState.errors.quoteNumber && (
-                      <p className="text-sm text-destructive">{form.formState.errors.quoteNumber.message}</p>
+                    <Label>תוקף ההצעה</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-between text-right font-normal",
+                            !form.watch("validUntil") && "text-muted-foreground"
+                          )}
+                        >
+                          <span>{form.watch("validUntil") ? new Date(form.watch("validUntil")).toLocaleDateString('he-IL') : "בחר תאריך תוקף"}</span>
+                          <CalendarIcon className="h-4 w-4 opacity-60" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
+                        <Calendar
+                          mode="single"
+                          selected={selectedValidUntil}
+                          onSelect={(date) => {
+                            if (date) {
+                              form.setValue("validUntil", date.toISOString().split('T')[0]);
+                            }
+                          }}
+                          initialFocus
+                          dir="rtl"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {form.formState.errors.validUntil && (
+                      <p className="text-sm text-destructive">{form.formState.errors.validUntil.message}</p>
                     )}
                   </div>
                 </div>
@@ -424,12 +472,6 @@ export default function PriceQuote() {
                             />
                           </div>
                         </div>
-                        
-                        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                          <div className="text-lg font-semibold text-right">
-                            מחיר כולל: {formatPrice(watchedItems[index]?.totalPrice || 0)}
-                          </div>
-                        </div>
                       </Card>
                     ))}
                   </div>
@@ -437,43 +479,9 @@ export default function PriceQuote() {
 
                 <Separator />
 
-                {/* Quote Terms */}
+                {/* Additional Details */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-right">תנאי ההצעה</h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="validUntil">תוקף ההצעה</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-between text-right font-normal",
-                            !form.watch("validUntil") && "text-muted-foreground"
-                          )}
-                        >
-                          <span>{form.watch("validUntil") ? new Date(form.watch("validUntil")).toLocaleDateString('he-IL') : "בחר תאריך"}</span>
-                          <CalendarIcon className="h-4 w-4 opacity-60" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                        <Calendar
-                          mode="single"
-                          selected={selectedValidUntil}
-                          onSelect={(date) => {
-                            if (date) {
-                              form.setValue("validUntil", date.toISOString().split('T')[0]);
-                            }
-                          }}
-                          initialFocus
-                          dir="rtl"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {form.formState.errors.validUntil && (
-                      <p className="text-sm text-destructive">{form.formState.errors.validUntil.message}</p>
-                    )}
-                  </div>
+                  <h3 className="text-lg font-semibold text-right">פרטים נוספים</h3>
 
                   <div className="space-y-2">
                     <Label htmlFor="terms">תנאים כלליים</Label>
@@ -517,19 +525,18 @@ export default function PriceQuote() {
                   </CardContent>
                 </Card>
 
-                {/* Submit Button */}
-                <Button type="submit" className="w-full text-lg py-6">
-                  שמור הצעת מחיר
+                <Button type="submit" className="w-full" disabled={isCreating}>
+                  {isCreating ? "שומר..." : "שמור הצעת מחיר"}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
-          {/* Download PDF Button */}
-          {showPreview && (
-            <div className="flex justify-center">
-              <Button 
+          {!showPreview && (
+            <div className="text-center">
+              <Button
                 onClick={handleDownloadPDF}
+                variant="outline"
                 className="flex items-center gap-2"
                 size="lg"
               >
@@ -540,7 +547,7 @@ export default function PriceQuote() {
           )}
 
           {/* Preview Section */}
-          {showPreview && (
+          {showPreview && savedQuoteData && (
             <Card className="mt-8">
               <CardHeader>
                 <CardTitle className="text-right">תצוגה מקדימה - הצעת מחיר</CardTitle>
@@ -550,13 +557,13 @@ export default function PriceQuote() {
                   <h2 className="text-2xl font-bold mb-2">הצעת מחיר</h2>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <strong>מספר הצעה:</strong> {form.watch("quoteNumber")}
+                      <strong>מספר הצעה:</strong> {savedQuoteData.quoteNumber}
                     </div>
                     <div>
-                      <strong>תאריך:</strong> {form.watch("date") ? new Date(form.watch("date")).toLocaleDateString('he-IL') : ''}
+                      <strong>תאריך:</strong> {new Date(savedQuoteData.date).toLocaleDateString('he-IL')}
                     </div>
                     <div>
-                      <strong>תוקף עד:</strong> {form.watch("validUntil") ? new Date(form.watch("validUntil")).toLocaleDateString('he-IL') : ''}
+                      <strong>תוקף עד:</strong> {new Date(savedQuoteData.validUntil).toLocaleDateString('he-IL')}
                     </div>
                   </div>
                 </div>
@@ -564,16 +571,16 @@ export default function PriceQuote() {
                 <div className="border-b pb-4">
                   <h3 className="text-lg font-semibold mb-2">פרטי הלקוח</h3>
                   <div className="space-y-1 text-sm">
-                    <div><strong>שם:</strong> {form.watch("customer.fullName")}</div>
-                    {form.watch("customer.phone") && <div><strong>טלפון:</strong> {form.watch("customer.phone")}</div>}
-                    {form.watch("customer.email") && <div><strong>אימייל:</strong> {form.watch("customer.email")}</div>}
-                    <div><strong>כתובת:</strong> {form.watch("customer.address")}, {form.watch("customer.city")}</div>
+                    <div><strong>שם:</strong> {savedQuoteData.customer.fullName}</div>
+                    {savedQuoteData.customer.phone && <div><strong>טלפון:</strong> {savedQuoteData.customer.phone}</div>}
+                    {savedQuoteData.customer.email && <div><strong>אימייל:</strong> {savedQuoteData.customer.email}</div>}
+                    <div><strong>כתובת:</strong> {savedQuoteData.customer.address}, {savedQuoteData.customer.city}</div>
                   </div>
                 </div>
 
                 <div className="border-b pb-4">
                   <h3 className="text-lg font-semibold mb-2">פירוט הפריטים</h3>
-                  {form.watch("items").map((item, index) => (
+                  {savedQuoteData.items.map((item, index) => (
                     <div key={index} className="bg-muted/30 p-3 rounded mb-2">
                       <div className="text-sm space-y-1">
                         <div><strong>פריט {index + 1}:</strong> {item.description}</div>
@@ -591,22 +598,22 @@ export default function PriceQuote() {
 
                 <div className="text-lg font-bold">
                   <div className="flex justify-between">
-                    <span>{formatPrice(total)}</span>
+                    <span>{formatPrice(savedQuoteData.financial.total)}</span>
                     <span>סה"כ לתשלום:</span>
                   </div>
                 </div>
 
-                {form.watch("terms") && (
+                {savedQuoteData.terms && (
                   <div className="border-t pt-4">
                     <h3 className="text-lg font-semibold mb-2">תנאים כלליים</h3>
-                    <p className="text-sm whitespace-pre-line">{form.watch("terms")}</p>
+                    <p className="text-sm whitespace-pre-line">{savedQuoteData.terms}</p>
                   </div>
                 )}
 
-                {form.watch("notes") && (
-                  <div>
+                {savedQuoteData.notes && (
+                  <div className="border-t pt-4">
                     <h3 className="text-lg font-semibold mb-2">הערות</h3>
-                    <p className="text-sm">{form.watch("notes")}</p>
+                    <p className="text-sm whitespace-pre-line">{savedQuoteData.notes}</p>
                   </div>
                 )}
               </CardContent>
