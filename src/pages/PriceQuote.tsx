@@ -182,7 +182,7 @@ export default function PriceQuote() {
 
   if (isMobile) {
     return (
-      <MobileContainer withPadding={false} withBottomNav={false}>
+      <MobileContainer withPadding={false} withBottomNav={true}>
         <MobileDocumentHeader 
           title="הצעת מחיר" 
           icon={<Calculator className="h-5 w-5" />}

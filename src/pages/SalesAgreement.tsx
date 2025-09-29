@@ -202,7 +202,7 @@ export default function SalesAgreement() {
 
   if (isMobile) {
     return (
-      <MobileContainer withPadding={false} withBottomNav={false}>
+      <MobileContainer withPadding={false} withBottomNav={true}>
         <MobileDocumentHeader 
           title="הסכם מכר" 
           icon={<Calendar className="h-5 w-5" />}

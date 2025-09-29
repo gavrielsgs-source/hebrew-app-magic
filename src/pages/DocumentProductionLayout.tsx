@@ -17,7 +17,7 @@ export default function DocumentProductionLayout() {
       <div className="flex min-h-[calc(100vh-64px)] w-full">
         <DocumentProductionSidebar />
         <SidebarInset>
-          <header className="flex h-12 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b px-4">
+          <header className="hidden md:flex h-12 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b px-4">
             <SidebarTrigger className="-ml-1" />
             <div className="flex items-center gap-2 text-right ml-auto">
               <h1 className="text-lg font-semibold">הפקת מסמכים</h1>

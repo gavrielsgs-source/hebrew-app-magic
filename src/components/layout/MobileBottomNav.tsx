@@ -72,6 +72,7 @@ export function MobileBottomNav() {
     { id: "team-management", label: "ניהול צוות", icon: Users, path: "/team-management" },
     { id: "analytics", label: "אנליטיקה", icon: BarChart, path: "/analytics" },
     { id: "documents", label: "מסמכים", icon: FileText, path: "/documents" },
+    { id: "document-production", label: "הפקת מסמכים", icon: FileText, path: "/document-production" },
     { id: "templates", label: "תבניות", icon: Settings, path: "/templates" },
     { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" }
   ];
