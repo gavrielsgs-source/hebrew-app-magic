@@ -329,3 +329,28 @@ button, input, select, textarea {
     flex-direction: column;
   }
 }
+
+/* Lead Enhanced Styles */
+.lead-enhanced .leads-table-header {
+  @apply bg-gradient-to-l from-slate-50 via-blue-50 to-white border-b-2 border-primary/20;
+}
+
+.lead-enhanced .leads-table-row {
+  @apply hover:bg-gray-50/80 transition-all duration-200;
+}
+
+.lead-enhanced .leads-status-badge {
+  @apply bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-medium shadow-sm;
+}
+
+.lead-enhanced .leads-card {
+  @apply shadow-lg rounded-2xl border border-gray-100 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 animate-fade-in;
+}
+
+.lead-enhanced .leads-card-button {
+  @apply rounded-full hover:scale-105 transition-all duration-200 shadow-sm;
+}
+
+.lead-enhanced .leads-notes {
+  @apply bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm;
+}

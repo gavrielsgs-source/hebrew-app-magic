@@ -21,7 +21,7 @@ export function DesktopActions({
         variant="outline"
         size="sm"
         onClick={onWhatsApp}
-        className="text-green-600 border-green-200 hover:bg-green-50"
+        className="leads-card-button text-green-600 border-green-200 hover:bg-green-50"
       >
         <MessageSquare className="h-4 w-4 mr-1" />
         וואטסאפ
@@ -30,6 +30,7 @@ export function DesktopActions({
         variant="outline"
         size="sm"
         onClick={onSchedule}
+        className="leads-card-button"
       >
         <Phone className="h-4 w-4 mr-1" />
         פגישה
@@ -38,6 +39,7 @@ export function DesktopActions({
         variant="outline"
         size="sm"
         onClick={onEdit}
+        className="leads-card-button"
       >
         <Edit className="h-4 w-4 mr-1" />
         עריכה
@@ -46,7 +48,7 @@ export function DesktopActions({
         variant="outline"
         size="sm"
         onClick={onDelete}
-        className="text-red-600 border-red-200 hover:bg-red-50"
+        className="leads-card-button text-red-600 border-red-200 hover:bg-red-50"
       >
         <Trash2 className="h-4 w-4 mr-1" />
         מחק

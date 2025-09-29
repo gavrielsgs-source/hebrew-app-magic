@@ -68,7 +68,7 @@ export function LeadCardContent({ lead }: LeadCardContentProps) {
         
         {/* הערות */}
         {lead.notes && (
-          <div className="bg-gradient-to-r from-amber-50 to-white border border-amber-200 p-5 rounded-2xl shadow-sm" dir="rtl">
+          <div className="leads-notes bg-gradient-to-r from-amber-50 to-white border border-amber-200 p-5 rounded-2xl shadow-sm" dir="rtl">
             <div className="flex items-start justify-end gap-3">
               <div className="text-right flex-1">
                 <div className="text-sm font-semibold text-amber-700 mb-2">הערות</div>

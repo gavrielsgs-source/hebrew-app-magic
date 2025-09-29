@@ -32,7 +32,7 @@ export function LeadsTableRow({
   return (
     <TableRow 
       key={lead.id} 
-      className={`hover:bg-blue-50/50 transition-colors border-b border-gray-50 ${
+      className={`leads-table-row hover:bg-blue-50/50 transition-colors border-b border-gray-50 ${
         index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
       }`}
     >

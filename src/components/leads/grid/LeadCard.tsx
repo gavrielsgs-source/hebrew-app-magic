@@ -29,7 +29,7 @@ export function LeadCard({ lead }: LeadCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-3xl border-0 bg-white/90 backdrop-blur-sm">
+    <Card className="lead-enhanced leads-card overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-3xl border-0 bg-white/90 backdrop-blur-sm">
       <LeadCardHeader lead={lead} />
       <CardContent className="p-8">
         <LeadCardContent lead={lead} />
