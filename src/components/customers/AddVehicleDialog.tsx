@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useGetCars } from "@/hooks/cars";
+import { useAddCustomerVehiclePurchase, useAddCustomerVehicleSale } from "@/hooks/customers";
 
 interface AddVehicleDialogProps {
   customerId: string;
@@ -21,27 +23,43 @@ export function AddVehicleDialog({
   trigger 
 }: AddVehicleDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     carId: "",
     price: "",
     date: new Date().toISOString().split('T')[0]
   });
 
+  const { data: cars = [], isLoading: carsLoading } = useGetCars();
+  const addPurchase = useAddCustomerVehiclePurchase();
+  const addSale = useAddCustomerVehicleSale();
+
+  const availableCars = cars.filter(car => car.status === 'available');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    if (!formData.carId) {
+      toast.error("יש לבחור רכב");
+      return;
+    }
 
     try {
-      // TODO: Implement add vehicle transaction mutation
-      console.log("Adding vehicle transaction:", { 
-        customerId, 
-        type, 
-        ...formData 
-      });
+      if (type === 'purchase') {
+        await addPurchase.mutateAsync({
+          customerId,
+          carId: formData.carId,
+          purchasePrice: parseFloat(formData.price) || undefined,
+          purchaseDate: formData.date
+        });
+      } else {
+        await addSale.mutateAsync({
+          customerId,
+          carId: formData.carId,
+          salePrice: parseFloat(formData.price) || undefined,
+          saleDate: formData.date
+        });
+      }
       
-      const actionText = type === 'purchase' ? 'מכירה' : 'רכישה';
-      toast.success(`${actionText} נוספה בהצלחה`);
       setIsOpen(false);
       onSuccess?.();
       setFormData({
@@ -50,11 +68,7 @@ export function AddVehicleDialog({
         date: new Date().toISOString().split('T')[0]
       });
     } catch (error) {
-      console.error("Error adding vehicle transaction:", error);
-      const actionText = type === 'purchase' ? 'במכירה' : 'ברכישה';
-      toast.error(`שגיאה ${actionText}`);
-    } finally {
-      setIsLoading(false);
+      // Error is handled by the mutation
     }
   };
 
@@ -87,13 +101,21 @@ export function AddVehicleDialog({
             <Label htmlFor="carId">בחר רכב</Label>
             <Select onValueChange={(value) => setFormData({ ...formData, carId: value })} required>
               <SelectTrigger>
-                <SelectValue placeholder="בחר רכב מהמלאי" />
+                <SelectValue placeholder={carsLoading ? "טוען רכבים..." : "בחר רכב מהמלאי"} />
               </SelectTrigger>
               <SelectContent>
-                {/* TODO: Load cars from database */}
-                <SelectItem value="demo1">טויוטה קורולה 2020</SelectItem>
-                <SelectItem value="demo2">הונדה סיוויק 2019</SelectItem>
-                <SelectItem value="demo3">מאזדה 3 2021</SelectItem>
+                {carsLoading ? (
+                  <SelectItem value="loading" disabled>טוען רכבים...</SelectItem>
+                ) : availableCars.length === 0 ? (
+                  <SelectItem value="empty" disabled>אין רכבים זמינים במלאי</SelectItem>
+                ) : (
+                  availableCars.map((car) => (
+                    <SelectItem key={car.id} value={car.id}>
+                      {car.make} {car.model} {car.year} - ₪{car.price.toLocaleString()}
+                      {car.license_number && ` (${car.license_number})`}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -126,8 +148,12 @@ export function AddVehicleDialog({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? "שומר..." : buttonText}
+            <Button 
+              type="submit" 
+              disabled={addPurchase.isPending || addSale.isPending || !formData.carId} 
+              className="flex-1"
+            >
+              {(addPurchase.isPending || addSale.isPending) ? "שומר..." : buttonText}
             </Button>
             <Button 
               type="button" 

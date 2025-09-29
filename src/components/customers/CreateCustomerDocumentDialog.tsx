@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useCreateCustomerDocument } from "@/hooks/customers";
 
 interface CreateCustomerDocumentDialogProps {
   customerId: string;
@@ -20,7 +21,6 @@ export function CreateCustomerDocumentDialog({
   trigger 
 }: CreateCustomerDocumentDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     type: "",
@@ -29,15 +29,26 @@ export function CreateCustomerDocumentDialog({
     notes: ""
   });
 
+  const createDocument = useCreateCustomerDocument();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    if (!formData.title.trim() || !formData.type) {
+      toast.error("יש למלא את כל השדות הנדרשים");
+      return;
+    }
 
     try {
-      // TODO: Implement create customer document mutation
-      console.log("Creating customer document:", { customerId, ...formData });
+      await createDocument.mutateAsync({
+        customerId,
+        title: formData.title.trim(),
+        type: formData.type,
+        amount: parseFloat(formData.amount) || undefined,
+        date: formData.date,
+        notes: formData.notes.trim() || undefined
+      });
       
-      toast.success("מסמך נוצר בהצלחה");
       setIsOpen(false);
       onSuccess?.();
       setFormData({
@@ -48,10 +59,7 @@ export function CreateCustomerDocumentDialog({
         notes: ""
       });
     } catch (error) {
-      console.error("Error creating document:", error);
-      toast.error("שגיאה ביצירת המסמך");
-    } finally {
-      setIsLoading(false);
+      // Error is handled by the mutation
     }
   };
 
@@ -142,8 +150,8 @@ export function CreateCustomerDocumentDialog({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? "יוצר..." : "צור מסמך"}
+            <Button type="submit" disabled={createDocument.isPending} className="flex-1">
+              {createDocument.isPending ? "יוצר..." : "צור מסמך"}
             </Button>
             <Button 
               type="button" 

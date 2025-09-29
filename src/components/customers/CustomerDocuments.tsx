@@ -5,15 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreateCustomerDocumentDialog } from "./CreateCustomerDocumentDialog";
+import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocumentStatus } from "@/hooks/customers";
 
 interface CustomerDocumentsProps {
   customerId: string;
 }
 
 export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
-  // TODO: Implement customer documents hooks
-  const documents: any[] = [];
-  const documentReturns: any[] = [];
+  const { data: documents = [], isLoading: documentsLoading } = useCustomerDocuments(customerId);
+  const { data: documentReturns = [], isLoading: returnsLoading } = useCustomerDocumentReturns(customerId);
+  const updateDocumentStatus = useUpdateCustomerDocumentStatus();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -53,6 +54,10 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
           </Badge>
         );
     }
+  };
+
+  const handleStatusUpdate = (documentId: string, status: 'draft' | 'sent' | 'signed' | 'cancelled') => {
+    updateDocumentStatus.mutate({ documentId, customerId, status });
   };
 
   return (
@@ -109,7 +114,15 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
               <CreateCustomerDocumentDialog customerId={customerId} />
             </div>
             
-            {documents.length === 0 ? (
+            {documentsLoading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-32 bg-muted rounded-lg"></div>
+                  </div>
+                ))}
+              </div>
+            ) : documents.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">אין מסמכים עדיין</h3>
@@ -127,45 +140,63 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
             ) : (
               <div className="space-y-3">
                 {documents.map((doc) => (
-                  <div key={doc.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
+                  <div key={doc.id} className="border rounded-2xl p-6 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h4 className="font-medium">{doc.title}</h4>
-                        <p className="text-sm text-muted-foreground">
+                        <h4 className="font-semibold text-lg text-slate-800">{doc.title}</h4>
+                        <p className="text-base text-slate-600">
                           מס' {doc.document_number} • {doc.type}
                         </p>
                       </div>
                       {getStatusBadge(doc.status)}
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">
+                    <div className="grid grid-cols-2 gap-4 text-base text-slate-600 mb-4">
                       <div>
                         <span className="font-medium">סכום: </span>
                         ₪{doc.amount?.toLocaleString() || 'לא צוין'}
                       </div>
                       <div>
                         <span className="font-medium">תאריך: </span>
-                        {new Date(doc.date).toLocaleDateString('he-IL')}
+                        {new Date(doc.date || doc.created_at).toLocaleDateString('he-IL')}
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between pt-3 border-t">
+                    <div className="flex items-center justify-between pt-4 border-t">
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="rounded-xl">
                           <Eye className="h-4 w-4 ml-2" />
                           תצוגה מקדימה
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-xl"
+                          onClick={() => handleStatusUpdate(doc.id, 'sent')}
+                          disabled={updateDocumentStatus.isPending}
+                        >
                           <Send className="h-4 w-4 ml-2" />
-                          שלח חזרה
+                          שלח ללקוח
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="rounded-xl"
+                          onClick={() => handleStatusUpdate(doc.id, 'signed')}
+                          disabled={updateDocumentStatus.isPending}
+                        >
                           <Upload className="h-4 w-4 ml-2" />
-                          העלה חתום
+                          סמן כחתום
                         </Button>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="text-destructive">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-destructive rounded-xl"
+                          onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
+                          disabled={updateDocumentStatus.isPending}
+                        >
                           <X className="h-4 w-4 ml-2" />
                           בטל
                         </Button>
@@ -182,7 +213,15 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
               <h3 className="text-sm font-medium">מסמכים שהלקוח שלח חזרה ({documentReturns.length})</h3>
             </div>
             
-            {documentReturns.length === 0 ? (
+            {returnsLoading ? (
+              <div className="space-y-3">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-24 bg-muted rounded-lg"></div>
+                  </div>
+                ))}
+              </div>
+            ) : documentReturns.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">אין מסמכים שהוחזרו</h3>
