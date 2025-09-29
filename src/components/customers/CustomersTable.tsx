@@ -96,34 +96,34 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
         <Table>
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-muted/40 via-muted/30 to-muted/40 hover:from-muted/50 hover:via-muted/40 hover:to-muted/50 border-b border-border/30">
-              <TableHead className="text-right font-bold text-foreground py-4 px-6">
-                <div className="flex items-center justify-end gap-2">
-                  <span>מספר לקוח</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[120px]">
+                <div className="flex items-center justify-end">
+                  <span className="text-base">מספר לקוח</span>
                 </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 px-6">
-                <div className="flex items-center justify-end gap-2">
-                  <span>שם מלא</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[200px]">
+                <div className="flex items-center justify-end">
+                  <span className="text-base">שם מלא</span>
                 </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 px-6">
-                <div className="flex items-center justify-end gap-2">
-                  <span>טלפון</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[180px]">
+                <div className="flex items-center justify-end">
+                  <span className="text-base">טלפון</span>
                 </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 px-6">
-                <div className="flex items-center justify-end gap-2">
-                  <span>אימייל</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[220px]">
+                <div className="flex items-center justify-end">
+                  <span className="text-base">אימייל</span>
                 </div>
               </TableHead>
-              <TableHead className="text-right font-bold text-foreground py-4 px-6">
-                <div className="flex items-center justify-end gap-2">
-                  <span>סוג לקוח</span>
+              <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[140px]">
+                <div className="flex items-center justify-end">
+                  <span className="text-base">סוג לקוח</span>
                 </div>
               </TableHead>
-              <TableHead className="text-center font-bold text-foreground py-4 px-6">
-                <div className="flex items-center justify-center gap-2">
-                  <span>פעולות</span>
+              <TableHead className="text-center font-bold text-foreground py-4 px-6 w-[140px]">
+                <div className="flex items-center justify-center">
+                  <span className="text-base">פעולות</span>
                 </div>
               </TableHead>
             </TableRow>
@@ -155,9 +155,9 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                 
                 <TableCell className="text-right py-4 px-6">
                   {customer.phone ? (
-                    <div className="bg-muted/30 p-2 rounded-lg inline-flex items-center gap-2">
-                      <Phone className="h-3 w-3 text-primary" />
-                      <span className="font-mono text-sm font-medium text-foreground">{customer.phone}</span>
+                    <div className="bg-muted/30 p-3 rounded-lg inline-flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-primary" />
+                      <span className="text-base font-semibold text-foreground">{customer.phone}</span>
                     </div>
                   ) : (
                     <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg inline-block">
@@ -168,8 +168,10 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                 
                 <TableCell className="text-right py-4 px-6">
                   {customer.email ? (
-                    <div className="bg-muted/30 p-2 rounded-lg inline-block">
-                      <span className="text-sm font-medium text-foreground max-w-[150px] truncate block">{customer.email}</span>
+                    <div className="bg-muted/30 p-3 rounded-lg inline-block">
+                      <span className="text-base font-semibold text-foreground max-w-[180px] truncate block" title={customer.email}>
+                        {customer.email}
+                      </span>
                     </div>
                   ) : (
                     <div className="text-muted-foreground text-sm bg-muted/20 px-3 py-2 rounded-lg inline-block">
