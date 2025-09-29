@@ -1,13 +1,17 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export const useCreateLead = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (newLead: any) => {
       console.log('🔍 [useCreateLead] Creating lead with data:', newLead);
+      
+      if (!user) throw new Error('User not authenticated');
       
       // Convert empty strings to null for UUID fields to prevent database errors
       const cleanedLead = {
@@ -23,18 +27,55 @@ export const useCreateLead = () => {
 
       console.log('🔍 [useCreateLead] Cleaned lead data:', cleanedLead);
 
-      const { data, error } = await supabase.from("leads").insert([cleanedLead]).select();
+      // Create lead
+      const { data: leadData, error: leadError } = await supabase.from("leads").insert([cleanedLead]).select();
       
-      if (error) {
-        console.error("🔍 [useCreateLead] Database error:", error);
-        throw new Error(error.message);
+      if (leadError) {
+        console.error("🔍 [useCreateLead] Database error:", leadError);
+        throw new Error(leadError.message);
+      }
+
+      // Automatically create customer from lead data
+      const customerData = {
+        full_name: cleanedLead.name,
+        phone: cleanedLead.phone,
+        email: cleanedLead.email,
+        source: cleanedLead.source,
+        customer_type: 'private' as const,
+        status: 'active' as const,
+        credit_amount: 0,
+      };
+
+      // Check if customer with same phone or email already exists to prevent duplicates
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('user_id', user.id)
+        .or(`phone.eq.${customerData.phone}${customerData.email ? `,email.eq.${customerData.email}` : ''}`)
+        .maybeSingle();
+
+      if (!existingCustomer && (customerData.phone || customerData.email)) {
+        const { error: customerError } = await supabase
+          .from('customers')
+          .insert({
+            ...customerData,
+            user_id: user.id,
+          });
+
+        if (customerError) {
+          console.error('🔍 [useCreateLead] Error creating customer:', customerError);
+          // Don't throw error for customer creation failure, just log it
+        } else {
+          console.log('🔍 [useCreateLead] Customer created automatically from lead');
+        }
       }
       
-      console.log('🔍 [useCreateLead] Lead created successfully:', data);
-      return data;
+      console.log('🔍 [useCreateLead] Lead created successfully:', leadData);
+      return leadData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
     onError: (error) => {
       console.error("🔍 [useCreateLead] Mutation error:", error);
