@@ -8,75 +8,85 @@ interface LeadCardContentProps {
 
 export function LeadCardContent({ lead }: LeadCardContentProps) {
   return (
-    <CardContent className="p-6 pt-0">
-      <div className="space-y-4" dir="rtl">
+    <CardContent className="p-0">
+      <div className="space-y-5" dir="rtl">
         {/* פרטי יצירת קשר */}
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-4">
           {lead.phone && (
-            <div className="flex items-center justify-end bg-gradient-to-r from-blue-50 to-white p-4 rounded-xl border border-blue-100 shadow-sm" dir="rtl">
+            <div className="flex items-center justify-end bg-gradient-to-r from-success/10 via-success/5 to-background p-5 rounded-2xl border border-success/20 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.01]" dir="rtl">
               <div className="text-right flex-1">
-                <div className="font-semibold text-gray-900" dir="ltr">{lead.phone}</div>
-                <div className="text-xs text-gray-500 font-medium">טלפון</div>
+                <div className="font-bold text-foreground text-lg" dir="ltr">{lead.phone}</div>
+                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">טלפון</div>
               </div>
-              <Phone className="h-5 w-5 text-[#2F3C7E] flex-shrink-0 mr-3" />
+              <div className="bg-success/20 p-2 rounded-full mr-4">
+                <Phone className="h-5 w-5 text-success flex-shrink-0" />
+              </div>
             </div>
           )}
           
           {lead.email && (
-            <div className="flex items-center justify-end bg-gradient-to-r from-purple-50 to-white p-4 rounded-xl border border-purple-100 shadow-sm" dir="rtl">
+            <div className="flex items-center justify-end bg-gradient-to-r from-info/10 via-info/5 to-background p-5 rounded-2xl border border-info/20 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.01]" dir="rtl">
               <div className="text-right flex-1">
-                <div className="font-semibold text-gray-900 truncate max-w-[200px]">{lead.email}</div>
-                <div className="text-xs text-gray-500 font-medium">אימייל</div>
+                <div className="font-bold text-foreground text-lg truncate max-w-[200px]">{lead.email}</div>
+                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">אימייל</div>
               </div>
-              <Mail className="h-5 w-5 text-purple-600 flex-shrink-0 mr-3" />
+              <div className="bg-info/20 p-2 rounded-full mr-4">
+                <Mail className="h-5 w-5 text-info flex-shrink-0" />
+              </div>
             </div>
           )}
         </div>
         
         {/* מטפל */}
         {lead.assigned_to && (
-          <div className="flex items-center justify-end bg-gradient-to-r from-gray-50 to-white p-3 rounded-xl border border-gray-100" dir="rtl">
+          <div className="flex items-center justify-end bg-gradient-to-r from-muted/50 via-muted/30 to-background p-4 rounded-2xl border border-muted/40 hover:shadow-md transition-all duration-300 hover:scale-[1.01]" dir="rtl">
             <div className="text-right flex-1">
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-bold text-foreground">
                 {lead.profiles?.full_name || "לא ידוע"}
               </span>
-              <div className="text-xs text-gray-500 font-medium">מטפל</div>
+              <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">מטפל</div>
             </div>
-            <User className="h-4 w-4 text-gray-500 flex-shrink-0 mr-3" />
+            <div className="bg-muted/40 p-2 rounded-full mr-4">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            </div>
           </div>
         )}
         
         {/* פרטי רכב */}
         {lead.cars && (
-          <div className="bg-gradient-to-r from-blue-50 via-blue-25 to-white p-5 rounded-2xl border border-blue-200 shadow-sm" dir="rtl">
-            <div className="flex items-start justify-end gap-4">
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background p-6 rounded-3xl border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]" dir="rtl">
+            <div className="flex items-start justify-end gap-5">
               <div className="text-right flex-1">
-                <div className="font-bold text-[#2F3C7E] text-lg mb-1">
+                <div className="font-bold text-primary text-xl mb-2">
                   {`${lead.cars.make} ${lead.cars.model} ${lead.cars.year}`}
                 </div>
                 {lead.cars.price && (
-                  <div className="text-lg font-semibold text-gray-700">
+                  <div className="text-2xl font-bold text-foreground mb-1">
                     {lead.cars.price.toLocaleString()} ₪
                   </div>
                 )}
-                <div className="text-xs text-gray-500 font-medium mt-1">פרטי רכב</div>
+                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">פרטי רכב</div>
               </div>
-              <Car className="h-6 w-6 text-[#2F3C7E] mt-1 flex-shrink-0 mr-3" />
+              <div className="bg-primary/20 p-3 rounded-full mr-4">
+                <Car className="h-7 w-7 text-primary flex-shrink-0" />
+              </div>
             </div>
           </div>
         )}
         
         {/* הערות */}
         {lead.notes && (
-          <div className="leads-notes bg-gradient-to-r from-amber-50 to-white border border-amber-200 p-5 rounded-2xl shadow-sm" dir="rtl">
-            <div className="flex items-start justify-end gap-3">
+          <div className="leads-notes bg-gradient-to-r from-warning/15 via-warning/10 to-background border border-warning/30 p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]" dir="rtl">
+            <div className="flex items-start justify-end gap-4">
               <div className="text-right flex-1">
-                <div className="text-sm font-semibold text-amber-700 mb-2">הערות</div>
-                <p className="text-sm text-amber-800 whitespace-pre-line leading-relaxed">
+                <div className="text-sm font-bold text-warning-foreground mb-3 uppercase tracking-wide">הערות</div>
+                <p className="text-sm text-warning-foreground/90 whitespace-pre-line leading-relaxed font-medium">
                   {lead.notes}
                 </p>
               </div>
-              <MessageSquare className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0 mr-3" />
+              <div className="bg-warning/25 p-2 rounded-full mr-4">
+                <MessageSquare className="h-5 w-5 text-warning flex-shrink-0" />
+              </div>
             </div>
           </div>
         )}

@@ -29,21 +29,24 @@ export function LeadCard({ lead }: LeadCardProps) {
   };
 
   return (
-    <Card className="lead-enhanced leads-card overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-3xl border-0 bg-white/90 backdrop-blur-sm">
+    <Card className="lead-enhanced leads-card group overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl border border-primary/10 bg-gradient-to-br from-background/95 via-background/90 to-background/85 backdrop-blur-md hover:scale-[1.02] hover:border-primary/20 animate-fade-in">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       <LeadCardHeader lead={lead} />
-      <CardContent className="p-8">
-        <LeadCardContent lead={lead} />
-        <div className="mt-8">
-          <LeadCardActions
-            leadId={lead.id as string}
-            leadName={lead.name as string}
-            leadPhone={lead.phone as string}
-            leadSource={lead.source as string}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onWhatsApp={handleWhatsApp}
-            onSchedule={handleSchedule}
-          />
+      <CardContent className="relative z-10 p-8">
+        <div className="transform transition-transform duration-300 group-hover:translate-y-[-2px]">
+          <LeadCardContent lead={lead} />
+          <div className="mt-8 transform transition-all duration-300 group-hover:translate-y-[-1px]">
+            <LeadCardActions
+              leadId={lead.id as string}
+              leadName={lead.name as string}
+              leadPhone={lead.phone as string}
+              leadSource={lead.source as string}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onWhatsApp={handleWhatsApp}
+              onSchedule={handleSchedule}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
