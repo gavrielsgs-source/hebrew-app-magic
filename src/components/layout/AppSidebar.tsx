@@ -87,7 +87,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="overflow-hidden">
+      <SidebarContent>
         <div className="flex flex-col gap-2 px-4">
           <SidebarMenu key="main">
             <SidebarMenuItem>
@@ -199,7 +199,7 @@ export function AppSidebar() {
               </SidebarMenuButton>
               
               {docProductionOpen && (
-                <div className="max-h-[400px] overflow-y-auto">
+                <div className="max-h-[300px] overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/30 hover:scrollbar-thumb-gray-500">
                   <SidebarMenuSub>
                     {DOCUMENT_TYPES.map((doc) => {
                       const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
