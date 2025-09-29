@@ -16,12 +16,13 @@ interface AddTeamUserDialogProps {
   canAddMore: boolean;
   userLimit: number;
   currentUsage: number;
+  onAddUser: (userData: { name: string; email: string; role: TeamUserRole }) => Promise<void>;
 }
 
 const addUserSchema = z.object({
   name: z.string().min(2, "השם חייב להכיל לפחות 2 תווים"),
   email: z.string().email("נא להזין כתובת אימייל תקינה"),
-  role: z.enum(['admin', 'sales', 'viewer', 'accountant'] as const, {
+  role: z.enum(['admin', 'sales_agent', 'viewer', 'agency_manager'] as const, {
     required_error: "נא לבחור תפקיד"
   })
 });
@@ -35,15 +36,15 @@ const roleOptions = [
     color: 'text-red-600'
   },
   {
-    value: 'sales' as const,
-    label: 'מכירות',
+    value: 'sales_agent' as const,
+    label: 'איש מכירות',
     description: 'גישה למסמכים, לידים ולקוחות',
     icon: Users,
     color: 'text-blue-600'
   },
   {
-    value: 'accountant' as const,
-    label: 'רואה חשבון',
+    value: 'agency_manager' as const,
+    label: 'מנהל סוכנות',
     description: 'גישה מלאה למסמכים והנהלת חשבונות',
     icon: DollarSign,
     color: 'text-green-600'
@@ -57,7 +58,7 @@ const roleOptions = [
   }
 ];
 
-export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, currentUsage }: AddTeamUserDialogProps) {
+export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, currentUsage, onAddUser }: AddTeamUserDialogProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -79,17 +80,12 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
       setIsLoading(true);
       setErrors({});
 
-      // TODO: Implement actual user creation logic
-      console.log('Adding user:', validatedData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the actual add user function passed from parent
+      await onAddUser(validatedData as { name: string; email: string; role: TeamUserRole });
       
       // Reset form and close dialog
       setFormData({ name: '', email: '', role: '' });
       onOpenChange(false);
-      
-      toast.success("המשתמש נוסף בהצלחה! הזמנה נשלחה באימייל.");
       
     } catch (error) {
       if (error instanceof z.ZodError) {

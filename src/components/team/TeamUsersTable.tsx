@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Shield, Eye, DollarSign, Users, Crown, Trash2, Edit } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export type TeamUserRole = 'admin' | 'sales' | 'viewer' | 'accountant';
+export type TeamUserRole = 'admin' | 'sales_agent' | 'viewer' | 'agency_manager';
 
 export interface TeamUser {
   id: string;
@@ -30,8 +30,8 @@ const roleConfig: Record<TeamUserRole, { label: string; icon: React.ComponentTyp
     color: 'text-red-700',
     bgColor: 'bg-red-100'
   },
-  sales: {
-    label: 'מכירות',
+  sales_agent: {
+    label: 'איש מכירות',
     icon: Users,
     color: 'text-blue-700',
     bgColor: 'bg-blue-100'
@@ -42,8 +42,8 @@ const roleConfig: Record<TeamUserRole, { label: string; icon: React.ComponentTyp
     color: 'text-gray-700',
     bgColor: 'bg-gray-100'
   },
-  accountant: {
-    label: 'רואה חשבון',
+  agency_manager: {
+    label: 'מנהל סוכנות',
     icon: DollarSign,
     color: 'text-green-700',
     bgColor: 'bg-green-100'

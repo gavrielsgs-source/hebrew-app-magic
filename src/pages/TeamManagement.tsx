@@ -6,27 +6,17 @@ import { AddTeamUserDialog } from "@/components/team/AddTeamUserDialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/contexts/subscription-context";
 import { UsageBar } from "@/components/subscription/UsageBar";
+import { useTeamManagement } from "@/hooks/use-team-management";
 import { useState } from "react";
 
 export default function TeamManagement() {
   const { user } = useAuth();
   const { subscription, checkEntitlement } = useSubscription();
+  const { teamUsers, isLoading, addTeamUser, updateUserRole, removeTeamUser } = useTeamManagement();
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
-  // Mock data for now - will be replaced with real data
-  const currentUsers = [
-    {
-      id: user?.id || '1',
-      email: user?.email || 'owner@example.com',
-      name: 'בעל החשבון',
-      role: 'admin' as const,
-      isOwner: true,
-      joinedAt: new Date().toISOString(),
-    }
-  ];
-
   const userLimit = subscription.userLimit || 2;
-  const currentUsage = currentUsers.length;
+  const currentUsage = teamUsers.length;
   const canAddMore = checkEntitlement('userLimit', currentUsage + 1);
 
   const handleAddUser = () => {
@@ -112,7 +102,11 @@ export default function TeamManagement() {
               </div>
             </CardHeader>
             <CardContent>
-              <TeamUsersTable users={currentUsers} />
+              <TeamUsersTable 
+                users={teamUsers} 
+                onChangeRole={(userId, newRole) => updateUserRole.mutate({ userId, newRole })}
+                onDeleteUser={(userId) => removeTeamUser.mutate(userId)}
+              />
             </CardContent>
           </Card>
         </div>
@@ -124,6 +118,9 @@ export default function TeamManagement() {
         canAddMore={canAddMore}
         userLimit={userLimit}
         currentUsage={currentUsage}
+        onAddUser={async (userData) => {
+          await addTeamUser.mutateAsync(userData);
+        }}
       />
     </div>
   );
