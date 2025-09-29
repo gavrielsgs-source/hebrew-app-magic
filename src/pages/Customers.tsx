@@ -88,14 +88,14 @@ export default function Customers() {
   return (
     <div className="container mx-auto p-6 space-y-6" dir="rtl">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-primary/5 via-background to-accent/5 rounded-2xl p-6 border border-primary/10 shadow-lg">
+      <div className="bg-gradient-to-r from-primary/5 via-background to-primary/5 rounded-2xl p-6 border border-primary/10 shadow-lg">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-4 rounded-2xl shadow-md border border-primary/20">
+            <div className="bg-primary/10 p-4 rounded-2xl shadow-md border border-primary/20">
               <Users className="h-8 w-8 text-primary" />
             </div>
             <div className="space-y-2">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold text-primary">
                 ניהול לקוחות מתקדם
               </h1>
               <p className="text-muted-foreground text-lg font-medium">
@@ -118,11 +118,11 @@ export default function Customers() {
               variant="outline"
               className="rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
             >
-              📊 דוחות
+              דוחות
             </Button>
             <Button 
               onClick={() => setShowCreateDialog(true)}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg rounded-xl px-8 h-12 font-bold text-base transition-all duration-300 hover:shadow-xl hover:scale-105 border-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-xl px-8 h-12 font-bold text-base transition-all duration-300 hover:shadow-xl hover:scale-105 border-0"
             >
               <Plus className="h-5 w-5 ml-2" />
               הוסף לקוח חדש
@@ -166,7 +166,7 @@ export default function Customers() {
           <CardContent className="p-16 text-center">
             <div className="space-y-6">
               <div className="w-24 h-24 mx-auto bg-gradient-to-br from-orange-100 to-red-50 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-4xl">🔍</span>
+                <Search className="h-12 w-12 text-orange-500" />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-foreground mb-3">לא נמצאו תוצאות התואמות</h3>
@@ -175,7 +175,7 @@ export default function Customers() {
                 </p>
                 <div className="bg-muted/30 rounded-xl p-4 max-w-md mx-auto">
                   <p className="text-sm text-muted-foreground">
-                    💡 טיפים לחיפוש טוב יותר:
+                    טיפים לחיפוש טוב יותר:
                     <br />• נסה מילים קצרות יותר
                     <br />• בדוק איות
                     <br />• השתמש במספר לקוח במקום שם
