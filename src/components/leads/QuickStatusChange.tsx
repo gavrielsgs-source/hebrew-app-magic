@@ -53,18 +53,18 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
       onValueChange={handleStatusChange}
       disabled={isChanging}
     >
-      <SelectTrigger className={`border-0 p-0 h-auto cursor-pointer ${getStatusBadgeColor(lead.status)} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2`}>
+      <SelectTrigger className={`border-0 p-0 h-auto cursor-pointer ${getStatusBadgeColor(lead.status)} inline-flex items-center rounded-2xl px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2`}>
         <SelectValue>
           {getStatusText(lead.status)}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent dir="rtl">
-        <SelectItem value="new">חדש</SelectItem>
-        <SelectItem value="in_treatment">בטיפול</SelectItem>
-        <SelectItem value="waiting">ממתין</SelectItem>
-        <SelectItem value="meeting_scheduled">נקבעה פגישה</SelectItem>
-        <SelectItem value="handled">טופל</SelectItem>
-        <SelectItem value="not_relevant">לא רלוונטי</SelectItem>
+      <SelectContent className="bg-white rounded-2xl shadow-2xl border-2 z-50" dir="rtl">
+        <SelectItem value="new" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">חדש</SelectItem>
+        <SelectItem value="in_treatment" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">בטיפול</SelectItem>
+        <SelectItem value="waiting" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">ממתין</SelectItem>
+        <SelectItem value="meeting_scheduled" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">נקבעה פגישה</SelectItem>
+        <SelectItem value="handled" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">טופל</SelectItem>
+        <SelectItem value="not_relevant" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">לא רלוונטי</SelectItem>
       </SelectContent>
     </Select>
   );

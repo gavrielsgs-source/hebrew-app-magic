@@ -50,70 +50,86 @@ export default function CustomerProfile() {
   }
 
   return (
-    <div className="container mx-auto p-6" dir="rtl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link to="/customers">
-          <Button variant="ghost" size="sm">
-            <ArrowRight className="h-4 w-4 ml-2" />
-            חזור לרשימת הלקוחות
-          </Button>
-        </Link>
-        <Separator orientation="vertical" className="h-6" />
-        <div className="flex items-center gap-2">
-          <User className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">{customer.full_name}</h1>
-          <Badge variant={customer.status === 'active' ? 'default' : 'secondary'}>
-            {customer.status === 'active' ? 'פעיל' : 'לא פעיל'}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Customer Overview */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                פרטי לקוח
-              </CardTitle>
-              <CardDescription>
-                לקוח #{customer.customer_number} • הצטרף ב-{new Date(customer.join_date || customer.created_at).toLocaleDateString('he-IL')}
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 ml-2" />
-              ערוך פרטים
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" dir="rtl">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex items-center gap-6 mb-8">
+          <Link to="/customers">
+            <Button variant="ghost" size="lg" className="rounded-2xl bg-white/60 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-200">
+              <ArrowRight className="h-5 w-5 ml-2" />
+              <span className="text-lg font-medium">חזור לרשימת הלקוחות</span>
             </Button>
+          </Link>
+          <Separator orientation="vertical" className="h-8" />
+          <div className="flex items-center gap-4">
+            <div className="bg-primary/10 p-3 rounded-2xl">
+              <User className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800">{customer.full_name}</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge 
+                  variant={customer.status === 'active' ? 'default' : 'secondary'}
+                  className="text-base px-4 py-1 rounded-full"
+                >
+                  {customer.status === 'active' ? 'פעיל' : 'לא פעיל'}
+                </Badge>
+                <span className="text-slate-600 text-lg">לקוח #{customer.customer_number}</span>
+              </div>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <CustomerBasicInfo customer={customer} />
-        </CardContent>
-      </Card>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column */}
-        <div className="space-y-6">
-          {/* Customer Notes */}
-          <CustomerNotes customerId={customer.id} />
-
-          {/* Customer Credit */}
-          <CustomerCredit customer={customer} />
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Vehicle Sales & Purchases */}
-          <CustomerVehicles customerId={customer.id} />
-        </div>
-      </div>
+        {/* Customer Overview */}
+        <Card className="mb-8 shadow-lg rounded-3xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-primary/20 to-primary/10 p-3 rounded-2xl">
+                  <User className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl font-bold text-slate-800">
+                    פרטי לקוח
+                  </CardTitle>
+                  <CardDescription className="text-lg text-slate-600 mt-1">
+                    הצטרף ב-{new Date(customer.join_date || customer.created_at).toLocaleDateString('he-IL')}
+                  </CardDescription>
+                </div>
+              </div>
+              <Button variant="outline" size="lg" className="rounded-2xl border-2 hover:shadow-md transition-all">
+                <Edit className="h-5 w-5 ml-2" />
+                <span className="text-lg font-medium">ערוך פרטים</span>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <CustomerBasicInfo customer={customer} />
+          </CardContent>
+        </Card>
 
-      {/* Documents Section - Full Width */}
-      <div className="mt-6">
-        <CustomerDocuments customerId={customer.id} />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column */}
+          <div className="space-y-8">
+            {/* Customer Notes */}
+            <CustomerNotes customerId={customer.id} />
+
+            {/* Customer Credit */}
+            <CustomerCredit customer={customer} />
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Vehicle Sales & Purchases */}
+            <CustomerVehicles customerId={customer.id} />
+          </div>
+        </div>
+
+        {/* Documents Section - Full Width */}
+        <div className="mt-8">
+          <CustomerDocuments customerId={customer.id} />
+        </div>
       </div>
     </div>
   );

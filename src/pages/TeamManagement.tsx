@@ -24,44 +24,50 @@ export default function TeamManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <div className="border-b bg-card shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" dir="rtl">
+      <div className="bg-white/80 backdrop-blur-sm shadow-xl border-b-4 border-primary/20">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex items-center gap-6">
             <Button
               variant="ghost"
-              size="sm"
+              size="lg"
               onClick={() => window.history.back()}
+              className="rounded-2xl bg-white/60 shadow-md hover:shadow-lg transition-all"
             >
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-5 w-5" />
             </Button>
-            <div className="text-right">
-              <h1 className="text-2xl font-bold text-foreground">
-                ניהול צוות
-              </h1>
-              <p className="text-muted-foreground">
-                נהל את משתמשי הצוות שלך והגדר הרשאות גישה
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="bg-primary/10 p-4 rounded-2xl">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <div className="text-right">
+                <h1 className="text-3xl font-bold text-slate-800">
+                  ניהול צוות
+                </h1>
+                <p className="text-lg text-slate-600 mt-1">
+                  נהל את משתמשי הצוות שלך והגדר הרשאות גישה
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="space-y-6">
+      <div className="max-w-6xl mx-auto p-8">
+        <div className="space-y-8">
           {/* Usage Overview */}
-          <Card className="bg-gradient-to-r from-primary/5 to-secondary/5">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-3 rounded-lg">
-                    <Users className="h-6 w-6 text-primary" />
+          <Card className="bg-gradient-to-br from-primary/10 via-white to-secondary/10 shadow-2xl rounded-3xl border-0">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="bg-gradient-to-br from-primary/20 to-primary/10 p-4 rounded-2xl shadow-lg">
+                    <Users className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 className="text-2xl font-bold text-slate-800">
                       שימוש במשתמשים
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-lg text-slate-600 mt-1">
                       {currentUsage} מתוך {userLimit} משתמשים
                     </p>
                   </div>
@@ -69,9 +75,10 @@ export default function TeamManagement() {
                 <Button
                   onClick={handleAddUser}
                   disabled={!canAddMore}
-                  className="bg-primary hover:bg-primary/90"
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all text-lg font-semibold"
                 >
-                  <Users className="h-4 w-4 mr-2" />
+                  <Users className="h-5 w-5 mr-2" />
                   הוסף משתמש
                 </Button>
               </div>
@@ -85,23 +92,23 @@ export default function TeamManagement() {
           </Card>
 
           {/* Team Members Table */}
-          <Card>
-            <CardHeader>
+          <Card className="shadow-2xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="pb-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-secondary/10 p-2 rounded-lg">
-                    <Settings className="h-5 w-5 text-secondary-foreground" />
+                <div className="flex items-center gap-4">
+                  <div className="bg-gradient-to-br from-secondary/20 to-secondary/10 p-3 rounded-2xl shadow-lg">
+                    <Settings className="h-6 w-6 text-secondary-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-right">חברי הצוות</CardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <CardTitle className="text-2xl font-bold text-slate-800 text-right">חברי הצוות</CardTitle>
+                    <p className="text-lg text-slate-600 text-right mt-1">
                       נהל הרשאות וגישה של חברי הצוות
                     </p>
                   </div>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <TeamUsersTable 
                 users={teamUsers} 
                 onChangeRole={(userId, newRole) => updateUserRole.mutate({ userId, newRole })}

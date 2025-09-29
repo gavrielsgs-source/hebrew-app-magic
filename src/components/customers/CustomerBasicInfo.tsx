@@ -9,23 +9,23 @@ interface CustomerBasicInfoProps {
 
 export function CustomerBasicInfo({ customer }: CustomerBasicInfoProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {/* Contact Information */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
+      <div className="space-y-6">
+        <h3 className="font-bold text-lg text-slate-800 border-b-2 border-primary/20 pb-2">
           פרטי יצירת קשר
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {customer.phone && (
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span>{customer.phone}</span>
+            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl">
+              <Phone className="h-5 w-5 text-primary" />
+              <span className="text-lg font-medium">{customer.phone}</span>
             </div>
           )}
           {customer.email && (
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              <span className="break-all">{customer.email}</span>
+            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl">
+              <Mail className="h-5 w-5 text-primary" />
+              <span className="break-all text-lg font-medium">{customer.email}</span>
             </div>
           )}
           {customer.address && (
@@ -51,8 +51,8 @@ export function CustomerBasicInfo({ customer }: CustomerBasicInfoProps) {
       </div>
 
       {/* Personal Information */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
+      <div className="space-y-6">
+        <h3 className="font-bold text-lg text-slate-800 border-b-2 border-primary/20 pb-2">
           פרטים אישיים
         </h3>
         <div className="space-y-3">
@@ -84,8 +84,8 @@ export function CustomerBasicInfo({ customer }: CustomerBasicInfoProps) {
       </div>
 
       {/* Financial Information */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
+      <div className="space-y-6">
+        <h3 className="font-bold text-lg text-slate-800 border-b-2 border-primary/20 pb-2">
           מידע כספי
         </h3>
         <div className="space-y-3">

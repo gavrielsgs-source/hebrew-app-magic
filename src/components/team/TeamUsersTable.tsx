@@ -80,48 +80,48 @@ export function TeamUsersTable({ users, onEditUser, onDeleteUser, onChangeRole }
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-2xl border-2 border-slate-200 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="text-right">משתמש</TableHead>
-            <TableHead className="text-right">תפקיד</TableHead>
-            <TableHead className="text-right">תאריך הצטרפות</TableHead>
-            <TableHead className="text-right">פעולות</TableHead>
+          <TableRow className="bg-slate-50 hover:bg-slate-50">
+            <TableHead className="text-right text-lg font-bold text-slate-800 py-4">משתמש</TableHead>
+            <TableHead className="text-right text-lg font-bold text-slate-800 py-4">תפקיד</TableHead>
+            <TableHead className="text-right text-lg font-bold text-slate-800 py-4">תאריך הצטרפות</TableHead>
+            <TableHead className="text-right text-lg font-bold text-slate-800 py-4">פעולות</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs">
+            <TableRow key={user.id} className="hover:bg-slate-50/50 transition-colors">
+              <TableCell className="py-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12 shadow-lg">
+                    <AvatarFallback className="text-sm font-semibold bg-gradient-to-br from-primary/20 to-primary/10">
                       {getInitials(user.email, user.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-right">
-                    <div className="font-medium">{user.name}</div>
-                    <div className="text-sm text-muted-foreground">{user.email}</div>
+                    <div className="font-semibold text-lg text-slate-800">{user.name}</div>
+                    <div className="text-base text-slate-600">{user.email}</div>
                   </div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-4">
                 {getRoleBadge(user.role, user.isOwner)}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right py-4 text-lg text-slate-700">
                 {new Date(user.joinedAt).toLocaleDateString('he-IL')}
               </TableCell>
-              <TableCell>
+              <TableCell className="py-4">
                 {!user.isOwner && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-slate-100">
                         <span className="sr-only">פתח תפריט</span>
-                        <MoreHorizontal className="h-4 w-4" />
+                        <MoreHorizontal className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuContent align="end" className="w-56 bg-white rounded-2xl shadow-2xl border-2 z-50">
                       {onEditUser && (
                         <DropdownMenuItem onClick={() => onEditUser(user)}>
                           <Edit className="mr-2 h-4 w-4" />
