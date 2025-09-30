@@ -5,6 +5,7 @@ import { useRoles } from "@/hooks/use-roles";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
@@ -248,7 +249,7 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarContent className="border-t border-gray-700/50 mt-auto">
+      <SidebarFooter className="border-t border-gray-700/50 mt-auto">
         <div className="flex flex-col gap-2 px-4 py-4">
           <SidebarMenu key="user">
             <SidebarMenuItem>
@@ -274,7 +275,7 @@ export function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu>
         </div>
-      </SidebarContent>
+      </SidebarFooter>
     </Sidebar>
   );
 }
