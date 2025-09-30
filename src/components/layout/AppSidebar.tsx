@@ -72,6 +72,13 @@ export function AppSidebar() {
     pathname.startsWith("/document-production")
   );
 
+  // Close the document production menu when navigating away
+  React.useEffect(() => {
+    if (!pathname.startsWith("/document-production")) {
+      setDocProductionOpen(false);
+    }
+  }, [pathname]);
+
   const canAccessCompanyManagement = isAdmin() || isCompanyOwner();
 
   return (
@@ -199,28 +206,26 @@ export function AppSidebar() {
               </SidebarMenuButton>
               
               {docProductionOpen && (
-                <div 
-                  className="max-h-[200px] overflow-y-auto scroll-smooth px-1 [&::-webkit-scrollbar]:hidden"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  <SidebarMenuSub>
-                    {DOCUMENT_TYPES.map((doc) => {
-                      const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
-                      return (
-                        <SidebarMenuSubItem key={doc.id}>
-                          <SidebarMenuSubButton
-                            onClick={() => navigate(`/document-production/${doc.id}`)}
-                            isActive={pathname === `/document-production/${doc.id}`}
-                            className="text-gray-300 hover:text-white"
-                          >
-                            <IconComponent className="h-4 w-4" />
-                            <span>{doc.name}</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                </div>
+                <SidebarMenuSub className="px-1">
+                  {DOCUMENT_TYPES.map((doc) => {
+                    const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
+                    return (
+                      <SidebarMenuSubItem key={doc.id}>
+                        <SidebarMenuSubButton
+                          onClick={() => {
+                            navigate(`/document-production/${doc.id}`);
+                            setDocProductionOpen(false);
+                          }}
+                          isActive={pathname === `/document-production/${doc.id}`}
+                          className="text-gray-300 hover:text-white"
+                        >
+                          <IconComponent className="h-4 w-4" />
+                          <span>{doc.name}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
+                </SidebarMenuSub>
               )}
             </SidebarMenuItem>
 
