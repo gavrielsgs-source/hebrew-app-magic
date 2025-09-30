@@ -87,7 +87,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="custom-scrollbar-mobile">
         <div className="flex flex-col gap-2 px-4">
           <SidebarMenu key="main">
             <SidebarMenuItem>
