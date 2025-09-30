@@ -68,16 +68,7 @@ export function AppSidebar() {
   const { user } = useAuth();
   const { isAdmin, isCompanyOwner, canManageLeads } = useRoles();
   const navigate = useNavigate();
-  const [docProductionOpen, setDocProductionOpen] = React.useState(
-    pathname.startsWith("/document-production")
-  );
-
-  // Close the document production menu when navigating away
-  React.useEffect(() => {
-    if (!pathname.startsWith("/document-production")) {
-      setDocProductionOpen(false);
-    }
-  }, [pathname]);
+  const [docProductionOpen, setDocProductionOpen] = React.useState(false);
 
   const canAccessCompanyManagement = isAdmin() || isCompanyOwner();
 
