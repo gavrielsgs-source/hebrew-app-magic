@@ -92,7 +92,7 @@ export function FacebookLeadIntegration() {
     try {
       const appId = "2106125989900776"; // Your Facebook App ID
       const appSecret = process.env.FB_APP_SECRET; // This should ideally come from your backend
-      
+      addDebugLog("using app secret " + appSecret)
       const response = await fetch(
         `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`
       );
