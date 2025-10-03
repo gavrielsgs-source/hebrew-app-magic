@@ -53,9 +53,14 @@ export function FacebookLeadIntegration() {
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       js.onload = () => addDebugLog("Facebook SDK script loaded");
       js.onerror = (e) => {
-        console.log("facebook error: ",e)
-        addDebugLog("ERROR: Failed to load Facebook SDK script")
-      };
+      addDebugLog(`ERROR: Failed to load Facebook SDK script (${e.message || 'network or blocked'})`);
+      console.error("Facebook SDK load error", e);
+  
+      // Try fetch as a diagnostic
+      fetch(js.src)
+        .then(r => addDebugLog(`Fetch attempt status: ${r.status}`))
+        .catch(err => addDebugLog("Fetch failed: " + err));
+    };
       document.head.appendChild(js);
     } else {
       addDebugLog("Facebook SDK script already exists");
