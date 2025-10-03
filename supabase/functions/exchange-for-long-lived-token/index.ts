@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 async function exchangeForLongLivedToken(shortLivedToken: string): Promise<string | null> {
-  const appId = '1110046167333635';
+  const appId = '2106125989900776';
   const appSecret = Deno.env.get('FB_APP_SECRET');
 
   if (!appSecret) {
