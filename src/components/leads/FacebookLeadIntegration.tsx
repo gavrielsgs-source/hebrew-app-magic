@@ -50,7 +50,7 @@ export function FacebookLeadIntegration() {
       addDebugLog("Loading Facebook SDK script...");
       const js = document.createElement("script");
       js.id = "facebook-jssdk";
-      js.src = "https://connect.facebook.net/he_IL/sdk.js";
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
       js.onload = () => addDebugLog("Facebook SDK script loaded");
       js.onerror = (e) => {
         console.log("facebook error: ",e)
