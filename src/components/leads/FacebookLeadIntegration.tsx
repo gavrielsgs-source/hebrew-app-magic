@@ -88,27 +88,14 @@ export function FacebookLeadIntegration() {
     });
   }
 
-  const exchangeForLongLivedToken = async (shortLivedToken: string) => {
-    try {
-      const appId = "2106125989900776"; // Your Facebook App ID
-      const appSecret = process.env.FB_APP_SECRET; // This should ideally come from your backend
-      addDebugLog("using app secret " + appSecret)
-      const response = await fetch(
-        `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`
-      );
-      
-      const data = await response.json();
-      addDebugLog(`Long-lived token response: ${JSON.stringify(data)}`);
-      
-      if (data.access_token) {
-        return data.access_token;
-      } else {
-        throw new Error('Failed to get long-lived token');
-      }
-    } catch (error) {
-      addDebugLog(`Error exchanging for long-lived token: ${error}`);
-      return shortLivedToken; // Fallback to short-lived token
-    }
+   const exchangeForLongLivedToken = async (shortLivedToken: string) => {
+    const res = await fetch('/api/exchange-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shortLivedToken })
+    });
+    const data = await res.json();
+    return data.access_token;
   };
 
   async function subscribePageToWebhook(pageId: string, pageAccessToken: string) {
