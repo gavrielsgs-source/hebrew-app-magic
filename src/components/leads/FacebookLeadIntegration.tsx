@@ -89,7 +89,7 @@ export function FacebookLeadIntegration() {
   }
 
    const exchangeForLongLivedToken = async (shortLivedToken: string) => {
-    const res = await fetch('/api/exchange-token', {
+    const res = await fetch('https://zjmkdmmnajzevoupgfhg.supabase.co/functions/v1/exchange-for-long-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ shortLivedToken })
