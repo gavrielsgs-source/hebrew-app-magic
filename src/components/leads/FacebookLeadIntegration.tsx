@@ -53,7 +53,7 @@ export function FacebookLeadIntegration() {
       js.src = "https://connect.facebook.net/he_IL/sdk.js";
       js.onload = () => addDebugLog("Facebook SDK script loaded");
       js.onerror = (e) => {
-        console.log(e)
+        console.log("facebook error: ",e)
         addDebugLog("ERROR: Failed to load Facebook SDK script")
       };
       document.head.appendChild(js);
