@@ -21,8 +21,12 @@ const fetchLeads = async () => {
     console.log('🔍 [use-fetch-leads] Fetching leads for user:', user.id);
 
     const { data, error } = await supabase
-      .from('facebook_leads')
-      .select('*')
+      .from('leads')
+      .select(`
+        *,
+        cars (*),
+        profiles (*)
+      `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     
