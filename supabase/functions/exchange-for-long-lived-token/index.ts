@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        accessToken: longLivedToken 
+        access_token: longLivedToken 
       }),
       { 
         status: 200,
