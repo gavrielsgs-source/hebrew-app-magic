@@ -96,53 +96,17 @@ serve(async (req) => {
             }
 
             const leadDetails = await leadRes.json();
-            console.log(leadDetails)
-            const formattedLead: any = {
-              name: "",
-              email: "",
-              phone: "",
-              notes: `ליד מפייסבוק - טופס ${leadData.form_id}`,
-              source: "פייסבוק",
-              status: "new",
-            };
 
-            if (Array.isArray(leadDetails.field_data)) {
-              for (const field of leadDetails.field_data) {
-                const value = field.values?.[0];
-                if (!value) continue;
-                switch (field.name.toLowerCase()) {
-                  case "full_name":
-                  case "name":
-                    formattedLead.name = value;
-                    break;
-                  case "email":
-                    formattedLead.email = value;
-                    break;
-                  case "phone":
-                  case "phone_number":
-                    formattedLead.phone = value;
-                    break;
-                  default:
-                    formattedLead.notes += `\n${field.name}: ${value}`;
-                }
-              }
-            }
+            const { error } = await supabase.rpc("save_facebook_lead" as any, {
+              p_user_id: tokenData.user_id,
+              p_page_id: leadData.page_id,
+              p_lead_id: leadDetails.id,
+              p_lead_data: leadDetails,
+              p_created_at: new Date(leadDetails.created_time),
+            });
+            
 
-            if (!formattedLead.name) formattedLead.name = `ליד פייסבוק ${new Date().toISOString().split("T")[0]}`;
-
-            if (formattedLead.phone || formattedLead.email) {
-              const { error } = await supabase.rpc("save_facebook_lead" as any, {
-                p_user_id: tokenData.user_id,
-                p_page_id: leadData.page_id,
-                p_lead_id: leadDetails.id,
-                p_lead_data: leadDetails,
-                p_created_at: new Date(leadDetails.created_time),
-              });
-
-              results.push({ success: true, lead_id: lead.id, message: `ליד נשמר בהצלחה: ${formattedLead.name}` });
-            } else {
-              results.push({ success: false, message: "ליד חסר נתונים חיוניים (טלפון או אימייל)" });
-            }
+            results.push({ success: true, lead_id: lead.id, message: `ליד נשמר בהצלחה: ${formattedLead.name}` });
           } catch (err) {
             results.push({ success: false, error: err instanceof Error ? err.message : String(err) });
           }
