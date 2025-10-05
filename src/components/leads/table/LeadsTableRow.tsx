@@ -51,7 +51,7 @@ export function LeadsTableRow({
         <div className="text-foreground/80 font-medium">{(phoneField.values.join(","))}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailField?.values.join(",") || '-'}</div>
+        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailField ? emailField.values.join(",") : '-'}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
         <Badge 
