@@ -31,6 +31,7 @@ export function LeadsTableRow({
 }: LeadsTableRowProps) {
   const name_keys = ["full_name", "first_name"]
   const phone_keys = ["phone", "phone_number"];
+  console.log("current row lead:", lead)
    const leadFields = lead.lead_data.field_data;
   const nameField = leadFields.find((f) => nameKeys.includes(f.name));
   const phoneField = leadFields.find((f) => phoneKeys.includes(f.name));
