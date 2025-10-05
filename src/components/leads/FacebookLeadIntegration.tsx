@@ -171,13 +171,14 @@ export function FacebookLeadIntegration() {
                     const leadData = lead;               
                     const userId = user.id;
               
-                    const { error } = await supabase.rpc("save_facebook_lead", {
-                      p_user_id: userId,
-                      p_lead_id: leadId,
-                      p_page_id: page.id,
-                      p_lead_data: leadData,
-                    });
-              
+                   const { error } = await supabase.rpc("save_facebook_lead", {
+                    p_created_time: lead.created_time, 
+                    p_field_data: lead.field_data,     
+                    p_form_id: form.id,              
+                    p_lead_id: lead.id,
+                    p_page_id: page.id,
+                    p_user_id: userId,
+                  });
                     if (error) {
                       console.error(`Failed to save lead ${leadId}:`, error.message);
                     }
