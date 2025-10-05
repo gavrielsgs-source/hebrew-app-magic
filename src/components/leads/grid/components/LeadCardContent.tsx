@@ -35,17 +35,15 @@ export function LeadCardContent({ lead }: LeadCardContentProps) {
             </div>
           )}
           
-          {emailField && (
             <div className="flex items-center justify-end bg-muted/30 p-4 rounded-xl border border-muted/50 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.01]" dir="rtl">
               <div className="text-right flex-1">
-                <div className="font-bold text-foreground text-base truncate max-w-[200px]">{emailValue}</div>
+                <div className="font-bold text-foreground text-base truncate max-w-[200px]">{emailValue ? emailValue : "אימייל לא נקלט בטופס"}</div>
                 <div className="text-xs text-muted-foreground font-medium">אימייל</div>
               </div>
               <div className="bg-muted/50 p-2 rounded-full mr-3">
                 <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               </div>
             </div>
-          )}
         </div>
         
         {/* מטפל */}
