@@ -32,8 +32,8 @@ export function LeadsTableRow({
   const name_keys = ["full_name", "first_name"]
   const phone_keys = ["phone", "phone_number"];
    const leadFields = lead.lead_data.field_data;
-  const nameField = leadFields.find((f) => nameKeys.includes(f.name));
-  const phoneField = leadFields.find((f) => phoneKeys.includes(f.name));
+  const nameField = leadFields.find((f) => name_keys.includes(f.name));
+  const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
   const emailField = leadFields.find((f) => f.name === "email");
   
   
