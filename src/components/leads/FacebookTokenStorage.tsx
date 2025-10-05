@@ -21,6 +21,7 @@ export function FacebookTokenStorage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
+      console.log('test')
       const { error } = await supabase.rpc('save_facebook_token', {
         p_access_token: accessToken,
         p_page_id: pageId,
