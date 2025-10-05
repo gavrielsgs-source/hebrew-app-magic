@@ -106,7 +106,6 @@ export function FacebookLeadIntegration() {
   }
 
   const loginAndSubscribe = () => {
-    const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
     if (!fbInitialized) {
       addDebugLog("ERROR: Facebook SDK not initialized");
       return;
@@ -136,7 +135,7 @@ export function FacebookLeadIntegration() {
               access_token: longLivedUserToken,
             });
             addDebugLog(`Found ${pagesResponse.data.length} pages`);
-
+            const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
             for (const page of pagesResponse.data) {
               addDebugLog(`Processing page: ${page.name} (${page.id})`);
               setConnectionStatus(`מעבד דף: ${page.name}`);
