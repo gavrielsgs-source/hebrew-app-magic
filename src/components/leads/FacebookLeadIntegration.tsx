@@ -166,9 +166,18 @@ export function FacebookLeadIntegration() {
                 const leads = leadsResponse.data || [];
                 addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
 
-                for (const lead of leads) {
-                  addDebugLog(`Lead data: ${JSON.stringify(lead)}`);
-                }
+                 const { error } = await supabase.rpc("save_facebook_lead", {
+                    _user_id: userId,
+                    _lead_id: leadId,
+                    _page_id: pageId,
+                    _lead_data: leadData,
+                  });
+            
+                  if (error) {
+                    console.error(`Failed to save lead ${leadId}:`, error.message);
+                  } else {
+                    addDebugLog(`Saved lead ${leadId} successfully`);
+                  }
               }
             }
 
