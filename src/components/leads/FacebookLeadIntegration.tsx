@@ -175,7 +175,7 @@ export function FacebookLeadIntegration() {
                     const leadData = lead;               
                     const userId = user.id;
               
-                     const { error } = await supabase.rpc("save_facebook_lead", {
+                     const { error } = await supabase.rpc("save_facebook_lead" as any, {
                       p_user_id: userId,
                       p_page_id: page.id,
                       p_lead_id: lead.id,
