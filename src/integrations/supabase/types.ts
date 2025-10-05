@@ -558,32 +558,62 @@ export type Database = {
         }
         Relationships: []
       }
+      facebook_leads: {
+        Row: {
+          created_at: string | null
+          id: string
+          lead_data: Json
+          lead_id: string
+          page_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lead_data: Json
+          lead_id: string
+          page_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lead_data?: Json
+          lead_id?: string
+          page_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       facebook_tokens: {
         Row: {
           access_token: string
-          created_at: string
+          created_at: string | null
+          expires_at: string | null
           id: string
           page_id: string
           page_name: string
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           access_token: string
-          created_at?: string
+          created_at?: string | null
+          expires_at?: string | null
           id?: string
           page_id: string
           page_name: string
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           access_token?: string
-          created_at?: string
+          created_at?: string | null
+          expires_at?: string | null
           id?: string
           page_id?: string
           page_name?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -1143,6 +1173,25 @@ export type Database = {
           p_success?: boolean
           p_user_id: string
         }
+        Returns: undefined
+      }
+      save_facebook_lead: {
+        Args:
+          | {
+              p_created_at: string
+              p_lead_data: Json
+              p_lead_id: string
+              p_page_id: string
+              p_user_id: string
+            }
+          | {
+              p_created_time: string
+              p_field_data: Json
+              p_form_id: string
+              p_lead_id: string
+              p_page_id: string
+              p_user_id: string
+            }
         Returns: undefined
       }
       save_facebook_token: {
