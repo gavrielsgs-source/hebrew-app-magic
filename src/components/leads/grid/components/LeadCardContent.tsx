@@ -7,7 +7,7 @@ interface LeadCardContentProps {
 }
 
 export function LeadCardContent({ lead }: LeadCardContentProps) {
-  console.log(lead)
+  console.log("lead data - ", lead)
   const leadFields = lead.lead_data.lead_fields
   const nameField = leadFields.find((f) => name_keys.includes(f.name));
   const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
