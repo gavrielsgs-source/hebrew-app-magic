@@ -37,10 +37,10 @@ export function LeadsTableRow({
       }`}
     >
       <TableCell className="font-medium text-right py-5 px-8">
-        <div className="font-bold text-primary text-lg">{lead.name as string}</div>
+        <div className="font-bold text-primary text-lg">{lead.lead_data.field_data[4].values.join(",") as string}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 font-medium">{(lead.phone as string) || '-'}</div>
+        <div className="text-foreground/80 font-medium">{(lead.lead_data.field_data[1].values.join(",") as string) || '-'}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
         <div className="text-foreground/80 truncate max-w-[200px] font-medium">{(lead.email as string) || '-'}</div>
