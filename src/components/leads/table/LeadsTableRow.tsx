@@ -32,13 +32,11 @@ export function LeadsTableRow({
   const name_keys = ["full_name", "first_name"]
   const phone_keys = ["phone", "phone_number"];
    const leadFields = lead.lead_data.field_data;
-  const nameField = leadFields.find((f) => name_keys.includes(f.name));
-  const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
-  const emailField = leadFields.find((f) => f.name == "email");
+  const nameField = leadFields.find((f) => nameKeys.includes(f.name));
+  const phoneField = leadFields.find((f) => phoneKeys.includes(f.name));
+  const emailField = leadFields.find((f) => name == "email");
   
-    const nameValue =  "-";
-  const phoneValue =  "-";
-  const emailValue = "-";
+  
   return (
     <TableRow 
       key={lead.id} 
@@ -47,13 +45,13 @@ export function LeadsTableRow({
       }`}
     >
       <TableCell className="font-medium text-right py-5 px-8">
-        <div className="font-bold text-primary text-lg">{nameValue}</div>
+        <div className="font-bold text-primary text-lg">{nameField.values.join(",")}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 font-medium">{(phoneValue}</div>
+        <div className="text-foreground/80 font-medium">{(phoneField.values.join(","))}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailValue}</div>
+        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailField.values.join(",") || '-'}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
         <Badge 
