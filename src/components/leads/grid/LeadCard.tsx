@@ -31,9 +31,9 @@ export function LeadCard({ lead }: LeadCardProps) {
     const name_keys = ["full_name", "first_name"]
   const phone_keys = ["phone", "phone_number"];
    const leadFields = lead.lead_data.field_data;
-  const nameField = leadFields.find((f) => nameKeys.includes(f.name));
-  const phoneField = leadFields.find((f) => phoneKeys.includes(f.name));
-  const emailField = leadFields.find((f) => name = "email");
+  const nameField = leadFields.find((f) => name_keys.includes(f.name));
+  const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
+  const emailField = leadFields.find((f) => f.name === "email");
 
   return (
     <Card className="lead-enhanced leads-card group overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl border border-primary/10 bg-gradient-to-br from-background/95 via-background/90 to-background/85 backdrop-blur-md hover:scale-[1.02] hover:border-primary/20 animate-fade-in">
