@@ -36,9 +36,9 @@ export function LeadsTableRow({
   const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
   const emailField = leadFields.find((f) => f.name == "email");
   
-    const nameValue = nameField ? nameField.values.join(",") : "-";
-  const phoneValue = phoneField ? phoneField.values.join(",") : "-";
-  const emailValue = emailField ? emailField.values.join(",") : "-";
+    const nameValue =  "-";
+  const phoneValue =  "-";
+  const emailValue = "-";
   return (
     <TableRow 
       key={lead.id} 
