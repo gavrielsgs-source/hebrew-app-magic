@@ -101,7 +101,7 @@ serve(async (req) => {
               created_at: new Date(leadDetails.created_time).toISOString(),
               id: leadDetails.id,
               created_time: leadDetails.created_time,
-              field_data: leadDetails.field_data || [],
+              lead_fields: leadDetails.field_data || [],
             };
             
             const { error } = await supabase.rpc("save_facebook_lead" as any, {
