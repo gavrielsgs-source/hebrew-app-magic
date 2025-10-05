@@ -61,8 +61,6 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "No entries in payload" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      console.log(webhookData)
-
       const results = [];
 
       for (const entry of webhookData.entry) {
@@ -72,6 +70,7 @@ serve(async (req) => {
           if (change.field !== "leadgen") continue;
 
           const leadData = change.value;
+          console.log(leadData)
           if (!leadData.form_id || !leadData.leadgen_id || !leadData.page_id) continue;
         
           try {
