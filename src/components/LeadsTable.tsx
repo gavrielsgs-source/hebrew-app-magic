@@ -20,6 +20,7 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
   const [isEditLeadOpen, setIsEditLeadOpen] = useState(false);
   
   // Use filtered leads if provided, otherwise use original logic with proper type checking
+  console.log(leads)
   const displayLeads = filteredLeads || (searchTerm
     ? leads.filter(lead => {
         const name = lead?.name as string || "";
