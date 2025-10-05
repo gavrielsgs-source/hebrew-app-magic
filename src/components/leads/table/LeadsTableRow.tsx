@@ -29,7 +29,7 @@ export function LeadsTableRow({
   isEditLeadOpen,
   setIsEditLeadOpen
 }: LeadsTableRowProps) {
-  const name_keys = ["full_name", "first_name"]
+  const name_keys = ["full_name", "first_name"];
   const phone_keys = ["phone", "phone_number"];
    const leadFields = lead.lead_data.field_data;
   const nameField = leadFields.find((f) => name_keys.includes(f.name));
