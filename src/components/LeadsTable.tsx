@@ -22,9 +22,9 @@ export function LeadsTable({ searchTerm = "", filteredLeads }: LeadsTableProps) 
   // Use filtered leads if provided, otherwise use original logic with proper type checking
   const displayLeads = filteredLeads || (searchTerm
     ? leads.filter(lead => {
-        const name = lead.name as string || "";
-        const phone = lead.phone as string || "";
-        const email = lead.email as string || "";
+        const name = lead?.name as string || "";
+        const phone = lead?.phone as string || "";
+        const email = lead?.email as string || "";
         return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                phone.includes(searchTerm) ||
                email.toLowerCase().includes(searchTerm.toLowerCase());
