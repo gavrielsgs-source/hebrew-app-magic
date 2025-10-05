@@ -234,18 +234,17 @@ serve(async (req) => {
               // השתמש במשתמש שהוגדר לטוקן הפייסבוק
               console.log("Using user_id from token:", tokenData.user_id);
 
-              const { data: lead, error } = await supabase
-                .from("leads")
-                .insert({
-                  ...formattedLead,
-                  user_id: tokenData.user_id,
-                })
-                .select()
-                .single();
-
-              if (error) {
-                console.log("❌ Error inserting lead to database:", error);
-                throw error;
+              const { error: fbLeadError } = await supabase.rpc("save_facebook_lead", {
+                p_user_id: tokenData.user_id,
+                p_lead_id: leadData.leadgen_id,
+                p_page_id: leadData.page_id,
+                p_lead_data: leadDetails,
+                p_created_at: new Date().toISOString(),
+              });
+              
+              if (fbLeadError) {
+                console.error("❌ Error saving facebook_lead:", fbLeadError);
+                throw fbLeadError;
               }
 
               console.log("✅ Lead saved successfully:", lead);
