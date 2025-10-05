@@ -29,6 +29,8 @@ export function LeadsTableRow({
   isEditLeadOpen,
   setIsEditLeadOpen
 }: LeadsTableRowProps) {
+  const name_keys = ["full_name", "first_name"]
+  
   return (
     <TableRow 
       key={lead.id} 

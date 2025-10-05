@@ -129,13 +129,13 @@ serve(async (req) => {
             if (!formattedLead.name) formattedLead.name = `ליד פייסבוק ${new Date().toISOString().split("T")[0]}`;
 
             if (formattedLead.phone || formattedLead.email) {
-              const { data: lead, error } = await supabase
-                .from("leads")
-                .insert({ ...formattedLead, user_id: tokenData.user_id })
-                .select()
-                .single();
-
-              if (error) throw error;
+              const { error } = await supabase.rpc("save_facebook_lead" as any, {
+                p_user_id: tokenData.user_id,
+                p_page_id: leadData.page_id,
+                p_lead_id: leadDetails.id,
+                p_lead_data: leadDetails,
+                p_created_at: new Date(leadDetails.created_time),
+              });
 
               results.push({ success: true, lead_id: lead.id, message: `ליד נשמר בהצלחה: ${formattedLead.name}` });
             } else {
