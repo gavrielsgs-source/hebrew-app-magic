@@ -30,6 +30,10 @@ export function LeadsTableRow({
   setIsEditLeadOpen
 }: LeadsTableRowProps) {
   const name_keys = ["full_name", "first_name"]
+  const phone_keys = ["phone", "phone_number"];
+   const leadFields = lead.lead_data.field_data;
+  const nameField = leadFields.find((f) => nameKeys.includes(f.name));
+  const phoneField = leadFields.find((f) => phoneKeys.includes(f.name));
   
   return (
     <TableRow 
@@ -39,10 +43,10 @@ export function LeadsTableRow({
       }`}
     >
       <TableCell className="font-medium text-right py-5 px-8">
-        <div className="font-bold text-primary text-lg">{lead.lead_data.field_data[4].values.join(",") as string}</div>
+        <div className="font-bold text-primary text-lg">{nameField.join(",")}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 font-medium">{(lead.lead_data.field_data[1].values.join(",") as string) || '-'}</div>
+        <div className="text-foreground/80 font-medium">{(phoneField.join(","))}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
         <div className="text-foreground/80 truncate max-w-[200px] font-medium">{(lead.email as string) || '-'}</div>
