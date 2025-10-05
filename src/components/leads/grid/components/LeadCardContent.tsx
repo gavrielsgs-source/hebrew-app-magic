@@ -7,15 +7,23 @@ interface LeadCardContentProps {
 }
 
 export function LeadCardContent({ lead }: LeadCardContentProps) {
+  const nameField = leadFields.find((f) => name_keys.includes(f.name));
+  const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
+  const emailField = leadFields.find((f) => f.name == "email");
+
+  const nameValue = nameField ? nameField.values.join(",") : "-";
+  const phoneValue = phoneField ? phoneField.values.join(",") : "-";
+  const emailValue = emailField ? emailField.values.join(",") : "-";
+  
   return (
     <CardContent className="p-0">
       <div className="space-y-5" dir="rtl">
         {/* פרטי יצירת קשר */}
         <div className="grid grid-cols-1 gap-4">
-          {lead.phone && (
+          {phoneField && (
             <div className="flex items-center justify-end bg-muted/30 p-4 rounded-xl border border-muted/50 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.01]" dir="rtl">
               <div className="text-right flex-1">
-                <div className="font-bold text-foreground text-base" dir="ltr">{lead.phone}</div>
+                <div className="font-bold text-foreground text-base" dir="ltr">{phoneValue}</div>
                 <div className="text-xs text-muted-foreground font-medium">טלפון</div>
               </div>
               <div className="bg-muted/50 p-2 rounded-full mr-3">
@@ -24,10 +32,10 @@ export function LeadCardContent({ lead }: LeadCardContentProps) {
             </div>
           )}
           
-          {lead.email && (
+          {emailField && (
             <div className="flex items-center justify-end bg-muted/30 p-4 rounded-xl border border-muted/50 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.01]" dir="rtl">
               <div className="text-right flex-1">
-                <div className="font-bold text-foreground text-base truncate max-w-[200px]">{lead.email}</div>
+                <div className="font-bold text-foreground text-base truncate max-w-[200px]">{emailValue}</div>
                 <div className="text-xs text-muted-foreground font-medium">אימייל</div>
               </div>
               <div className="bg-muted/50 p-2 rounded-full mr-3">
