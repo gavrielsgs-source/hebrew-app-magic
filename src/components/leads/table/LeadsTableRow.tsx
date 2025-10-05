@@ -34,7 +34,6 @@ export function LeadsTableRow({
    const leadFields = lead.lead_data.field_data;
   const nameField = leadFields.find((f) => nameKeys.includes(f.name));
   const phoneField = leadFields.find((f) => phoneKeys.includes(f.name));
-  const emailField = leadFields.find((f) => name = "email");
   
   
   return (
@@ -51,7 +50,7 @@ export function LeadsTableRow({
         <div className="text-foreground/80 font-medium">{(phoneField.values.join(","))}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailField ? emailField.values.join(",") : '-'}</div>
+        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{'-'}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
         <Badge 
