@@ -36,7 +36,9 @@ export function LeadsTableRow({
   const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
   const emailField = leadFields.find((f) => f.name == "email");
   
-  
+    const nameValue = nameField ? nameField.values.join(",") : "-";
+  const phoneValue = phoneField ? phoneField.values.join(",") : "-";
+  const emailValue = emailField ? emailField.values.join(",") : "-";
   return (
     <TableRow 
       key={lead.id} 
@@ -45,13 +47,13 @@ export function LeadsTableRow({
       }`}
     >
       <TableCell className="font-medium text-right py-5 px-8">
-        <div className="font-bold text-primary text-lg">{nameField ? nameField.values.join(",") : "-"}</div>
+        <div className="font-bold text-primary text-lg">{nameValue}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 font-medium">{(phoneField ? phoneField.values.join(",")) : "-"}</div>
+        <div className="text-foreground/80 font-medium">{(phoneValue}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailField ? emailField.values.join(",") : '-'}</div>
+        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailValue}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
         <Badge 
