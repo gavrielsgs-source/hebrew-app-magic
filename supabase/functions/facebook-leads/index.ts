@@ -80,7 +80,7 @@ serve(async (req) => {
               .select('access_token, user_id')
               .eq('page_id', leadData.page_id)
               .single();
-
+    
             if (tokenError || !tokenData) {
               results.push({ success: false, message: `לא נמצא טוקן שמור עבור דף ${leadData.page_id}` });
               continue;
@@ -96,6 +96,7 @@ serve(async (req) => {
             }
 
             const leadDetails = await leadRes.json();
+            console.log(leadDetails)
             const formattedLead: any = {
               name: "",
               email: "",
