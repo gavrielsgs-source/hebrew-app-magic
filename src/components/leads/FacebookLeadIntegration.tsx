@@ -106,6 +106,7 @@ export function FacebookLeadIntegration() {
   }
 
   const loginAndSubscribe = () => {
+    const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
     if (!fbInitialized) {
       addDebugLog("ERROR: Facebook SDK not initialized");
       return;
@@ -166,12 +167,22 @@ export function FacebookLeadIntegration() {
                 const leads = leadsResponse.data || [];
                 addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
 
-                  const { error } = await supabase.rpc("save_facebook_lead", {
-                    p_user_id: userId,
-                    p_lead_id: leadId,
-                    p_page_id: pageId,
-                    p_lead_data: leadData,
-                  });
+                 for (const lead of leads) {
+                    const leadId = lead.id;               
+                    const leadData = lead;               
+                    const userId = user.id;
+              
+                    const { error } = await supabase.rpc("save_facebook_lead", {
+                      p_user_id: userId,
+                      p_lead_id: leadId,
+                      p_page_id: page.id,
+                      p_lead_data: leadData,
+                    });
+              
+                    if (error) {
+                      console.error(`Failed to save lead ${leadId}:`, error.message);
+                    }
+                 }
               }
             }
 

@@ -29,7 +29,7 @@ export function FacebookTokenStorage() {
         p_user_id: user.id
       });
       
-      if (error) throw error;
+      if (error) throw error;FE
 
       toast({
         title: "הצלחה",
