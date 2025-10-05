@@ -21,7 +21,7 @@ const fetchLeads = async () => {
     console.log('🔍 [use-fetch-leads] Fetching leads for user:', user.id);
 
     const { data, error } = await supabase
-      .from('leads')
+      .from('facebook_leads')
       .select(`
         *,
         cars (*),
