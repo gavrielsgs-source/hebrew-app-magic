@@ -20,6 +20,7 @@ const fetchLeads = async () => {
 
     console.log('🔍 [use-fetch-leads] Fetching leads for user:', user.id);
 
+    //DON'T change from facebook_leads
     const { data, error } = await supabase
       .from('facebook_leads')
       .select(`
