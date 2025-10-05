@@ -159,6 +159,10 @@ export function FacebookLeadIntegration() {
               const leadForms = leadFormsResponse.data || [];
               addDebugLog(`Found ${leadForms.length} lead forms for page ${page.name}`);
 
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) throw new Error("User not authenticated");
+              const userId = user.id;
+
               for (const form of leadForms) {
                 const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
                   access_token: longLivedPageToken,
