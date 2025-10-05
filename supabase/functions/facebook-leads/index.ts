@@ -95,13 +95,22 @@ serve(async (req) => {
               throw new Error(`Failed to fetch lead: ${errorText}`);
             }
 
-            const leadDetails = await leadRes.json();
+          const leadDetails = await leadRes.json();
 
+            const formattedLead = {
+              created_at: new Date(leadDetails.created_time).toISOString(),
+              id: leadDetails.id,
+              lead_data: {
+                created_time: leadDetails.created_time,
+                field_data: leadDetails.field_data || [],
+              },
+            };
+            
             const { error } = await supabase.rpc("save_facebook_lead" as any, {
               p_user_id: tokenData.user_id,
               p_page_id: leadData.page_id,
               p_lead_id: leadDetails.id,
-              p_lead_data: leadDetails,
+              p_lead_data: formattedLead,
               p_created_at: new Date(leadDetails.created_time),
             });
             
