@@ -61,17 +61,19 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "No entries in payload" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
+      console.log(webhookData)
+
       const results = [];
 
       for (const entry of webhookData.entry) {
         if (!entry.changes || !Array.isArray(entry.changes)) continue;
-
+  
         for (const change of entry.changes) {
           if (change.field !== "leadgen") continue;
 
           const leadData = change.value;
           if (!leadData.form_id || !leadData.leadgen_id || !leadData.page_id) continue;
-
+        
           try {
             // Get saved page token
             const { data: tokenData, error: tokenError } = await supabase
