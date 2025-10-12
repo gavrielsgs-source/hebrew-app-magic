@@ -11,9 +11,12 @@ const corsHeaders = {
 
 interface WhatsAppRequest {
   to: string; // Phone number in format 972534318411
-  templateName: string;
+  type?: 'template' | 'text'; // Message type
+  templateName?: string;
+  message?: string; // For text messages
   languageCode?: string;
   parameters?: string[];
+  imageUrl?: string; // For template header image
 }
 
 serve(async (req) => {
@@ -23,37 +26,63 @@ serve(async (req) => {
   }
 
   try {
-    const { to, templateName, languageCode = 'he', parameters = [] }: WhatsAppRequest = await req.json();
+    const { 
+      to, 
+      type = 'template',
+      templateName, 
+      message,
+      languageCode = 'he', 
+      parameters = [],
+      imageUrl
+    }: WhatsAppRequest = await req.json();
 
-    console.log('📱 Sending WhatsApp message:', { to, templateName, parameters });
+    console.log('📱 Sending WhatsApp message:', { to, type, templateName, message, parameters });
 
     if (!WHATSAPP_TOKEN) {
       throw new Error('WHATSAPP_TOKEN is not configured');
     }
 
-    // Build template components based on parameters
-    const components = [];
-    
-    if (parameters.length > 0) {
-      components.push({
-        type: "body",
-        parameters: parameters.map(param => ({
-          type: "text",
-          text: param
-        }))
-      });
-    }
+    let body: any;
 
-    // Send WhatsApp template message
-    // IMPORTANT: Replace YOUR_PHONE_NUMBER_ID with your actual WhatsApp Business Phone Number ID
-    // Get it from: https://business.facebook.com/wa/manage/phone-numbers/
-    const response = await fetch(`${WHATSAPP_API_URL}/YOUR_PHONE_NUMBER_ID/messages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    if (type === 'text') {
+      // Send as text message
+      body = {
+        messaging_product: "whatsapp",
+        to: to,
+        type: "text",
+        text: {
+          body: message
+        }
+      };
+    } else {
+      // Send as template message
+      const components = [];
+      
+      // Add image header if provided
+      if (imageUrl) {
+        components.push({
+          type: "header",
+          parameters: [{
+            type: "image",
+            image: {
+              link: imageUrl
+            }
+          }]
+        });
+      }
+      
+      // Add body parameters
+      if (parameters.length > 0) {
+        components.push({
+          type: "body",
+          parameters: parameters.map(param => ({
+            type: "text",
+            text: param
+          }))
+        });
+      }
+
+      body = {
         messaging_product: "whatsapp",
         to: to,
         type: "template",
@@ -62,9 +91,21 @@ serve(async (req) => {
           language: {
             code: languageCode
           },
-          components: components
+          components: components.length > 0 ? components : undefined
         }
-      }),
+      };
+    }
+
+    // Send WhatsApp message
+    // IMPORTANT: Replace YOUR_PHONE_NUMBER_ID with your actual WhatsApp Business Phone Number ID
+    // Get it from: https://business.facebook.com/wa/manage/phone-numbers/
+    const response = await fetch(`${WHATSAPP_API_URL}/YOUR_PHONE_NUMBER_ID/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
     });
 
     const data = await response.json();

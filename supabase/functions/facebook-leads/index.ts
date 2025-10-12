@@ -138,27 +138,6 @@ serve(async (req) => {
               p_created_at: new Date(leadDetails.created_time),
             });
             
-            // Send welcome WhatsApp message
-            if (formattedPhone && leadName) {
-              try {
-                await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-message`, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${supabaseKey}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    to: formattedPhone,
-                    templateName: 'welcome_message',
-                    parameters: [leadName]
-                  })
-                });
-                console.log('✅ Welcome WhatsApp message sent to:', formattedPhone);
-              } catch (whatsappError) {
-                console.error('❌ Failed to send welcome WhatsApp message:', whatsappError);
-              }
-            }
-
             results.push({ success: true, lead_id: formattedLead.id, message: `ליד נשמר בהצלחה: ${leadName || 'ללא שם'}` });
           } catch (err) {
             results.push({ success: false, error: err instanceof Error ? err.message : String(err) });

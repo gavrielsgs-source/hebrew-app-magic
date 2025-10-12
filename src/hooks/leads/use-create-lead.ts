@@ -41,23 +41,6 @@ export const useCreateLead = () => {
         throw new Error(leadError.message);
       }
 
-      // Send welcome WhatsApp message
-      if (formattedPhone) {
-        try {
-          await supabase.functions.invoke('send-whatsapp-message', {
-            body: {
-              to: formattedPhone,
-              templateName: 'welcome_message',
-              parameters: [cleanedLead.name]
-            }
-          });
-          console.log('✅ Welcome WhatsApp message sent to:', formattedPhone);
-        } catch (whatsappError) {
-          console.error('❌ Failed to send welcome WhatsApp message:', whatsappError);
-          // Don't throw error - continue with lead creation
-        }
-      }
-
       // Automatically create customer from lead data
       const customerData = {
         full_name: cleanedLead.name,
@@ -99,6 +82,7 @@ export const useCreateLead = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });
       queryClient.invalidateQueries({ queryKey: ["customers"] });
+      toast.success("הליד נוסף בהצלחה");
     },
     onError: (error) => {
       console.error("🔍 [useCreateLead] Mutation error:", error);

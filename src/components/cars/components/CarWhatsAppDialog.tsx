@@ -13,6 +13,7 @@ import { Send, Car as CarIcon, Phone, User } from "lucide-react";
 import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/use-profile";
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -24,16 +25,10 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [manualName, setManualName] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState("");
-  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("car_template_default");
   const [customMessage, setCustomMessage] = useState("");
   const { leads } = useLeads();
-
-  // Initialize default template
-  useEffect(() => {
-    if (whatsappTemplates.length > 0) {
-      setSelectedTemplateId(whatsappTemplates[0].id);
-    }
-  }, []);
+  const { profile } = useProfile();
 
   // Generate message based on template and car details
   const generateCarMessage = () => {
@@ -94,27 +89,51 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     }
 
     const formattedNumber = formatPhoneNumber(phoneNumber);
+    const userPhone = profile?.phone || '0000000000';
     
     try {
-      // Send via WhatsApp API with car_template
-      const { error } = await supabase.functions.invoke('send-whatsapp-message', {
-        body: {
-          to: formattedNumber,
-          templateName: 'car_template',
-          parameters: [
-            car.model,
-            car.year.toString(),
-            car.price.toLocaleString(),
-            car.fuel_type || 'לא צוין',
-            car.kilometers.toLocaleString(),
-            car.transmission || 'לא צוין',
-            '' // Parameter 7 - additional info
-          ]
-        }
-      });
+      if (selectedTemplateId === 'car_template_default') {
+        // Send default car_template via WhatsApp API
+        // For now, we don't send image_url as car type doesn't have images field
+        // You can add this later when car images are properly stored
+        
+        const { error } = await supabase.functions.invoke('send-whatsapp-message', {
+          body: {
+            type: 'template',
+            to: formattedNumber,
+            templateName: 'car_template',
+            parameters: [
+              car.model, // {{1}}
+              car.year.toString(), // {{2}}
+              car.price.toLocaleString(), // {{3}}
+              car.fuel_type || 'לא צוין', // {{4}}
+              car.kilometers.toLocaleString(), // {{5}}
+              car.transmission || 'לא צוין', // {{6}}
+              userPhone // {{7}} - מספר טלפון של המשתמש
+            ]
+          }
+        });
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+      } else {
+        // Send custom template or generated message as text
+        const messageText = selectedTemplateId === "custom" 
+          ? customMessage 
+          : generateCarMessage();
+
+        const { error } = await supabase.functions.invoke('send-whatsapp-message', {
+          body: {
+            type: 'text',
+            to: formattedNumber,
+            message: messageText
+          }
+        });
+
+        if (error) {
+          throw error;
+        }
       }
 
       toast.success("ההודעה נשלחה בוואטסאפ");
@@ -223,6 +242,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
           <SelectContent align="end">
+            <SelectItem value="car_template_default">תבנית דפולטיבית (עם תמונה)</SelectItem>
             {whatsappTemplates.map(template => (
               <SelectItem key={template.id} value={template.id}>
                 {template.name}
@@ -249,14 +269,24 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       )}
 
       {/* Message Preview */}
-      <div>
-        <Label className="text-right text-sm mb-2 block">תצוגה מקדימה של ההודעה</Label>
-        <div className="bg-muted/50 p-3 rounded-lg border max-h-48 overflow-y-auto">
-          <pre className="text-sm whitespace-pre-wrap text-right" dir="rtl">
-            {currentMessage || "בחר תבנית או כתוב הודעה מותאמת"}
-          </pre>
+      {selectedTemplateId !== "car_template_default" && (
+        <div>
+          <Label className="text-right text-sm mb-2 block">תצוגה מקדימה של ההודעה</Label>
+          <div className="bg-muted/50 p-3 rounded-lg border max-h-48 overflow-y-auto">
+            <pre className="text-sm whitespace-pre-wrap text-right" dir="rtl">
+              {currentMessage || "בחר תבנית או כתוב הודעה מותאמת"}
+            </pre>
+          </div>
         </div>
-      </div>
+      )}
+      
+      {selectedTemplateId === "car_template_default" && (
+        <div className="bg-muted/50 p-3 rounded-lg border">
+          <p className="text-sm text-muted-foreground text-right">
+            ההודעה תישלח בתבנית דפולטיבית של WhatsApp Business עם תמונת הרכב
+          </p>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4">
