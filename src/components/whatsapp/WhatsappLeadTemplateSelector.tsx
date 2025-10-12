@@ -32,162 +32,103 @@ export function WhatsappLeadTemplateSelector({
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
 
-  // Load templates from localStorage
+// Load templates from localStorage
   useEffect(() => {
-    // Force clear localStorage if templates don't have templateContent
-    const storedTemplates = localStorage.getItem("whatsapp-templates");
-    if (storedTemplates && !storedTemplates.includes('templateContent')) {
-      console.log('Clearing old localStorage templates');
-      localStorage.removeItem("whatsapp-templates");
-      window.location.reload(); // Reload to get fresh templates
-      return;
-    }
-    
-    console.log('Loading templates from localStorage:', storedTemplates);
-    
-    if (storedTemplates) {
-      try {
-        const parsedTemplates = JSON.parse(storedTemplates);
-        console.log('Parsed templates:', parsedTemplates);
-        
-        // Filter lead templates
-        const leadTemplatesFromStorage = parsedTemplates
-          .filter((t: any) => t.type === 'lead')
-          .map((stored: any) => {
-            console.log('Processing lead template:', stored.name, 'Content:', stored.templateContent);
-            return {
-              id: stored.id,
-              name: stored.name,
-              description: stored.description,
-              type: 'lead' as const,
-              templateContent: stored.templateContent || '',
-              generateMessage: (leadName: string, leadSource?: string) => {
-                const content = stored.templateContent || '';
-                console.log('Generating message with content:', content);
-                if (!content) {
-                  return `היי ${leadName}! 👋
+    try {
+      const storedTemplates = localStorage.getItem("whatsapp-templates");
+      let parsedTemplates: any[] = [];
 
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`;
-                }
-                return content
-                  .replace(/\{\{leadName\}\}/g, leadName || '')
-                  .replace(/\{\{leadSource\}\}/g, leadSource || '')
-                  .replace(/\$\{leadName\}/g, leadName || '')
-                  .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                           leadSource ? ` דרך ${leadSource}` : '');
-              }
-            };
-          });
-
-        // Filter car templates  
-        const carTemplatesFromStorage = parsedTemplates
-          .filter((t: any) => t.type === 'car' && t.templateContent && t.templateContent.trim())
-          .map((stored: any) => ({
-            id: stored.id,
-            name: stored.name,
-            description: stored.description,
-            type: 'car' as const,
-            templateContent: stored.templateContent,
-            generateMessage: (leadName: string, leadSource?: string) => {
-              const content = stored.templateContent;
-              // For car templates, replace lead variables with default car message
-              return content
-                .replace(/\$\{car\.make\}/g, 'רכב מעולה')
-                .replace(/\$\{car\.model\}/g, '')
-                .replace(/\$\{car\.year\}/g, '')
-                .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 'מחיר אטרקטיבי')
-                .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g, 'קילומטראז נמוך')
-                .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, 'צבע יפה')
-                .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, 'מנוע חזק')
-                .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, 'תיבת הילוכים מעולה')
-                .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, 'חסכוני בדלק');
-            }
-          }));
-        
-        console.log('Lead templates processed:', leadTemplatesFromStorage);
-        console.log('Car templates processed:', carTemplatesFromStorage);
-        
-        setLeadTemplates(leadTemplatesFromStorage);
-        setCarTemplates(carTemplatesFromStorage);
-        
-        // Set default selection
-        if (leadTemplatesFromStorage.length > 0) {
-          setSelectedTemplate(leadTemplatesFromStorage[0]);
-        } else if (carTemplatesFromStorage.length > 0) {
-          setSelectedTemplate(carTemplatesFromStorage[0]);
-          setTemplateType("car");
-          setActiveTab("car-templates");
+      if (storedTemplates) {
+        try {
+          parsedTemplates = JSON.parse(storedTemplates);
+        } catch (e) {
+          console.error("Failed parsing templates from localStorage, using defaults", e);
         }
-        
-        // Add default lead template if none exist
-        if (leadTemplatesFromStorage.length === 0) {
-          const defaultLeadTemplate: UnifiedTemplate = {
-            id: 'default_intro',
-            name: 'הכרות עם לקוח פוטנציאלי',
-            description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
-            type: 'lead' as const,
-            generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
-
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`
-          };
-          setLeadTemplates([defaultLeadTemplate]);
-          if (!selectedTemplate) {
-            setSelectedTemplate(defaultLeadTemplate);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading templates:", error);
-        // Fallback to default template
-        const defaultTemplate: UnifiedTemplate = {
-          id: 'default_intro',
-          name: 'הכרות עם לקוח פוטנציאלי',
-          description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
-          type: 'lead' as const,
-          generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
-
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`
-        };
-        setLeadTemplates([defaultTemplate]);
-        setSelectedTemplate(defaultTemplate);
       }
-    } else {
-      // No stored templates, provide default
+
+      // Normalize objects to ensure templateContent exists
+      const normalized = Array.isArray(parsedTemplates)
+        ? parsedTemplates.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            description: t.description,
+            type: t.type === 'car' ? 'car' : 'lead',
+            templateContent: typeof t.templateContent === 'string' ? t.templateContent : '',
+          }))
+        : [];
+
+      // Lead templates
+      const leadTemplatesFromStorage: UnifiedTemplate[] = normalized
+        .filter((t) => t.type === 'lead')
+        .map((stored) => ({
+          id: stored.id,
+          name: stored.name,
+          description: stored.description,
+          type: 'lead' as const,
+          templateContent: stored.templateContent || '',
+          generateMessage: (leadName: string, leadSource?: string) => {
+            const content = stored.templateContent || '';
+            if (!content) {
+              return `היי ${leadName}! 👋\n\nקיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.\n\nמתי תהיה זמין לשיחת ייעוץ קצרה? 📞\n\nנשמח לעזור לך למצוא בדיוק מה שמתאים לך!\n\nבברכה,\nצוות המכירות`;
+            }
+            return content
+              .replace(/\{\{leadName\}\}/g, leadName || '')
+              .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '')
+              .replace(/\$\{leadName\}/g, leadName || '')
+              .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, leadSource ? ` דרך ${leadSource}` : '');
+          }
+        }));
+
+      // Car templates
+      const carTemplatesFromStorage: UnifiedTemplate[] = normalized
+        .filter((t) => t.type === 'car' && typeof t.templateContent === 'string' && t.templateContent.trim())
+        .map((stored) => ({
+          id: stored.id,
+          name: stored.name,
+          description: stored.description,
+          type: 'car' as const,
+          templateContent: stored.templateContent,
+          generateMessage: () => {
+            const content = stored.templateContent as string;
+            return content
+              .replace(/\$\{car\.make\}/g, 'רכב מעולה')
+              .replace(/\$\{car\.model\}/g, '')
+              .replace(/\$\{car\.year\}/g, '')
+              .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 'מחיר אטרקטיבי')
+              .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק\"מ`\s*:\s*'[^']*'\}/g, 'קילומטראז נמוך')
+              .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, 'צבע יפה')
+              .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, 'מנוע חזק')
+              .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, 'תיבת הילוכים מעולה')
+              .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, 'חסכוני בדלק');
+          }
+        }));
+
+      setLeadTemplates(leadTemplatesFromStorage);
+      setCarTemplates(carTemplatesFromStorage);
+
+      // Default selection (prefer client_intro)
+      const clientIntro = leadTemplatesFromStorage.find(t => t.id === 'client_intro');
+      if (clientIntro) {
+        setSelectedTemplate(clientIntro);
+        setTemplateType('lead');
+        setActiveTab('lead-templates');
+      } else if (leadTemplatesFromStorage.length > 0) {
+        setSelectedTemplate(leadTemplatesFromStorage[0]);
+        setTemplateType('lead');
+        setActiveTab('lead-templates');
+      } else if (carTemplatesFromStorage.length > 0) {
+        setSelectedTemplate(carTemplatesFromStorage[0]);
+        setTemplateType('car');
+        setActiveTab('car-templates');
+      }
+    } catch (error) {
+      console.error("Error loading templates:", error);
       const defaultTemplate: UnifiedTemplate = {
         id: 'default_intro',
         name: 'הכרות עם לקוח פוטנציאלי',
         description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
         type: 'lead' as const,
-        generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋
-
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`
+        generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋\n\nקיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.\n\nמתי תהיה זמין לשיחת ייעוץ קצרה? 📞\n\nנשמח לעזור לך למצוא בדיוק מה שמתאים לך!\n\nבברכה,\nצוות המכירות`
       };
       setLeadTemplates([defaultTemplate]);
       setSelectedTemplate(defaultTemplate);
