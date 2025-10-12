@@ -28,15 +28,6 @@ export function LeadCard({ lead }: LeadCardProps) {
     console.log('Schedule action triggered for lead:', lead.id);
   };
 
-    const name_keys = ["full_name", "first_name"]
-  const phone_keys = ["phone", "phone_number"];
-  console.log(lead)
-   const leadFields = lead.lead_data.field_data;
-  console.log(leadFields)
-  const nameField = leadFields.find((f) => name_keys.includes(f.name));
-  const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
-  const emailField = leadFields.find((f) => f.name === "email");
-
   return (
     <Card className="lead-enhanced leads-card group overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl border border-primary/10 bg-gradient-to-br from-background/95 via-background/90 to-background/85 backdrop-blur-md hover:scale-[1.02] hover:border-primary/20 animate-fade-in">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -46,9 +37,9 @@ export function LeadCard({ lead }: LeadCardProps) {
           <LeadCardContent lead={lead} />
           <div className="mt-8 transform transition-all duration-300 group-hover:translate-y-[-1px]">
             <LeadCardActions
-              leadId={lead.lead_id as string}
-              leadName={nameField ? nameField.values.join(",") : "" as string}
-              leadPhone={phoneField ? phoneField.values.join(",") : "" as string}
+              leadId={lead.id as string}
+              leadName={lead.name || ""}
+              leadPhone={lead.phone || ""}
               leadSource={lead.source as string}
               onEdit={handleEdit}
               onDelete={handleDelete}
