@@ -29,14 +29,6 @@ export function LeadsTableRow({
   isEditLeadOpen,
   setIsEditLeadOpen
 }: LeadsTableRowProps) {
-  const name_keys = ["full_name", "first_name"]
-  const phone_keys = ["phone", "phone_number"];
-   const leadFields = lead.lead_data.field_data;
-  const nameField = leadFields.find((f) => name_keys.includes(f.name));
-  const phoneField = leadFields.find((f) => phone_keys.includes(f.name));
-  const emailField = leadFields.find((f) => f.name == "email");
-  
-  
   return (
     <TableRow 
       key={lead.id} 
@@ -45,13 +37,13 @@ export function LeadsTableRow({
       }`}
     >
       <TableCell className="font-medium text-right py-5 px-8">
-        <div className="font-bold text-primary text-lg">{nameField ? nameField.values.join(",") : "-"}</div>
+        <div className="font-bold text-primary text-lg">{lead.name || "-"}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 font-medium">{phoneField ? phoneField.values.join(",") : '-'}</div>
+        <div className="text-foreground/80 font-medium">{lead.phone || '-'}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
-        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{emailField ? emailField.values.join(",") : '-'}</div>
+        <div className="text-foreground/80 truncate max-w-[200px] font-medium">{lead.email || '-'}</div>
       </TableCell>
       <TableCell className="text-right py-5 px-8">
         <Badge 
