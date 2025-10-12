@@ -11,6 +11,8 @@ import { useLeads } from "@/hooks/use-leads";
 import { Car } from "@/types/car";
 import { Send, Car as CarIcon, Phone, User } from "lucide-react";
 import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
+import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -69,7 +71,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     }
   };
 
-  const formatPhoneForWhatsApp = (phone: string) => {
+  const formatPhoneNumber = (phone: string) => {
     if (!phone) return '';
     
     const cleanPhone = phone.replace(/[^0-9]/g, '');
@@ -85,25 +87,42 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     return '972' + cleanPhone;
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!phoneNumber) {
       toast.error("יש להזין מספר טלפון או לבחור לקוח");
       return;
     }
 
-    const message = generateCarMessage();
-    if (!message.trim()) {
-      toast.error("אנא בחר תבנית או כתוב הודעה");
-      return;
-    }
-
-    const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
-    const encodedText = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
-    window.open(whatsappUrl, '_blank');
+    const formattedNumber = formatPhoneNumber(phoneNumber);
     
-    toast.success("ההודעה נשלחה בוואטסאפ");
-    onClose();
+    try {
+      // Send via WhatsApp API with car_template
+      const { error } = await supabase.functions.invoke('send-whatsapp-message', {
+        body: {
+          to: formattedNumber,
+          templateName: 'car_template',
+          parameters: [
+            car.model,
+            car.year.toString(),
+            car.price.toLocaleString(),
+            car.fuel_type || 'לא צוין',
+            car.kilometers.toLocaleString(),
+            car.transmission || 'לא צוין',
+            '' // Parameter 7 - additional info
+          ]
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("ההודעה נשלחה בוואטסאפ");
+      onClose();
+    } catch (error) {
+      console.error('Error sending WhatsApp message:', error);
+      toast.error("שגיאה בשליחת ההודעה");
+    }
   };
 
   const currentMessage = generateCarMessage();

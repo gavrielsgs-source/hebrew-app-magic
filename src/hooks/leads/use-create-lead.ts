@@ -2,6 +2,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
+import { toast } from "sonner";
 
 export const useCreateLead = () => {
   const queryClient = useQueryClient();
@@ -13,9 +15,13 @@ export const useCreateLead = () => {
       
       if (!user) throw new Error('User not authenticated');
       
+      // Convert phone to WhatsApp format (972XXXXXXXXX)
+      const formattedPhone = newLead.phone ? formatPhoneForWhatsApp(newLead.phone) : null;
+      
       // Convert empty strings to null for UUID fields to prevent database errors
       const cleanedLead = {
         ...newLead,
+        phone: formattedPhone,
         car_id: newLead.car_id === "" ? null : newLead.car_id,
         assigned_to: newLead.assigned_to === "" ? null : newLead.assigned_to,
         agency_id: newLead.agency_id === "" ? null : newLead.agency_id,
@@ -33,6 +39,23 @@ export const useCreateLead = () => {
       if (leadError) {
         console.error("🔍 [useCreateLead] Database error:", leadError);
         throw new Error(leadError.message);
+      }
+
+      // Send welcome WhatsApp message
+      if (formattedPhone) {
+        try {
+          await supabase.functions.invoke('send-whatsapp-message', {
+            body: {
+              to: formattedPhone,
+              templateName: 'welcome_message',
+              parameters: [cleanedLead.name]
+            }
+          });
+          console.log('✅ Welcome WhatsApp message sent to:', formattedPhone);
+        } catch (whatsappError) {
+          console.error('❌ Failed to send welcome WhatsApp message:', whatsappError);
+          // Don't throw error - continue with lead creation
+        }
       }
 
       // Automatically create customer from lead data

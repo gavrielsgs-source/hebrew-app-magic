@@ -2,6 +2,15 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
+// Format phone to WhatsApp format (972XXXXXXXXX)
+function formatPhoneForWhatsApp(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  let cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('0')) cleaned = cleaned.substring(1);
+  if (!cleaned.startsWith('972')) cleaned = '972' + cleaned;
+  return cleaned;
+}
+
 // CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -97,6 +106,23 @@ serve(async (req) => {
 
           const leadDetails = await leadRes.json();
 
+            // Extract phone and name from field_data
+            let leadPhone = null;
+            let leadName = null;
+            
+            if (leadDetails.field_data && Array.isArray(leadDetails.field_data)) {
+              for (const field of leadDetails.field_data) {
+                if (field.name === 'phone_number' || field.name === 'phone') {
+                  leadPhone = field.values[0];
+                } else if (field.name === 'full_name' || field.name === 'name') {
+                  leadName = field.values[0];
+                }
+              }
+            }
+
+            // Format phone to WhatsApp format
+            const formattedPhone = formatPhoneForWhatsApp(leadPhone);
+
            const formattedLead = {
               created_at: new Date(leadDetails.created_time).toISOString(),
               id: leadDetails.id,
@@ -112,8 +138,28 @@ serve(async (req) => {
               p_created_at: new Date(leadDetails.created_time),
             });
             
+            // Send welcome WhatsApp message
+            if (formattedPhone && leadName) {
+              try {
+                await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-message`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    to: formattedPhone,
+                    templateName: 'welcome_message',
+                    parameters: [leadName]
+                  })
+                });
+                console.log('✅ Welcome WhatsApp message sent to:', formattedPhone);
+              } catch (whatsappError) {
+                console.error('❌ Failed to send welcome WhatsApp message:', whatsappError);
+              }
+            }
 
-            results.push({ success: true, lead_id: lead.id, message: `ליד נשמר בהצלחה: ${formattedLead.name}` });
+            results.push({ success: true, lead_id: formattedLead.id, message: `ליד נשמר בהצלחה: ${leadName || 'ללא שם'}` });
           } catch (err) {
             results.push({ success: false, error: err instanceof Error ? err.message : String(err) });
           }

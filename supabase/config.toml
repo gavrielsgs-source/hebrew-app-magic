@@ -57,6 +57,9 @@ verify_jwt = true
 [functions.exchange-for-long-lived-token]
 verify_jwt = false
 
+[functions.send-whatsapp-message]
+verify_jwt = true
+
 [auth]
 enabled = true
 site_url = "https://carsleadapp.com"

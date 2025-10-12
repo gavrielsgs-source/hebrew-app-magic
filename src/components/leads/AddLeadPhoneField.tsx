@@ -14,9 +14,17 @@ export function AddLeadPhoneField({ control }: Props) {
         <FormItem>
           <FormLabel>טלפון</FormLabel>
           <FormControl>
-            <Input placeholder="050-0000000" {...field} />
+            <Input 
+              placeholder="050-0000000" 
+              {...field} 
+              dir="ltr"
+              className="text-left"
+            />
           </FormControl>
           <FormMessage />
+          <p className="text-xs text-muted-foreground text-right mt-1">
+            המספר יומר אוטומטית לפורמט 972XXXXXXXXX
+          </p>
         </FormItem>
       )}
     />
