@@ -138,6 +138,39 @@ serve(async (req) => {
               p_created_at: new Date(leadDetails.created_time),
             });
             
+            // Send welcome WhatsApp message
+            if (formattedPhone && leadName) {
+              try {
+                console.log('📱 Attempting to send welcome WhatsApp message to:', formattedPhone, 'for:', leadName);
+                const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-message`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    type: 'template',
+                    to: formattedPhone,
+                    templateName: 'welcome_message',
+                    languageCode: 'he',
+                    parameters: [leadName]
+                  })
+                });
+
+                const whatsappResult = await whatsappResponse.json();
+                
+                if (!whatsappResponse.ok) {
+                  console.error('❌ WhatsApp API error:', whatsappResult);
+                } else {
+                  console.log('✅ Welcome WhatsApp message sent successfully to:', formattedPhone);
+                }
+              } catch (whatsappError) {
+                console.error('❌ Failed to send welcome WhatsApp message:', whatsappError);
+              }
+            } else {
+              console.log('⚠️ Skipping WhatsApp message - missing phone or name:', { phone: formattedPhone, name: leadName });
+            }
+
             results.push({ success: true, lead_id: formattedLead.id, message: `ליד נשמר בהצלחה: ${leadName || 'ללא שם'}` });
           } catch (err) {
             results.push({ success: false, error: err instanceof Error ? err.message : String(err) });

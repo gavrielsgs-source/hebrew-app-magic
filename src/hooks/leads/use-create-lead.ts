@@ -41,6 +41,35 @@ export const useCreateLead = () => {
         throw new Error(leadError.message);
       }
 
+      console.log('🔍 [useCreateLead] Lead created successfully:', leadData);
+
+      // Send welcome WhatsApp message
+      if (formattedPhone && cleanedLead.name) {
+        try {
+          console.log('📱 Attempting to send welcome WhatsApp message to:', formattedPhone);
+          const { data: whatsappData, error: whatsappError } = await supabase.functions.invoke('send-whatsapp-message', {
+            body: {
+              type: 'template',
+              to: formattedPhone,
+              templateName: 'welcome_message',
+              languageCode: 'he',
+              parameters: [cleanedLead.name]
+            }
+          });
+
+          if (whatsappError) {
+            console.error('❌ WhatsApp error:', whatsappError);
+          } else {
+            console.log('✅ Welcome WhatsApp message sent successfully:', whatsappData);
+          }
+        } catch (whatsappError) {
+          console.error('❌ Failed to send welcome WhatsApp message:', whatsappError);
+          // Don't throw error - continue with lead creation
+        }
+      } else {
+        console.log('⚠️ Skipping WhatsApp message - missing phone or name:', { phone: formattedPhone, name: cleanedLead.name });
+      }
+
       // Automatically create customer from lead data
       const customerData = {
         full_name: cleanedLead.name,
