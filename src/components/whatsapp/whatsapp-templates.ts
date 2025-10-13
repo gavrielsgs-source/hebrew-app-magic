@@ -10,6 +10,45 @@ export interface WhatsappTemplate {
 
 export const whatsappTemplates: WhatsappTemplate[] = [
   {
+    id: "car_template_default",
+    name: "תבנית פייסבוק (דפולטיבית)",
+    description: "תבנית מאושרת בפייסבוק - לא ניתנת לעריכה",
+    type: 'car' as const,
+    templateContent: `שלום לקוח יקר! 👋
+
+רציתי לשתף אותך בפרטים על הרכב הזה:
+
+*{{1}} {{2}}*
+💰 מחיר: ₪{{3}}
+⚡ סוג דלק: {{4}}
+📍 קילומטראז׳: {{5}} ק"מ
+⚙️ תיבת הילוכים: {{6}}
+
+מעוניין לשמוע עוד פרטים או לתאם צפייה?
+{{7}}
+
+בברכה,
+צוות המכירות`,
+    generateMessage: (car) => {
+      const profile = { phone: '' }; // Will be replaced with actual profile
+      return `שלום לקוח יקר! 👋
+
+רציתי לשתף אותך בפרטים על הרכב הזה:
+
+*${car.make} ${car.model} ${car.year}*
+💰 מחיר: ₪${car.price ? car.price.toLocaleString() : 'לא צוין'}
+⚡ סוג דלק: ${car.fuel_type || 'לא צוין'}
+📍 קילומטראז׳: ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין'}
+⚙️ תיבת הילוכים: ${car.transmission || 'לא צוין'}
+
+מעוניין לשמוע עוד פרטים או לתאם צפייה?
+${profile.phone || ''}
+
+בברכה,
+צוות המכירות`;
+    }
+  },
+  {
     id: "car_details",
     name: "פרטי רכב בסיסיים",
     description: "הודעה פשוטה עם פרטי הרכב העיקריים",

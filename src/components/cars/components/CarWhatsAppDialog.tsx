@@ -242,9 +242,12 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
           <SelectContent align="end">
-            <SelectItem value="car_template_default">תבנית דפולטיבית (עם תמונה)</SelectItem>
             {whatsappTemplates.map(template => (
-              <SelectItem key={template.id} value={template.id}>
+              <SelectItem 
+                key={template.id} 
+                value={template.id}
+                disabled={template.id === "car_template_default"}
+              >
                 {template.name}
               </SelectItem>
             ))}
@@ -253,7 +256,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </Select>
       </div>
 
-      {/* Custom Message Input */}
+      {/* Custom Message Input or Default Template Display */}
       {selectedTemplateId === "custom" && (
         <div>
           <Label className="text-right text-sm">הודעה מותאמת אישית</Label>
@@ -264,6 +267,19 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             className="text-right resize-none"
             dir="rtl"
             placeholder="כתוב כאן את ההודעה המותאמת אישית..."
+          />
+        </div>
+      )}
+      
+      {selectedTemplateId === "car_template_default" && (
+        <div>
+          <Label className="text-right text-sm">תבנית דפולטיבית (לא ניתנת לעריכה)</Label>
+          <Textarea
+            value={whatsappTemplates.find(t => t.id === "car_template_default")?.templateContent || ''}
+            disabled
+            rows={8}
+            className="text-right resize-none opacity-60 cursor-not-allowed bg-muted"
+            dir="rtl"
           />
         </div>
       )}
