@@ -83,7 +83,6 @@ serve(async (req) => {
       if (!leadData.form_id || !leadData.leadgen_id || !leadData.page_id) continue;
 
       try {
-        // ✅ Get all tokens instead of single
         const { data: tokens, error: tokenError } = await supabase
           .from("facebook_tokens")
           .select("access_token, user_id")
@@ -94,7 +93,6 @@ serve(async (req) => {
           continue;
         }
 
-        // ✅ Loop through each token
         for (const tokenData of tokens) {
           const pageAccessToken = tokenData.access_token;
 
@@ -107,7 +105,6 @@ serve(async (req) => {
 
           const leadDetails = await leadRes.json();
 
-          // Extract phone and name from field_data
           let leadPhone = null;
           let leadName = null;
 
@@ -121,7 +118,6 @@ serve(async (req) => {
             }
           }
 
-          // Format phone to WhatsApp format
           const formattedPhone = formatPhoneForWhatsApp(leadPhone);
 
           const formattedLead = {
