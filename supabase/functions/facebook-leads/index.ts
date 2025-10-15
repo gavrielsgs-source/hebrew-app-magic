@@ -50,138 +50,144 @@ serve(async (req) => {
   // Handle POST (actual webhook)
   if (req.method === "POST") {
     try {
-      const appSecret = Deno.env.get("FB_APP_SECRET");
-      const supabaseUrl = Deno.env.get("SUPABASE_URL");
-      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const appSecret = Deno.env.get("FB_APP_SECRET");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-      if (!appSecret || !supabaseUrl || !supabaseKey) throw new Error("Missing required environment variables");
+  if (!appSecret || !supabaseUrl || !supabaseKey) throw new Error("Missing required environment variables");
 
-      // ✅ Read body once
-      const bodyText = await req.text();
-      const signatureHeader = req.headers.get("x-hub-signature");
+  // ✅ Read body once
+  const bodyText = await req.text();
+  const signatureHeader = req.headers.get("x-hub-signature");
 
-      const signatureValid = await verifyFacebookSignature(bodyText, signatureHeader || "", appSecret);
-      if (!signatureValid) return new Response("Invalid Facebook signature", { status: 401, headers: corsHeaders });
+  const signatureValid = await verifyFacebookSignature(bodyText, signatureHeader || "", appSecret);
+  if (!signatureValid) return new Response("Invalid Facebook signature", { status: 401, headers: corsHeaders });
 
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const webhookData = JSON.parse(bodyText);
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  const webhookData = JSON.parse(bodyText);
 
-      if (!webhookData.entry || !Array.isArray(webhookData.entry) || webhookData.entry.length === 0) {
-        return new Response(JSON.stringify({ error: "No entries in payload" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
+  if (!webhookData.entry || !Array.isArray(webhookData.entry) || webhookData.entry.length === 0) {
+    return new Response(JSON.stringify({ error: "No entries in payload" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
 
-      const results = [];
+  const results = [];
 
-      for (const entry of webhookData.entry) {
-        if (!entry.changes || !Array.isArray(entry.changes)) continue;
-  
-        for (const change of entry.changes) {
-          if (change.field !== "leadgen") continue;
+  for (const entry of webhookData.entry) {
+    if (!entry.changes || !Array.isArray(entry.changes)) continue;
 
-          const leadData = change.value;
-          console.log(leadData)
-          if (!leadData.form_id || !leadData.leadgen_id || !leadData.page_id) continue;
-        
-          try {
-            // Get saved page token
-            const { data: tokenData, error: tokenError } = await supabase
-              .from('facebook_tokens')
-              .select('access_token, user_id')
-              .eq('page_id', leadData.page_id)
-              .single();
-    
-            if (tokenError || !tokenData) {
-              results.push({ success: false, message: `לא נמצא טוקן שמור עבור דף ${leadData.page_id}` });
-              continue;
-            }
+    for (const change of entry.changes) {
+      if (change.field !== "leadgen") continue;
 
-            const pageAccessToken = tokenData.access_token;
+      const leadData = change.value;
+      console.log(leadData);
+      if (!leadData.form_id || !leadData.leadgen_id || !leadData.page_id) continue;
 
-            // Fetch lead details
-            const leadRes = await fetch(`https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${pageAccessToken}`);
-            if (!leadRes.ok) {
-              const errorText = await leadRes.text();
-              throw new Error(`Failed to fetch lead: ${errorText}`);
-            }
+      try {
+        // ✅ Get all tokens instead of single
+        const { data: tokens, error: tokenError } = await supabase
+          .from("facebook_tokens")
+          .select("access_token, user_id")
+          .eq("page_id", leadData.page_id);
+
+        if (tokenError || !tokens || tokens.length === 0) {
+          results.push({ success: false, message: `לא נמצא טוקן שמור עבור דף ${leadData.page_id}` });
+          continue;
+        }
+
+        // ✅ Loop through each token
+        for (const tokenData of tokens) {
+          const pageAccessToken = tokenData.access_token;
+
+          // Fetch lead details
+          const leadRes = await fetch(`https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${pageAccessToken}`);
+          if (!leadRes.ok) {
+            const errorText = await leadRes.text();
+            throw new Error(`Failed to fetch lead: ${errorText}`);
+          }
 
           const leadDetails = await leadRes.json();
 
-            // Extract phone and name from field_data
-            let leadPhone = null;
-            let leadName = null;
-            
-            if (leadDetails.field_data && Array.isArray(leadDetails.field_data)) {
-              for (const field of leadDetails.field_data) {
-                if (field.name === 'phone_number' || field.name === 'phone') {
-                  leadPhone = field.values[0];
-                } else if (field.name === 'full_name' || field.name === 'name') {
-                  leadName = field.values[0];
-                }
+          // Extract phone and name from field_data
+          let leadPhone = null;
+          let leadName = null;
+
+          if (leadDetails.field_data && Array.isArray(leadDetails.field_data)) {
+            for (const field of leadDetails.field_data) {
+              if (field.name === "phone_number" || field.name === "phone") {
+                leadPhone = field.values[0];
+              } else if (field.name === "full_name" || field.name === "name") {
+                leadName = field.values[0];
               }
             }
-
-            // Format phone to WhatsApp format
-            const formattedPhone = formatPhoneForWhatsApp(leadPhone);
-
-           const formattedLead = {
-              created_at: new Date(leadDetails.created_time).toISOString(),
-              id: leadDetails.id,
-              created_time: leadDetails.created_time,
-              field_data: leadDetails.field_data || [],
-            };
-            
-            const { error } = await supabase.rpc("save_facebook_lead" as any, {
-              p_user_id: tokenData.user_id,
-              p_page_id: leadData.page_id,
-              p_lead_id: leadDetails.id,
-              p_lead_data: formattedLead,
-              p_created_at: new Date(leadDetails.created_time),
-            });
-            
-            // Send welcome WhatsApp message
-            if (formattedPhone && leadName) {
-              try {
-                console.log('📱 Attempting to send welcome WhatsApp message to:', formattedPhone, 'for:', leadName);
-                const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-message`, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${supabaseKey}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    type: 'template',
-                    to: formattedPhone,
-                    templateName: 'welcome_message',
-                    languageCode: 'he',
-                    parameters: [leadName]
-                  })
-                });
-
-                const whatsappResult = await whatsappResponse.json();
-                
-                if (!whatsappResponse.ok) {
-                  console.error('❌ WhatsApp API error:', whatsappResult);
-                } else {
-                  console.log('✅ Welcome WhatsApp message sent successfully to:', formattedPhone);
-                }
-              } catch (whatsappError) {
-                console.error('❌ Failed to send welcome WhatsApp message:', whatsappError);
-              }
-            } else {
-              console.log('⚠️ Skipping WhatsApp message - missing phone or name:', { phone: formattedPhone, name: leadName });
-            }
-
-            results.push({ success: true, lead_id: formattedLead.id, message: `ליד נשמר בהצלחה: ${leadName || 'ללא שם'}` });
-          } catch (err) {
-            results.push({ success: false, error: err instanceof Error ? err.message : String(err) });
           }
-        }
-      }
 
-      return new Response(JSON.stringify({ success: true, results }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: "Internal server error", details: error instanceof Error ? error.message : String(error) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          // Format phone to WhatsApp format
+          const formattedPhone = formatPhoneForWhatsApp(leadPhone);
+
+          const formattedLead = {
+            created_at: new Date(leadDetails.created_time).toISOString(),
+            id: leadDetails.id,
+            created_time: leadDetails.created_time,
+            field_data: leadDetails.field_data || [],
+          };
+
+          const { error } = await supabase.rpc("save_facebook_lead" as any, {
+            p_user_id: tokenData.user_id,
+            p_page_id: leadData.page_id,
+            p_lead_id: leadDetails.id,
+            p_lead_data: formattedLead,
+            p_created_at: new Date(leadDetails.created_time),
+          });
+
+          // Send welcome WhatsApp message
+          if (formattedPhone && leadName) {
+            try {
+              console.log("📱 Attempting to send welcome WhatsApp message to:", formattedPhone, "for:", leadName);
+              const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-message`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${supabaseKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  type: "template",
+                  to: formattedPhone,
+                  templateName: "welcome_message",
+                  languageCode: "he",
+                  parameters: [leadName],
+                }),
+              });
+
+              const whatsappResult = await whatsappResponse.json();
+
+              if (!whatsappResponse.ok) {
+                console.error("❌ WhatsApp API error:", whatsappResult);
+              } else {
+                console.log("✅ Welcome WhatsApp message sent successfully to:", formattedPhone);
+              }
+            } catch (whatsappError) {
+              console.error("❌ Failed to send welcome WhatsApp message:", whatsappError);
+            }
+          } else {
+            console.log("⚠️ Skipping WhatsApp message - missing phone or name:", { phone: formattedPhone, name: leadName });
+          }
+
+          results.push({ success: true, lead_id: formattedLead.id, message: `ליד נשמר בהצלחה: ${leadName || "ללא שם"}` });
+        }
+      } catch (err) {
+        results.push({ success: false, error: err instanceof Error ? err.message : String(err) });
+      }
     }
+  }
+
+  return new Response(JSON.stringify(results), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+} catch (error) {
+  console.error("❌ Fatal error:", error);
+  return new Response(JSON.stringify({ error: error.message || String
+
   }
 
   return new Response("Method not allowed", { status: 405, headers: corsHeaders });
