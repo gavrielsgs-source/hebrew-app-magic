@@ -115,10 +115,6 @@ serve(async (req) => {
         
           const leadDetails = await leadRes.json();
           console.log("🟠 Lead details fetched:", leadDetails);
-        
-          // (rest of your logic)
-        }
-
 
           let leadPhone = null;
           let leadName = null;
