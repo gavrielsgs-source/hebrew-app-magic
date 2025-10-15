@@ -135,6 +135,12 @@ serve(async (req) => {
             p_created_at: new Date(leadDetails.created_time),
           });
 
+          if (error) {
+          console.error("❌ save_facebook_lead RPC failed:", error);
+          } else {
+            console.log("✅ save_facebook_lead RPC succeeded for lead:", leadDetails.id);
+          }
+
           // Send welcome WhatsApp message
           if (formattedPhone && leadName) {
             try {
