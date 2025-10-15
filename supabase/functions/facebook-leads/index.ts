@@ -83,27 +83,42 @@ serve(async (req) => {
       if (!leadData.form_id || !leadData.leadgen_id || !leadData.page_id) continue;
 
       try {
+        console.log("🟢 Entered inner try block for page:", leadData.page_id);
+
         const { data: tokens, error: tokenError } = await supabase
           .from("facebook_tokens")
           .select("access_token, user_id")
           .eq("page_id", leadData.page_id);
-
+        
+        console.log("🟡 Tokens fetched:", tokens);
+        
         if (tokenError || !tokens || tokens.length === 0) {
+          console.log("🔴 No tokens found or error:", tokenError);
           results.push({ success: false, message: `לא נמצא טוקן שמור עבור דף ${leadData.page_id}` });
           continue;
         }
-
+        
         for (const tokenData of tokens) {
+          console.log("🔵 Processing token for user:", tokenData.user_id);
+        
           const pageAccessToken = tokenData.access_token;
-
-          // Fetch lead details
+          console.log("🟢 Fetching lead details for:", leadData.leadgen_id);
+        
           const leadRes = await fetch(`https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${pageAccessToken}`);
+          console.log("🟣 Lead response status:", leadRes.status);
+        
           if (!leadRes.ok) {
             const errorText = await leadRes.text();
-            throw new Error(`Failed to fetch lead: ${errorText}`);
+            console.error("❌ Failed to fetch lead:", errorText);
+            continue;
           }
-
+        
           const leadDetails = await leadRes.json();
+          console.log("🟠 Lead details fetched:", leadDetails);
+        
+          // (rest of your logic)
+        }
+
 
           let leadPhone = null;
           let leadName = null;
