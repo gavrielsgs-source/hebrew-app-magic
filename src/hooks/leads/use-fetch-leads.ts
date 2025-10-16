@@ -1,41 +1,44 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const fetchLeads = async () => {
   try {
-    console.log('🔍 [use-fetch-leads] Starting to fetch leads');
-    
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    console.log("🔍 [use-fetch-leads] Starting to fetch leads");
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError) {
-      console.error('🔍 [use-fetch-leads] Authentication error:', userError);
+      console.error("🔍 [use-fetch-leads] Authentication error:", userError);
       throw new Error(`Authentication error: ${userError.message}`);
     }
 
     if (!user) {
-      console.log('🔍 [use-fetch-leads] No user found, returning empty array');
+      console.log("🔍 [use-fetch-leads] No user found, returning empty array");
       return [];
     }
 
-    console.log('🔍 [use-fetch-leads] Fetching leads for user:', user.id);
+    console.log("🔍 [use-fetch-leads] Fetching leads for user:", user.id);
 
+    //FETCH FROM FACEBOOK_LEADS, NOT LEADS
     const { data, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    
+      .from("facebook_leads")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
     if (error) {
-      console.error('🔍 [use-fetch-leads] Database error:', error);
+      console.error("🔍 [use-fetch-leads] Database error:", error);
       throw new Error(`Database error: ${error.message}`);
     }
-    
-    console.log('🔍 [use-fetch-leads] Successfully fetched leads:', {
+
+    console.log("🔍 [use-fetch-leads] Successfully fetched leads:", {
       count: data?.length || 0,
-      leads: data
+      leads: data,
     });
-    
+
     return data || [];
   } catch (error) {
     console.error("🔍 [use-fetch-leads] Error in fetchLeads:", error);
@@ -52,16 +55,16 @@ export const useFetchLeads = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  console.log('🔍 [use-fetch-leads] Hook result:', {
+  console.log("🔍 [use-fetch-leads] Hook result:", {
     leadsCount: data?.length || 0,
     isLoading,
-    hasError: !!error
+    hasError: !!error,
   });
 
-  return { 
-    leads: data || [], 
-    isLoading, 
+  return {
+    leads: data || [],
+    isLoading,
     error,
-    refetch
+    refetch,
   };
 };
