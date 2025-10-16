@@ -19,12 +19,12 @@ export function FacebookLeadIntegration() {
 
   const addDebugLog = (log: string) => {
     console.log("[FB Debug]:", log);
-    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${log}`]);
+    setDebugInfo((prev) => [...prev, `${new Date().toLocaleTimeString()}: ${log}`]);
   };
 
   useEffect(() => {
     addDebugLog("Starting Facebook SDK initialization...");
-    
+
     if (window.FB) {
       addDebugLog("Facebook SDK already loaded");
       setFbInitialized(true);
@@ -53,15 +53,15 @@ export function FacebookLeadIntegration() {
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       js.onload = () => addDebugLog("Facebook SDK script loaded");
       js.onerror = (e) => {
-      const errorMsg = typeof e === 'string' ? e : (e instanceof ErrorEvent ? e.message : 'network or blocked');
-      addDebugLog(`ERROR: Failed to load Facebook SDK script (${errorMsg})`);
-      console.error("Facebook SDK load error", e);
-  
-      // Try fetch as a diagnostic
-      fetch(js.src)
-        .then(r => addDebugLog(`Fetch attempt status: ${r.status}`))
-        .catch(err => addDebugLog("Fetch failed: " + err));
-    };
+        const errorMsg = typeof e === "string" ? e : e instanceof ErrorEvent ? e.message : "network or blocked";
+        addDebugLog(`ERROR: Failed to load Facebook SDK script (${errorMsg})`);
+        console.error("Facebook SDK load error", e);
+
+        // Try fetch as a diagnostic
+        fetch(js.src)
+          .then((r) => addDebugLog(`Fetch attempt status: ${r.status}`))
+          .catch((err) => addDebugLog("Fetch failed: " + err));
+      };
       document.head.appendChild(js);
     } else {
       addDebugLog("Facebook SDK script already exists");
@@ -88,11 +88,11 @@ export function FacebookLeadIntegration() {
     });
   }
 
-   const exchangeForLongLivedToken = async (shortLivedToken: string) => {
-    const res = await fetch('https://zjmkdmmnajzevoupgfhg.supabase.co/functions/v1/exchange-for-long-lived-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shortLivedToken })
+  const exchangeForLongLivedToken = async (shortLivedToken: string) => {
+    const res = await fetch("https://zjmkdmmnajzevoupgfhg.supabase.co/functions/v1/exchange-for-long-lived-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shortLivedToken }),
     });
     const data = await res.json();
     return data.access_token;
@@ -116,99 +116,113 @@ export function FacebookLeadIntegration() {
     setMessage("");
     setConnectionStatus("מתחבר...");
 
-    window.FB.login(function (response: any) {
-      addDebugLog(`Facebook login response: ${JSON.stringify(response)}`);
-      
-      if (response.authResponse) {
-        const userAccessToken = response.authResponse.accessToken;
-        addDebugLog("Successfully obtained user access token");
-        setConnectionStatus("מקבל נתוני דפים...");
+    window.FB.login(
+      function (response: any) {
+        addDebugLog(`Facebook login response: ${JSON.stringify(response)}`);
 
-        (async () => {
-          try {
-            addDebugLog("Exchanging user token for long-lived version...");
-            const longLivedUserToken = await exchangeForLongLivedToken(userAccessToken);
-            addDebugLog("Successfully obtained long-lived user token");
+        if (response.authResponse) {
+          const userAccessToken = response.authResponse.accessToken;
+          addDebugLog("Successfully obtained user access token");
+          setConnectionStatus("מקבל נתוני דפים...");
 
-            addDebugLog("Fetching user pages...");
-            const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>("/me/accounts", "GET", {
-              access_token: longLivedUserToken,
-            });
-            addDebugLog(`Found ${pagesResponse.data.length} pages`);
-            const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
-            for (const page of pagesResponse.data) {
-              addDebugLog(`Processing page: ${page.name} (${page.id})`);
-              setConnectionStatus(`מעבד דף: ${page.name}`);
-              
-              // Exchange page token for long-lived version
-              addDebugLog(`Exchanging page token for long-lived version: ${page.name}`);
-              const longLivedPageToken = await exchangeForLongLivedToken(page.access_token);
-              
-              // שמירת הטוקן הארוך של הדף
-              console.log("token for page:", longLivedPageToken)
-              await saveUserAccessToken(longLivedPageToken, page.id, page.name);
-              addDebugLog(`Saved long-lived token for page: ${page.name}`);
+          (async () => {
+            try {
+              addDebugLog("Exchanging user token for long-lived version...");
+              const longLivedUserToken = await exchangeForLongLivedToken(userAccessToken);
+              addDebugLog("Successfully obtained long-lived user token");
 
-              await subscribePageToWebhook(page.id, longLivedPageToken);
-              addDebugLog(`Subscribed page ${page.name} to webhook`);
+              addDebugLog("Fetching user pages...");
+              const pagesResponse = await fbApi<{ data: Array<{ id: string; access_token: string; name: string }> }>(
+                "/me/accounts",
+                "GET",
+                {
+                  access_token: longLivedUserToken,
+                },
+              );
+              addDebugLog(`Found ${pagesResponse.data.length} pages`);
+              const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
+              for (const page of pagesResponse.data) {
+                addDebugLog(`Processing page: ${page.name} (${page.id})`);
+                setConnectionStatus(`מעבד דף: ${page.name}`);
 
-              const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page.id}/leadgen_forms`, "GET", {
-                access_token: longLivedPageToken,
-              });
-              
-              const leadForms = leadFormsResponse.data || [];
-              addDebugLog(`Found ${leadForms.length} lead forms for page ${page.name}`);
+                // Exchange page token for long-lived version
+                addDebugLog(`Exchanging page token for long-lived version: ${page.name}`);
+                const longLivedPageToken = await exchangeForLongLivedToken(page.access_token);
 
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) throw new Error("User not authenticated");
-              const userId = user.id;
+                // שמירת הטוקן הארוך של הדף
+                console.log("token for page:", longLivedPageToken);
+                await saveUserAccessToken(longLivedPageToken, page.id, page.name);
+                addDebugLog(`Saved long-lived token for page: ${page.name}`);
 
-              for (const form of leadForms) {
-                const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
-                  access_token: longLivedPageToken,
-                });
-                const leads = leadsResponse.data || [];
-                addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
+                await subscribePageToWebhook(page.id, longLivedPageToken);
+                addDebugLog(`Subscribed page ${page.name} to webhook`);
 
-                 for (const lead of leads) {
-                    const leadId = lead.id;               
-                    const leadData = lead;               
+                const leadFormsResponse = await fbApi<{ data: Array<{ id: string }> }>(
+                  `/${page.id}/leadgen_forms`,
+                  "GET",
+                  {
+                    access_token: longLivedPageToken,
+                  },
+                );
+
+                const leadForms = leadFormsResponse.data || [];
+                addDebugLog(`Found ${leadForms.length} lead forms for page ${page.name}`);
+
+                const {
+                  data: { user },
+                } = await supabase.auth.getUser();
+                if (!user) throw new Error("User not authenticated");
+                const userId = user.id;
+
+                for (const form of leadForms) {
+                  const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
+                    access_token: longLivedPageToken,
+                  });
+                  const leads = leadsResponse.data || [];
+                  addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
+
+                  for (const lead of leads) {
+                    const leadId = lead.id;
+                    const leadData = lead;
                     const userId = user.id;
-              
-                     const { error } = await supabase.rpc("save_facebook_lead" as any, {
+
+                    const { error } = await supabase.rpc("save_facebook_lead" as any, {
                       p_user_id: userId,
                       p_page_id: page.id,
                       p_lead_id: lead.id,
                       p_lead_data: lead,
-                      p_created_at: new Date(lead.created_time), 
+                      p_created_at: new Date(lead.created_time),
                     });
                     if (error) {
                       console.error(`Failed to save lead ${leadId}:`, error.message);
                     }
-                 }
+                  }
+                }
               }
-            }
 
-            setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה! טוקנים נשמרו למערכת.");
-            setConnectionStatus(`מחובר - ${pagesResponse.data.length} דפים`);
-            addDebugLog("Integration completed successfully");
-          } catch (error: any) {
-            addDebugLog(`ERROR in integration process: ${error.message || error}`);
-            setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
-            setConnectionStatus("שגיאה בחיבור");
-          } finally {
-            setLoading(false);
-          }
-        })();
-      } else {
-        addDebugLog("Facebook login was cancelled or failed");
-        setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
-        setConnectionStatus("חיבור נכשל");
-        setLoading(false);
-      }
-    }, {
-      scope: "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads",
-    });
+              setMessage("כל הדפים שלך נרשמו ונטענו כל הלידים בהצלחה! טוקנים נשמרו למערכת.");
+              setConnectionStatus(`מחובר - ${pagesResponse.data.length} דפים`);
+              addDebugLog("Integration completed successfully");
+            } catch (error: any) {
+              addDebugLog(`ERROR in integration process: ${error.message || error}`);
+              setMessage(`שגיאה בקבלת דפים, הרשמה או טעינת לידים: ${error.message || error}`);
+              setConnectionStatus("שגיאה בחיבור");
+            } finally {
+              setLoading(false);
+            }
+          })();
+        } else {
+          addDebugLog("Facebook login was cancelled or failed");
+          setMessage("המשתמש ביטל את ההתחברות או לא נתן הרשאות מלאות.");
+          setConnectionStatus("חיבור נכשל");
+          setLoading(false);
+        }
+      },
+      {
+        scope:
+          "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads",
+      },
+    );
   };
 
   const resetConnection = () => {
@@ -216,7 +230,7 @@ export function FacebookLeadIntegration() {
     setMessage("");
     setConnectionStatus("מאפס חיבור...");
     setDebugInfo([]);
-    
+
     // Clear any Facebook auth status
     if (window.FB && window.FB.getAuthResponse) {
       window.FB.logout(() => {
@@ -234,10 +248,10 @@ export function FacebookLeadIntegration() {
 
     addDebugLog("Checking token validity...");
     setLoading(true);
-    
+
     try {
-      const { data, error } = await supabase.functions.invoke('check-facebook-tokens');
-      
+      const { data, error } = await supabase.functions.invoke("check-facebook-tokens");
+
       if (error) {
         addDebugLog(`Error checking tokens: ${error.message}`);
       } else {
@@ -275,6 +289,67 @@ export function FacebookLeadIntegration() {
     }
   };
 
+  const fetchAllLeadsFromFacebook = async () => {
+    if (!tokens || tokens.length === 0) {
+      addDebugLog("No stored Facebook page tokens found");
+      setMessage("אין טוקנים זמינים לשליפת לידים");
+      return;
+    }
+
+    setLoading(true);
+    addDebugLog("Fetching all leads from Facebook...");
+    setMessage("טוען לידים מפייסבוק...");
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+      const userId = user.id;
+
+      for (const token of tokens) {
+        const { page_id, page_name, access_token } = token;
+        addDebugLog(`Processing page: ${page_name} (${page_id})`);
+
+        const formsResponse = await fbApi<{ data: Array<{ id: string }> }>(`/${page_id}/leadgen_forms`, "GET", {
+          access_token,
+        });
+        const forms = formsResponse.data || [];
+        addDebugLog(`Found ${forms.length} lead forms for ${page_name}`);
+
+        for (const form of forms) {
+          const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", { access_token });
+          const leads = leadsResponse.data || [];
+          addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
+
+          for (const lead of leads) {
+            const leadId = lead.id;
+            const { error } = await supabase.rpc("save_facebook_lead" as any, {
+              p_user_id: userId,
+              p_page_id: page_id,
+              p_lead_id: lead.id,
+              p_lead_data: lead,
+              p_created_at: new Date(lead.created_time),
+            });
+            if (error) {
+              addDebugLog(`ERROR saving lead ${leadId}: ${error.message}`);
+            } else {
+              addDebugLog(`Saved lead ${leadId} from page ${page_name}`);
+            }
+          }
+        }
+      }
+
+      setMessage("לידים נשלפו ונשמרו בהצלחה!");
+      addDebugLog("All Facebook leads fetched and saved successfully");
+    } catch (err: any) {
+      addDebugLog(`ERROR fetching leads: ${err.message || err}`);
+      setMessage(`שגיאה בשליפת לידים: ${err.message || err}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-4 text-right space-y-4">
       {/* Status Display */}
@@ -282,29 +357,29 @@ export function FacebookLeadIntegration() {
         <div className="text-sm font-medium">סטטוס חיבור: {connectionStatus}</div>
         {tokens && tokens.length > 0 && (
           <div className="text-xs text-muted-foreground mt-1">
-            דפים מחוברים: {tokens.map(t => t.page_name).join(", ")}
+            דפים מחוברים: {tokens.map((t) => t.page_name).join(", ")}
           </div>
         )}
       </div>
 
       {/* Action Buttons */}
       <div className="flex gap-2 flex-wrap">
-        <button
-          className="btn-primary"
-          onClick={loginAndSubscribe}
-          disabled={!fbInitialized || loading}
-        >
+        <button className="btn-primary" onClick={loginAndSubscribe} disabled={!fbInitialized || loading}>
           {loading ? "טוען..." : "התחבר לפייסבוק והרשם לכל הדפים"}
         </button>
-        
+
         <button
           className="btn-secondary"
-          onClick={resetConnection}
-          disabled={loading}
+          onClick={fetchAllLeadsFromFacebook}
+          disabled={!tokens || tokens.length === 0 || loading}
         >
+          רענון לידים מפייסבוק
+        </button>
+
+        <button className="btn-secondary" onClick={resetConnection} disabled={loading}>
           איפוס חיבור
         </button>
-        
+
         <button
           className="btn-secondary"
           onClick={checkTokenStatus}
@@ -312,12 +387,8 @@ export function FacebookLeadIntegration() {
         >
           בדיקת תקפות טוקנים
         </button>
-        
-        <button
-          className="btn-secondary"
-          onClick={testFacebookAPI}
-          disabled={!fbInitialized || loading}
-        >
+
+        <button className="btn-secondary" onClick={testFacebookAPI} disabled={!fbInitialized || loading}>
           בדיקת API
         </button>
       </div>
@@ -328,12 +399,10 @@ export function FacebookLeadIntegration() {
       {/* Debug Info */}
       {debugInfo.length > 0 && (
         <details className="bg-muted/30 p-3 rounded-lg">
-          <summary className="cursor-pointer text-sm font-medium">
-            מידע דיבוג ({debugInfo.length} הודעות)
-          </summary>
+          <summary className="cursor-pointer text-sm font-medium">מידע דיבוג ({debugInfo.length} הודעות)</summary>
           <div className="mt-2 space-y-1 text-xs font-mono max-h-60 overflow-y-auto">
             {debugInfo.map((log, i) => (
-              <div key={i} className={`${log.includes('ERROR') ? 'text-destructive' : 'text-muted-foreground'}`}>
+              <div key={i} className={`${log.includes("ERROR") ? "text-destructive" : "text-muted-foreground"}`}>
                 {log}
               </div>
             ))}
