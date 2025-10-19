@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+// Helper function to extract field value from Facebook lead data
+const getFieldValue = (fieldData: any[], fieldName: string): string | null => {
+  if (!Array.isArray(fieldData)) return null;
+  
+  const field = fieldData.find((f: any) => f.name === fieldName);
+  return field?.values?.[0] || null;
+};
+
 const fetchLeads = async () => {
   try {
     console.log("🔍 [use-fetch-leads] Starting to fetch leads");
@@ -51,12 +59,25 @@ const fetchLeads = async () => {
     // Transform facebook_leads to match the leads schema
     const facebookLeads = (facebookLeadsResult.data || []).map((fbLead: any) => {
       const leadData = fbLead.lead_data || {};
+      const fieldData = leadData.field_data || [];
+      
+      // Extract name from first_name or full_name fields
+      const firstName = getFieldValue(fieldData, 'first_name');
+      const fullName = getFieldValue(fieldData, 'full_name');
+      const name = firstName || fullName || 'ללא שם';
+      
+      // Extract phone
+      const phone = getFieldValue(fieldData, 'phone');
+      
+      // Extract email
+      const email = getFieldValue(fieldData, 'email');
+      
       return {
         id: fbLead.id,
         user_id: fbLead.user_id,
-        name: leadData.name || leadData.full_name || 'ללא שם',
-        phone: leadData.phone || null,
-        email: leadData.email || null,
+        name,
+        phone,
+        email,
         status: 'new',
         source: 'Facebook',
         notes: null,
