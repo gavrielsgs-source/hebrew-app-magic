@@ -22,24 +22,65 @@ const fetchLeads = async () => {
 
     console.log("🔍 [use-fetch-leads] Fetching leads for user:", user.id);
 
-    //FETCH FROM FACEBOOK_LEADS, NOT LEADS
-    const { data, error } = await supabase
-      .from("facebook_leads")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    // Fetch from both tables
+    const [regularLeadsResult, facebookLeadsResult] = await Promise.all([
+      supabase
+        .from("leads")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("facebook_leads")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+    ]);
 
-    if (error) {
-      console.error("🔍 [use-fetch-leads] Database error:", error);
-      throw new Error(`Database error: ${error.message}`);
+    if (regularLeadsResult.error) {
+      console.error("🔍 [use-fetch-leads] Regular leads error:", regularLeadsResult.error);
+      throw new Error(`Database error: ${regularLeadsResult.error.message}`);
     }
 
-    console.log("🔍 [use-fetch-leads] Successfully fetched leads:", {
-      count: data?.length || 0,
-      leads: data,
+    if (facebookLeadsResult.error) {
+      console.error("🔍 [use-fetch-leads] Facebook leads error:", facebookLeadsResult.error);
+      throw new Error(`Database error: ${facebookLeadsResult.error.message}`);
+    }
+
+    const regularLeads = regularLeadsResult.data || [];
+    
+    // Transform facebook_leads to match the leads schema
+    const facebookLeads = (facebookLeadsResult.data || []).map((fbLead: any) => {
+      const leadData = fbLead.lead_data || {};
+      return {
+        id: fbLead.id,
+        user_id: fbLead.user_id,
+        name: leadData.name || leadData.full_name || 'ללא שם',
+        phone: leadData.phone || null,
+        email: leadData.email || null,
+        status: 'new',
+        source: 'Facebook',
+        notes: null,
+        created_at: fbLead.created_at,
+        updated_at: fbLead.created_at,
+        car_id: null,
+        agency_id: null,
+        assigned_to: null,
+        follow_up_notes: null
+      };
     });
 
-    return data || [];
+    // Combine both sources
+    const allLeads = [...regularLeads, ...facebookLeads].sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    console.log("🔍 [use-fetch-leads] Successfully fetched leads:", {
+      regularCount: regularLeads.length,
+      facebookCount: facebookLeads.length,
+      totalCount: allLeads.length,
+    });
+
+    return allLeads;
   } catch (error) {
     console.error("🔍 [use-fetch-leads] Error in fetchLeads:", error);
     throw error;
