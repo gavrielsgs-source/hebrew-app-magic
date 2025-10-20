@@ -1,5 +1,6 @@
-
+import { useState } from 'react';
 import { PricingCard } from '@/components/subscription/PricingCard';
+import { BillingToggle } from '@/components/subscription/BillingToggle';
 
 interface PricingSectionProps {
   user: any;
@@ -7,6 +8,12 @@ interface PricingSectionProps {
 }
 
 export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
+  const [isYearly, setIsYearly] = useState(false);
+
+  const getPrice = (monthlyPrice: number, yearlyPrice: number) => {
+    return isYearly ? yearlyPrice : monthlyPrice;
+  };
+
   return (
     <section className="py-12 md:py-20 bg-gradient-to-r from-slate-50 to-blue-50 w-full">
       <div className="container mx-auto px-4">
@@ -22,18 +29,20 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
           </p>
         </div>
 
+        <BillingToggle isYearly={isYearly} onToggle={setIsYearly} />
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto items-stretch">
           <PricingCard
             title="פרימיום"
-            price={199}
+            price={getPrice(199, 179)}
             description="מתאים לעסק קטן"
             features={[
               "עד 20 רכבים",
               "עד 50 לידים",
               "עד 2 משתמשים",
-              "5 תבניות וואטסאפ", // עודכן מ-"עד 100 הודעות וואטסאפ"
+              "5 תבניות וואטסאפ",
               "100 הודעות וואטסאפ לחודש",
-              "20 משימות",
+              "משימות ללא הגבלה",
               "דשבורד בסיסי",
               "תמיכה בוואטסאפ"
             ]}
@@ -42,15 +51,15 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
 
           <PricingCard
             title="ביזנס"
-            price={399}
+            price={getPrice(399, 349)}
             description="מתאים לעסק בינוני"
             features={[
               "עד 50 רכבים",
               "עד 200 לידים",
               "עד 5 משתמשים",
-              "10 תבניות וואטסאפ", // עודכן
+              "10 תבניות וואטסאפ",
               "500 הודעות וואטסאפ לחודש",
-              "100 משימות",
+              "משימות ללא הגבלה",
               "דשבורד מתקדם",
               "אנליטיקה מלאה",
               "תמיכה מועדפת"
@@ -61,12 +70,12 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
 
           <PricingCard
             title="אנטרפרייז"
-            price={699}
+            price={getPrice(699, 619)}
             description="מתאים למגרש גדול"
             features={[
               "ללא הגבלה על רכבים ולידים",
               "עד 10 משתמשים",
-              "תבניות וואטסאפ ללא הגבלה", // עודכן
+              "תבניות וואטסאפ ללא הגבלה",
               "2000 הודעות וואטסאפ לחודש",
               "משימות ללא הגבלה",
               "אנליטיקה מותאמת אישית",

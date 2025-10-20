@@ -45,9 +45,9 @@ export function PricingCard({
           <h3 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h3>
           <p className="text-sm md:text-base text-gray-600">{description}</p>
         </div>
-        <div className="flex justify-end items-baseline gap-1 md:gap-2 mt-3 md:mt-4">
-          <span className="text-gray-500 text-sm md:text-lg">/חודש</span>
+        <div className="flex justify-start items-baseline gap-1 md:gap-2 mt-3 md:mt-4">
           <span className="text-3xl md:text-5xl font-bold text-gray-900">₪{price}</span>
+          <span className="text-gray-500 text-sm md:text-lg">/חודש</span>
         </div>
         <p className="text-xs text-gray-500 text-center">לאחר תום תקופת הניסיון</p>
       </CardHeader>

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionPlanCards } from "@/components/subscription/SubscriptionPlanCards";
 import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
+import { BillingToggle } from "@/components/subscription/BillingToggle";
 
 export default function Payment() {
   const [searchParams] = useSearchParams();
@@ -18,6 +19,7 @@ export default function Payment() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(preselectedPlan);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
+  const [isYearly, setIsYearly] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -36,16 +38,18 @@ export default function Payment() {
         throw new Error("חבילה לא נמצאה");
       }
 
-      // Prepare payment parameters with proper types
+      const actualSum = isYearly 
+        ? selectedPlanObj.yearlyPrice * 12
+        : selectedPlanObj.monthlyPrice;
+
       const paymentPayload = {
-        sum: selectedPlanObj.priceValue,
+        sum: actualSum,
         fullName: data.fullName,
         phone: data.phone,
       };
 
       console.log("Sending payment payload:", paymentPayload);
 
-      // Send request to create payment
       const { data: paymentData, error } = await supabase.functions.invoke('grow-payment', {
         body: {
           action: 'createPaymentProcess',
@@ -60,7 +64,6 @@ export default function Payment() {
 
       console.log("Payment response:", paymentData);
 
-      // Check for errors in response
       if (paymentData.error) {
         console.error("Payment API error:", paymentData);
         const errorMessage = typeof paymentData.error === 'string' 
@@ -69,9 +72,7 @@ export default function Payment() {
         throw new Error(errorMessage);
       }
 
-      // Handle successful response
       if (paymentData.success) {
-        // If redirect URL exists, redirect user
         if (paymentData.url || paymentData.redirectUrl) {
           const redirectUrl = paymentData.url || paymentData.redirectUrl;
           console.log("Redirecting to payment URL:", redirectUrl);
@@ -103,19 +104,22 @@ export default function Payment() {
       {
         id: "premium",
         name: "פרימיום",
-        priceValue: 199,
+        monthlyPrice: 199,
+        yearlyPrice: 179,
         tier: "premium"
       },
       {
         id: "business",
         name: "ביזנס",
-        priceValue: 399,
+        monthlyPrice: 399,
+        yearlyPrice: 349,
         tier: "business"
       },
       {
         id: "enterprise",
         name: "אנטרפרייז",
-        priceValue: 699,
+        monthlyPrice: 699,
+        yearlyPrice: 619,
         tier: "enterprise"
       }
     ];
@@ -142,11 +146,14 @@ export default function Payment() {
         </Button>
       </div>
 
+      <BillingToggle isYearly={isYearly} onToggle={setIsYearly} />
+
       <SubscriptionPlanCards 
         selectedPlan={selectedPlan} 
         setSelectedPlan={setSelectedPlan}
         handleUpgrade={handleUpgrade}
         loading={loading}
+        isYearly={isYearly}
       />
 
       <PaymentInfo />
@@ -156,7 +163,10 @@ export default function Payment() {
           <DrawerHeader>
             <DrawerTitle className={`text-center ${isMobile ? 'text-base' : 'text-lg'}`}>
               {selectedPlan && (
-                <>פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}</>
+                <>
+                  פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
+                  {isYearly && " (תשלום שנתי)"}
+                </>
               )}
             </DrawerTitle>
           </DrawerHeader>

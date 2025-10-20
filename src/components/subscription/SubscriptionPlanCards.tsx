@@ -9,19 +9,22 @@ interface SubscriptionPlanCardsProps {
   setSelectedPlan: (plan: string) => void;
   handleUpgrade: (planId: string) => void;
   loading: boolean;
+  isYearly: boolean;
 }
 
 export function SubscriptionPlanCards({
   selectedPlan,
   setSelectedPlan,
   handleUpgrade,
-  loading
+  loading,
+  isYearly
 }: SubscriptionPlanCardsProps) {
   const plans = [
     {
       id: "premium",
       name: "פרימיום",
-      price: "₪199",
+      monthlyPrice: "₪199",
+      yearlyPrice: "₪179",
       period: "לחודש",
       description: "מתאים לעסקים קטנים",
       icon: Star,
@@ -37,7 +40,8 @@ export function SubscriptionPlanCards({
     {
       id: "business",
       name: "ביזנס",
-      price: "₪399",
+      monthlyPrice: "₪399",
+      yearlyPrice: "₪349",
       period: "לחודש",
       description: "הפתרון הטוב ביותר לעסקים מתפתחים",
       icon: Zap,
@@ -54,7 +58,8 @@ export function SubscriptionPlanCards({
     {
       id: "enterprise",
       name: "אנטרפרייז",
-      price: "₪699",
+      monthlyPrice: "₪699",
+      yearlyPrice: "₪619",
       period: "לחודש",
       description: "פתרון מתקדם לעסקים גדולים",
       icon: Crown,
@@ -81,6 +86,7 @@ export function SubscriptionPlanCards({
       {plans.map((plan) => {
         const Icon = plan.icon;
         const isSelected = selectedPlan === plan.id;
+        const displayPrice = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
         
         return (
           <Card 
@@ -101,9 +107,11 @@ export function SubscriptionPlanCards({
               </div>
               <CardTitle className="text-xl">{plan.name}</CardTitle>
               <CardDescription>{plan.description}</CardDescription>
-              <div className="mt-4">
-                <span className="text-3xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground">/{plan.period}</span>
+              <div className="mt-4 text-right">
+                <div className="inline-flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{displayPrice}</span>
+                  <span className="text-muted-foreground">/{plan.period}</span>
+                </div>
               </div>
             </CardHeader>
             
