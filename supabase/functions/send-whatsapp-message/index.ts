@@ -76,16 +76,14 @@ serve(async (req) => {
         });
       }
 
-      // Add body parameters
-      if (parameters.length > 0) {
-        components.push({
-          type: "body",
-          parameters: parameters.map((param) => ({
-            type: "text",
-            text: param,
-          })),
-        });
-      }
+      // Add body parameters - always include body component
+      components.push({
+        type: "body",
+        parameters: parameters.map((param) => ({
+          type: "text",
+          text: String(param),
+        })),
+      });
 
       body = {
         messaging_product: "whatsapp",
@@ -96,15 +94,13 @@ serve(async (req) => {
           language: {
             code: languageCode,
           },
-          components: components.length > 0 ? components : undefined,
+          components: components,
         },
       };
     }
 
     // Send WhatsApp message
-    // IMPORTANT: Replace YOUR_PHONE_NUMBER_ID with your actual WhatsApp Business Phone Number ID
-    // Get it from: https://business.facebook.com/wa/manage/phone-numbers/
-    const response = await fetch(`${WHATSAPP_API_URL}/PHONE_NUMBER_ID/messages`, {
+    const response = await fetch(`${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${WHATSAPP_TOKEN}`,
