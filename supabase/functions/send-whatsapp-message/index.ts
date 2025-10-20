@@ -79,7 +79,7 @@ serve(async (req) => {
       // Add body parameters - always include body component
       components.push({
         type: "body",
-        parameters: parameters.map((param) => ({
+        parameters: (parameters || []).map((param) => ({
           type: "text",
           text: String(param),
         })),
@@ -87,12 +87,12 @@ serve(async (req) => {
 
       body = {
         messaging_product: "whatsapp",
-        to: to,
         type: "template",
+        to: to,
         template: {
           name: templateName,
           language: {
-            code: languageCode,
+            code: languageCode || "he",
           },
           components: components,
         },
