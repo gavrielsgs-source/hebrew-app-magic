@@ -42,7 +42,7 @@ export function useNotifications() {
           .lte("due_date", in1Hour.toISOString());
 
         if (upcomingTasks) {
-          upcomingTasks.forEach(task => {
+          for (const task of upcomingTasks) {
             const dueDateValue = (task as any).due_date;
             if (typeof dueDateValue === 'string' || typeof dueDateValue === 'number' || dueDateValue instanceof Date) {
               const taskDate = new Date(dueDateValue);
@@ -52,6 +52,22 @@ export function useNotifications() {
                 const taskId = String((task as any).id || '');
                 const taskTitle = String((task as any).title || '');
                 const taskType = String((task as any).type || '');
+                
+                // בדיקה אם כבר יצרנו התראה למשימה הזו
+                const { data: existingNotification } = await supabase
+                  .from("notifications")
+                  .select("id")
+                  .eq("user_id", user.id)
+                  .eq("entity_type", "task")
+                  .eq("entity_id", taskId)
+                  .eq("type", "reminder")
+                  .maybeSingle();
+                
+                // אם כבר יש התראה - דלג
+                if (existingNotification) {
+                  console.log(`Notification already exists for task ${taskId}, skipping`);
+                  continue;
+                }
                 
                 const notification: Notification = {
                   id: `task-reminder-${taskId}`,
@@ -64,6 +80,19 @@ export function useNotifications() {
                   entityType: "task",
                   scheduledFor: dueDateValue.toString()
                 };
+
+                // שמירת ההתראה בטבלה לפני הצגתה
+                await supabase
+                  .from("notifications")
+                  .insert({
+                    user_id: user.id,
+                    title: notification.title,
+                    message: notification.message,
+                    type: "reminder",
+                    entity_type: "task",
+                    entity_id: taskId,
+                    scheduled_for: dueDateValue.toString()
+                  });
 
                 // Show browser notification if supported
                 if (Notification.permission === "granted") {
@@ -91,7 +120,7 @@ export function useNotifications() {
                 });
               }
             }
-          });
+          }
         }
       } catch (error) {
         console.error("Error checking upcoming tasks:", error);
