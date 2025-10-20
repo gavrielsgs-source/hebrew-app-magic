@@ -11,11 +11,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionPlanCards } from "@/components/subscription/SubscriptionPlanCards";
 import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
+import { BillingToggle } from "@/components/subscription/BillingToggle";
 
 export default function UpgradeSubscription() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
+  const [isYearly, setIsYearly] = useState(false);
   const { subscription, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -35,9 +37,13 @@ export default function UpgradeSubscription() {
         throw new Error("חבילה לא נמצאה");
       }
 
+      const actualSum = isYearly 
+        ? selectedPlanObj.yearlyPrice * 12
+        : selectedPlanObj.monthlyPrice;
+
       // Prepare payment parameters with proper types
       const paymentPayload = {
-        sum: selectedPlanObj.priceValue,
+        sum: actualSum,
         fullName: data.fullName,
         phone: data.phone,
       };
@@ -151,19 +157,22 @@ export default function UpgradeSubscription() {
       {
         id: "premium",
         name: "פרימיום",
-        priceValue: 199,
+        monthlyPrice: 199,
+        yearlyPrice: 179,
         tier: "premium"
       },
       {
         id: "business",
         name: "ביזנס",
-        priceValue: 349,
+        monthlyPrice: 399,
+        yearlyPrice: 349,
         tier: "business"
       },
       {
         id: "enterprise",
         name: "אנטרפרייז",
-        priceValue: 599,
+        monthlyPrice: 699,
+        yearlyPrice: 619,
         tier: "enterprise"
       }
     ];
@@ -190,11 +199,14 @@ export default function UpgradeSubscription() {
         </Button>
       </div>
 
+      <BillingToggle isYearly={isYearly} onToggle={setIsYearly} />
+
       <SubscriptionPlanCards 
         selectedPlan={selectedPlan} 
         setSelectedPlan={setSelectedPlan}
         handleUpgrade={handleUpgrade}
         loading={loading}
+        isYearly={isYearly}
       />
 
       <PaymentInfo />
@@ -204,7 +216,10 @@ export default function UpgradeSubscription() {
           <DrawerHeader>
             <DrawerTitle className={`text-center ${isMobile ? 'text-base' : 'text-lg'}`}>
               {selectedPlan && (
-                <>פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}</>
+                <>
+                  פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
+                  {isYearly && " (תשלום שנתי)"}
+                </>
               )}
             </DrawerTitle>
           </DrawerHeader>
