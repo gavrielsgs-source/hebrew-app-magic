@@ -340,7 +340,7 @@ button, input, select, textarea {
 }
 
 .lead-enhanced .leads-status-badge {
-  @apply bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-medium shadow-sm;
+  @apply rounded-full px-3 py-1 text-xs font-medium shadow-sm transition-colors;
 }
 
 .lead-enhanced .leads-card {
