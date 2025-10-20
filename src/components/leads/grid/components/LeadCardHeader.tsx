@@ -1,6 +1,5 @@
 
 import { QuickStatusChange } from "../../QuickStatusChange";
-import { LeadScoreIndicator } from "./LeadScoreIndicator";
 import { Calendar, Clock, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { isAfter } from "date-fns";
@@ -45,9 +44,8 @@ export function LeadCardHeader({ lead, hasActiveReminders }: LeadCardHeaderProps
           </div>
         </div>
         
-        {/* צד שמאל ויזואלי - ציון ליד, מקור ותאריך */}
+        {/* צד שמאל ויזואלי - מקור ותאריך */}
         <div className="flex flex-col items-start gap-4">
-          <LeadScoreIndicator leadId={lead.id} />
           <div className="flex items-center gap-3">
             {lead.source ? (
               <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200 font-medium px-4 py-2 text-base rounded-2xl">
