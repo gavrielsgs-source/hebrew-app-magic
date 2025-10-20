@@ -2,6 +2,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+// פונקציה לבדיקה אם ה-ID הוא UUID תקין
+const isUuid = (value: string): boolean => {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+};
+
 export const useUpdateLead = () => {
   const queryClient = useQueryClient();
 
@@ -9,8 +14,8 @@ export const useUpdateLead = () => {
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
       console.log('🔄 Updating lead:', { id, data });
       
-      // בדיקה אם זה ליד מפייסבוק (IDs של פייסבוק מכילים מקפים)
-      const isFacebookLead = id.includes('-');
+      // בדיקה אם זה ליד מפייסבוק (לא UUID = ליד פייסבוק)
+      const isFacebookLead = !isUuid(id);
       
       if (isFacebookLead) {
         console.log('📘 Detected Facebook lead, updating facebook_leads table');
@@ -20,17 +25,22 @@ export const useUpdateLead = () => {
           .from("facebook_leads")
           .select("lead_data")
           .eq("lead_id", id)
-          .single();
+          .maybeSingle();
           
         if (fetchError) {
           console.error('❌ Error fetching Facebook lead:', fetchError);
           throw new Error(fetchError.message);
         }
         
+        if (!fbLead) {
+          console.error('❌ Facebook lead not found for lead_id:', id);
+          throw new Error('לא נמצא ליד פייסבוק לעדכון');
+        }
+        
         // עדכון הסטטוס בתוך lead_data
         const updatedLeadData = {
           ...(fbLead.lead_data as any),
-          status: data.status || (fbLead.lead_data as any).status
+          status: data.status ?? (fbLead.lead_data as any)?.status ?? 'new'
         };
         
         const { data: responseData, error } = await supabase
