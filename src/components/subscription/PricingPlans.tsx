@@ -27,7 +27,7 @@ export function PricingPlans() {
     {
       name: "ביזנס",
       description: "מתאים לסוכנויות בינוניות (3-7 אנשי צוות)",
-      price: "349 ₪",
+      price: "399 ₪",
       features: [
         "ניהול עד 50 רכבים במלאי",
         "ניהול עד 200 לקוחות",
@@ -44,7 +44,7 @@ export function PricingPlans() {
     {
       name: "אנטרפרייז",
       description: "מתאים למגרשים גדולים ורשתות סוכנויות",
-      price: "599 ₪",
+      price: "699 ₪",
       features: [
         "רכבים ולקוחות ללא הגבלה",
         "עד 10 משתמשים במערכת",

@@ -109,13 +109,13 @@ export default function Payment() {
       {
         id: "business",
         name: "ביזנס",
-        priceValue: 349,
+        priceValue: 399,
         tier: "business"
       },
       {
         id: "enterprise",
         name: "אנטרפרייז",
-        priceValue: 599,
+        priceValue: 699,
         tier: "enterprise"
       }
     ];

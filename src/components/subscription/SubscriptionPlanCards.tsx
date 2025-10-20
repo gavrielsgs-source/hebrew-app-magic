@@ -37,7 +37,7 @@ export function SubscriptionPlanCards({
     {
       id: "business",
       name: "ביזנס",
-      price: "₪349",
+      price: "₪399",
       period: "לחודש",
       description: "הפתרון הטוב ביותר לעסקים מתפתחים",
       icon: Zap,
@@ -54,7 +54,7 @@ export function SubscriptionPlanCards({
     {
       id: "enterprise",
       name: "אנטרפרייז",
-      price: "₪599",
+      price: "₪699",
       period: "לחודש",
       description: "פתרון מתקדם לעסקים גדולים",
       icon: Crown,

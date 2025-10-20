@@ -58,7 +58,7 @@ const subscriptionTiers = [
       "אנליטיקה מתקדמת",
       "תמיכה טכנית 24/7"
     ],
-    price: "349 ₪",
+    price: "399 ₪",
     mostPopular: false,
   },
   {
@@ -75,7 +75,7 @@ const subscriptionTiers = [
       "תמיכה VIP 24/7",
       "גישה ל-API"
     ],
-    price: "599 ₪",
+    price: "699 ₪",
     mostPopular: false,
   },
 ];
