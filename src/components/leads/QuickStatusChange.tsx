@@ -15,24 +15,12 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
   const [isChanging, setIsChanging] = useState(false);
   const updateLead = useUpdateLead();
   const { toast } = useToast();
-  
-  // בדיקה אם זה ליד מפייסבוק (לידים כאלה לא ניתן לעדכן)
-  const isFacebookLead = lead.source === 'Facebook' && lead.id?.includes('-');
 
   const handleStatusChange = async (newStatus: string) => {
-    console.log('🔄 Status change requested:', { leadId: lead.id, oldStatus: lead.status, newStatus, isFacebookLead });
+    console.log('🔄 Status change requested:', { leadId: lead.id, oldStatus: lead.status, newStatus });
     
     if (newStatus === lead.status) {
       console.log('⚠️ Status unchanged, skipping update');
-      return;
-    }
-    
-    if (isFacebookLead) {
-      toast({
-        title: "לא ניתן לעדכן",
-        description: "לידים מפייסבוק אינם ניתנים לעדכון. צור ליד חדש לניהול מלא.",
-        variant: "destructive"
-      });
       return;
     }
     
@@ -70,9 +58,9 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
     <Select 
       value={lead.status} 
       onValueChange={handleStatusChange}
-      disabled={isChanging || isFacebookLead}
+      disabled={isChanging}
     >
-      <SelectTrigger className={`leads-status-badge border-0 p-0 h-auto cursor-pointer ${getStatusBadgeColor(lead.status)} inline-flex items-center rounded-2xl px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${isFacebookLead ? 'opacity-60 cursor-not-allowed' : ''}`}>
+      <SelectTrigger className={`leads-status-badge border-0 p-0 h-auto cursor-pointer ${getStatusBadgeColor(lead.status)} inline-flex items-center rounded-2xl px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2`}>
         <SelectValue>
           {getStatusText(lead.status)}
         </SelectValue>

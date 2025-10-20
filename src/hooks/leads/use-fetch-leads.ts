@@ -73,12 +73,12 @@ const fetchLeads = async () => {
       const email = getFieldValue(fieldData, 'email');
       
       return {
-        id: fbLead.id,
+        id: fbLead.lead_id, // שימוש ב-lead_id כדי שיתאים ללוגיקת העדכון
         user_id: fbLead.user_id,
         name,
         phone,
         email,
-        status: 'new',
+        status: leadData.status || 'new', // קריאת הסטטוס מתוך lead_data אם קיים
         source: 'Facebook',
         notes: null,
         created_at: fbLead.created_at,
