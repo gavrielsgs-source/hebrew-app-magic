@@ -3,13 +3,13 @@ import { Badge } from "@/components/ui/badge";
 
 export const getStatusBadgeColor = (status: string | null) => {
   switch (status) {
-    case "new": return "bg-slate-500 hover:bg-slate-600 text-white";
-    case "in_treatment": return "bg-slate-600 hover:bg-slate-700 text-white";
-    case "waiting": return "bg-slate-400 hover:bg-slate-500 text-white";
-    case "meeting_scheduled": return "bg-primary hover:bg-primary/90 text-white";
-    case "handled": return "bg-slate-700 hover:bg-slate-800 text-white";
-    case "not_relevant": return "bg-slate-300 hover:bg-slate-400 text-slate-800";
-    default: return "bg-slate-500 hover:bg-slate-600 text-white";
+    case "new": return "bg-blue-500 hover:bg-blue-600 text-white";
+    case "in_treatment": return "bg-yellow-500 hover:bg-yellow-600 text-white";
+    case "waiting": return "bg-purple-500 hover:bg-purple-600 text-white";
+    case "meeting_scheduled": return "bg-green-500 hover:bg-green-600 text-white";
+    case "handled": return "bg-green-600 hover:bg-green-700 text-white";
+    case "not_relevant": return "bg-red-500 hover:bg-red-600 text-white";
+    default: return "bg-blue-500 hover:bg-blue-600 text-white";
   }
 };
 

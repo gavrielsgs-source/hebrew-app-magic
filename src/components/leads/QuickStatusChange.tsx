@@ -17,10 +17,16 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
   const { toast } = useToast();
 
   const handleStatusChange = async (newStatus: string) => {
-    if (newStatus === lead.status) return;
+    console.log('🔄 Status change requested:', { leadId: lead.id, oldStatus: lead.status, newStatus });
+    
+    if (newStatus === lead.status) {
+      console.log('⚠️ Status unchanged, skipping update');
+      return;
+    }
     
     setIsChanging(true);
     try {
+      console.log('📤 Sending update request...');
       await updateLead.mutateAsync({ 
         id: lead.id, 
         data: { 
@@ -29,6 +35,7 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
         } 
       });
       
+      console.log('✅ Status updated successfully');
       toast({
         title: "סטטוס עודכן",
         description: `הסטטוס שונה ל${getStatusText(newStatus)}`,
@@ -36,7 +43,7 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
       
       if (onStatusChange) onStatusChange();
     } catch (error) {
-      console.error("שגיאה בעדכון סטטוס:", error);
+      console.error("❌ שגיאה בעדכון סטטוס:", error);
       toast({
         title: "שגיאה בעדכון סטטוס",
         description: "נסה שנית",
