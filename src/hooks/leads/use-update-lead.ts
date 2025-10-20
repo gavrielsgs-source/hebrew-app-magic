@@ -32,11 +32,6 @@ export const useUpdateLead = () => {
         throw new Error(error.message);
       }
       
-      if (!responseData || responseData.length === 0) {
-        console.error('⚠️ No lead rows updated. Possibly a Facebook lead or invalid ID.', { id });
-        throw new Error('לא ניתן לעדכן את הסטטוס עבור ליד זה');
-      }
-      
       console.log('✅ Lead updated successfully:', responseData);
       return responseData;
     },
