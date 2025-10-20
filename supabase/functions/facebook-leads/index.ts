@@ -199,8 +199,11 @@ serve(async (req) => {
   });
 } catch (error) {
   console.error("❌ Fatal error:", error);
-  return new Response(JSON.stringify({ error: error.message || String
-
+  return new Response(JSON.stringify({ error: error.message || String(error) }), {
+    status: 500,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
   }
 
   return new Response("Method not allowed", { status: 405, headers: corsHeaders });
