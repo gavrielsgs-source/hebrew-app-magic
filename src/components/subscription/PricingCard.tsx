@@ -30,14 +30,14 @@ export function PricingCard({
       isPopular && "ring-2 ring-blue-500 shadow-2xl scale-[1.02] md:scale-[1.05]"
     )}>
       {isPopular && (
-        <div className="absolute -top-3 md:-top-4 left-0 right-0 flex justify-center z-10">
+        <div className="absolute top-2 left-0 right-0 flex justify-center z-10">
           <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg">
             🔥 הפופולרי ביותר
           </span>
         </div>
       )}
       
-      <CardHeader className="text-right pt-4 md:pt-6 pb-3 md:pb-4 px-4 md:px-6 flex-shrink-0">
+      <CardHeader className="text-right pt-12 md:pt-14 pb-3 md:pb-4 px-4 md:px-6 flex-shrink-0">
         <div className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full text-center mb-3">
           14 ימי ניסיון חינם!
         </div>
