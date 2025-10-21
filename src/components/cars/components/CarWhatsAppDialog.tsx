@@ -88,8 +88,14 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       return;
     }
 
+    // בדיקה שיש מספר טלפון של המשתמש
+    if (!profile?.phone) {
+      toast.error("חסר מספר טלפון בפרופיל שלך. אנא עדכן את הפרופיל לפני שליחת הודעה");
+      return;
+    }
+
     const formattedNumber = formatPhoneNumber(phoneNumber);
-    const userPhone = profile?.phone || '0000000000';
+    const userPhone = profile.phone;
     
     try {
       if (selectedTemplateId === 'car_template_default') {
