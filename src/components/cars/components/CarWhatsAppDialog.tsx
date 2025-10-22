@@ -116,6 +116,12 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     
     try {
       if (selectedTemplateId === 'car_template_default') {
+        // בדיקה שקיימת תמונה לרכב
+        if (!carImageUrl) {
+          toast.error("לא ניתן לשלוח תבנית דפולטיבית ללא תמונת רכב");
+          return;
+        }
+
         const { error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
             type: 'template',
