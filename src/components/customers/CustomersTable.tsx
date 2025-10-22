@@ -93,7 +93,8 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
           <p className="text-sm text-muted-foreground">כל הפרטים וכלי הניהול במקום אחד</p>
         </div>
         
-        <Table>
+        <div className="overflow-x-auto">
+          <Table className="min-w-[1000px]">
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-muted/40 via-muted/30 to-muted/40 hover:from-muted/50 hover:via-muted/40 hover:to-muted/50 border-b border-border/30">
               <TableHead className="text-right font-bold text-foreground py-4 px-6 w-[120px]">
@@ -121,7 +122,7 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                   <span className="text-base">סוג לקוח</span>
                 </div>
               </TableHead>
-              <TableHead className="text-center font-bold text-foreground py-4 px-6 w-[140px]">
+              <TableHead className="text-center font-bold text-foreground py-4 px-6 w-[380px]">
                 <div className="text-center">
                   <span className="text-base">פעולות</span>
                 </div>
@@ -201,38 +202,41 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                 </TableCell>
                 
                 <TableCell className="py-4 px-6 text-center">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-3">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       asChild
-                      className="h-10 w-10 p-0 hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/20 hover:text-primary rounded-xl transition-all duration-300 border border-transparent hover:border-primary/20"
+                      className="h-11 px-4 hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/20 hover:text-primary rounded-xl transition-all duration-300 border-2 border-primary/20 hover:border-primary/40 shadow-sm hover:shadow-md"
                     >
                       <Link to={`/customers/${customer.id}`}>
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4 ml-2" />
+                        <span className="font-medium">צפייה</span>
                       </Link>
                     </Button>
                     
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="h-10 w-10 p-0 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-600 rounded-xl transition-all duration-300 border border-transparent hover:border-blue-200"
+                      className="h-11 px-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-600 rounded-xl transition-all duration-300 border-2 border-blue-200 hover:border-blue-400 shadow-sm hover:shadow-md"
                       onClick={() => {
                         console.log('Edit customer:', customer.id);
                       }}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-4 w-4 ml-2" />
+                      <span className="font-medium">עריכה</span>
                     </Button>
                     
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-10 w-10 p-0 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 rounded-xl transition-all duration-300 border border-transparent hover:border-red-200"
+                          className="h-11 px-4 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 rounded-xl transition-all duration-300 border-2 border-red-200 hover:border-red-400 shadow-sm hover:shadow-md"
                           disabled={deletingId === customer.id}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 ml-2" />
+                          <span className="font-medium">מחיקה</span>
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="max-w-md rounded-2xl">
@@ -261,6 +265,7 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
     </div>
   );
