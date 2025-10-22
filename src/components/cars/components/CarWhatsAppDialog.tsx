@@ -14,6 +14,7 @@ import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
+import { getCarImages } from "@/lib/image-utils";
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -27,8 +28,24 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [selectedLeadId, setSelectedLeadId] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("car_template_default");
   const [customMessage, setCustomMessage] = useState("");
+  const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
   const { leads } = useLeads();
   const { profile } = useProfile();
+
+  // Load car image on mount
+  useEffect(() => {
+    const loadCarImage = async () => {
+      try {
+        const images = await getCarImages(car.id);
+        if (images && images.length > 0) {
+          setCarImageUrl(images[0]);
+        }
+      } catch (error) {
+        console.error("Error loading car image:", error);
+      }
+    };
+    loadCarImage();
+  }, [car.id]);
 
   // Generate message based on template and car details
   const generateCarMessage = () => {
@@ -99,15 +116,12 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     
     try {
       if (selectedTemplateId === 'car_template_default') {
-        // Send default car_template via WhatsApp API
-        // For now, we don't send image_url as car type doesn't have images field
-        // You can add this later when car images are properly stored
-        
         const { error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
             type: 'template',
             to: formattedNumber,
             templateName: 'car_template',
+            imageUrl: carImageUrl, // שליחת תמונה בheader של התבנית
             parameters: [
               car.model, // {{1}}
               car.year.toString(), // {{2}}
