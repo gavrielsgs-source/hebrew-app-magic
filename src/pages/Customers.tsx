@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useCustomers } from "@/hooks/customers";
+import { useCustomers, useDeleteCustomer } from "@/hooks/customers";
 import { CreateCustomerDialog } from "@/components/customers/CreateCustomerDialog";
 import { CustomersTable } from "@/components/customers/CustomersTable";
 import { Link } from "react-router-dom";
@@ -14,6 +14,7 @@ export default function Customers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { data: customers = [], isLoading, error } = useCustomers();
+  const deleteCustomer = useDeleteCustomer();
 
   const filteredCustomers = customers.filter((customer: Customer) => {
     const searchLower = searchTerm.toLowerCase();
@@ -193,7 +194,10 @@ export default function Customers() {
           </CardContent>
         </Card>
       ) : (
-        <CustomersTable customers={filteredCustomers} />
+        <CustomersTable 
+          customers={filteredCustomers}
+          onDeleteCustomer={(customerId) => deleteCustomer.mutate(customerId)}
+        />
       )}
 
       <CreateCustomerDialog 
