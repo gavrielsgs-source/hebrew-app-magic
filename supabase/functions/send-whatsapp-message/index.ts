@@ -118,7 +118,15 @@ serve(async (req) => {
 
     console.log("✅ WhatsApp message sent successfully:", data);
 
-    return new Response(JSON.stringify({ success: true, data }), {
+    // Check message status from response
+    const messageStatus = data.messages?.[0]?.message_status || 'unknown';
+    console.log(`📊 Message status: ${messageStatus}`);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data,
+      messageStatus 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

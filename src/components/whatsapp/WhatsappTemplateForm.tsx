@@ -60,9 +60,17 @@ export function WhatsappTemplateForm({
           className="mb-2 font-mono text-sm"
           dir="rtl"
         />
-        <p className="text-xs text-muted-foreground">
-          אתה יכול לערוך את הטקסט להתאמה אישית לפני השליחה.
-        </p>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            אתה יכול לערוך את הטקסט להתאמה אישית לפני השליחה.
+          </p>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <p className="text-xs text-orange-800 font-medium mb-1">⚠️ חשוב לדעת:</p>
+            <p className="text-xs text-orange-700">
+              הודעות עם נוסח חופשי (לא תבניות מאושרות) ניתן לשלוח רק אם הלקוח יצר קשר עם הבוט בתוך 24 שעות האחרונות מההודעה האחרונה שלו. אחרת, יש להשתמש בתבניות מאושרות בלבד.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

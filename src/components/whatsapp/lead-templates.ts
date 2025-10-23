@@ -42,6 +42,32 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
         .replace(/\{\{leadName\}\}/g, leadName || '')
         .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '');
     }
+  },
+  {
+    id: "lead_follow_up_car",
+    name: "מעקב - פרטי רכב ללקוח",
+    description: "הודעת מעקב לאחר שליחת פרטי רכב ללקוח פוטנציאלי",
+    type: 'lead' as const,
+    templateContent: `היי {{leadName}}! 👋  
+
+רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
+אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
+
+בברכה,
+צוות המכירות`,
+    generateMessage: (leadName: string, carDetails?: string) => {
+      const content = `היי {{leadName}}! 👋  
+
+רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
+אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
+
+בברכה,
+צוות המכירות`;
+      
+      return content
+        .replace(/\{\{leadName\}\}/g, leadName || '')
+        .replace(/\{\{carDetails\}\}/g, carDetails || '');
+    }
   }
 ];
 
