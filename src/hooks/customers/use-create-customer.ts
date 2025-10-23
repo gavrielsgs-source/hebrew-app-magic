@@ -43,18 +43,11 @@ export function useCreateCustomer() {
               body: {
                 to: formattedPhone,
                 type: 'text',
-                message: `היי ${customerData.full_name}! 👋
+                message: `שלום ${customerData.full_name}! 👋
 
-ברוך הבא למשפחת הלקוחות שלנו! 🎉
+קיבלנו את פנייתך 🙏 
 
-קיבלנו את הפרטים שלך${customerData.source && customerData.source !== 'ידני' ? ` דרך ${customerData.source}` : ''} ואנחנו מוכנים לעזור לך למצוא את הרכב המושלם!
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`
+צוות המכירות שלנו יחזור אליך בקרוב 😊`
               }
             });
 
