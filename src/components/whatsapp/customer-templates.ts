@@ -14,35 +14,17 @@ export const whatsappCustomerTemplates: WhatsappCustomerTemplate[] = [
     name: "ברוכים הבאים - לקוח חדש",
     description: "הודעת ברכה ללקוח שנוסף למערכת",
     type: 'customer' as const,
-    templateContent: `היי {{customerName}}! 👋
+    templateContent: `שלום {{customerName}}! 👋
 
-ברוך הבא למשפחת הלקוחות שלנו! 🎉
+קיבלנו את פנייתך 🙏 
 
-קיבלנו את הפרטים שלך{{customerSource}} ואנחנו מוכנים לעזור לך למצוא את הרכב המושלם!
+צוות המכירות שלנו יחזור אליך בקרוב 😊`,
+    generateMessage: (customerName: string) => {
+      return `שלום ${customerName}! 👋
 
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+קיבלנו את פנייתך 🙏 
 
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`,
-    generateMessage: (customerName: string, customerSource?: string) => {
-      const content = `היי {{customerName}}! 👋
-
-ברוך הבא למשפחת הלקוחות שלנו! 🎉
-
-קיבלנו את הפרטים שלך{{customerSource}} ואנחנו מוכנים לעזור לך למצוא את הרכב המושלם!
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`;
-      
-      return content
-        .replace(/\{\{customerName\}\}/g, customerName || '')
-        .replace(/\{\{customerSource\}\}/g, customerSource ? ` דרך ${customerSource}` : '');
+צוות המכירות שלנו יחזור אליך בקרוב 😊`;
     }
   },
   {
