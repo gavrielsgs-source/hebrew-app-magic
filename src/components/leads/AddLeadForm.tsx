@@ -13,6 +13,8 @@ import { AddLeadCarField } from './AddLeadCarField';
 import { AddLeadNotesField } from './AddLeadNotesField';
 import { AddLeadAssignedField } from './AddLeadAssignedField';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 interface AddLeadFormProps {
@@ -26,6 +28,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
   const { mutate: addLead, isPending: isLoading } = useCreateLead();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sendWhatsApp, setSendWhatsApp] = useState(true);
 
   const handleSubmit = async (values: any) => {
     console.log('🔍 [AddLeadForm] handleSubmit called with values:', values);
@@ -61,7 +64,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
 
       console.log('🔍 [AddLeadForm] Final lead data with user_id:', leadData);
       
-      addLead(leadData, {
+      addLead({ leadData, sendWhatsApp }, {
         onSuccess: () => {
           toast.success('ליד חדש נוצר בהצלחה!');
           if (onSuccess) {
@@ -110,6 +113,17 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
           {canAssignLeads && (
             <AddLeadAssignedField control={form.control} salesAgents={salesAgents} />
           )}
+          
+          <div className="flex items-center gap-2 pt-2">
+            <Checkbox
+              id="sendWhatsApp"
+              checked={sendWhatsApp}
+              onCheckedChange={(checked) => setSendWhatsApp(checked as boolean)}
+            />
+            <Label htmlFor="sendWhatsApp" className="cursor-pointer">
+              שלח הודעת ברוכים הבאים בוואטסאפ
+            </Label>
+          </div>
           
           <div className="flex gap-2 pt-4">
             <Button 

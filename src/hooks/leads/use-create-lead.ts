@@ -10,7 +10,8 @@ export const useCreateLead = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (newLead: any) => {
+    mutationFn: async ({ leadData, sendWhatsApp = false }: { leadData: any; sendWhatsApp?: boolean }) => {
+      const newLead = leadData;
       console.log('🔍 [useCreateLead] Creating lead with data:', newLead);
       
       if (!user) throw new Error('User not authenticated');
@@ -34,17 +35,17 @@ export const useCreateLead = () => {
       console.log('🔍 [useCreateLead] Cleaned lead data:', cleanedLead);
 
       // Create lead
-      const { data: leadData, error: leadError } = await supabase.from("leads").insert([cleanedLead]).select();
+      const { data: createdLead, error: leadError } = await supabase.from("leads").insert([cleanedLead]).select();
       
       if (leadError) {
         console.error("🔍 [useCreateLead] Database error:", leadError);
         throw new Error(leadError.message);
       }
 
-      console.log('🔍 [useCreateLead] Lead created successfully:', leadData);
+      console.log('🔍 [useCreateLead] Lead created successfully:', createdLead);
 
       // Send welcome WhatsApp message
-      if (formattedPhone && cleanedLead.name) {
+      if (sendWhatsApp && formattedPhone && cleanedLead.name) {
         try {
           console.log('📱 Attempting to send welcome WhatsApp message to:', formattedPhone);
           const { data: whatsappData, error: whatsappError } = await supabase.functions.invoke('send-whatsapp-message', {
@@ -105,8 +106,8 @@ export const useCreateLead = () => {
         }
       }
       
-      console.log('🔍 [useCreateLead] Lead created successfully:', leadData);
-      return leadData;
+      console.log('🔍 [useCreateLead] Lead created successfully:', createdLead);
+      return createdLead;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leads"] });

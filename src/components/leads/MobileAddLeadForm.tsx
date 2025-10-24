@@ -33,6 +33,7 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     source: "ידני"
   });
   const [shouldScheduleMeeting, setShouldScheduleMeeting] = useState(false);
+  const [sendWhatsApp, setSendWhatsApp] = useState(true);
 
   // Enhanced mobile-first submit handler
   const handleSubmit = async (e: React.FormEvent | React.TouchEvent | React.MouseEvent) => {
@@ -74,7 +75,7 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
 
       console.log('MobileAddLeadForm - Creating lead with data:', leadData);
 
-      await addLead.mutateAsync(leadData);
+      await addLead.mutateAsync({ leadData, sendWhatsApp });
       
       toast({
         title: "ליד נוסף",
@@ -225,6 +226,18 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
             touchAction: 'manipulation'
           }}
         />
+      </div>
+
+      {/* Send WhatsApp Checkbox */}
+      <div className="flex items-center space-x-2 space-x-reverse py-2">
+        <Checkbox
+          id="sendWhatsApp"
+          checked={sendWhatsApp}
+          onCheckedChange={(checked) => setSendWhatsApp(checked === true)}
+        />
+        <Label htmlFor="sendWhatsApp" className="text-sm">
+          שלח הודעת ברוכים הבאים בוואטסאפ
+        </Label>
       </div>
 
       {/* Schedule Meeting */}
