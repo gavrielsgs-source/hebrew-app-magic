@@ -42,12 +42,10 @@ export function useCreateCustomer() {
             const { data: whatsappResponse, error: whatsappError } = await supabase.functions.invoke('send-whatsapp-message', {
               body: {
                 to: formattedPhone,
-                type: 'text',
-                message: `שלום ${customerData.full_name}! 👋
-
-קיבלנו את פנייתך 🙏 
-
-צוות המכירות שלנו יחזור אליך בקרוב 😊`
+                type: 'template',
+                templateName: 'welcome_message',
+                languageCode: 'he',
+                parameters: [customerData.full_name]
               }
             });
 
