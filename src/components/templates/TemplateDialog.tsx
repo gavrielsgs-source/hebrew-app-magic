@@ -55,20 +55,25 @@ export function TemplateDialog({
   const isMobile = useIsMobile();
   const [templateContent, setTemplateContent] = useState("");
 
-  // Get the template content directly from templateContent field
+  // Generate preview message based on template - same logic as TemplateCard
   React.useEffect(() => {
-    // Use templateContent if available, otherwise try to extract from function
-    if (newTemplate.templateContent) {
-      setTemplateContent(newTemplate.templateContent);
-    } else if (newTemplate.generateMessage) {
-      // Fallback: generate with mock data to show something
-      if (newTemplate.type === 'car') {
-        setTemplateContent(newTemplate.generateMessage(mockCar));
-      } else {
-        setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
+    try {
+      // Always generate the message using generateMessage function if available
+      if (newTemplate.generateMessage && typeof newTemplate.generateMessage === 'function') {
+        if (newTemplate.type === 'car') {
+          setTemplateContent(newTemplate.generateMessage(mockCar));
+        } else if (newTemplate.type === 'lead') {
+          setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
+        }
+      } else if (newTemplate.templateContent) {
+        // Fallback to templateContent if no generateMessage function
+        setTemplateContent(newTemplate.templateContent);
       }
+    } catch (error) {
+      console.error("Error generating template content:", error);
+      setTemplateContent("שגיאה ביצירת תצוגה מקדימה");
     }
-  }, [newTemplate.id, newTemplate.templateContent, newTemplate.type, isOpen]); // Re-run when template changes or dialog opens
+  }, [newTemplate.id, newTemplate.generateMessage, newTemplate.type, isOpen]);
 
   const handleTemplateContentChange = (content: string) => {
     setTemplateContent(content);
