@@ -22,6 +22,7 @@ export const useCreateLead = () => {
       // Convert empty strings to null for UUID fields to prevent database errors
       const cleanedLead = {
         ...newLead,
+        name: newLead.name?.trim() || null, // Clean and validate name
         phone: formattedPhone,
         car_id: newLead.car_id === "" ? null : newLead.car_id,
         assigned_to: newLead.assigned_to === "" ? null : newLead.assigned_to,
@@ -45,16 +46,16 @@ export const useCreateLead = () => {
       console.log('🔍 [useCreateLead] Lead created successfully:', createdLead);
 
       // Send welcome WhatsApp message
-      if (sendWhatsApp && formattedPhone && cleanedLead.name) {
+      if (sendWhatsApp && formattedPhone && cleanedLead.name?.trim()) {
         try {
-          console.log('📱 Attempting to send welcome WhatsApp message to:', formattedPhone);
+          console.log('📱 Attempting to send welcome WhatsApp message to:', formattedPhone, 'with name:', cleanedLead.name);
           const { data: whatsappData, error: whatsappError } = await supabase.functions.invoke('send-whatsapp-message', {
             body: {
               type: 'template',
               to: formattedPhone,
               templateName: 'welcome_message',
               languageCode: 'he',
-              parameters: [cleanedLead.name]
+              parameters: [cleanedLead.name.trim()]
             }
           });
 
