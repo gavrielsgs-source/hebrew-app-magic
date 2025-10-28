@@ -10,9 +10,28 @@ export function LeadCardContent({ lead }: LeadCardContentProps) {
   const phoneValue = lead.phone || "-";
   const emailValue = lead.email || "-";
   
+  console.log('Lead data in card:', { id: lead.id, notes: lead.notes, hasNotes: !!lead.notes });
+  
   return (
     <CardContent className="p-0">
       <div className="space-y-5" dir="rtl">
+        {/* הערות - מוצג קודם */}
+        {lead.notes && (
+          <div className="leads-notes bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-800 p-4 rounded-xl shadow-md" dir="rtl">
+            <div className="flex items-start justify-end gap-3">
+              <div className="text-right flex-1">
+                <div className="text-sm font-bold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  הערות
+                </div>
+                <p className="text-sm text-amber-800 dark:text-amber-200 whitespace-pre-line leading-relaxed font-medium">
+                  {lead.notes}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* פרטי יצירת קשר */}
         <div className="grid grid-cols-1 gap-4">
           {lead.phone && (
@@ -77,22 +96,7 @@ export function LeadCardContent({ lead }: LeadCardContentProps) {
           </div>
         )}
         
-        {/* הערות */}
-        {lead.notes && (
-          <div className="leads-notes bg-muted/20 border border-muted/40 p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.01]" dir="rtl">
-            <div className="flex items-start justify-end gap-3">
-              <div className="text-right flex-1">
-                <div className="text-sm font-semibold text-foreground mb-2">הערות</div>
-                <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
-                  {lead.notes}
-                </p>
-              </div>
-              <div className="bg-muted/50 p-2 rounded-full mr-3">
-                <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              </div>
-            </div>
-          </div>
-        )}
+        {/* הערות שהוזז למעלה - קוד זה יימחק */}
       </div>
     </CardContent>
   );

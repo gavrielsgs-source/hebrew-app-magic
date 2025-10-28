@@ -7,10 +7,12 @@ import { WhatsAppDialog } from "./dialogs/WhatsAppDialog";
 import { ScheduleDialog } from "./dialogs/ScheduleDialog";
 import { EditDialog } from "./dialogs/EditDialog";
 import { DeleteDialog } from "./dialogs/DeleteDialog";
-import { QuickNoteDialog } from "./dialogs/QuickNoteDialog";
 import { useLeadActions } from "./hooks/useLeadActions";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { Save } from "lucide-react";
+import { useUpdateLead } from "@/hooks/use-leads";
+import { useToast } from "@/hooks/use-toast";
 
 interface LeadCardActionsProps {
   lead: any;
@@ -28,7 +30,10 @@ export function LeadCardActions({
   onSchedule 
 }: LeadCardActionsProps) {
   const isMobile = useIsMobile();
-  const [showQuickNote, setShowQuickNote] = useState(false);
+  const [notes, setNotes] = useState(lead.notes || "");
+  const updateLead = useUpdateLead();
+  const { toast } = useToast();
+  
   const {
     showScheduleDialog,
     setShowScheduleDialog,
@@ -44,6 +49,30 @@ export function LeadCardActions({
     handleDeleteClick,
     handleConfirmDelete
   } = useLeadActions(lead.id, lead.name);
+
+  const handleSaveNotes = async () => {
+    try {
+      await updateLead.mutateAsync({
+        id: lead.id,
+        data: {
+          notes,
+          updated_at: new Date().toISOString()
+        }
+      });
+
+      toast({
+        title: "הערות נשמרו",
+        description: "ההערות עודכנו בהצלחה"
+      });
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן לשמור את ההערות",
+        variant: "destructive"
+      });
+    }
+  };
 
   const wrappedHandlers = {
     onWhatsApp: () => {
@@ -65,7 +94,7 @@ export function LeadCardActions({
 
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="flex gap-2">
           {isMobile ? (
             <MobileActions {...wrappedHandlers} />
@@ -74,16 +103,28 @@ export function LeadCardActions({
           )}
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowQuickNote(true)}
-          className="w-full"
-          dir="rtl"
-        >
-          <MessageSquare className="h-4 w-4 ml-2" />
-          הוסף הערה מהירה
-        </Button>
+        <div className="space-y-2" dir="rtl">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-foreground">הערות</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleSaveNotes}
+              disabled={updateLead.isPending}
+              className="h-7 px-2"
+            >
+              <Save className="h-3 w-3 ml-1" />
+              {updateLead.isPending ? "שומר..." : "שמור"}
+            </Button>
+          </div>
+          <Textarea
+            placeholder="הוסף הערות על השיחה, מעקב, וכו'..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="min-h-[80px] text-sm resize-none"
+            dir="rtl"
+          />
+        </div>
       </div>
 
       <WhatsAppDialog
@@ -114,12 +155,6 @@ export function LeadCardActions({
         onOpenChange={setShowDeleteDialog}
         leadName={lead.name}
         onConfirm={handleConfirmDelete}
-      />
-
-      <QuickNoteDialog
-        isOpen={showQuickNote}
-        onOpenChange={setShowQuickNote}
-        lead={lead}
       />
     </>
   );
