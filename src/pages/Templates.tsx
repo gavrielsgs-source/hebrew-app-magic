@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
@@ -223,70 +224,72 @@ export default function Templates() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      <Card className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <CardHeader className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <CardTitle className="text-foreground">ניהול תבניות וואטסאפ</CardTitle>
-          <CardDescription className="text-muted-foreground">
-            צור ונהל תבניות הודעות לשליחה מהירה ללקוחות ולרכבים
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TemplateHeader
-            onNewTemplate={handleNewTemplate}
-            onResetDefaults={resetToDefaults}
-            canAddTemplate={true}
-          />
+    <ScrollArea className="h-screen">
+      <div className="container mx-auto p-6 pb-20 space-y-6" dir="rtl">
+        <Card className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <CardHeader className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <CardTitle className="text-foreground">ניהול תבניות וואטסאפ</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              צור ונהל תבניות הודעות לשליחה מהירה ללקוחות ולרכבים
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TemplateHeader
+              onNewTemplate={handleNewTemplate}
+              onResetDefaults={resetToDefaults}
+              canAddTemplate={true}
+            />
 
-          <div className="space-y-8">
-            {leadTemplates.length > 0 && (
-              <div>
-                <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
-                  תבניות לקוחות ({leadTemplates.length})
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {leadTemplates.map((template) => (
-                    <TemplateCard
-                      key={template.id}
-                      template={template}
-                      onEdit={() => handleTemplateSelect(template)}
-                      onDelete={() => deleteTemplate(template.id)}
-                    />
-                  ))}
+            <div className="space-y-8">
+              {leadTemplates.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
+                    תבניות לקוחות ({leadTemplates.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {leadTemplates.map((template) => (
+                      <TemplateCard
+                        key={template.id}
+                        template={template}
+                        onEdit={() => handleTemplateSelect(template)}
+                        onDelete={() => deleteTemplate(template.id)}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {carTemplates.length > 0 && (
-              <div>
-                <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
-                  תבניות רכבים ({carTemplates.length})
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {carTemplates.map((template) => (
-                    <TemplateCard
-                      key={template.id}
-                      template={template}
-                      onEdit={() => handleTemplateSelect(template)}
-                      onDelete={() => deleteTemplate(template.id)}
-                    />
-                  ))}
+              {carTemplates.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
+                    תבניות רכבים ({carTemplates.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {carTemplates.map((template) => (
+                      <TemplateCard
+                        key={template.id}
+                        template={template}
+                        onEdit={() => handleTemplateSelect(template)}
+                        onDelete={() => deleteTemplate(template.id)}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <TemplateDialog
-            isOpen={isDialogOpen}
-            isNew={isNew}
-            newTemplate={newTemplate}
-            setIsOpen={setIsDialogOpen}
-            onSave={handleSave}
-            onTemplateChange={setNewTemplate}
-            templateTags={templateTags}
-          />
-        </CardContent>
-      </Card>
-    </div>
+            <TemplateDialog
+              isOpen={isDialogOpen}
+              isNew={isNew}
+              newTemplate={newTemplate}
+              setIsOpen={setIsDialogOpen}
+              onSave={handleSave}
+              onTemplateChange={setNewTemplate}
+              templateTags={templateTags}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </ScrollArea>
   );
 }
