@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -197,10 +198,10 @@ export function TemplateDialog({
   return (
     <SwipeDialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
-        className={`${isMobile ? 'w-[95%] h-[95vh]' : 'sm:max-w-[700px]'} max-h-[95vh] overflow-y-auto`} 
+        className={`${isMobile ? 'w-[95%] h-[95vh]' : 'sm:max-w-[700px] max-h-[90vh]'} flex flex-col`} 
         dir="rtl"
       >
-        <DialogHeader className="text-right">
+        <DialogHeader className="text-right flex-shrink-0">
           <DialogTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} flex items-center justify-end gap-2`}>
             {isNew ? 'תבנית חדשה' : 'עריכת תבנית'}
             <Badge variant={newTemplate.type === 'car' ? 'default' : 'secondary'} className="text-xs">
@@ -227,7 +228,8 @@ export function TemplateDialog({
           </DialogDescription>
         </DialogHeader>
         
-        <div className={`grid gap-4 py-4 ${isMobile ? 'gap-3' : 'gap-6'}`}>
+        <ScrollArea className="flex-1 -mx-6 px-6">
+          <div className={`grid gap-4 py-4 ${isMobile ? 'gap-3' : 'gap-6'}`}>
           <div className="space-y-2">
             <Label htmlFor="name" className="text-right text-sm font-medium">
               שם התבנית
@@ -346,9 +348,10 @@ export function TemplateDialog({
               לחץ על תגית כדי להוסיף אותה לתבנית
             </p>
           </div>
-        </div>
+          </div>
+        </ScrollArea>
         
-        <DialogFooter className={`gap-2 ${isMobile ? 'flex-col-reverse' : ''}`}>
+        <DialogFooter className={`gap-2 ${isMobile ? 'flex-col-reverse' : ''} flex-shrink-0 pt-4 border-t`}>
           <Button 
             variant="outline" 
             onClick={() => setIsOpen(false)}
