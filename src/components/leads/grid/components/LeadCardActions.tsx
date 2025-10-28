@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileActions } from "./actions/MobileActions";
 import { DesktopActions } from "./actions/DesktopActions";
@@ -6,7 +7,10 @@ import { WhatsAppDialog } from "./dialogs/WhatsAppDialog";
 import { ScheduleDialog } from "./dialogs/ScheduleDialog";
 import { EditDialog } from "./dialogs/EditDialog";
 import { DeleteDialog } from "./dialogs/DeleteDialog";
+import { QuickNoteDialog } from "./dialogs/QuickNoteDialog";
 import { useLeadActions } from "./hooks/useLeadActions";
+import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
 
 interface LeadCardActionsProps {
   lead: any;
@@ -24,6 +28,7 @@ export function LeadCardActions({
   onSchedule 
 }: LeadCardActionsProps) {
   const isMobile = useIsMobile();
+  const [showQuickNote, setShowQuickNote] = useState(false);
   const {
     showScheduleDialog,
     setShowScheduleDialog,
@@ -60,11 +65,26 @@ export function LeadCardActions({
 
   return (
     <>
-      {isMobile ? (
-        <MobileActions {...wrappedHandlers} />
-      ) : (
-        <DesktopActions {...wrappedHandlers} />
-      )}
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          {isMobile ? (
+            <MobileActions {...wrappedHandlers} />
+          ) : (
+            <DesktopActions {...wrappedHandlers} />
+          )}
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowQuickNote(true)}
+          className="w-full"
+          dir="rtl"
+        >
+          <MessageSquare className="h-4 w-4 ml-2" />
+          הוסף הערה מהירה
+        </Button>
+      </div>
 
       <WhatsAppDialog
         isOpen={showWhatsappDialog}
@@ -94,6 +114,12 @@ export function LeadCardActions({
         onOpenChange={setShowDeleteDialog}
         leadName={lead.name}
         onConfirm={handleConfirmDelete}
+      />
+
+      <QuickNoteDialog
+        isOpen={showQuickNote}
+        onOpenChange={setShowQuickNote}
+        lead={lead}
       />
     </>
   );

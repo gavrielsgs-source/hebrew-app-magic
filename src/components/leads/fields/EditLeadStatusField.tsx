@@ -19,11 +19,12 @@ export function EditLeadStatusField({ control }: Props) {
                 <SelectValue placeholder="בחר סטטוס" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent className="bg-background border-2 shadow-2xl z-50">
               <SelectItem value="new">חדש</SelectItem>
               <SelectItem value="in_treatment">בטיפול</SelectItem>
               <SelectItem value="waiting">ממתין</SelectItem>
               <SelectItem value="meeting_scheduled">נקבעה פגישה</SelectItem>
+              <SelectItem value="follow_up">לעקוב</SelectItem>
               <SelectItem value="handled">טופל</SelectItem>
               <SelectItem value="not_relevant">לא רלוונטי</SelectItem>
             </SelectContent>

@@ -70,6 +70,7 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
         <SelectItem value="in_treatment" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">בטיפול</SelectItem>
         <SelectItem value="waiting" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">ממתין</SelectItem>
         <SelectItem value="meeting_scheduled" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">נקבעה פגישה</SelectItem>
+        <SelectItem value="follow_up" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">לעקוב</SelectItem>
         <SelectItem value="handled" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">טופל</SelectItem>
         <SelectItem value="not_relevant" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">לא רלוונטי</SelectItem>
       </SelectContent>
