@@ -73,7 +73,7 @@ export function TemplateDialog({
       console.error("Error generating template content:", error);
       setTemplateContent("שגיאה ביצירת תצוגה מקדימה");
     }
-  }, [newTemplate.id, newTemplate.generateMessage, newTemplate.type, isOpen]);
+  }, [newTemplate, isOpen]);
 
   const handleTemplateContentChange = (content: string) => {
     setTemplateContent(content);
