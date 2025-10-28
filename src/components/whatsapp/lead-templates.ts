@@ -16,9 +16,9 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     name: "הכרות עם לקוח פוטנציאלי",
     description: "הודעת היכרות ראשונית עם לקוח שפנה אלינו",
     type: 'lead' as const,
-    templateContent: `היי {{leadName}}! 👋
+    templateContent: `היי \${leadName}! 👋
 
-קיבלנו את הפנייה שלך{{leadSource}} וראינו שאתה מתעניין ברכב.
+קיבלנו את הפנייה שלך\${leadSource ? \` דרך \${leadSource}\` : ''} וראינו שאתה מתעניין ברכב.
 
 מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
 
@@ -27,9 +27,9 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
 בברכה,
 צוות המכירות`,
     generateMessage: (leadName: string, leadSource?: string) => {
-      const content = `היי {{leadName}}! 👋
+      return `היי ${leadName}! 👋
 
-קיבלנו את הפנייה שלך{{leadSource}} וראינו שאתה מתעניין ברכב.
+קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
 
 מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
 
@@ -37,10 +37,6 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
 
 בברכה,
 צוות המכירות`;
-      
-      return content
-        .replace(/\{\{leadName\}\}/g, leadName || '')
-        .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '');
     }
   },
   {
@@ -48,25 +44,21 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     name: "מעקב - פרטי רכב ללקוח",
     description: "הודעת מעקב לאחר שליחת פרטי רכב ללקוח פוטנציאלי",
     type: 'lead' as const,
-    templateContent: `היי {{leadName}}! 👋  
+    templateContent: `היי \${leadName}! 👋  
 
-רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
+רק רצינו לוודא שקיבלת את הפרטים על הרכב\${carDetails ? \` \${carDetails}\` : ''} 🚗  
 אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
 
 בברכה,
 צוות המכירות`,
     generateMessage: (leadName: string, carDetails?: string) => {
-      const content = `היי {{leadName}}! 👋  
+      return `היי ${leadName}! 👋  
 
-רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
+רק רצינו לוודא שקיבלת את הפרטים על הרכב${carDetails ? ` ${carDetails}` : ''} 🚗  
 אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
 
 בברכה,
 צוות המכירות`;
-      
-      return content
-        .replace(/\{\{leadName\}\}/g, leadName || '')
-        .replace(/\{\{carDetails\}\}/g, carDetails || '');
     }
   }
 ];

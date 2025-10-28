@@ -68,7 +68,7 @@ export function TemplateDialog({
         setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
       }
     }
-  }, [newTemplate.id]); // Only re-run when template ID changes
+  }, [newTemplate.id, newTemplate.templateContent, newTemplate.type, isOpen]); // Re-run when template changes or dialog opens
 
   const handleTemplateContentChange = (content: string) => {
     setTemplateContent(content);
