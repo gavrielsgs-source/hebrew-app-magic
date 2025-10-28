@@ -6,26 +6,22 @@ import { EditLeadForm } from "@/components/leads/EditLeadForm";
 interface EditDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  leadId: string;
-  leadName: string;
-  leadPhone?: string;
+  lead: any;
 }
 
 export function EditDialog({
   isOpen,
   onOpenChange,
-  leadId,
-  leadName,
-  leadPhone
+  lead
 }: EditDialogProps) {
   return (
     <SwipeDialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95%] sm:w-[500px] overflow-y-auto max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>עריכת ליד - {leadName}</DialogTitle>
+          <DialogTitle>עריכת ליד - {lead.name}</DialogTitle>
         </DialogHeader>
         <EditLeadForm 
-          lead={{ id: leadId, name: leadName, phone: leadPhone }}
+          lead={lead}
           onSuccess={() => onOpenChange(false)}
         />
       </DialogContent>

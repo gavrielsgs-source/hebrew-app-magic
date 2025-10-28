@@ -9,10 +9,7 @@ import { DeleteDialog } from "./dialogs/DeleteDialog";
 import { useLeadActions } from "./hooks/useLeadActions";
 
 interface LeadCardActionsProps {
-  leadId: string;
-  leadName: string;
-  leadPhone?: string;
-  leadSource?: string;
+  lead: any;
   onEdit: () => void;
   onDelete: () => void;
   onWhatsApp: () => void;
@@ -20,10 +17,7 @@ interface LeadCardActionsProps {
 }
 
 export function LeadCardActions({ 
-  leadId, 
-  leadName, 
-  leadPhone, 
-  leadSource,
+  lead,
   onEdit, 
   onDelete, 
   onWhatsApp, 
@@ -44,11 +38,11 @@ export function LeadCardActions({
     handleEditClick,
     handleDeleteClick,
     handleConfirmDelete
-  } = useLeadActions(leadId, leadName);
+  } = useLeadActions(lead.id, lead.name);
 
   const wrappedHandlers = {
     onWhatsApp: () => {
-      handleWhatsAppClick(leadPhone);
+      handleWhatsAppClick(lead.phone);
       onWhatsApp();
     },
     onSchedule: () => {
@@ -75,32 +69,30 @@ export function LeadCardActions({
       <WhatsAppDialog
         isOpen={showWhatsappDialog}
         onOpenChange={setShowWhatsappDialog}
-        leadId={leadId}
-        leadName={leadName}
-        leadPhone={leadPhone || ""}
-        leadSource={leadSource}
+        leadId={lead.id}
+        leadName={lead.name}
+        leadPhone={lead.phone || ""}
+        leadSource={lead.source}
       />
 
       <ScheduleDialog
         isOpen={showScheduleDialog}
         onOpenChange={setShowScheduleDialog}
-        leadId={leadId}
-        leadName={leadName}
-        leadPhone={leadPhone}
+        leadId={lead.id}
+        leadName={lead.name}
+        leadPhone={lead.phone}
       />
 
       <EditDialog
         isOpen={showEditDialog}
         onOpenChange={setShowEditDialog}
-        leadId={leadId}
-        leadName={leadName}
-        leadPhone={leadPhone}
+        lead={lead}
       />
 
       <DeleteDialog
         isOpen={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        leadName={leadName}
+        leadName={lead.name}
         onConfirm={handleConfirmDelete}
       />
     </>

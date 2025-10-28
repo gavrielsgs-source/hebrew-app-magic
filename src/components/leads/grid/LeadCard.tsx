@@ -37,10 +37,7 @@ export function LeadCard({ lead }: LeadCardProps) {
           <LeadCardContent lead={lead} />
           <div className="mt-8 transform transition-all duration-300 group-hover:translate-y-[-1px]">
             <LeadCardActions
-              leadId={lead.id as string}
-              leadName={lead.name || ""}
-              leadPhone={lead.phone || ""}
-              leadSource={lead.source as string}
+              lead={lead}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onWhatsApp={handleWhatsApp}
