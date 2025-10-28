@@ -155,18 +155,6 @@ export default function Templates() {
   };
 
   const handleTemplateSelect = (template: UnifiedTemplate) => {
-    // Check if this is a default template (one that exists in allDefaultTemplates)
-    const isDefaultTemplate = allDefaultTemplates.some(t => t.id === template.id);
-    
-    if (isDefaultTemplate) {
-      toast({
-        title: "לא ניתן לערוך תבנית ברירת מחדל",
-        description: "תבניות ברירת המחדל של המערכת לא ניתנות לעריכה. אתה יכול ליצור תבנית חדשה מבוססת עליהן.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setSelectedTemplate(template);
     setNewTemplate({
       ...template,
@@ -285,15 +273,16 @@ export default function Templates() {
             )}
           </div>
 
-          <TemplateDialog
-            isOpen={isDialogOpen}
-            isNew={isNew}
-            newTemplate={newTemplate}
-            setIsOpen={setIsDialogOpen}
-            onSave={handleSave}
-            onTemplateChange={setNewTemplate}
-            templateTags={templateTags}
-          />
+      <TemplateDialog
+        isOpen={isDialogOpen}
+        isNew={isNew}
+        newTemplate={newTemplate}
+        setIsOpen={setIsDialogOpen}
+        onSave={handleSave}
+        onTemplateChange={setNewTemplate}
+        templateTags={templateTags}
+        readOnly={newTemplate.id.startsWith('default-')}
+      />
         </div>
       </MobileContainer>
     );
@@ -373,6 +362,7 @@ export default function Templates() {
               onSave={handleSave}
               onTemplateChange={setNewTemplate}
               templateTags={templateTags}
+              readOnly={newTemplate.id.startsWith('default-')}
             />
           </CardContent>
         </Card>

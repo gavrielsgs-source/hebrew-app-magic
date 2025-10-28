@@ -22,6 +22,7 @@ interface TemplateDialogProps {
   onSave: () => void;
   onTemplateChange: (template: UnifiedTemplate) => void;
   templateTags: string[];
+  readOnly?: boolean;
 }
 
 // Mock data for preview
@@ -47,7 +48,8 @@ export function TemplateDialog({
   setIsOpen,
   onSave,
   onTemplateChange,
-  templateTags
+  templateTags,
+  readOnly = false
 }: TemplateDialogProps) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -199,7 +201,7 @@ export function TemplateDialog({
       >
         <DialogHeader className="text-right flex-shrink-0">
           <DialogTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} flex items-center justify-end gap-2`}>
-            {isNew ? 'תבנית חדשה' : 'עריכת תבנית'}
+            {readOnly ? 'צפייה בתבנית' : isNew ? 'תבנית חדשה' : 'עריכת תבנית'}
             <Badge variant={newTemplate.type === 'car' ? 'default' : 'secondary'} className="text-xs">
               {newTemplate.type === 'car' ? (
                 <>
@@ -237,6 +239,7 @@ export function TemplateDialog({
               placeholder="לדוגמה: תבנית תיאום פגישה"
               className="text-right"
               dir="rtl"
+              disabled={readOnly}
             />
           </div>
 
@@ -251,6 +254,7 @@ export function TemplateDialog({
               placeholder="לדוגמה: הודעה לתיאום פגישה עם הלקוח"
               className="text-right"
               dir="rtl"
+              disabled={readOnly}
             />
           </div>
 
@@ -262,6 +266,7 @@ export function TemplateDialog({
             <Select
               value={newTemplate.type}
               onValueChange={handleTypeChange}
+              disabled={readOnly}
             >
               <SelectTrigger className="text-right" dir="rtl">
                 <SelectValue placeholder="בחר סוג תבנית" />
@@ -308,42 +313,45 @@ export function TemplateDialog({
                 "שלום ${leadName},\n\n[ערוך כאן את ההודעה שלך]\n\nבברכה,\nצוות המכירות"
               }
               dir="rtl"
+              disabled={readOnly}
             />
           </div>
           
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 justify-end">
-              <span className="text-sm font-medium">תגיות זמינות עבור {newTemplate.type === 'car' ? 'רכבים' : 'לקוחות'}:</span>
-              <Plus className="h-4 w-4 text-muted-foreground" />
+          {!readOnly && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 justify-end">
+                <span className="text-sm font-medium">תגיות זמינות עבור {newTemplate.type === 'car' ? 'רכבים' : 'לקוחות'}:</span>
+                <Plus className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className={`flex flex-wrap gap-2 justify-end ${isMobile ? 'max-h-20 overflow-y-auto' : ''}`}>
+                {relevantTags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className={`cursor-pointer hover:bg-carslead-purple hover:text-white transition-colors ${
+                      isMobile ? 'text-xs px-2 py-1' : ''
+                    }`}
+                    onClick={() => {
+                      if (newTemplate.type === 'car') {
+                        const carVar = tag.replace(/{{|}}/g, '').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+                        const templateVar = `\${car.${carVar}}`;
+                        handleTemplateContentChange(templateContent + templateVar);
+                      } else {
+                        const leadVar = tag.replace(/{{|}}/g, '');
+                        const templateVar = `\${${leadVar}}`;
+                        handleTemplateContentChange(templateContent + templateVar);
+                      }
+                    }}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <p className={`text-muted-foreground text-right ${isMobile ? 'text-xs' : 'text-xs'}`}>
+                לחץ על תגית כדי להוסיף אותה לתבנית
+              </p>
             </div>
-            <div className={`flex flex-wrap gap-2 justify-end ${isMobile ? 'max-h-20 overflow-y-auto' : ''}`}>
-              {relevantTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className={`cursor-pointer hover:bg-carslead-purple hover:text-white transition-colors ${
-                    isMobile ? 'text-xs px-2 py-1' : ''
-                  }`}
-                  onClick={() => {
-                    if (newTemplate.type === 'car') {
-                      const carVar = tag.replace(/{{|}}/g, '').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-                      const templateVar = `\${car.${carVar}}`;
-                      handleTemplateContentChange(templateContent + templateVar);
-                    } else {
-                      const leadVar = tag.replace(/{{|}}/g, '');
-                      const templateVar = `\${${leadVar}}`;
-                      handleTemplateContentChange(templateContent + templateVar);
-                    }
-                  }}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            <p className={`text-muted-foreground text-right ${isMobile ? 'text-xs' : 'text-xs'}`}>
-              לחץ על תגית כדי להוסיף אותה לתבנית
-            </p>
-          </div>
+          )}
           </div>
         </ScrollArea>
         
@@ -351,17 +359,19 @@ export function TemplateDialog({
           <Button 
             variant="outline" 
             onClick={() => setIsOpen(false)}
-            className={`${isMobile ? 'w-full order-2' : ''} px-6`}
+            className={`${isMobile ? 'w-full' : ''} px-6`}
           >
-            ביטול
+            {readOnly ? 'סגור' : 'ביטול'}
           </Button>
-          <Button 
-            type="submit" 
-            onClick={handleSave}
-            className={`${isMobile ? 'w-full order-1' : ''} bg-carslead-purple hover:bg-carslead-purple/90 px-6`}
-          >
-            {isNew ? 'שמור תבנית' : 'עדכן תבנית'}
-          </Button>
+          {!readOnly && (
+            <Button 
+              type="submit" 
+              onClick={handleSave}
+              className={`${isMobile ? 'w-full order-1' : ''} bg-carslead-purple hover:bg-carslead-purple/90 px-6`}
+            >
+              {isNew ? 'שמור תבנית' : 'עדכן תבנית'}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </SwipeDialog>
