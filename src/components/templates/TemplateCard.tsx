@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
-import { FileText, Edit, Trash2, Eye, Car, User } from "lucide-react";
+import { FileText, Edit, Trash2, Eye, Car, User, Lock } from "lucide-react";
 import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { Badge } from "@/components/ui/badge";
 import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TemplateCardProps {
   template: UnifiedTemplate;
@@ -33,6 +34,10 @@ const mockLeadName = "יואב כהן";
 const mockLeadSource = "פייסבוק";
 
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
+  // Check if this is a default (system) template
+  const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
+  const isDefaultTemplate = allDefaultTemplates.some(t => t.id === template.id);
+  
   // Generate preview message based on template type
   const generatePreviewMessage = () => {
     try {
@@ -128,22 +133,47 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           
           {/* כפתורי פעולה - צד ימין */}
           <div className="flex gap-2 order-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => onEdit(template)}
-              className="h-9 w-9 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-transparent hover:border-blue-200"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => onDelete(template.id)}
-              className="h-9 w-9 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-transparent hover:border-red-200"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => onEdit(template)}
+                    disabled={isDefaultTemplate}
+                    className="h-9 w-9 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-transparent hover:border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDefaultTemplate ? <Lock className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
+                  </Button>
+                </TooltipTrigger>
+                {isDefaultTemplate && (
+                  <TooltipContent>
+                    <p>תבנית ברירת מחדל - לא ניתן לעריכה</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => onDelete(template.id)}
+                    disabled={isDefaultTemplate}
+                    className="h-9 w-9 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-transparent hover:border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDefaultTemplate ? <Lock className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
+                  </Button>
+                </TooltipTrigger>
+                {isDefaultTemplate && (
+                  <TooltipContent>
+                    <p>תבנית ברירת מחדל - לא ניתן למחיקה</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </CardHeader>

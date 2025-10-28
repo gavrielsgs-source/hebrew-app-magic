@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
@@ -10,6 +11,7 @@ import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useToast } from "@/hooks/use-toast";
+import { Download } from "lucide-react";
 
 export default function Templates() {
   const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
@@ -80,6 +82,18 @@ export default function Templates() {
   };
 
   const deleteTemplate = (templateId: string) => {
+    // Check if this is a default template
+    const isDefaultTemplate = allDefaultTemplates.some(t => t.id === templateId);
+    
+    if (isDefaultTemplate) {
+      toast({
+        title: "לא ניתן למחוק תבנית ברירת מחדל",
+        description: "תבניות ברירת המחדל של המערכת לא ניתנות למחיקה.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const templateToDelete = templates.find(t => t.id === templateId);
     if (templateToDelete) {
       const newTemplates = templates.filter(t => t.id !== templateId);
@@ -99,7 +113,60 @@ export default function Templates() {
     });
   };
 
+  const exportToExcel = () => {
+    // Create CSV content with BOM for Hebrew support
+    const BOM = '\uFEFF';
+    let csvContent = BOM + 'שם התבנית,סוג,תיאור,תוכן התבנית,הוראות יישום בפייסבוק\n';
+    
+    templates.forEach(template => {
+      const name = template.name.replace(/"/g, '""');
+      const type = template.type === 'car' ? 'רכב' : 'לקוח';
+      const description = template.description.replace(/"/g, '""');
+      
+      // Get template content
+      let content = '';
+      if (template.templateContent) {
+        content = template.templateContent.replace(/"/g, '""').replace(/\n/g, ' ');
+      }
+      
+      // Facebook implementation instructions
+      const facebookInstructions = template.type === 'car' 
+        ? 'בפייסבוק: צור Message Template עם 7 פרמטרים: {{1}}=יצרן {{2}}=דגם {{3}}=מחיר {{4}}=סוג דלק {{5}}=קילומטראז\' {{6}}=תיבת הילוכים {{7}}=מספר טלפון'
+        : 'בפייסבוק: צור Message Template עם פרמטרים: {{name}} לשם הלקוח, {{leadSource}} למקור הפנייה (אופציונלי)';
+      
+      csvContent += `"${name}","${type}","${description}","${content}","${facebookInstructions}"\n`;
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `whatsapp_templates_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "הקובץ יוצא בהצלחה",
+      description: "קובץ התבניות הורד למחשב שלך.",
+    });
+  };
+
   const handleTemplateSelect = (template: UnifiedTemplate) => {
+    // Check if this is a default template (one that exists in allDefaultTemplates)
+    const isDefaultTemplate = allDefaultTemplates.some(t => t.id === template.id);
+    
+    if (isDefaultTemplate) {
+      toast({
+        title: "לא ניתן לערוך תבנית ברירת מחדל",
+        description: "תבניות ברירת המחדל של המערכת לא ניתנות לעריכה. אתה יכול ליצור תבנית חדשה מבוססת עליהן.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSelectedTemplate(template);
     setNewTemplate({
       ...template,
@@ -174,6 +241,15 @@ export default function Templates() {
             onResetDefaults={resetToDefaults}
             canAddTemplate={true}
           />
+          
+          <Button
+            onClick={exportToExcel}
+            variant="outline"
+            className="w-full mb-4 flex items-center justify-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            ייצא תבניות לאקסל
+          </Button>
 
           <div className="space-y-6">
             {leadTemplates.length > 0 && (
@@ -239,6 +315,17 @@ export default function Templates() {
               onResetDefaults={resetToDefaults}
               canAddTemplate={true}
             />
+            
+            <div className="mb-6 flex gap-3">
+              <Button
+                onClick={exportToExcel}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                ייצא תבניות לאקסל
+              </Button>
+            </div>
 
             <div className="space-y-8">
               {leadTemplates.length > 0 && (

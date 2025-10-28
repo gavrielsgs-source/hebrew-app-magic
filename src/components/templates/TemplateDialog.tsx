@@ -53,24 +53,20 @@ export function TemplateDialog({
   const isMobile = useIsMobile();
   const [templateContent, setTemplateContent] = useState("");
 
-  // Get the template content from generateMessage for editing
+  // Get the template content directly from templateContent field
   React.useEffect(() => {
-    if (newTemplate.generateMessage) {
-      // Try to extract the template from the function if it's a simple return
-      const funcString = newTemplate.generateMessage.toString();
-      const match = funcString.match(/return\s*`([^`]*)`/);
-      if (match) {
-        setTemplateContent(match[1]);
+    // Use templateContent if available, otherwise try to extract from function
+    if (newTemplate.templateContent) {
+      setTemplateContent(newTemplate.templateContent);
+    } else if (newTemplate.generateMessage) {
+      // Fallback: generate with mock data to show something
+      if (newTemplate.type === 'car') {
+        setTemplateContent(newTemplate.generateMessage(mockCar));
       } else {
-        // Fallback: generate with mock data
-        if (newTemplate.type === 'car') {
-          setTemplateContent(newTemplate.generateMessage(mockCar));
-        } else {
-          setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
-        }
+        setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
       }
     }
-  }, [newTemplate]);
+  }, [newTemplate.id]); // Only re-run when template ID changes
 
   const handleTemplateContentChange = (content: string) => {
     setTemplateContent(content);
