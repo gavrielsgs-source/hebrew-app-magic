@@ -6,7 +6,8 @@ export const leadFormSchema = z.object({
   name: z.string()
     .min(1, "שם הוא שדה חובה")
     .max(100, "שם ארוך מדי")
-    .transform(sanitizeInput),
+    .transform(sanitizeInput)
+    .refine((val) => val.trim().length > 0, "שם לא יכול להכיל רק רווחים"),
   email: z.string()
     .optional()
     .or(z.literal(""))
