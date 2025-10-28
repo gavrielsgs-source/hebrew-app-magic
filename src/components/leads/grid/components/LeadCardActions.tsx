@@ -74,6 +74,13 @@ export function LeadCardActions({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleSaveNotes();
+    }
+  };
+
   const wrappedHandlers = {
     onWhatsApp: () => {
       handleWhatsAppClick(lead.phone);
@@ -103,27 +110,37 @@ export function LeadCardActions({
           )}
         </div>
         
-        <div className="space-y-2" dir="rtl">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">הערות</span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleSaveNotes}
-              disabled={updateLead.isPending}
-              className="h-7 px-2"
-            >
-              <Save className="h-3 w-3 ml-1" />
-              {updateLead.isPending ? "שומר..." : "שמור"}
-            </Button>
+        <div className="relative bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 rounded-2xl border-2 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300" dir="rtl">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent rounded-2xl pointer-events-none"></div>
+          <div className="relative space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Save className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-sm font-bold text-foreground">הערות ומעקב</span>
+            </div>
+            <div className="relative">
+              <Textarea
+                placeholder="הוסף הערות על השיחה, מעקב, פגישות וכו'... (Ctrl+Enter לשמירה)"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="min-h-[100px] text-sm resize-none bg-background/50 border-primary/20 focus:border-primary/40 focus:ring-primary/20 rounded-xl"
+                dir="rtl"
+              />
+              <div className="flex justify-end mt-2">
+                <Button
+                  size="sm"
+                  onClick={handleSaveNotes}
+                  disabled={updateLead.isPending}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  <Save className="h-3 w-3 ml-1" />
+                  {updateLead.isPending ? "שומר..." : "שמור הערות"}
+                </Button>
+              </div>
+            </div>
           </div>
-          <Textarea
-            placeholder="הוסף הערות על השיחה, מעקב, וכו'..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="min-h-[80px] text-sm resize-none"
-            dir="rtl"
-          />
         </div>
       </div>
 
