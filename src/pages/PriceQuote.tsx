@@ -890,7 +890,7 @@ export default function PriceQuote() {
           </CardContent>
         </Card>
 
-        {!showPreview && savedQuoteData && (
+        {savedQuoteData && (
           <div className="flex gap-3 justify-center">
             <Button
               onClick={handleDownloadPDF}
