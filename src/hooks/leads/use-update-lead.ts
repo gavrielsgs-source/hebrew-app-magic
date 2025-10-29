@@ -37,10 +37,18 @@ export const useUpdateLead = () => {
           throw new Error('לא נמצא ליד פייסבוק לעדכון');
         }
         
-        // עדכון הסטטוס בתוך lead_data
+        // עדכון כל השדות בתוך lead_data (כולל notes, status, וכו')
         const updatedLeadData = {
           ...(fbLead.lead_data as any),
-          status: data.status ?? (fbLead.lead_data as any)?.status ?? 'new'
+          // מעדכן את כל השדות שהועברו ב-data
+          ...(data.status !== undefined && { status: data.status }),
+          ...(data.notes !== undefined && { notes: data.notes }),
+          ...(data.name !== undefined && { name: data.name }),
+          ...(data.phone !== undefined && { phone: data.phone }),
+          ...(data.email !== undefined && { email: data.email }),
+          ...(data.source !== undefined && { source: data.source }),
+          ...(data.assigned_to !== undefined && { assigned_to: data.assigned_to }),
+          ...(data.car_id !== undefined && { car_id: data.car_id }),
         };
         
         const { data: responseData, error } = await supabase
