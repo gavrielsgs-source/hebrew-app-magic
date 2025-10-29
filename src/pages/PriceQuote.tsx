@@ -194,13 +194,31 @@ export default function PriceQuote() {
   };
 
   const handleWhatsAppSend = () => {
-    if (!savedQuoteData) return;
+    const formData = form.getValues();
+    const customerData = savedQuoteData?.customer || formData.customer;
+    const quoteNumber = savedQuoteData?.quoteNumber || "טיוטה";
+    const totalAmount = savedQuoteData?.financial.total || total;
+    const validUntil = savedQuoteData?.validUntil || formData.validUntil;
     
-    const message = `שלום ${savedQuoteData.customer.firstName || savedQuoteData.customer.fullName},\n\nמצורפת הצעת מחיר מספר: ${savedQuoteData.quoteNumber}\nסכום כולל: ${savedQuoteData.financial.total.toFixed(2)} ₪\n\nתוקף ההצעה: ${new Date(savedQuoteData.validUntil).toLocaleDateString('he-IL')}\n\nנשמח לעמוד לרשותך!`;
-    const phone = savedQuoteData.customer.phone?.replace(/[^\d]/g, '');
+    const message = `שלום ${customerData.firstName || customerData.fullName},\n\nמצורפת הצעת מחיר מספר: ${quoteNumber}\nסכום כולל: ${totalAmount.toFixed(2)} ₪\n\nתוקף ההצעה: ${new Date(validUntil).toLocaleDateString('he-IL')}\n\nנשמח לעמוד לרשותך!`;
+    
+    // Clean phone number - remove all non-digits
+    let phone = customerData.phone?.replace(/[^\d]/g, '');
     
     if (phone) {
-      const whatsappUrl = `https://wa.me/972${phone.startsWith('0') ? phone.slice(1) : phone}?text=${encodeURIComponent(message)}`;
+      // Handle different phone formats
+      if (phone.startsWith('972')) {
+        // Already has country code - use as is
+        phone = phone;
+      } else if (phone.startsWith('0')) {
+        // Israeli format starting with 0 - replace with 972
+        phone = '972' + phone.slice(1);
+      } else {
+        // Assume it's without 0 or 972 - add 972
+        phone = '972' + phone;
+      }
+      
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
     } else {
       toast({
@@ -519,8 +537,8 @@ export default function PriceQuote() {
                 </div>
               )}
 
-              {savedQuoteData && (
-                <div className="space-y-3">
+              <div className="space-y-3">
+                {savedQuoteData && (
                   <Button
                     onClick={handleDownloadPDF}
                     variant="outline"
@@ -529,16 +547,16 @@ export default function PriceQuote() {
                     <Download className="mr-2 h-4 w-4" />
                     הורד PDF
                   </Button>
-                  <Button
-                    onClick={handleWhatsAppSend}
-                    variant="default"
-                    className="w-full h-12 bg-green-600 hover:bg-green-700"
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    שלח בוואטסאפ
-                  </Button>
-                </div>
-              )}
+                )}
+                <Button
+                  onClick={handleWhatsAppSend}
+                  variant="default"
+                  className="w-full h-12 bg-green-600 hover:bg-green-700"
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  שלח בוואטסאפ
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -890,8 +908,8 @@ export default function PriceQuote() {
           </CardContent>
         </Card>
 
-        {savedQuoteData && (
-          <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center">
+          {savedQuoteData && (
             <Button
               onClick={handleDownloadPDF}
               variant="outline"
@@ -901,17 +919,17 @@ export default function PriceQuote() {
               <Download className="h-5 w-5" />
               הורד PDF
             </Button>
-            <Button
-              onClick={handleWhatsAppSend}
-              variant="default"
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-              size="lg"
-            >
-              <MessageCircle className="h-5 w-5" />
-              שלח בוואטסאפ
-            </Button>
-          </div>
-        )}
+          )}
+          <Button
+            onClick={handleWhatsAppSend}
+            variant="default"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+            size="lg"
+          >
+            <MessageCircle className="h-5 w-5" />
+            שלח בוואטסאפ
+          </Button>
+        </div>
 
         {/* Preview Section */}
         {showPreview && savedQuoteData && (
