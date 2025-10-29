@@ -80,7 +80,7 @@ const fetchLeads = async () => {
         email,
         status: leadData.status || 'new', // קריאת הסטטוס מתוך lead_data אם קיים
         source: 'Facebook',
-        notes: null,
+        notes: leadData.notes || null,
         created_at: fbLead.created_at,
         updated_at: fbLead.created_at,
         car_id: null,

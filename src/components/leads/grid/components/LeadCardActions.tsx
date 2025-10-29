@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileActions } from "./actions/MobileActions";
 import { DesktopActions } from "./actions/DesktopActions";
@@ -33,6 +33,10 @@ export function LeadCardActions({
   const [notes, setNotes] = useState(lead.notes || "");
   const updateLead = useUpdateLead();
   const { toast } = useToast();
+  
+  useEffect(() => {
+    setNotes(lead.notes || "");
+  }, [lead.id, lead.notes]);
   
   const {
     showScheduleDialog,
@@ -110,35 +114,34 @@ export function LeadCardActions({
           )}
         </div>
         
-        <div className="relative bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 rounded-2xl border-2 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300" dir="rtl">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent rounded-2xl pointer-events-none"></div>
-          <div className="relative space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Save className="h-4 w-4 text-primary" />
-              </div>
-              <span className="text-sm font-bold text-foreground">הערות ומעקב</span>
+        <div className="rounded-xl border border-muted/40 bg-muted/10 p-3" dir="rtl">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-muted-foreground">הערות</span>
+            <div className="flex items-center gap-1">
+              <Button
+                size="icon"
+                variant="secondary"
+                onClick={handleSaveNotes}
+                title={updateLead.isPending ? "שומר..." : "שמור"}
+                disabled={updateLead.isPending}
+                className="h-8 w-8"
+              >
+                <Save className="h-3.5 w-3.5" />
+              </Button>
             </div>
-            <div className="relative">
-              <Textarea
-                placeholder="הוסף הערות על השיחה, מעקב, פגישות וכו'... (Ctrl+Enter לשמירה)"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="min-h-[100px] text-sm resize-none bg-background/50 border-primary/20 focus:border-primary/40 focus:ring-primary/20 rounded-xl"
-                dir="rtl"
-              />
-              <div className="flex justify-end mt-2">
-                <Button
-                  size="sm"
-                  onClick={handleSaveNotes}
-                  disabled={updateLead.isPending}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-300"
-                >
-                  <Save className="h-3 w-3 ml-1" />
-                  {updateLead.isPending ? "שומר..." : "שמור הערות"}
-                </Button>
-              </div>
+          </div>
+          <div className="mt-2">
+            <Textarea
+              placeholder="הוסף הערות קצרות... (Ctrl+Enter לשמירה)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="min-h-[72px] max-h-40 text-xs resize-y bg-background/60 border-muted/40 focus:border-primary/40 focus:ring-primary/20 rounded-lg max-w-md ml-auto"
+              dir="rtl"
+            />
+            <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{notes?.length || 0}/1000</span>
+              {updateLead.isPending && <span>שומר...</span>}
             </div>
           </div>
         </div>
