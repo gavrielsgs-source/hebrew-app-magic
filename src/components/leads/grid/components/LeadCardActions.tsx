@@ -36,7 +36,7 @@ export function LeadCardActions({
   
   useEffect(() => {
     setNotes(lead.notes || "");
-  }, [lead.id, lead.notes]);
+  }, [lead.id]);
   
   const {
     showScheduleDialog,
