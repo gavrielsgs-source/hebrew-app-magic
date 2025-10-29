@@ -68,6 +68,9 @@ export function LeadCardActions({
         title: "הערות נשמרו",
         description: "ההערות עודכנו בהצלחה"
       });
+      
+      // מנקה את ה-textarea אחרי שמירה מוצלחת
+      setNotes("");
     } catch (error) {
       console.error("Error saving notes:", error);
       toast({
@@ -135,10 +138,10 @@ export function LeadCardActions({
                 size="sm"
                 onClick={handleSaveNotes}
                 disabled={updateLead.isPending}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
+                className="h-7 px-3 text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
               >
                 <Save className="h-3 w-3 ml-1" />
-                {updateLead.isPending ? "שומר..." : "שמור הערות"}
+                {updateLead.isPending ? "שומר..." : "שמור"}
               </Button>
             </div>
           </div>
