@@ -175,13 +175,44 @@ export default function PriceQuote() {
   };
 
   const handleDownloadPDF = async () => {
-    if (!savedQuoteData) return;
+    const formData = form.getValues();
+    
+    // Build quote data from saved data or form data
+    const quoteData: PriceQuoteData = savedQuoteData || {
+      quoteNumber: "טיוטה",
+      date: formData.date,
+      validUntil: formData.validUntil,
+      customer: {
+        fullName: formData.customer.fullName || "",
+        firstName: formData.customer.firstName || "",
+        phone: formData.customer.phone,
+        email: formData.customer.email,
+        city: formData.customer.city || "",
+        address: formData.customer.address || "",
+      },
+      items: formData.items.map(item => ({
+        id: item.id || "",
+        description: item.description || "",
+        unitPrice: item.unitPrice || 0,
+        quantity: item.quantity || 1,
+        discount: item.discount || 0,
+        totalPrice: item.totalPrice || 0,
+        notes: item.notes,
+      })),
+      financial: {
+        subtotal,
+        totalDiscount,
+        total,
+      },
+      terms: formData.terms,
+      notes: formData.notes,
+    };
     
     try {
-      await generatePriceQuotePDF(savedQuoteData);
+      await generatePriceQuotePDF(quoteData);
       toast({
         title: "הצעת המחיר הורדה בהצלחה",
-        description: `קובץ PDF של הצעה ${savedQuoteData.quoteNumber} נשמר למחשב`,
+        description: `קובץ PDF של הצעה ${quoteData.quoteNumber} נשמר למחשב`,
       });
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -538,16 +569,14 @@ export default function PriceQuote() {
               )}
 
               <div className="space-y-3">
-                {savedQuoteData && (
-                  <Button
-                    onClick={handleDownloadPDF}
-                    variant="outline"
-                    className="w-full h-12"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    הורד PDF
-                  </Button>
-                )}
+                <Button
+                  onClick={handleDownloadPDF}
+                  variant="outline"
+                  className="w-full h-12"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  הורד PDF
+                </Button>
                 <Button
                   onClick={handleWhatsAppSend}
                   variant="default"
@@ -909,17 +938,15 @@ export default function PriceQuote() {
         </Card>
 
         <div className="flex gap-3 justify-center">
-          {savedQuoteData && (
-            <Button
-              onClick={handleDownloadPDF}
-              variant="outline"
-              className="flex items-center gap-2"
-              size="lg"
-            >
-              <Download className="h-5 w-5" />
-              הורד PDF
-            </Button>
-          )}
+          <Button
+            onClick={handleDownloadPDF}
+            variant="outline"
+            className="flex items-center gap-2"
+            size="lg"
+          >
+            <Download className="h-5 w-5" />
+            הורד PDF
+          </Button>
           <Button
             onClick={handleWhatsAppSend}
             variant="default"
