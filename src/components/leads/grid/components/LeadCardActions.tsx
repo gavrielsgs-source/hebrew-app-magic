@@ -114,34 +114,32 @@ export function LeadCardActions({
           )}
         </div>
         
-        <div className="rounded-xl border border-muted/40 bg-muted/10 p-3" dir="rtl">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-muted-foreground">הערות</span>
-            <div className="flex items-center gap-1">
-              <Button
-                size="icon"
-                variant="secondary"
-                onClick={handleSaveNotes}
-                title={updateLead.isPending ? "שומר..." : "שמור"}
-                disabled={updateLead.isPending}
-                className="h-8 w-8"
-              >
-                <Save className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-          <div className="mt-2">
+        <div className="rounded-xl border border-muted/40 bg-muted/10 p-3 mt-6" dir="rtl">
+          <div className="text-xs font-semibold text-muted-foreground mb-2">הערות</div>
+          <div>
             <Textarea
               placeholder="הוסף הערות קצרות... (Ctrl+Enter לשמירה)"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => setNotes(e.target.value.slice(0, 300))}
               onKeyDown={handleKeyDown}
-              className="min-h-[72px] max-h-40 text-xs resize-y bg-background/60 border-muted/40 focus:border-primary/40 focus:ring-primary/20 rounded-lg max-w-md ml-auto"
+              maxLength={300}
+              className="min-h-[72px] max-h-40 text-xs resize-y bg-background/60 border-muted/40 focus:border-primary/40 focus:ring-primary/20 rounded-lg max-w-sm ml-auto"
               dir="rtl"
             />
             <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>{notes?.length || 0}/1000</span>
+              <span>{notes?.length || 0}/300</span>
               {updateLead.isPending && <span>שומר...</span>}
+            </div>
+            <div className="flex justify-end mt-2">
+              <Button
+                size="sm"
+                onClick={handleSaveNotes}
+                disabled={updateLead.isPending}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
+              >
+                <Save className="h-3 w-3 ml-1" />
+                {updateLead.isPending ? "שומר..." : "שמור הערות"}
+              </Button>
             </div>
           </div>
         </div>

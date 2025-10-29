@@ -87,6 +87,45 @@ export const useUpdateLead = () => {
         console.error('❌ Error updating lead:', error);
         throw new Error(error.message);
       }
+
+      // אם לא עודכן אף רשומה בלידים הרגילים, ננסה לעדכן לידי פייסבוק לפי מזהה פנימי (UUID)
+      if (Array.isArray(responseData) && responseData.length === 0) {
+        console.log('ℹ️ No regular lead updated, attempting fallback update for facebook_leads by internal UUID');
+
+        const { data: fbLeadByUuid, error: fetchFbByUuidError } = await supabase
+          .from("facebook_leads")
+          .select("lead_data")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (!fetchFbByUuidError && fbLeadByUuid) {
+          const updatedLeadData = {
+            ...(fbLeadByUuid.lead_data as any),
+            ...(cleanedData.status !== undefined && { status: cleanedData.status }),
+            ...(cleanedData.notes !== undefined && { notes: cleanedData.notes }),
+            ...(cleanedData.name !== undefined && { name: cleanedData.name }),
+            ...(cleanedData.phone !== undefined && { phone: cleanedData.phone }),
+            ...(cleanedData.email !== undefined && { email: cleanedData.email }),
+            ...(cleanedData.source !== undefined && { source: cleanedData.source }),
+            ...(cleanedData.assigned_to !== undefined && { assigned_to: cleanedData.assigned_to }),
+            ...(cleanedData.car_id !== undefined && { car_id: cleanedData.car_id }),
+          };
+
+          const { data: fbUpdateData, error: fbUpdateError } = await supabase
+            .from("facebook_leads")
+            .update({ lead_data: updatedLeadData })
+            .eq("id", id)
+            .select();
+
+          if (fbUpdateError) {
+            console.error('❌ Error updating Facebook lead by UUID:', fbUpdateError);
+            throw new Error(fbUpdateError.message);
+          }
+
+          console.log('✅ Facebook lead (by UUID) updated successfully:', fbUpdateData);
+          return fbUpdateData;
+        }
+      }
       
       console.log('✅ Lead updated successfully:', responseData);
       return responseData;
