@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Calculator, Download, UserPlus, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, Trash2, Calculator, Download, UserPlus, Calendar as CalendarIcon, MessageCircle } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { PriceQuoteData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,7 @@ import { useLeads } from "@/hooks/use-leads";
 import { usePriceQuote } from "@/hooks/price-quote/use-price-quote";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { generatePriceQuotePDF } from "@/utils/price-quote-pdf-generator";
 
 const priceQuoteSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
@@ -173,11 +174,41 @@ export default function PriceQuote() {
     }
   };
 
-  const handleDownloadPDF = () => {
-    toast({
-      title: "בפיתוח",
-      description: "הורדת PDF תהיה זמינה בקרוב",
-    });
+  const handleDownloadPDF = async () => {
+    if (!savedQuoteData) return;
+    
+    try {
+      await generatePriceQuotePDF(savedQuoteData);
+      toast({
+        title: "הצעת המחיר הורדה בהצלחה",
+        description: `קובץ PDF של הצעה ${savedQuoteData.quoteNumber} נשמר למחשב`,
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "שגיאה ביצירת PDF",
+        description: "אירעה שגיאה ביצירת קובץ ה-PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleWhatsAppSend = () => {
+    if (!savedQuoteData) return;
+    
+    const message = `שלום ${savedQuoteData.customer.firstName || savedQuoteData.customer.fullName},\n\nמצורפת הצעת מחיר מספר: ${savedQuoteData.quoteNumber}\nסכום כולל: ${savedQuoteData.financial.total.toFixed(2)} ₪\n\nתוקף ההצעה: ${new Date(savedQuoteData.validUntil).toLocaleDateString('he-IL')}\n\nנשמח לעמוד לרשותך!`;
+    const phone = savedQuoteData.customer.phone?.replace(/[^\d]/g, '');
+    
+    if (phone) {
+      const whatsappUrl = `https://wa.me/972${phone.startsWith('0') ? phone.slice(1) : phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    } else {
+      toast({
+        title: "מספר טלפון חסר",
+        description: "יש להזין מספר טלפון ללקוח כדי לשלוח וואטסאפ",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isMobile) {
@@ -489,14 +520,24 @@ export default function PriceQuote() {
               )}
 
               {savedQuoteData && (
-                <Button
-                  onClick={handleDownloadPDF}
-                  variant="outline"
-                  className="w-full h-12"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  הורד PDF
-                </Button>
+                <div className="space-y-3">
+                  <Button
+                    onClick={handleDownloadPDF}
+                    variant="outline"
+                    className="w-full h-12"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    הורד PDF
+                  </Button>
+                  <Button
+                    onClick={handleWhatsAppSend}
+                    variant="default"
+                    className="w-full h-12 bg-green-600 hover:bg-green-700"
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    שלח בוואטסאפ
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -850,7 +891,7 @@ export default function PriceQuote() {
         </Card>
 
         {!showPreview && savedQuoteData && (
-          <div className="text-center">
+          <div className="flex gap-3 justify-center">
             <Button
               onClick={handleDownloadPDF}
               variant="outline"
@@ -859,6 +900,15 @@ export default function PriceQuote() {
             >
               <Download className="h-5 w-5" />
               הורד PDF
+            </Button>
+            <Button
+              onClick={handleWhatsAppSend}
+              variant="default"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+              size="lg"
+            >
+              <MessageCircle className="h-5 w-5" />
+              שלח בוואטסאפ
             </Button>
           </div>
         )}
