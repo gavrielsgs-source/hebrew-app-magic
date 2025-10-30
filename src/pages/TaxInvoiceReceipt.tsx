@@ -1,0 +1,1083 @@
+import React, { useState, useEffect } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Switch } from '@/components/ui/switch';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, Plus, Trash2, Download, MessageCircle } from 'lucide-react';
+import { format } from 'date-fns';
+import { he } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { useLeads } from '@/hooks/use-leads';
+import { LeadSearchSelect } from '@/components/leads/LeadSearchSelect';
+import { useCars } from '@/hooks/use-cars';
+import { useProfile } from '@/hooks/use-profile';
+import { generateTaxInvoiceReceiptPDF } from '@/utils/tax-invoice-receipt-pdf-generator';
+import { useTaxInvoiceReceipt } from '@/hooks/tax-invoice-receipt/use-tax-invoice-receipt';
+import type { TaxInvoiceReceiptData, TaxInvoiceReceiptItem, PaymentMethod } from '@/types/tax-invoice-receipt';
+import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
+
+const receiptItemSchema = z.object({
+  id: z.string(),
+  description: z.string().min(1, 'תיאור הפריט נדרש'),
+  quantity: z.number().min(0.01, 'כמות חייבת להיות גדולה מ-0'),
+  unitPrice: z.number().min(0, 'מחיר יחידה חייב להיות חיובי'),
+  vatRate: z.number().min(0).max(100, 'אחוז מע"מ חייב להיות בין 0 ל-100'),
+  discount: z.number().min(0, 'הנחה חייבת להיות חיובית'),
+  total: z.number(),
+  includeVat: z.boolean(),
+});
+
+const paymentMethodSchema = z.object({
+  id: z.string(),
+  type: z.enum(['cash', 'check', 'credit_card', 'bank_transfer', 'other']),
+  amount: z.number().min(0, 'סכום חייב להיות חיובי'),
+  date: z.date(),
+  reference: z.string().optional(),
+});
+
+const taxInvoiceReceiptSchema = z.object({
+  date: z.date({ required_error: 'תאריך נדרש' }),
+  type: z.enum(['primary', 'secondary']),
+  language: z.enum(['hebrew', 'english']),
+  title: z.string().min(1, 'כותרת נדרשת'),
+  currency: z.enum(['ILS', 'USD']),
+  leadId: z.string().optional(),
+  carId: z.string().optional(),
+  
+  // Company info
+  companyName: z.string().min(1, 'שם החברה נדרש'),
+  companyAddress: z.string().min(1, 'כתובת החברה נדרשת'),
+  companyHp: z.string().min(1, 'מספר עוסק מורשה נדרש'),
+  companyPhone: z.string().min(1, 'טלפון החברה נדרש'),
+  companyAuthorizedDealer: z.boolean(),
+  
+  // Customer info
+  customerType: z.enum(['new', 'existing', 'individual', 'business']),
+  customerName: z.string().min(1, 'שם הלקוח נדרש'),
+  customerAddress: z.string().min(1, 'כתובת הלקוח נדרשת'),
+  customerHp: z.string().min(1, 'ח.פ/ת.ז הלקוח נדרש'),
+  customerPhone: z.string().min(1, 'טלפון הלקוח נדרש'),
+  
+  // Items
+  items: z.array(receiptItemSchema).min(1, 'לפחות פריט אחד נדרש'),
+  
+  // Payments
+  payments: z.array(paymentMethodSchema),
+  
+  // Issue number
+  issueNumber: z.string().min(1, 'מספר הנפקה נדרש'),
+  
+  // General discount
+  generalDiscount: z.number().min(0, 'הנחה כללית חייבת להיות חיובית'),
+  
+  // Additional
+  lastPaymentDate: z.date().optional(),
+  notes: z.string().optional(),
+});
+
+type TaxInvoiceReceiptFormData = z.infer<typeof taxInvoiceReceiptSchema>;
+
+export default function TaxInvoiceReceipt() {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [savedReceiptData, setSavedReceiptData] = useState<TaxInvoiceReceiptData | null>(null);
+  const { leads = [] } = useLeads();
+  const { cars = [] } = useCars();
+  const { profile } = useProfile();
+  const { createTaxInvoiceReceipt, isCreating } = useTaxInvoiceReceipt();
+
+  const form = useForm<TaxInvoiceReceiptFormData>({
+    resolver: zodResolver(taxInvoiceReceiptSchema),
+    defaultValues: {
+      date: new Date(),
+      type: 'primary' as const,
+      language: 'hebrew' as const,
+      title: 'חשבונית מס קבלה',
+      currency: 'ILS',
+      companyName: profile?.company_name || 'חברתי',
+      companyAddress: 'כתובת החברה',
+      companyHp: '123456789',
+      companyPhone: profile?.phone || '050-1234567',
+      companyAuthorizedDealer: false,
+      customerType: 'new' as const,
+      customerName: '',
+      customerAddress: '',
+      customerHp: '',
+      customerPhone: '',
+      items: [{
+        id: crypto.randomUUID(),
+        description: '',
+        quantity: 1,
+        unitPrice: 0,
+        vatRate: 17,
+        discount: 0,
+        total: 0,
+        includeVat: true
+      }],
+      payments: [],
+      issueNumber: '',
+      generalDiscount: 0,
+      notes: ''
+    }
+  });
+
+  const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
+    control: form.control,
+    name: 'items'
+  });
+
+  const { fields: paymentFields, append: appendPayment, remove: removePayment } = useFieldArray({
+    control: form.control,
+    name: 'payments'
+  });
+
+  const watchedFields = form.watch();
+  const selectedLead = leads.find(lead => lead.id === watchedFields.leadId);
+
+  // Update customer info when lead is selected
+  useEffect(() => {
+    if (selectedLead && selectedLead.id !== 'no-lead') {
+      form.setValue('customerName', selectedLead.name);
+      form.setValue('customerPhone', selectedLead.phone || '');
+      if (!form.getValues('customerAddress')) {
+        form.setValue('customerAddress', '');
+      }
+      if (!form.getValues('customerHp')) {
+        form.setValue('customerHp', '');
+      }
+    }
+  }, [selectedLead, form]);
+
+  // Calculate totals for each item
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name?.startsWith('items')) {
+        const items = value.items || [];
+        items.forEach((item, index) => {
+          if (item) {
+            const quantity = item.quantity || 0;
+            const unitPrice = item.unitPrice || 0;
+            const discount = item.discount || 0;
+            const subtotal = quantity * unitPrice;
+            const total = subtotal - discount;
+            
+            form.setValue(`items.${index}.total`, total, { shouldValidate: false });
+          }
+        });
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  // Calculate financial summary
+  const calculateFinancialSummary = () => {
+    const items = form.getValues('items') || [];
+    const generalDiscount = form.getValues('generalDiscount') || 0;
+    
+    let subtotal = 0;
+    let itemsWithoutVat = 0;
+    
+    items.forEach(item => {
+      const itemTotal = item.total || 0;
+      subtotal += itemTotal;
+      
+      if (!item.includeVat) {
+        itemsWithoutVat += itemTotal;
+      }
+    });
+    
+    const amountAfterDiscount = subtotal - generalDiscount;
+    const vatAmount = (amountAfterDiscount - itemsWithoutVat) * 0.17;
+    const totalAmount = amountAfterDiscount + vatAmount;
+    
+    return {
+      subtotal,
+      itemsWithoutVat,
+      generalDiscount,
+      amountAfterDiscount,
+      vatAmount,
+      totalAmount
+    };
+  };
+
+  const financialSummary = calculateFinancialSummary();
+
+  const onSubmit = async (data: TaxInvoiceReceiptFormData) => {
+    try {
+      setIsGenerating(true);
+      
+      const receiptData: Omit<TaxInvoiceReceiptData, 'invoiceNumber'> = {
+        date: data.date.toISOString(),
+        type: data.type,
+        language: data.language,
+        currency: data.currency,
+        title: data.title,
+        company: {
+          name: data.companyName,
+          address: data.companyAddress,
+          hp: data.companyHp,
+          phone: data.companyPhone,
+          authorizedDealer: data.companyAuthorizedDealer
+        },
+        customer: {
+          type: data.customerType,
+          name: data.customerName,
+          address: data.customerAddress,
+          hp: data.customerHp,
+          phone: data.customerPhone
+        },
+        items: data.items.map(item => ({
+          id: item.id,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          vatRate: item.vatRate,
+          discount: item.discount,
+          total: item.total,
+          includeVat: item.includeVat
+        })),
+        payments: data.payments.map(p => ({
+          id: p.id,
+          type: p.type,
+          amount: p.amount,
+          date: p.date.toISOString(),
+          reference: p.reference
+        })),
+        issueNumber: data.issueNumber,
+        lastPaymentDate: data.lastPaymentDate?.toISOString(),
+        notes: data.notes,
+        leadId: data.leadId,
+        carId: data.carId,
+        ...financialSummary
+      };
+
+      const result = await createTaxInvoiceReceipt(receiptData);
+      setSavedReceiptData(result);
+      
+      toast({
+        title: "חשבונית מס קבלה נשמרה בהצלחה",
+        description: `מספר חשבונית: ${result.invoiceNumber}`,
+      });
+    } catch (error) {
+      console.error('Error creating tax invoice receipt:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      const dataToUse = savedReceiptData || {
+        ...form.getValues(),
+        invoiceNumber: 'DRAFT',
+        date: form.getValues('date').toISOString(),
+        company: {
+          name: form.getValues('companyName'),
+          address: form.getValues('companyAddress'),
+          hp: form.getValues('companyHp'),
+          phone: form.getValues('companyPhone'),
+          authorizedDealer: form.getValues('companyAuthorizedDealer')
+        },
+        customer: {
+          type: form.getValues('customerType'),
+          name: form.getValues('customerName'),
+          address: form.getValues('customerAddress'),
+          hp: form.getValues('customerHp'),
+          phone: form.getValues('customerPhone')
+        },
+        payments: form.getValues('payments').map(p => ({
+          ...p,
+          date: p.date.toISOString()
+        })),
+        lastPaymentDate: form.getValues('lastPaymentDate')?.toISOString(),
+        ...financialSummary
+      } as TaxInvoiceReceiptData;
+
+      await generateTaxInvoiceReceiptPDF(dataToUse);
+      
+      toast({
+        title: "PDF הורד בהצלחה",
+        description: "חשבונית מס קבלה הורדה בהצלחה",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "שגיאה בהורדת PDF",
+        description: "אירעה שגיאה בהורדת החשבונית",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleWhatsAppSend = () => {
+    const dataToUse = savedReceiptData || {
+      invoiceNumber: form.getValues('title'),
+      company: {
+        name: form.getValues('companyName'),
+        phone: form.getValues('companyPhone')
+      },
+      customer: {
+        name: form.getValues('customerName'),
+        phone: form.getValues('customerPhone')
+      },
+      totalAmount: financialSummary.totalAmount,
+      currency: form.getValues('currency')
+    };
+
+    const phoneNumber = dataToUse.customer.phone;
+    const formattedPhone = formatPhoneForWhatsApp(phoneNumber);
+    
+    if (!formattedPhone) {
+      toast({
+        title: "שגיאה",
+        description: "מספר טלפון לא תקין",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currencySymbol = dataToUse.currency === 'ILS' ? '₪' : '$';
+    const message = `שלום ${dataToUse.customer.name},\n\nחשבונית מס קבלה מספר: ${dataToUse.invoiceNumber}\nסכום: ${dataToUse.totalAmount.toFixed(2)} ${currencySymbol}\n\nתודה!\n${dataToUse.company.name}`;
+    
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  return (
+    <div className="container mx-auto py-6 px-4 max-w-7xl">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-right">חשבונית מס קבלה</h1>
+        <p className="text-muted-foreground text-right mt-2">
+          צור חשבונית מס קבלה עם פרטי לקוח ותשלומים
+        </p>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Header Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-right">מידע כללי</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-right">תאריך</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-right font-normal justify-start",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="ml-2 h-4 w-4" />
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: he })
+                              ) : (
+                                <span>בחר תאריך</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
+                            locale={he}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">סוג</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="בחר סוג" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="primary">ראשוני</SelectItem>
+                          <SelectItem value="secondary">משני</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">שפה</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="בחר שפה" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="hebrew">עברית</SelectItem>
+                          <SelectItem value="english">אנגלית</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">מטבע</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="בחר מטבע" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ILS">שקלים (₪)</SelectItem>
+                          <SelectItem value="USD">דולר ($)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">כותרת</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="חשבונית מס קבלה" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="leadId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">קשור ללקוח (אופציונלי)</FormLabel>
+                      <FormControl>
+                        <LeadSearchSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customerType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">סוג לקוח</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="בחר סוג לקוח" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="new">לקוח חדש</SelectItem>
+                          <SelectItem value="existing">לקוח קיים</SelectItem>
+                          <SelectItem value="individual">פרטי</SelectItem>
+                          <SelectItem value="business">עסקי</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Customer Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-right">פרטי לקוח</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="customerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">שם הלקוח</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="שם מלא" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customerPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">טלפון</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="050-1234567" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customerAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">כתובת</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="רחוב עיר" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customerHp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">ח.פ / ת.ז</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="123456789" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Items */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-right">הוספת פריטים</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {itemFields.map((field, index) => (
+                  <div key={field.id} className="border rounded-lg p-4 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeItem(index)}
+                        disabled={itemFields.length === 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm font-medium">פריט {index + 1}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.description`}
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel className="text-right">תיאור</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="תיאור הפריט" className="text-right" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.unitPrice`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-right">מחיר</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                className="text-right"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.includeVat`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col justify-end">
+                            <FormLabel className="text-right">ללא מע"מ</FormLabel>
+                            <FormControl>
+                              <Switch
+                                checked={!field.value}
+                                onCheckedChange={(checked) => field.onChange(!checked)}
+                                className="mx-auto"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.quantity`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-right">כמות</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                className="text-right"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.discount`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-right">הנחה</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                className="text-right"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.total`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-right">סה"כ</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                value={field.value?.toFixed(2) || '0.00'}
+                                disabled
+                                className="text-right bg-muted"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    appendItem({
+                      id: crypto.randomUUID(),
+                      description: '',
+                      quantity: 1,
+                      unitPrice: 0,
+                      vatRate: 17,
+                      discount: 0,
+                      total: 0,
+                      includeVat: true
+                    })
+                  }
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 ml-2" />
+                  הוסף פריט
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payments */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-right">אמצעי תשלום</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {paymentFields.map((field, index) => (
+                  <div key={field.id} className="border rounded-lg p-4 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removePayment(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm font-medium">תשלום {index + 1}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`payments.${index}.type`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-right">סוג תשלום</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="בחר סוג תשלום" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="cash">מזומן</SelectItem>
+                                <SelectItem value="check">המחאה</SelectItem>
+                                <SelectItem value="credit_card">כרטיס אשראי</SelectItem>
+                                <SelectItem value="bank_transfer">העברה בנקאית</SelectItem>
+                                <SelectItem value="other">אחר</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`payments.${index}.amount`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-right">סכום</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                className="text-right"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`payments.${index}.date`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel className="text-right">תאריך</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full pl-3 text-right font-normal justify-start",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="ml-2 h-4 w-4" />
+                                    {field.value ? (
+                                      format(field.value, "PPP", { locale: he })
+                                    ) : (
+                                      <span>בחר תאריך</span>
+                                    )}
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  initialFocus
+                                  locale={he}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name={`payments.${index}.reference`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-right">אסמכתא</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="מספר המחאה / 4 ספרות אחרונות" className="text-right" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    appendPayment({
+                      id: crypto.randomUUID(),
+                      type: 'cash' as const,
+                      amount: 0,
+                      date: new Date(),
+                      reference: ''
+                    })
+                  }
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 ml-2" />
+                  הוסף תשלום
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Additional Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-right">פרטים נוספים</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="issueNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">מספר הנפקה</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="מספר הנפקה" className="text-right" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="generalDiscount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-right">הנחה כללית</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          className="text-right"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="lastPaymentDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-right">תאריך אחרון לתשלום</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-right font-normal justify-start",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="ml-2 h-4 w-4" />
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: he })
+                              ) : (
+                                <span>בחר תאריך</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                            locale={he}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-right">הערות</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="הערות נוספות..."
+                        className="text-right min-h-[100px]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Financial Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-right">הוספת תשלומים</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-6 rounded-lg space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>{financialSummary.subtotal.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                  <span>סה"כ לפני מע"מ:</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>{financialSummary.itemsWithoutVat.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                  <span>סה"כ פריטים ללא מע"מ:</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>{financialSummary.generalDiscount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                  <span>הנחה כללית:</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>{financialSummary.amountAfterDiscount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                  <span>סכום אחרי הנחה:</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>{financialSummary.vatAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                  <span>סה"כ מע"מ (17%):</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t border-primary-foreground/30 pt-3">
+                  <span>{financialSummary.totalAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
+                  <span>סה"כ:</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleWhatsAppSend}
+              className="gap-2"
+            >
+              <MessageCircle className="h-4 w-4" />
+              שליחה לוואטסאפ
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleDownloadPDF}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              הורדה כ-PDF
+            </Button>
+
+            <Button type="submit" disabled={isCreating || isGenerating} className="gap-2">
+              {isCreating || isGenerating ? 'מכין מסמך...' : 'הכן מסמך'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
+}

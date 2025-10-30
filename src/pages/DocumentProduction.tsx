@@ -4,6 +4,7 @@ import { DOCUMENT_TYPES } from "@/types/document-production";
 import SalesAgreement from "./SalesAgreement";
 import NewCarOrder from "./NewCarOrder";
 import PriceQuote from "./PriceQuote";
+import TaxInvoiceReceipt from "./TaxInvoiceReceipt";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 
@@ -27,6 +28,9 @@ export default function DocumentProduction() {
     
     case 'price-quote':
       return <PriceQuote />;
+    
+    case 'tax-invoice-receipt':
+      return <TaxInvoiceReceipt />;
     
     // Future document types will be handled here
     default:
