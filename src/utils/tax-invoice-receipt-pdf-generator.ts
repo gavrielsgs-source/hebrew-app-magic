@@ -174,7 +174,7 @@ function createTaxInvoiceReceiptPDFHTML(data: TaxInvoiceReceiptData): string {
       ` : ''}
 
       <div class="footer">
-        <p>מסמך זה נוצר באמצעות מערכת Easylist</p>
+        <p>מסמך זה נוצר באמצעות מערכת CARSLEAD</p>
         <p>${data.lastPaymentDate ? `תאריך אחרון לתשלום: ${new Date(data.lastPaymentDate).toLocaleDateString('he-IL')}` : ''}</p>
       </div>
     </body>

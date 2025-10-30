@@ -438,7 +438,7 @@ export default function TaxInvoiceReceipt() {
                             <SelectValue placeholder="בחר סוג" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent align="end">
                           <SelectItem value="primary">ראשוני</SelectItem>
                           <SelectItem value="secondary">משני</SelectItem>
                         </SelectContent>
@@ -460,7 +460,7 @@ export default function TaxInvoiceReceipt() {
                             <SelectValue placeholder="בחר שפה" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent align="end">
                           <SelectItem value="hebrew">עברית</SelectItem>
                           <SelectItem value="english">אנגלית</SelectItem>
                         </SelectContent>
@@ -484,7 +484,7 @@ export default function TaxInvoiceReceipt() {
                             <SelectValue placeholder="בחר מטבע" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent align="end">
                           <SelectItem value="ILS">שקלים (₪)</SelectItem>
                           <SelectItem value="USD">דולר ($)</SelectItem>
                         </SelectContent>
@@ -539,7 +539,7 @@ export default function TaxInvoiceReceipt() {
                             <SelectValue placeholder="בחר סוג לקוח" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent align="end">
                           <SelectItem value="new">לקוח חדש</SelectItem>
                           <SelectItem value="existing">לקוח קיים</SelectItem>
                           <SelectItem value="individual">פרטי</SelectItem>
@@ -815,7 +815,7 @@ export default function TaxInvoiceReceipt() {
                                   <SelectValue placeholder="בחר סוג תשלום" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
+                              <SelectContent align="end">
                                 <SelectItem value="cash">מזומן</SelectItem>
                                 <SelectItem value="check">המחאה</SelectItem>
                                 <SelectItem value="credit_card">כרטיס אשראי</SelectItem>
