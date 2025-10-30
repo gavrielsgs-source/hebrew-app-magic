@@ -159,17 +159,28 @@ export default function TaxInvoiceReceipt() {
   // Calculate totals for each item
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name?.startsWith('items')) {
+      if (name?.startsWith('items') && !name.includes('total')) {
         const items = value.items || [];
         items.forEach((item, index) => {
           if (item) {
             const quantity = item.quantity || 0;
             const unitPrice = item.unitPrice || 0;
             const discount = item.discount || 0;
-            const subtotal = quantity * unitPrice;
-            const total = subtotal - discount;
+            const includeVat = item.includeVat !== false;
+            const vatRate = item.vatRate || 17;
             
-            form.setValue(`items.${index}.total`, total, { shouldValidate: false });
+            let subtotal = quantity * unitPrice;
+            let total = subtotal - discount;
+            
+            // If VAT is included, calculate the actual total with VAT
+            if (includeVat) {
+              total = total * (1 + vatRate / 100);
+            }
+            
+            const currentTotal = form.getValues(`items.${index}.total`);
+            if (Math.abs(currentTotal - total) > 0.01) {
+              form.setValue(`items.${index}.total`, total, { shouldValidate: false });
+            }
           }
         });
       }
@@ -354,9 +365,11 @@ export default function TaxInvoiceReceipt() {
 
   return (
     <div className="container mx-auto py-6 px-4 max-w-7xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-right">חשבונית מס קבלה</h1>
-        <p className="text-muted-foreground text-right mt-2">
+      <div className="mb-8 text-right">
+        <h1 className="text-4xl font-bold bg-gradient-to-l from-primary to-primary/60 bg-clip-text text-transparent mb-2">
+          חשבונית מס קבלה
+        </h1>
+        <p className="text-muted-foreground text-lg">
           צור חשבונית מס קבלה עם פרטי לקוח ותשלומים
         </p>
       </div>
@@ -364,11 +377,11 @@ export default function TaxInvoiceReceipt() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Header Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-right">מידע כללי</CardTitle>
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+              <CardTitle className="text-right text-xl">מידע כללי</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -395,7 +408,7 @@ export default function TaxInvoiceReceipt() {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0" align="end">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -542,11 +555,11 @@ export default function TaxInvoiceReceipt() {
           </Card>
 
           {/* Customer Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-right">פרטי לקוח</CardTitle>
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+              <CardTitle className="text-right text-xl">פרטי לקוח</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -608,14 +621,14 @@ export default function TaxInvoiceReceipt() {
           </Card>
 
           {/* Items */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-right">הוספת פריטים</CardTitle>
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+              <CardTitle className="text-right text-xl">הוספת פריטים</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {itemFields.map((field, index) => (
-                  <div key={field.id} className="border rounded-lg p-4 space-y-4">
+                  <div key={field.id} className="border-2 border-primary/20 rounded-xl p-5 space-y-4 hover:border-primary/40 transition-colors bg-gradient-to-br from-background to-primary/5">
                     <div className="flex justify-between items-center">
                       <Button
                         type="button"
@@ -669,11 +682,11 @@ export default function TaxInvoiceReceipt() {
                         name={`items.${index}.includeVat`}
                         render={({ field }) => (
                           <FormItem className="flex flex-col justify-end">
-                            <FormLabel className="text-right">ללא מע"מ</FormLabel>
+                            <FormLabel className="text-right">כולל מע"מ (18%)</FormLabel>
                             <FormControl>
                               <Switch
-                                checked={!field.value}
-                                onCheckedChange={(checked) => field.onChange(!checked)}
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
                                 className="mx-auto"
                               />
                             </FormControl>
@@ -769,14 +782,14 @@ export default function TaxInvoiceReceipt() {
           </Card>
 
           {/* Payments */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-right">אמצעי תשלום</CardTitle>
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+              <CardTitle className="text-right text-xl">אמצעי תשלום</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {paymentFields.map((field, index) => (
-                  <div key={field.id} className="border rounded-lg p-4 space-y-4">
+                  <div key={field.id} className="border-2 border-primary/20 rounded-xl p-5 space-y-4 hover:border-primary/40 transition-colors bg-gradient-to-br from-background to-primary/5">
                     <div className="flex justify-between items-center">
                       <Button
                         type="button"
@@ -860,7 +873,7 @@ export default function TaxInvoiceReceipt() {
                                   </Button>
                                 </FormControl>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
+                              <PopoverContent className="w-auto p-0" align="end">
                                 <Calendar
                                   mode="single"
                                   selected={field.value}
@@ -914,20 +927,20 @@ export default function TaxInvoiceReceipt() {
           </Card>
 
           {/* Additional Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-right">פרטים נוספים</CardTitle>
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+              <CardTitle className="text-right text-xl">פרטים נוספים</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="issueNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-right">מספר הנפקה</FormLabel>
+                      <FormLabel className="text-right">מס' הקצאה</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="מספר הנפקה" className="text-right" />
+                        <Input {...field} placeholder="מספר הקצאה" className="text-right" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -979,7 +992,7 @@ export default function TaxInvoiceReceipt() {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0" align="end">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -1016,12 +1029,12 @@ export default function TaxInvoiceReceipt() {
           </Card>
 
           {/* Financial Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-right">הוספת תשלומים</CardTitle>
+          <Card className="border-2 shadow-xl">
+            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+              <CardTitle className="text-right text-xl">הוספת תשלומים</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-6 rounded-lg space-y-3">
+            <CardContent className="pt-6">
+              <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground p-8 rounded-2xl space-y-3 shadow-lg">
                 <div className="flex justify-between text-sm">
                   <span>{financialSummary.subtotal.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
                   <span>סה"כ לפני מע"מ:</span>
@@ -1051,14 +1064,15 @@ export default function TaxInvoiceReceipt() {
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-end">
+          <div className="flex flex-col sm:flex-row gap-4 justify-end sticky bottom-4 bg-background/80 backdrop-blur-sm p-4 rounded-2xl border-2 shadow-xl">
             <Button
               type="button"
               variant="outline"
               onClick={handleWhatsAppSend}
-              className="gap-2"
+              className="gap-2 rounded-xl border-2 hover:border-green-500 hover:text-green-500"
+              size="lg"
             >
-              <MessageCircle className="h-4 w-4" />
+              <MessageCircle className="h-5 w-5" />
               שליחה לוואטסאפ
             </Button>
 
@@ -1066,13 +1080,19 @@ export default function TaxInvoiceReceipt() {
               type="button"
               variant="outline"
               onClick={handleDownloadPDF}
-              className="gap-2"
+              className="gap-2 rounded-xl border-2 hover:border-blue-500 hover:text-blue-500"
+              size="lg"
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-5 w-5" />
               הורדה כ-PDF
             </Button>
 
-            <Button type="submit" disabled={isCreating || isGenerating} className="gap-2">
+            <Button 
+              type="submit" 
+              disabled={isCreating || isGenerating} 
+              className="gap-2 rounded-xl shadow-lg"
+              size="lg"
+            >
               {isCreating || isGenerating ? 'מכין מסמך...' : 'הכן מסמך'}
             </Button>
           </div>
