@@ -117,9 +117,15 @@ function createPriceQuotePDFHTML(data: PriceQuoteData): string {
               <span>הנחה:</span>
               <span style="font-weight: bold;">${data.financial.totalDiscount.toFixed(2)} ₪</span>
             </div>
+            ${data.includeVAT && data.financial.vat ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>מע״מ (17%):</span>
+                <span style="font-weight: bold;">${data.financial.vat.toFixed(2)} ₪</span>
+              </div>
+            ` : ''}
             <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
             <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; color: #2563eb;">
-              <span>סה"כ לתשלום:</span>
+              <span>סה"כ לתשלום${data.includeVAT ? ' (כולל מע״מ)' : ' (ללא מע״מ)'}:</span>
               <span>${data.financial.total.toFixed(2)} ₪</span>
             </div>
           </div>

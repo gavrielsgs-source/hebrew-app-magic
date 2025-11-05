@@ -114,8 +114,10 @@ export interface PriceQuoteData {
   financial: {
     subtotal: number;
     totalDiscount: number;
+    vat?: number;
     total: number;
   };
+  includeVAT?: boolean;
 }
 
 export interface DocumentFormData {

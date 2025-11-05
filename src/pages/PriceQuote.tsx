@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Calculator, Download, UserPlus, Calendar as CalendarIcon, MessageCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { cn, formatPrice } from "@/lib/utils";
 import { PriceQuoteData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ import { generatePriceQuotePDF } from "@/utils/price-quote-pdf-generator";
 const priceQuoteSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
   leadId: z.string().optional(),
+  includeVAT: z.boolean().default(true),
   customer: z.object({
     fullName: z.string().min(2, "שם מלא נדרש"),
     firstName: z.string().min(2, "שם פרטי נדרש"),
@@ -62,6 +64,7 @@ export default function PriceQuote() {
     resolver: zodResolver(priceQuoteSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
+      includeVAT: true,
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       customer: {
         fullName: "שם הלקוח",
@@ -91,9 +94,12 @@ export default function PriceQuote() {
   });
 
   const watchedItems = form.watch("items");
+  const includeVAT = form.watch("includeVAT");
   const subtotal = watchedItems.reduce((sum, item) => sum + ((item.unitPrice || 0) * (item.quantity || 1)), 0);
   const totalDiscount = watchedItems.reduce((sum, item) => sum + (item.discount || 0), 0);
-  const total = subtotal - totalDiscount;
+  const subtotalAfterDiscount = subtotal - totalDiscount;
+  const vat = includeVAT ? subtotalAfterDiscount * 0.17 : 0;
+  const total = subtotalAfterDiscount + vat;
 
   const handleLeadSelect = (leadId: string) => {
     const selectedLead = leads?.find(lead => lead.id === leadId);
@@ -135,6 +141,7 @@ export default function PriceQuote() {
       const quoteData: Omit<PriceQuoteData, 'quoteNumber'> = {
         date: data.date,
         validUntil: data.validUntil,
+        includeVAT: data.includeVAT,
         customer: {
           fullName: data.customer.fullName,
           firstName: data.customer.firstName,
@@ -155,6 +162,7 @@ export default function PriceQuote() {
         financial: {
           subtotal,
           totalDiscount,
+          vat: data.includeVAT ? vat : undefined,
           total,
         },
         terms: data.terms,
@@ -182,6 +190,7 @@ export default function PriceQuote() {
       quoteNumber: "טיוטה",
       date: formData.date,
       validUntil: formData.validUntil,
+      includeVAT: formData.includeVAT,
       customer: {
         fullName: formData.customer.fullName || "",
         firstName: formData.customer.firstName || "",
@@ -202,6 +211,7 @@ export default function PriceQuote() {
       financial: {
         subtotal,
         totalDiscount,
+        vat: formData.includeVAT ? vat : undefined,
         total,
       },
       terms: formData.terms,
@@ -297,6 +307,17 @@ export default function PriceQuote() {
                       {...form.register("validUntil")}
                       className="text-right h-12"
                     />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                    <Switch
+                      id="includeVAT"
+                      checked={form.watch("includeVAT")}
+                      onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
+                    />
+                    <Label htmlFor="includeVAT" className="text-base font-medium cursor-pointer">
+                      {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
+                    </Label>
                   </div>
                 </div>
 
@@ -534,6 +555,12 @@ export default function PriceQuote() {
                         <span className="font-semibold">-{formatPrice(totalDiscount)}</span>
                         <span>סה"כ הנחות:</span>
                       </div>
+                      {includeVAT && (
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold">{formatPrice(vat)}</span>
+                          <span>מע״מ (17%):</span>
+                        </div>
+                      )}
                       <Separator />
                       <div className="flex justify-between items-center text-xl font-bold text-primary">
                         <span>{formatPrice(total)}</span>
@@ -672,6 +699,17 @@ export default function PriceQuote() {
                   {form.formState.errors.validUntil && (
                     <p className="text-sm text-destructive">{form.formState.errors.validUntil.message}</p>
                   )}
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                  <Switch
+                    id="includeVAT-desktop"
+                    checked={form.watch("includeVAT")}
+                    onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
+                  />
+                  <Label htmlFor="includeVAT-desktop" className="text-base font-medium cursor-pointer">
+                    {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
+                  </Label>
                 </div>
               </div>
 
@@ -921,6 +959,12 @@ export default function PriceQuote() {
                       <span className="text-lg font-semibold">-{formatPrice(totalDiscount)}</span>
                       <span>סה"כ הנחות:</span>
                     </div>
+                    {includeVAT && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold">{formatPrice(vat)}</span>
+                        <span>מע״מ (17%):</span>
+                      </div>
+                    )}
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>{formatPrice(total)}</span>
