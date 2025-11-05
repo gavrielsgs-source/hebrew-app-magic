@@ -119,7 +119,7 @@ function createPriceQuotePDFHTML(data: PriceQuoteData): string {
             </div>
             ${data.includeVAT && data.financial.vat ? `
               <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span>מע״מ (17%):</span>
+                <span>מע״מ (18%):</span>
                 <span style="font-weight: bold;">${data.financial.vat.toFixed(2)} ₪</span>
               </div>
             ` : ''}

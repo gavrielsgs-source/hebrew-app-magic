@@ -98,7 +98,7 @@ export default function PriceQuote() {
   const subtotal = watchedItems.reduce((sum, item) => sum + ((item.unitPrice || 0) * (item.quantity || 1)), 0);
   const totalDiscount = watchedItems.reduce((sum, item) => sum + (item.discount || 0), 0);
   const subtotalAfterDiscount = subtotal - totalDiscount;
-  const vat = includeVAT ? subtotalAfterDiscount * 0.17 : 0;
+  const vat = includeVAT ? subtotalAfterDiscount * 0.18 : 0;
   const total = subtotalAfterDiscount + vat;
 
   const handleLeadSelect = (leadId: string) => {
@@ -307,17 +307,6 @@ export default function PriceQuote() {
                       {...form.register("validUntil")}
                       className="text-right h-12"
                     />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <Switch
-                      id="includeVAT"
-                      checked={form.watch("includeVAT")}
-                      onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
-                    />
-                    <Label htmlFor="includeVAT" className="text-base font-medium cursor-pointer">
-                      {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
-                    </Label>
                   </div>
                 </div>
 
@@ -555,10 +544,22 @@ export default function PriceQuote() {
                         <span className="font-semibold">-{formatPrice(totalDiscount)}</span>
                         <span>סה"כ הנחות:</span>
                       </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                        <Switch
+                          id="includeVAT-mobile"
+                          checked={form.watch("includeVAT")}
+                          onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
+                        />
+                        <Label htmlFor="includeVAT-mobile" className="text-base font-medium cursor-pointer">
+                          {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
+                        </Label>
+                      </div>
+
                       {includeVAT && (
                         <div className="flex justify-between items-center">
                           <span className="font-semibold">{formatPrice(vat)}</span>
-                          <span>מע״מ (17%):</span>
+                          <span>מע״מ (18%):</span>
                         </div>
                       )}
                       <Separator />
@@ -701,16 +702,6 @@ export default function PriceQuote() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                  <Switch
-                    id="includeVAT-desktop"
-                    checked={form.watch("includeVAT")}
-                    onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
-                  />
-                  <Label htmlFor="includeVAT-desktop" className="text-base font-medium cursor-pointer">
-                    {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
-                  </Label>
-                </div>
               </div>
 
               <Separator />
@@ -959,10 +950,22 @@ export default function PriceQuote() {
                       <span className="text-lg font-semibold">-{formatPrice(totalDiscount)}</span>
                       <span>סה"כ הנחות:</span>
                     </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                      <Switch
+                        id="includeVAT-desktop"
+                        checked={form.watch("includeVAT")}
+                        onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
+                      />
+                      <Label htmlFor="includeVAT-desktop" className="text-base font-medium cursor-pointer">
+                        {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
+                      </Label>
+                    </div>
+
                     {includeVAT && (
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold">{formatPrice(vat)}</span>
-                        <span>מע״מ (17%):</span>
+                        <span>מע״מ (18%):</span>
                       </div>
                     )}
                     <Separator />
