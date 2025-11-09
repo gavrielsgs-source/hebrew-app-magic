@@ -24,6 +24,7 @@ import { generateTaxInvoiceReceiptPDF } from '@/utils/tax-invoice-receipt-pdf-ge
 import { useTaxInvoiceReceipt } from '@/hooks/tax-invoice-receipt/use-tax-invoice-receipt';
 import type { TaxInvoiceReceiptData, TaxInvoiceReceiptItem, PaymentMethod } from '@/types/tax-invoice-receipt';
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
+import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
 
 const receiptItemSchema = z.object({
   id: z.string(),
@@ -89,10 +90,12 @@ type TaxInvoiceReceiptFormData = z.infer<typeof taxInvoiceReceiptSchema>;
 export default function TaxInvoiceReceipt() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [savedReceiptData, setSavedReceiptData] = useState<TaxInvoiceReceiptData | null>(null);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
   const { createTaxInvoiceReceipt, isCreating } = useTaxInvoiceReceipt();
+  const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
 
   const form = useForm<TaxInvoiceReceiptFormData>({
     resolver: zodResolver(taxInvoiceReceiptSchema),
@@ -274,6 +277,19 @@ export default function TaxInvoiceReceipt() {
       const result = await createTaxInvoiceReceipt(receiptData);
       setSavedReceiptData(result);
       
+      // Generate PDF as Blob and upload to cloud
+      const pdfBlob = await generateTaxInvoiceReceiptPDF(result, true) as Blob;
+      const url = await uploadDocument({
+        pdfBlob,
+        documentType: 'tax_invoice_receipt',
+        documentNumber: result.invoiceNumber,
+        customerName: result.customer.name,
+        entityType: data.leadId ? 'lead' : undefined,
+        entityId: data.leadId || undefined
+      });
+      
+      setDocumentUrl(url);
+      
       toast({
         title: "חשבונית מס קבלה נשמרה בהצלחה",
         description: `מספר חשבונית: ${result.invoiceNumber}`,
@@ -357,7 +373,13 @@ export default function TaxInvoiceReceipt() {
     }
 
     const currencySymbol = dataToUse.currency === 'ILS' ? '₪' : '$';
-    const message = `שלום ${dataToUse.customer.name},\n\nחשבונית מס קבלה מספר: ${dataToUse.invoiceNumber}\nסכום: ${dataToUse.totalAmount.toFixed(2)} ${currencySymbol}\n\nתודה!\n${dataToUse.company.name}`;
+    let message = `שלום ${dataToUse.customer.name},\n\nחשבונית מס קבלה מספר: ${dataToUse.invoiceNumber}\nסכום: ${dataToUse.totalAmount.toFixed(2)} ${currencySymbol}`;
+    
+    if (documentUrl) {
+      message += `\n\n📄 לצפייה והורדת הקובץ:\n${documentUrl}`;
+    }
+    
+    message += `\n\nתודה!\n${dataToUse.company.name}`;
     
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');

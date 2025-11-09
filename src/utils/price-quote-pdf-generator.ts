@@ -1,7 +1,7 @@
 import html2pdf from 'html2pdf.js';
 import type { PriceQuoteData } from '@/types/document-production';
 
-export async function generatePriceQuotePDF(data: PriceQuoteData): Promise<void> {
+export async function generatePriceQuotePDF(data: PriceQuoteData, returnBlob?: boolean): Promise<void | Blob> {
   const element = document.createElement('div');
   element.innerHTML = createPriceQuotePDFHTML(data);
   element.style.direction = 'rtl';
@@ -34,7 +34,14 @@ export async function generatePriceQuotePDF(data: PriceQuoteData): Promise<void>
   };
 
   try {
-    await html2pdf().set(options).from(element).save();
+    if (returnBlob) {
+      // Return blob instead of downloading
+      const blob = await html2pdf().set(options).from(element).outputPdf('blob');
+      return blob;
+    } else {
+      // Download as usual
+      await html2pdf().set(options).from(element).save();
+    }
   } finally {
     document.body.removeChild(element);
   }

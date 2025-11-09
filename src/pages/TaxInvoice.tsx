@@ -26,6 +26,7 @@ import { TaxInvoicePreview } from '@/components/tax-invoice/TaxInvoicePreview';
 import { generateTaxInvoicePDF } from '@/utils/tax-invoice-pdf-generator';
 import { useTaxInvoice } from '@/hooks/tax-invoice/use-tax-invoice';
 import type { TaxInvoiceData, InvoiceItem } from '@/types/tax-invoice';
+import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
 
 const invoiceItemSchema = z.object({
   id: z.string(),
@@ -81,10 +82,12 @@ type TaxInvoiceFormData = z.infer<typeof taxInvoiceSchema>;
 
 export default function TaxInvoice() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
   const { createTaxInvoice } = useTaxInvoice();
+  const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
 
   const form = useForm<TaxInvoiceFormData>({
     resolver: zodResolver(taxInvoiceSchema),
@@ -257,6 +260,21 @@ export default function TaxInvoice() {
       };
 
       const savedInvoice = await createTaxInvoice(invoiceData);
+      
+      // Generate PDF as Blob and upload to cloud
+      const pdfBlob = await generateTaxInvoicePDF(savedInvoice, true) as Blob;
+      const url = await uploadDocument({
+        pdfBlob,
+        documentType: 'tax_invoice',
+        documentNumber: savedInvoice.invoiceNumber,
+        customerName: savedInvoice.customer.name,
+        entityType: data.leadId && data.leadId !== 'no-lead' ? 'lead' : undefined,
+        entityId: data.leadId && data.leadId !== 'no-lead' ? data.leadId : undefined
+      });
+      
+      setDocumentUrl(url);
+      
+      // Also download for user
       await generateTaxInvoicePDF(savedInvoice);
       
       toast({
@@ -279,7 +297,15 @@ export default function TaxInvoice() {
   };
 
   const handleWhatsAppSend = () => {
-    const message = `שלום ${watchedFields.customerName},\n\nמצורפת חשבונית מס: ${watchedFields.title}\nסכום: ${totalAmount.toFixed(2)} ${watchedFields.currency === 'ILS' ? '₪' : '$'}\n\nתודה!`;
+    const currencySymbol = watchedFields.currency === 'ILS' ? '₪' : '$';
+    let message = `שלום ${watchedFields.customerName},\n\nחשבונית מס: ${watchedFields.title}\nסכום: ${totalAmount.toFixed(2)} ${currencySymbol}`;
+    
+    if (documentUrl) {
+      message += `\n\n📄 לצפייה והורדת הקובץ:\n${documentUrl}`;
+    }
+    
+    message += '\n\nתודה!';
+    
     const phone = watchedFields.customerPhone?.replace(/[^\d]/g, '');
     if (phone) {
       const whatsappUrl = `https://wa.me/972${phone.startsWith('0') ? phone.slice(1) : phone}?text=${encodeURIComponent(message)}`;

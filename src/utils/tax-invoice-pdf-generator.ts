@@ -1,7 +1,7 @@
 import html2pdf from 'html2pdf.js';
 import type { TaxInvoiceData } from '@/types/tax-invoice';
 
-export async function generateTaxInvoicePDF(data: TaxInvoiceData): Promise<void> {
+export async function generateTaxInvoicePDF(data: TaxInvoiceData, returnBlob?: boolean): Promise<void | Blob> {
   const element = document.createElement('div');
   element.innerHTML = createTaxInvoicePDFHTML(data);
   element.style.direction = 'rtl';
@@ -34,7 +34,12 @@ export async function generateTaxInvoicePDF(data: TaxInvoiceData): Promise<void>
   };
 
   try {
-    await html2pdf().set(options).from(element).save();
+    if (returnBlob) {
+      const blob = await html2pdf().set(options).from(element).outputPdf('blob');
+      return blob;
+    } else {
+      await html2pdf().set(options).from(element).save();
+    }
   } finally {
     document.body.removeChild(element);
   }

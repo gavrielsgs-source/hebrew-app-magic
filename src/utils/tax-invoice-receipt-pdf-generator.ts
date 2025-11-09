@@ -1,7 +1,7 @@
 import html2pdf from 'html2pdf.js';
 import type { TaxInvoiceReceiptData } from '@/types/tax-invoice-receipt';
 
-export async function generateTaxInvoiceReceiptPDF(data: TaxInvoiceReceiptData): Promise<void> {
+export async function generateTaxInvoiceReceiptPDF(data: TaxInvoiceReceiptData, returnBlob?: boolean): Promise<void | Blob> {
   const element = document.createElement('div');
   element.innerHTML = createTaxInvoiceReceiptPDFHTML(data);
   
@@ -14,7 +14,12 @@ export async function generateTaxInvoiceReceiptPDF(data: TaxInvoiceReceiptData):
   };
 
   try {
-    await html2pdf().set(opt).from(element).save();
+    if (returnBlob) {
+      const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
+      return blob;
+    } else {
+      await html2pdf().set(opt).from(element).save();
+    }
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw new Error('Failed to generate PDF');

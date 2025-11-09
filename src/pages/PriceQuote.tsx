@@ -22,6 +22,7 @@ import { usePriceQuote } from "@/hooks/price-quote/use-price-quote";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { generatePriceQuotePDF } from "@/utils/price-quote-pdf-generator";
+import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
 
 const priceQuoteSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
@@ -56,8 +57,10 @@ export default function PriceQuote() {
   const { toast } = useToast();
   const { leads } = useLeads();
   const { createPriceQuote, isCreating } = usePriceQuote();
+  const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
   const [showPreview, setShowPreview] = useState(false);
   const [savedQuoteData, setSavedQuoteData] = useState<PriceQuoteData | null>(null);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [useExistingLead, setUseExistingLead] = useState(false);
 
   const form = useForm<PriceQuoteFormValues>({
@@ -171,6 +174,19 @@ export default function PriceQuote() {
 
       const result = await createPriceQuote(quoteData);
       setSavedQuoteData(result);
+      
+      // Generate PDF as Blob and upload to cloud
+      const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
+      const url = await uploadDocument({
+        pdfBlob,
+        documentType: 'price_quote',
+        documentNumber: result.quoteNumber,
+        customerName: result.customer.fullName,
+        entityType: data.leadId ? 'lead' : undefined,
+        entityId: data.leadId || undefined
+      });
+      
+      setDocumentUrl(url);
       setShowPreview(true);
       
       toast({
@@ -241,7 +257,14 @@ export default function PriceQuote() {
     const totalAmount = savedQuoteData?.financial.total || total;
     const validUntil = savedQuoteData?.validUntil || formData.validUntil;
     
-    const message = `שלום ${customerData.firstName || customerData.fullName},\n\nמצורפת הצעת מחיר מספר: ${quoteNumber}\nסכום כולל: ${totalAmount.toFixed(2)} ₪\n\nתוקף ההצעה: ${new Date(validUntil).toLocaleDateString('he-IL')}\n\nנשמח לעמוד לרשותך!`;
+    // Build message with document link if available
+    let message = `שלום ${customerData.firstName || customerData.fullName},\n\nהצעת מחיר מספר: ${quoteNumber}\nסכום: ${totalAmount.toFixed(2)} ₪\nתוקף: ${new Date(validUntil).toLocaleDateString('he-IL')}`;
+    
+    if (documentUrl) {
+      message += `\n\n📄 לצפייה והורדת הקובץ:\n${documentUrl}`;
+    }
+    
+    message += '\n\nנשמח לעמוד לרשותך!';
     
     // Clean phone number - remove all non-digits
     let phone = customerData.phone?.replace(/[^\d]/g, '');
@@ -249,13 +272,10 @@ export default function PriceQuote() {
     if (phone) {
       // Handle different phone formats
       if (phone.startsWith('972')) {
-        // Already has country code - use as is
         phone = phone;
       } else if (phone.startsWith('0')) {
-        // Israeli format starting with 0 - replace with 972
         phone = '972' + phone.slice(1);
       } else {
-        // Assume it's without 0 or 972 - add 972
         phone = '972' + phone;
       }
       
