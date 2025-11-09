@@ -62,6 +62,7 @@ export default function PriceQuote() {
   const [savedQuoteData, setSavedQuoteData] = useState<PriceQuoteData | null>(null);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [useExistingLead, setUseExistingLead] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const form = useForm<PriceQuoteFormValues>({
     resolver: zodResolver(priceQuoteSchema),
@@ -174,6 +175,7 @@ export default function PriceQuote() {
 
       const result = await createPriceQuote(quoteData);
       setSavedQuoteData(result);
+      setIsSaved(true);
       
       // Generate PDF as Blob and upload to cloud
       const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
@@ -297,6 +299,15 @@ export default function PriceQuote() {
           title="הצעת מחיר" 
           icon={<Calculator className="h-5 w-5" />}
         />
+        
+        {/* Save Status Indicator */}
+        {isSaved && (
+          <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-green-700">נשמר בענן</span>
+          </div>
+        )}
+        
         <div className="p-4 space-y-6">
           <Card className="shadow-sm">
             <CardHeader className="pb-4">
@@ -645,6 +656,15 @@ export default function PriceQuote() {
   return (
     <div className="w-full max-w-none">
       <div className="space-y-6 p-6">
+        
+        {/* Save Status Indicator */}
+        {isSaved && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-green-700">הצעת המחיר נשמרה בענן</span>
+          </div>
+        )}
+        
         <Card>
           <CardHeader>
             <CardTitle className="text-right flex items-center gap-2">

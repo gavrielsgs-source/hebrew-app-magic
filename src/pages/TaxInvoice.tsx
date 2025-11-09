@@ -83,6 +83,7 @@ type TaxInvoiceFormData = z.infer<typeof taxInvoiceSchema>;
 export default function TaxInvoice() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
@@ -260,6 +261,7 @@ export default function TaxInvoice() {
       };
 
       const savedInvoice = await createTaxInvoice(invoiceData);
+      setIsSaved(true);
       
       // Generate PDF as Blob and upload to cloud
       const pdfBlob = await generateTaxInvoicePDF(savedInvoice, true) as Blob;
@@ -344,6 +346,15 @@ export default function TaxInvoice() {
 
       {/* Main Container with better spacing */}
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+        
+        {/* Save Status Indicator */}
+        {isSaved && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-green-700">החשבונית נשמרה בענן</span>
+          </div>
+        )}
+        
         <div className="space-y-8">
           
           <Form {...form}>

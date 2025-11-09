@@ -91,6 +91,7 @@ export default function TaxInvoiceReceipt() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [savedReceiptData, setSavedReceiptData] = useState<TaxInvoiceReceiptData | null>(null);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
@@ -276,6 +277,7 @@ export default function TaxInvoiceReceipt() {
 
       const result = await createTaxInvoiceReceipt(receiptData);
       setSavedReceiptData(result);
+      setIsSaved(true);
       
       // Generate PDF as Blob and upload to cloud
       const pdfBlob = await generateTaxInvoiceReceiptPDF(result, true) as Blob;
@@ -395,6 +397,14 @@ export default function TaxInvoiceReceipt() {
           צור חשבונית מס קבלה עם פרטי לקוח ותשלומים
         </p>
       </div>
+      
+      {/* Save Status Indicator */}
+      {isSaved && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-green-700">החשבונית נשמרה בענן</span>
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
