@@ -2,7 +2,6 @@
 import { useLeadsAnalytics } from "./use-leads-analytics";
 import { useConversionAnalytics } from "./use-conversion-analytics";
 import { useSalesAnalytics } from "./use-sales-analytics";
-import { useTemplateAnalytics } from "./use-template-analytics";
 import { useCarsAnalytics } from "./use-cars-analytics";
 
 export interface AdvancedAnalyticsData {
@@ -23,27 +22,23 @@ export interface AdvancedAnalyticsData {
   // ביצועי מכירות
   salesByAgent: { agent: string; sales: number; amount: number }[];
   salesOverTime: { month: string; sales: number; amount: number }[];
-  
-  // ניתוח טמפלייטים
-  templatePerformance: { template: string; sent: number; responseRate: number }[];
 }
 
 export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
   const leadsQuery = useLeadsAnalytics(dateRange);
   const conversionQuery = useConversionAnalytics(dateRange);
   const salesQuery = useSalesAnalytics(dateRange);
-  const templateQuery = useTemplateAnalytics();
   const carsQuery = useCarsAnalytics(dateRange);
 
   const isLoading = leadsQuery.isLoading || conversionQuery.isLoading || 
-                   salesQuery.isLoading || templateQuery.isLoading || carsQuery.isLoading;
+                   salesQuery.isLoading || carsQuery.isLoading;
   
   const error = leadsQuery.error || conversionQuery.error || 
-                salesQuery.error || templateQuery.error || carsQuery.error;
+                salesQuery.error || carsQuery.error;
 
   const data: AdvancedAnalyticsData | undefined = 
     leadsQuery.data && conversionQuery.data && salesQuery.data && 
-    templateQuery.data && carsQuery.data ? {
+    carsQuery.data ? {
       // נתונים כלליים
       totalLeads: leadsQuery.data.totalLeads,
       totalCars: carsQuery.data.totalCars,
@@ -64,9 +59,6 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
       // ביצועי מכירות
       salesByAgent: salesQuery.data.salesByAgent,
       salesOverTime: salesQuery.data.salesOverTime,
-      
-      // ניתוח טמפלייטים
-      templatePerformance: templateQuery.data.templatePerformance,
     } : undefined;
 
   return {
@@ -77,7 +69,6 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
       leadsQuery.refetch();
       conversionQuery.refetch();
       salesQuery.refetch();
-      templateQuery.refetch();
       carsQuery.refetch();
     }
   };
