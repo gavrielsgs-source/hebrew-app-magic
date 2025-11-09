@@ -2,16 +2,22 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, TrendingUp, Users, Car } from "lucide-react";
-import { useDateRangeAnalytics } from "@/hooks/analytics/use-date-range-analytics";
 import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
 import { SmartInsights } from "./SmartInsights";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 export function FullAnalytics() {
-  const { data: dateRanges } = useDateRangeAnalytics();
-  const currentPeriod = dateRanges?.thisMonth || { from: new Date(), to: new Date() };
-  const previousPeriod = dateRanges?.lastMonth || { from: new Date(), to: new Date() };
+  // ברירת מחדל: 30 הימים האחרונים + 30 הימים שלפניהם
+  const now = new Date();
+  const from = new Date(now);
+  from.setDate(now.getDate() - 30);
+  const prevTo = new Date(from);
+  const prevFrom = new Date(prevTo);
+  prevFrom.setDate(prevTo.getDate() - 30);
+
+  const currentPeriod = { from, to: now };
+  const previousPeriod = { from: prevFrom, to: prevTo };
 
   const { data: currentAnalytics, isLoading: currentLoading } = useAdvancedAnalytics(currentPeriod);
   const { data: previousAnalytics, isLoading: previousLoading } = useAdvancedAnalytics(previousPeriod);
