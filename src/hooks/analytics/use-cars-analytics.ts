@@ -9,22 +9,18 @@ export interface CarsAnalyticsData {
 
 export function useCarsAnalytics(dateRange: { from: Date; to: Date }) {
   return useQuery({
-    queryKey: ["cars-analytics", dateRange],
+    queryKey: ["cars-analytics"],
     queryFn: async (): Promise<CarsAnalyticsData> => {
       try {
-        const fromDate = format(dateRange.from, "yyyy-MM-dd");
-        const toDate = format(dateRange.to, "yyyy-MM-dd");
-        
-        const { data: leads, error: leadsError } = await supabase
-          .from("leads")
-          .select("car_id")
-          .gte("created_at", fromDate)
-          .lte("created_at", toDate);
+        // ספירת כל הרכבים הפעילים במלאי (לא נמכרו)
+        const { data: cars, error: carsError } = await supabase
+          .from("cars")
+          .select("id")
+          .neq("status", "sold");
 
-        if (leadsError) throw leadsError;
+        if (carsError) throw carsError;
         
-        const safeLeads = leads || [];
-        const totalCars = new Set(safeLeads.filter(l => (l as any).car_id).map(l => (l as any).car_id)).size;
+        const totalCars = cars?.length || 0;
 
         return {
           totalCars,
