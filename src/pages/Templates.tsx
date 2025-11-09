@@ -11,7 +11,8 @@ import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useToast } from "@/hooks/use-toast";
-import { Download } from "lucide-react";
+import { Download, Cloud } from "lucide-react";
+import { useCreateWhatsappTemplate } from "@/hooks/whatsapp-templates";
 
 export default function Templates() {
   const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
@@ -28,6 +29,7 @@ export default function Templates() {
   });
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const createTemplate = useCreateWhatsappTemplate();
 
   // Combine all default templates
   const allDefaultTemplates: UnifiedTemplate[] = [
@@ -111,6 +113,44 @@ export default function Templates() {
       title: "התבניות אופסו",
       description: "כל התבניות חזרו להגדרות המקוריות.",
     });
+  };
+
+  const syncToCloud = async () => {
+    try {
+      // Get custom templates only (not default ones)
+      const customTemplates = templates.filter(t => !t.id.startsWith('default-'));
+      
+      if (customTemplates.length === 0) {
+        toast({
+          title: "אין תבניות לסנכרן",
+          description: "לא נמצאו תבניות מותאמות אישית.",
+        });
+        return;
+      }
+
+      // Save each custom template to database
+      for (const template of customTemplates) {
+        await createTemplate.mutateAsync({
+          name: template.name,
+          description: template.description || '',
+          type: template.type,
+          template_content: template.templateContent || '',
+          is_shared: false,
+        });
+      }
+
+      toast({
+        title: "סנכרון הושלם",
+        description: `${customTemplates.length} תבניות נשמרו בענן בהצלחה.`,
+      });
+    } catch (error) {
+      console.error('Error syncing templates:', error);
+      toast({
+        title: "שגיאה בסנכרון",
+        description: "לא הצלחנו לשמור את התבניות בענן.",
+        variant: "destructive",
+      });
+    }
   };
 
   const exportToExcel = () => {
@@ -230,14 +270,25 @@ export default function Templates() {
             canAddTemplate={true}
           />
           
-          <Button
-            onClick={exportToExcel}
-            variant="outline"
-            className="w-full mb-4 flex items-center justify-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            ייצא תבניות לאקסל
-          </Button>
+          <div className="space-y-3 mb-4">
+            <Button
+              onClick={syncToCloud}
+              variant="default"
+              className="w-full flex items-center justify-center gap-2"
+              disabled={createTemplate.isPending}
+            >
+              <Cloud className="h-4 w-4" />
+              {createTemplate.isPending ? "מסנכרן..." : "סנכרן לענן"}
+            </Button>
+            <Button
+              onClick={exportToExcel}
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              ייצא תבניות לאקסל
+            </Button>
+          </div>
 
           <div className="space-y-6">
             {leadTemplates.length > 0 && (
@@ -306,6 +357,15 @@ export default function Templates() {
             />
             
             <div className="mb-6 flex gap-3">
+              <Button
+                onClick={syncToCloud}
+                variant="default"
+                className="flex items-center gap-2"
+                disabled={createTemplate.isPending}
+              >
+                <Cloud className="h-4 w-4" />
+                {createTemplate.isPending ? "מסנכרן..." : "סנכרן לענן"}
+              </Button>
               <Button
                 onClick={exportToExcel}
                 variant="outline"
