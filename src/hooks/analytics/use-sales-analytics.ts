@@ -5,7 +5,7 @@ import { format } from "date-fns";
 
 export interface SalesAnalyticsData {
   salesByAgent: { agent: string; sales: number; amount: number }[];
-  salesOverTime: { date: string; sales: number; amount: number }[];
+  salesOverTime: { month: string; sales: number; amount: number }[];
 }
 
 export function useSalesAnalytics(dateRange: { from: Date; to: Date }) {
@@ -54,29 +54,30 @@ export function useSalesAnalytics(dateRange: { from: Date; to: Date }) {
           amount: userAmount,
         }].filter(agent => agent.sales > 0);
         
-        // חישוב מכירות לאורך זמן - רק למשתמש הנוכחי (אבטחה)
-        const salesByDate: Record<string, { sales: number; amount: number }> = {};
+        // חישוב מכירות לאורך זמן - קיבוץ חודשי
+        const salesByMonth: Record<string, { sales: number; amount: number }> = {};
         
         userLeads.filter(l => (l as any).status === "closed").forEach((lead: any) => {
           const createdAt = lead.created_at;
           if (typeof createdAt === 'string') {
-            const date = createdAt.split("T")[0];
-            if (!salesByDate[date]) {
-              salesByDate[date] = { sales: 0, amount: 0 };
+            const date = new Date(createdAt);
+            const monthKey = format(date, 'yyyy-MM');
+            if (!salesByMonth[monthKey]) {
+              salesByMonth[monthKey] = { sales: 0, amount: 0 };
             }
-            salesByDate[date].sales += 1;
+            salesByMonth[monthKey].sales += 1;
             const carPrice = lead.cars?.price;
-            salesByDate[date].amount += (typeof carPrice === 'number' ? carPrice : 0);
+            salesByMonth[monthKey].amount += (typeof carPrice === 'number' ? carPrice : 0);
           }
         });
 
-        const salesOverTime = Object.entries(salesByDate)
-          .map(([date, data]) => ({
-            date,
+        const salesOverTime = Object.entries(salesByMonth)
+          .map(([monthKey, data]) => ({
+            month: monthKey,
             sales: data.sales,
             amount: data.amount,
           }))
-          .sort((a, b) => a.date.localeCompare(b.date));
+          .sort((a, b) => a.month.localeCompare(b.month));
 
         return {
           salesByAgent,

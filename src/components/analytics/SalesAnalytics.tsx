@@ -1,11 +1,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { useSalesAnalytics } from "@/hooks/use-sales-analytics";
+import { useSalesAnalytics } from "@/hooks/analytics/use-sales-analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function SalesAnalytics() {
-  const { data: salesData, isLoading } = useSalesAnalytics();
+  const dateRange = {
+    from: new Date(new Date().getFullYear(), 0, 1), // תחילת השנה
+    to: new Date()
+  };
+  const { data: salesData, isLoading } = useSalesAnalytics(dateRange);
 
   if (isLoading) {
     return (
@@ -20,7 +24,7 @@ export function SalesAnalytics() {
     );
   }
 
-  if (!salesData || salesData.length === 0) {
+  if (!salesData || salesData.salesOverTime.length === 0) {
     return (
       <Card className="col-span-4">
         <CardHeader>
@@ -43,12 +47,13 @@ export function SalesAnalytics() {
       <CardContent>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={salesData}>
+            <BarChart data={salesData.salesOverTime}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="month" 
                 tickFormatter={(value) => {
-                  const date = new Date(value);
+                  const [year, month] = value.split('-');
+                  const date = new Date(parseInt(year), parseInt(month) - 1);
                   return date.toLocaleDateString('he-IL', { month: 'short', year: '2-digit' });
                 }}
               />
@@ -56,20 +61,17 @@ export function SalesAnalytics() {
               <Tooltip 
                 formatter={(value: number, name: string) => {
                   switch(name) {
-                    case 'revenue':
+                    case 'amount':
                       return [`₪${value.toLocaleString()}`, 'הכנסות'];
-                    case 'convertedLeads':
-                      return [value, 'לידים שהומרו'];
-                    case 'totalLeads':
-                      return [value, 'סה״כ לידים'];
+                    case 'sales':
+                      return [value, 'מכירות'];
                     default:
                       return [value, name];
                   }
                 }}
               />
-              <Bar dataKey="totalLeads" fill="hsl(var(--chart-primary))" name="סה״כ לידים" />
-              <Bar dataKey="convertedLeads" fill="hsl(var(--chart-secondary))" name="לידים שהומרו" />
-              <Bar dataKey="revenue" fill="hsl(var(--chart-tertiary))" name="הכנסות" />
+              <Bar dataKey="sales" fill="hsl(var(--chart-primary))" name="מכירות" />
+              <Bar dataKey="amount" fill="hsl(var(--chart-secondary))" name="הכנסות (₪)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

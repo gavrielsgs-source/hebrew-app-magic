@@ -60,8 +60,17 @@ export function useLeadsAnalytics(dateRange: { from: Date; to: Date }) {
           }))
           .sort((a, b) => a.date.localeCompare(b.date));
         
-        // חישוב זמן תגובה ממוצע (דוגמה מלאכותית כרגע)
-        const avgResponseTime = 120; // דוגמה: 120 דקות
+        // חישוב זמן תגובה ממוצע (אם אין שדה responded_at, מחזיר 0)
+        const responseTimes = safeLeads
+          .filter(l => (l as any).status !== 'new')
+          .map(l => {
+            const created = new Date((l as any).created_at);
+            const updated = new Date((l as any).updated_at);
+            return (updated.getTime() - created.getTime()) / 1000 / 60; // דקות
+          });
+        const avgResponseTime = responseTimes.length > 0 
+          ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length 
+          : 0;
 
         return {
           totalLeads,

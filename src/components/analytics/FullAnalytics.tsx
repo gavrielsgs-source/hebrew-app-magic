@@ -50,22 +50,19 @@ export function FullAnalytics() {
   const currentPeriodData = currentAnalytics || defaultAnalytics;
   const previousPeriodData = previousAnalytics || defaultAnalytics;
 
-  // Sample data for charts
-  const leadsData = [
-    { month: 'ינואר', leads: 12, sales: 3 },
-    { month: 'פברואר', leads: 19, sales: 5 },
-    { month: 'מרץ', leads: 15, sales: 4 },
-    { month: 'אפריל', leads: 22, sales: 7 },
-    { month: 'מאי', leads: 18, sales: 6 },
-    { month: 'יוני', leads: 25, sales: 8 }
-  ];
+  // שימוש בנתונים אמיתיים מהדאטהבייס
+  const leadsData = currentPeriodData.leadsOverTime.map(item => {
+    const [year, month] = item.month.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    const monthName = date.toLocaleDateString('he-IL', { month: 'long' });
+    return {
+      month: monthName,
+      leads: item.leads,
+      sales: item.sales
+    };
+  });
 
-  const sourceData = [
-    { source: 'פייסבוק', count: 45 },
-    { source: 'גוגל', count: 32 },
-    { source: 'הפניה', count: 28 },
-    { source: 'ישיר', count: 15 }
-  ];
+  const sourceData = currentPeriodData.leadsBySource;
 
   return (
     <div className="space-y-6">

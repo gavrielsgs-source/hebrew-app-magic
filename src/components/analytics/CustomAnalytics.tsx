@@ -51,28 +51,49 @@ export function CustomAnalytics() {
   const currentPeriodData = currentAnalytics || defaultAnalytics;
   const previousPeriodData = previousAnalytics || defaultAnalytics;
 
-  // Enhanced sample data for enterprise features
-  const advancedLeadsData = [
-    { month: 'ינואר', leads: 12, sales: 3, revenue: 150000, cost: 5000 },
-    { month: 'פברואר', leads: 19, sales: 5, revenue: 245000, cost: 7500 },
-    { month: 'מרץ', leads: 15, sales: 4, revenue: 198000, cost: 6000 },
-    { month: 'אפריל', leads: 22, sales: 7, revenue: 342000, cost: 9000 },
-    { month: 'מאי', leads: 18, sales: 6, revenue: 289000, cost: 7200 },
-    { month: 'יוני', leads: 25, sales: 8, revenue: 395000, cost: 10000 }
-  ];
+  // שימוש בנתונים אמיתיים - חישוב עלות פר ליד (₪500) ורווח פר מכירה
+  const COST_PER_LEAD = 500;
+  const advancedLeadsData = currentPeriodData.leadsOverTime.map(item => {
+    const [year, month] = item.month.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    const monthName = date.toLocaleDateString('he-IL', { month: 'long' });
+    
+    const salesDataForMonth = currentPeriodData.salesOverTime.find(s => s.month === item.month);
+    const revenue = salesDataForMonth?.amount || 0;
+    const cost = item.leads * COST_PER_LEAD;
+    
+    return {
+      month: monthName,
+      leads: item.leads,
+      sales: item.sales,
+      revenue,
+      cost
+    };
+  });
 
-  const pieData = [
-    { name: 'פייסבוק', value: 35, color: 'hsl(var(--chart-primary))' },
-    { name: 'גוגל', value: 25, color: 'hsl(var(--chart-secondary))' },
-    { name: 'הפניה', value: 20, color: 'hsl(var(--chart-tertiary))' },
-    { name: 'ישיר', value: 20, color: 'hsl(var(--chart-quaternary))' }
-  ];
+  // המרת נתוני מקורות לפורמט Pie Chart
+  const totalLeadsFromSources = currentPeriodData.leadsBySource.reduce((sum, s) => sum + s.count, 0);
+  const pieData = currentPeriodData.leadsBySource.map((item, index) => {
+    const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+    return {
+      name: item.source,
+      value: totalLeadsFromSources > 0 ? Math.round((item.count / totalLeadsFromSources) * 100) : 0,
+      color: colors[index % colors.length]
+    };
+  });
 
-  const predictionData = [
-    { month: 'יולי', actual: null, predicted: 28 },
-    { month: 'אוגוסט', actual: null, predicted: 32 },
-    { month: 'ספטמבר', actual: null, predicted: 29 }
-  ];
+  // חישוב תחזיות פשוטות - ממוצע 3 חודשים אחרונים + 12% צמיחה
+  const recentMonths = currentPeriodData.leadsOverTime.slice(-3);
+  const avgLeads = recentMonths.length > 0 
+    ? Math.round(recentMonths.reduce((sum, item) => sum + item.leads, 0) / recentMonths.length)
+    : 0;
+  
+  const nextMonths = ['חודש הבא', 'בעוד חודשיים', 'בעוד 3 חודשים'];
+  const predictionData = nextMonths.map((monthLabel, index) => ({
+    month: monthLabel,
+    actual: null,
+    predicted: Math.round(avgLeads * (1 + (0.12 + index * 0.02)))
+  }));
 
   const handleExportData = () => {
     console.log('Exporting analytics data...');

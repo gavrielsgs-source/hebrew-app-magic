@@ -13,7 +13,7 @@ export interface AdvancedAnalyticsData {
   
   // ניתוח לידים
   leadsBySource: { source: string; count: number }[];
-  leadsOverTime: { date: string; count: number }[];
+  leadsOverTime: { month: string; leads: number; sales: number }[];
   avgResponseTime: number;
   
   // ניתוח המרות
@@ -22,7 +22,7 @@ export interface AdvancedAnalyticsData {
   
   // ביצועי מכירות
   salesByAgent: { agent: string; sales: number; amount: number }[];
-  salesOverTime: { date: string; sales: number; amount: number }[];
+  salesOverTime: { month: string; sales: number; amount: number }[];
   
   // ניתוח טמפלייטים
   templatePerformance: { template: string; sent: number; responseRate: number }[];
@@ -51,7 +51,10 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
       
       // ניתוח לידים
       leadsBySource: leadsQuery.data.leadsBySource,
-      leadsOverTime: leadsQuery.data.leadsOverTime,
+      leadsOverTime: combineLeadsAndSalesOverTime(
+        leadsQuery.data.leadsOverTime, 
+        salesQuery.data.salesOverTime
+      ),
       avgResponseTime: leadsQuery.data.avgResponseTime,
       
       // ניתוח המרות
@@ -78,4 +81,38 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
       carsQuery.refetch();
     }
   };
+}
+
+// פונקציית עזר לשילוב נתוני לידים ומכירות לפי חודשים
+function combineLeadsAndSalesOverTime(
+  leadsOverTime: { date: string; count: number }[],
+  salesOverTime: { month: string; sales: number; amount: number }[]
+): { month: string; leads: number; sales: number }[] {
+  const monthlyData: Record<string, { leads: number; sales: number }> = {};
+  
+  // קיבוץ לידים לפי חודשים
+  leadsOverTime.forEach(item => {
+    const date = new Date(item.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { leads: 0, sales: 0 };
+    }
+    monthlyData[monthKey].leads += item.count;
+  });
+  
+  // הוספת מכירות
+  salesOverTime.forEach(item => {
+    if (!monthlyData[item.month]) {
+      monthlyData[item.month] = { leads: 0, sales: 0 };
+    }
+    monthlyData[item.month].sales = item.sales;
+  });
+  
+  return Object.entries(monthlyData)
+    .map(([month, data]) => ({
+      month,
+      leads: data.leads,
+      sales: data.sales,
+    }))
+    .sort((a, b) => a.month.localeCompare(b.month));
 }
