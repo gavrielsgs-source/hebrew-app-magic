@@ -1,23 +1,20 @@
 import { useState, useEffect } from "react";
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useWhatsappTemplates } from "@/hooks/whatsapp/use-whatsapp-templates";
-import { getCarImages } from "@/lib/image-utils";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import type { Car } from "@/types/car";
-import { WhatsappPhoneInput } from "@/components/whatsapp/components/WhatsappPhoneInput";
-import { WhatsappLeadSelector } from "@/components/whatsapp/components/WhatsappLeadSelector";
-import { ManualPhoneInput } from "@/components/whatsapp/components/ManualPhoneInput";
-import { SelectedCarDetails } from "@/components/whatsapp/components/SelectedCarDetails";
-import { WhatsappDialogHeader } from "@/components/whatsapp/components/WhatsappDialogHeader";
-import { ImageWarning } from "@/components/whatsapp/components/ImageWarning";
+import { useLeads } from "@/hooks/use-leads";
+import { Car } from "@/types/car";
+import { Send, Car as CarIcon, Phone, User } from "lucide-react";
+import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
+import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/use-profile";
+import { getCarImages } from "@/lib/image-utils";
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -25,32 +22,57 @@ interface CarWhatsAppDialogProps {
 }
 
 export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
-  const { data: templates = [] } = useWhatsappTemplates('car');
-  const [activeTab, setActiveTab] = useState<'lead' | 'manual'>('lead');
+  const [activeTab, setActiveTab] = useState("manual");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [manualName, setManualName] = useState("");
-  const [selectedLeadId, setSelectedLeadId] = useState<string>("");
-  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [selectedLeadId, setSelectedLeadId] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("car_template_default");
   const [customMessage, setCustomMessage] = useState("");
-  const [carImages, setCarImages] = useState<string[]>([]);
+  const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
+  const { leads } = useLeads();
+  const { profile } = useProfile();
 
+  // Load car image on mount
   useEffect(() => {
-    const loadImages = async () => {
-      const images = await getCarImages(car.id);
-      setCarImages(images);
+    const loadCarImage = async () => {
+      try {
+        const images = await getCarImages(car.id);
+        if (images && images.length > 0) {
+          setCarImageUrl(images[0]);
+        }
+      } catch (error) {
+        console.error("Error loading car image:", error);
+      }
     };
-    loadImages();
+    loadCarImage();
   }, [car.id]);
 
+  // Generate message based on template and car details
   const generateCarMessage = () => {
-    if (customMessage) {
+    const clientName = activeTab === "lead" 
+      ? (leads?.find(lead => lead.id === selectedLeadId)?.name as string || "לקוח יקר")
+      : manualName || "לקוח יקר";
+
+    if (selectedTemplateId === "custom") {
       return customMessage;
     }
 
-    const template = templates.find(t => t.id === selectedTemplate);
-    if (!template || !template.generateMessage) return "";
+    const template = whatsappTemplates.find(t => t.id === selectedTemplateId);
+    if (!template) return "";
 
-    return template.generateMessage(car);
+    // Prepare car object with the correct property names
+    const carForTemplate = {
+      ...car,
+      mileage: car.kilometers // Map kilometers to mileage for template compatibility
+    };
+
+    // Generate message using template function
+    let message = template.generateMessage(carForTemplate);
+    
+    // Replace client name placeholder if exists
+    message = message.replace(/שלום[!]?/, `שלום ${clientName}!`);
+
+    return message;
   };
 
   const handleLeadSelect = (leadId: string) => {
@@ -241,16 +263,21 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       {/* Template Selection */}
       <div>
         <Label className="text-right text-sm mb-2 block">בחר תבנית הודעה</Label>
-        <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+        <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
           <SelectTrigger className="text-right">
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
           <SelectContent align="end">
-            {templates.map((template) => (
-              <SelectItem key={template.id} value={template.id}>
-                {template.name} - {template.description || ''}
+            {whatsappTemplates.map(template => (
+              <SelectItem 
+                key={template.id} 
+                value={template.id}
+                disabled={template.id === "car_template_default"}
+              >
+                {template.name}
               </SelectItem>
             ))}
+            <SelectItem value="custom">הודעה מותאמת אישית</SelectItem>
           </SelectContent>
         </Select>
       </div>
