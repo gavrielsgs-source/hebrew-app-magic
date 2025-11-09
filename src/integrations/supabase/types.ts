@@ -774,7 +774,7 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           resource_id: string | null
           resource_type: string
@@ -787,7 +787,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type: string
@@ -800,7 +800,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type?: string
@@ -1106,17 +1106,64 @@ export type Database = {
           },
         ]
       }
+      whatsapp_templates: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean | null
+          is_shared: boolean | null
+          name: string
+          template_content: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          name: string
+          template_content: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          name?: string
+          template_content?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      gdpr_delete_user: {
-        Args: { user_id_param: string }
-        Returns: undefined
-      }
+      gdpr_delete_user: { Args: { user_id_param: string }; Returns: undefined }
       get_all_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
@@ -1136,14 +1183,8 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_user_agencies: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
-      get_user_companies: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
+      get_user_agencies: { Args: never; Returns: string[] }
+      get_user_companies: { Args: never; Returns: string[] }
       has_role: {
         Args: {
           agency_id_param?: string
@@ -1151,18 +1192,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
       is_agency_manager_or_admin: {
         Args: { agency_id_param: string }
         Returns: boolean
       }
-      is_company_owner: {
-        Args: { company_id_param: string }
-        Returns: boolean
-      }
+      is_company_owner: { Args: { company_id_param: string }; Returns: boolean }
       log_security_event: {
         Args: {
           p_action_type: string
@@ -1176,22 +1211,13 @@ export type Database = {
         Returns: undefined
       }
       save_facebook_lead: {
-        Args:
-          | {
-              p_created_at: string
-              p_lead_data: Json
-              p_lead_id: string
-              p_page_id: string
-              p_user_id: string
-            }
-          | {
-              p_created_time: string
-              p_field_data: Json
-              p_form_id: string
-              p_lead_id: string
-              p_page_id: string
-              p_user_id: string
-            }
+        Args: {
+          p_created_at: string
+          p_lead_data: Json
+          p_lead_id: string
+          p_page_id: string
+          p_user_id: string
+        }
         Returns: undefined
       }
       save_facebook_token: {

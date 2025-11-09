@@ -1,372 +1,343 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { TemplateHeader } from "@/components/templates/TemplateHeader";
+import { Card } from "@/components/ui/card";
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
-import { whatsappTemplates, WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
-import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/components/whatsapp/lead-templates";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { TemplateHeader } from "@/components/templates/TemplateHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { useToast } from "@/hooks/use-toast";
-import { Download } from "lucide-react";
+import { useSubscription } from "@/contexts/subscription-context";
+import { useWhatsappTemplates } from "@/hooks/whatsapp/use-whatsapp-templates";
+import { useCreateTemplate } from "@/hooks/whatsapp/use-create-template";
+import { useUpdateTemplate } from "@/hooks/whatsapp/use-update-template";
+import { useDeleteTemplate } from "@/hooks/whatsapp/use-delete-template";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Upload } from "lucide-react";
 
 export default function Templates() {
-  const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isNew, setIsNew] = useState(false);
-  const [newTemplate, setNewTemplate] = useState<UnifiedTemplate>({
-    id: '',
-    name: '',
-    description: '',
-    type: 'lead',
-    generateMessage: () => '',
-    templateContent: ''
-  });
   const isMobile = useIsMobile();
-  const { toast } = useToast();
+  const { subscription } = useSubscription();
+  
+  const { data: templates = [], isLoading } = useWhatsappTemplates();
+  const createTemplate = useCreateTemplate();
+  const updateTemplate = useUpdateTemplate();
+  const deleteTemplate = useDeleteTemplate();
+  
+  const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [isNew, setIsNew] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
-  // Combine all default templates
-  const allDefaultTemplates: UnifiedTemplate[] = [
-    ...whatsappTemplates,
-    ...whatsappLeadTemplates
-  ];
-
-  useEffect(() => {
-    const savedTemplates = localStorage.getItem('whatsapp-templates');
-    console.log('Current localStorage templates:', savedTemplates);
-    
-    // Force reset localStorage to include templateContent for existing templates
-    const shouldReset = !savedTemplates || !savedTemplates.includes('templateContent');
-    
-    if (shouldReset) {
-      console.log('Resetting localStorage with updated templates');
-      setTemplates(allDefaultTemplates);
-      localStorage.setItem('whatsapp-templates', JSON.stringify(allDefaultTemplates));
-    } else {
-      const parsed = JSON.parse(savedTemplates);
-      // Always ensure templates have templateContent
-      const validTemplates = parsed.map((template: any) => ({
-        ...template,
-        templateContent: template.templateContent || '', 
-      }));
-      setTemplates(validTemplates);
-    }
-  }, []);
-
-  const saveTemplates = (newTemplates: UnifiedTemplate[]) => {
-    setTemplates(newTemplates);
-    localStorage.setItem('whatsapp-templates', JSON.stringify(newTemplates));
-    console.log('Templates saved to localStorage:', newTemplates);
+  const addTemplate = (template: any) => {
+    createTemplate.mutate({
+      name: template.name,
+      description: template.description,
+      type: template.type,
+      template_content: template.templateContent,
+    });
+    setShowDialog(false);
   };
 
-  const addTemplate = (template: Omit<UnifiedTemplate, 'id'>) => {
-    const newTemplate = {
-      ...template,
-      id: Date.now().toString()
-    };
-    const updatedTemplates = [...templates, newTemplate];
-    saveTemplates(updatedTemplates);
-    console.log('Template added:', newTemplate);
+  const handleUpdateTemplate = (id: string, updatedTemplate: any) => {
+    updateTemplate.mutate({
+      id,
+      name: updatedTemplate.name,
+      description: updatedTemplate.description,
+      type: updatedTemplate.type,
+      template_content: updatedTemplate.templateContent,
+    });
+    setShowDialog(false);
   };
 
-  const updateTemplate = (updatedTemplate: UnifiedTemplate) => {
-    const newTemplates = templates.map(t => 
-      t.id === updatedTemplate.id ? updatedTemplate : t
-    );
-    saveTemplates(newTemplates);
-    console.log('Template updated:', updatedTemplate);
-  };
-
-  const deleteTemplate = (templateId: string) => {
-    // Check if this is a default template
-    const isDefaultTemplate = allDefaultTemplates.some(t => t.id === templateId);
-    
-    if (isDefaultTemplate) {
-      toast({
-        title: "לא ניתן למחוק תבנית ברירת מחדל",
-        description: "תבניות ברירת המחדל של המערכת לא ניתנות למחיקה.",
-        variant: "destructive",
-      });
+  const handleDeleteTemplate = (id: string) => {
+    const template = templates.find(t => t.id === id);
+    if (template?.is_default) {
+      toast.error('לא ניתן למחוק תבניות ברירת מחדל');
       return;
     }
-    
-    const templateToDelete = templates.find(t => t.id === templateId);
-    if (templateToDelete) {
-      const newTemplates = templates.filter(t => t.id !== templateId);
-      saveTemplates(newTemplates);
-      toast({
-        title: "התבנית נמחקה",
-        description: `התבנית "${templateToDelete.name}" נמחקה בהצלחה.`,
-      });
-    }
-  };
-
-  const resetToDefaults = () => {
-    saveTemplates(allDefaultTemplates);
-    toast({
-      title: "התבניות אופסו",
-      description: "כל התבניות חזרו להגדרות המקוריות.",
-    });
+    deleteTemplate.mutate(id);
   };
 
   const exportToExcel = () => {
-    // Create CSV content with BOM for Hebrew support
     const BOM = '\uFEFF';
-    let csvContent = BOM + 'שם התבנית,סוג,תיאור,תוכן התבנית,הוראות יישום בפייסבוק\n';
+    const headers = ['שם', 'תיאור', 'סוג', 'תוכן'].join(',');
+    const rows = templates.map(t => 
+      [t.name, t.description, t.type === 'car' ? 'רכב' : 'ליד', t.template_content].join(',')
+    );
+    const csv = BOM + [headers, ...rows].join('\n');
     
-    templates.forEach(template => {
-      const name = template.name.replace(/"/g, '""');
-      const type = template.type === 'car' ? 'רכב' : 'לקוח';
-      const description = template.description.replace(/"/g, '""');
-      
-      // Get template content
-      let content = '';
-      if (template.templateContent) {
-        content = template.templateContent.replace(/"/g, '""').replace(/\n/g, ' ');
-      }
-      
-      // Facebook implementation instructions
-      const facebookInstructions = template.type === 'car' 
-        ? 'בפייסבוק: צור Message Template עם 7 פרמטרים: {{1}}=יצרן {{2}}=דגם {{3}}=מחיר {{4}}=סוג דלק {{5}}=קילומטראז\' {{6}}=תיבת הילוכים {{7}}=מספר טלפון'
-        : 'בפייסבוק: צור Message Template עם פרמטרים: {{name}} לשם הלקוח, {{leadSource}} למקור הפנייה (אופציונלי)';
-      
-      csvContent += `"${name}","${type}","${description}","${content}","${facebookInstructions}"\n`;
-    });
-    
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `whatsapp_templates_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
+    link.href = URL.createObjectURL(blob);
+    link.download = 'whatsapp-templates.csv';
     link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: "הקובץ יוצא בהצלחה",
-      description: "קובץ התבניות הורד למחשב שלך.",
-    });
   };
 
-  const handleTemplateSelect = (template: UnifiedTemplate) => {
-    setSelectedTemplate(template);
-    setNewTemplate({
+  const handleTemplateSelect = (template: any) => {
+    setSelectedTemplate({
       ...template,
-      templateContent: template.templateContent || ''
+      templateContent: template.template_content,
     });
     setIsNew(false);
-    setIsDialogOpen(true);
+    setShowDialog(true);
   };
 
   const handleNewTemplate = () => {
-    setSelectedTemplate(null);
-    setNewTemplate({
+    setSelectedTemplate({
       id: '',
       name: '',
       description: '',
       type: 'lead',
-      templateContent: `היי \${leadName}! 👋
-
-קיבלנו את הפנייה שלך\${leadSource ? \` דרך \${leadSource}\` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`,
-      generateMessage: (leadName: string, leadSource?: string) => 
-        `היי ${leadName}! 👋
-
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`
+      templateContent: 'שלום {leadName}, תודה שפנית אלינו!'
     });
     setIsNew(true);
-    setIsDialogOpen(true);
+    setShowDialog(true);
   };
 
-  const handleSave = () => {
-    if (isNew) {
-      addTemplate(newTemplate);
-    } else {
-      updateTemplate(newTemplate);
+  const migrateFromLocalStorage = async () => {
+    setIsMigrating(true);
+    try {
+      const stored = localStorage.getItem('whatsapp-templates');
+      if (!stored) {
+        toast.error('לא נמצאו תבניות ב-localStorage');
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+      const localTemplates = parsed.templates || parsed || [];
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('יש להתחבר כדי לבצע מיגרציה');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('migrate-templates', {
+        body: { templates: localTemplates }
+      });
+
+      if (error) throw error;
+
+      toast.success(data.message || 'המיגרציה הושלמה בהצלחה!');
+      
+      // Clear localStorage after successful migration
+      localStorage.removeItem('whatsapp-templates');
+    } catch (error: any) {
+      console.error('Migration error:', error);
+      toast.error('שגיאה במיגרציה: ' + error.message);
+    } finally {
+      setIsMigrating(false);
     }
-    setIsDialogOpen(false);
   };
 
-  // Template tags for the dialog
   const templateTags = [
-    // Car tags
-    '{{car.make}}', '{{car.model}}', '{{car.year}}', '{{car.price}}', 
-    '{{car.mileage}}', '{{car.exteriorColor}}', '{{car.engineSize}}', 
-    '{{car.transmission}}', '{{car.fuelType}}',
-    // Lead tags
-    '{{leadName}}', '{{leadSource}}'
+    { car: ['{{make}}', '{{model}}', '{{year}}', '{{price}}', '{{kilometers}}'] },
+    { lead: ['{{leadName}}', '{{leadSource}}'] }
   ];
 
-  // Separate templates by type for better organization
   const carTemplates = templates.filter(t => t.type === 'car');
   const leadTemplates = templates.filter(t => t.type === 'lead');
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">טוען תבניות...</div>
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (
       <MobileContainer>
-        <div className="space-y-6" dir="rtl">
-          <TemplateHeader
+        <div className="space-y-4" dir="rtl">
+          <MobileHeader title="תבניות וואטסאפ" />
+          
+          <TemplateHeader 
             onNewTemplate={handleNewTemplate}
-            onResetDefaults={resetToDefaults}
-            canAddTemplate={true}
+            onExport={exportToExcel}
           />
           
-          <Button
-            onClick={exportToExcel}
-            variant="outline"
-            className="w-full mb-4 flex items-center justify-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            ייצא תבניות לאקסל
-          </Button>
-
-          <div className="space-y-6">
-            {leadTemplates.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-right">תבניות לקוחות ({leadTemplates.length})</h3>
-                <div className="space-y-4">
-                  {leadTemplates.map((template) => (
-                    <TemplateCard
-                      key={template.id}
-                      template={template}
-                      onEdit={() => handleTemplateSelect(template)}
-                      onDelete={() => deleteTemplate(template.id)}
-                    />
-                  ))}
+          {localStorage.getItem('whatsapp-templates') && (
+            <Card className="p-4 mb-6 bg-muted/50">
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h3 className="font-semibold">מיגרציה מ-localStorage</h3>
+                  <p className="text-sm text-muted-foreground">
+                    נמצאו תבניות ישנות במכשיר שלך
+                  </p>
                 </div>
+                <Button 
+                  onClick={migrateFromLocalStorage} 
+                  disabled={isMigrating}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Upload className="w-4 h-4 ml-2" />
+                  {isMigrating ? 'מעביר...' : 'העבר תבניות'}
+                </Button>
               </div>
-            )}
+            </Card>
+          )}
 
-            {carTemplates.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-right">תבניות רכבים ({carTemplates.length})</h3>
-                <div className="space-y-4">
-                  {carTemplates.map((template) => (
-                    <TemplateCard
-                      key={template.id}
-                      template={template}
-                      onEdit={() => handleTemplateSelect(template)}
-                      onDelete={() => deleteTemplate(template.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <Tabs defaultValue="lead" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="lead" className="flex-1">
+                תבניות לידים ({leadTemplates.length})
+              </TabsTrigger>
+              <TabsTrigger value="car" className="flex-1">
+                תבניות רכבים ({carTemplates.length})
+              </TabsTrigger>
+            </TabsList>
 
-      <TemplateDialog
-        isOpen={isDialogOpen}
-        isNew={isNew}
-        newTemplate={newTemplate}
-        setIsOpen={setIsDialogOpen}
-        onSave={handleSave}
-        onTemplateChange={setNewTemplate}
-        templateTags={templateTags}
-        readOnly={newTemplate.id.startsWith('default-')}
-      />
+            <TabsContent value="lead" className="space-y-3 mt-4">
+              {leadTemplates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={{
+                    ...template,
+                    templateContent: template.template_content,
+                  }}
+                  onEdit={() => handleTemplateSelect(template)}
+                  onDelete={() => handleDeleteTemplate(template.id)}
+                />
+              ))}
+            </TabsContent>
+
+            <TabsContent value="car" className="space-y-3 mt-4">
+              {carTemplates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={{
+                    ...template,
+                    templateContent: template.template_content,
+                  }}
+                  onEdit={() => handleTemplateSelect(template)}
+                  onDelete={() => handleDeleteTemplate(template.id)}
+                />
+              ))}
+            </TabsContent>
+          </Tabs>
+
+          <TemplateDialog
+            open={showDialog}
+            isNew={isNew}
+            newTemplate={selectedTemplate}
+            onOpenChange={setShowDialog}
+            onSave={(template) => {
+              if (isNew) {
+                addTemplate(template);
+              } else {
+                handleUpdateTemplate(selectedTemplate.id, template);
+              }
+            }}
+            onTemplateChange={setSelectedTemplate}
+            templateTags={templateTags}
+            readOnly={selectedTemplate?.is_default || false}
+          />
         </div>
       </MobileContainer>
     );
   }
 
   return (
-    <ScrollArea className="h-screen">
-      <div className="container mx-auto p-6 pb-20 space-y-6" dir="rtl">
-        <Card className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <CardHeader className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-            <CardTitle className="text-foreground">ניהול תבניות וואטסאפ</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              צור ונהל תבניות הודעות לשליחה מהירה ללקוחות ולרכבים
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TemplateHeader
-              onNewTemplate={handleNewTemplate}
-              onResetDefaults={resetToDefaults}
-              canAddTemplate={true}
-            />
-            
-            <div className="mb-6 flex gap-3">
-              <Button
-                onClick={exportToExcel}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                ייצא תבניות לאקסל
-              </Button>
-            </div>
+    <div className="container mx-auto p-6 space-y-6" dir="rtl">
+      <Card>
+        <div className="p-6 space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold">תבניות וואטסאפ</h1>
+            <p className="text-muted-foreground">נהל את התבניות שלך לשליחת הודעות</p>
+          </div>
 
-            <div className="space-y-8">
-              {leadTemplates.length > 0 && (
+          <TemplateHeader 
+            onNewTemplate={handleNewTemplate}
+            onExport={exportToExcel}
+          />
+          
+          {localStorage.getItem('whatsapp-templates') && (
+            <Card className="p-4 bg-muted/50">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
-                    תבניות לקוחות ({leadTemplates.length})
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {leadTemplates.map((template) => (
-                      <TemplateCard
-                        key={template.id}
-                        template={template}
-                        onEdit={() => handleTemplateSelect(template)}
-                        onDelete={() => deleteTemplate(template.id)}
-                      />
-                    ))}
-                  </div>
+                  <h3 className="font-semibold">מיגרציה מ-localStorage</h3>
+                  <p className="text-sm text-muted-foreground">
+                    נמצאו תבניות ישנות במכשיר שלך. העבר אותן לדאטהבייס
+                  </p>
                 </div>
-              )}
+                <Button 
+                  onClick={migrateFromLocalStorage} 
+                  disabled={isMigrating}
+                  variant="outline"
+                >
+                  <Upload className="w-4 h-4 ml-2" />
+                  {isMigrating ? 'מעביר...' : 'העבר תבניות'}
+                </Button>
+              </div>
+            </Card>
+          )}
 
-              {carTemplates.length > 0 && (
-                <div>
-                  <h3 className="text-xl font-semibold mb-4 text-right border-b pb-2">
-                    תבניות רכבים ({carTemplates.length})
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {carTemplates.map((template) => (
-                      <TemplateCard
-                        key={template.id}
-                        template={template}
-                        onEdit={() => handleTemplateSelect(template)}
-                        onDelete={() => deleteTemplate(template.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+          <Tabs defaultValue="lead" className="w-full">
+            <TabsList>
+              <TabsTrigger value="lead">
+                תבניות לידים ({leadTemplates.length})
+              </TabsTrigger>
+              <TabsTrigger value="car">
+                תבניות רכבים ({carTemplates.length})
+              </TabsTrigger>
+            </TabsList>
 
-            <TemplateDialog
-              isOpen={isDialogOpen}
-              isNew={isNew}
-              newTemplate={newTemplate}
-              setIsOpen={setIsDialogOpen}
-              onSave={handleSave}
-              onTemplateChange={setNewTemplate}
-              templateTags={templateTags}
-              readOnly={newTemplate.id.startsWith('default-')}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </ScrollArea>
+            <TabsContent value="lead" className="space-y-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {leadTemplates.map((template) => (
+                  <TemplateCard
+                    key={template.id}
+                    template={{
+                      ...template,
+                      templateContent: template.template_content,
+                    }}
+                    onEdit={() => handleTemplateSelect(template)}
+                    onDelete={() => handleDeleteTemplate(template.id)}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="car" className="space-y-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {carTemplates.map((template) => (
+                  <TemplateCard
+                    key={template.id}
+                    template={{
+                      ...template,
+                      templateContent: template.template_content,
+                    }}
+                    onEdit={() => handleTemplateSelect(template)}
+                    onDelete={() => handleDeleteTemplate(template.id)}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <TemplateDialog
+            open={showDialog}
+            isNew={isNew}
+            newTemplate={selectedTemplate}
+            onOpenChange={setShowDialog}
+            onSave={(template) => {
+              if (isNew) {
+                addTemplate(template);
+              } else {
+                handleUpdateTemplate(selectedTemplate.id, template);
+              }
+            }}
+            onTemplateChange={setSelectedTemplate}
+            templateTags={templateTags}
+            readOnly={selectedTemplate?.is_default || false}
+          />
+        </div>
+      </Card>
+    </div>
   );
 }
