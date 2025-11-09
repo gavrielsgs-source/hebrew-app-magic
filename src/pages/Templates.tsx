@@ -11,8 +11,13 @@ import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Cloud } from "lucide-react";
-import { useCreateWhatsappTemplate } from "@/hooks/whatsapp-templates";
+import { Download, Cloud, CloudOff } from "lucide-react";
+import { 
+  useWhatsappTemplates,
+  useCreateWhatsappTemplate,
+  useUpdateWhatsappTemplate,
+  useDeleteWhatsappTemplate
+} from "@/hooks/whatsapp-templates";
 
 export default function Templates() {
   const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
@@ -29,7 +34,11 @@ export default function Templates() {
   });
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const createTemplate = useCreateWhatsappTemplate();
+  const { data: dbTemplates } = useWhatsappTemplates();
+  const { mutate: createTemplate, isPending: isCreating } = useCreateWhatsappTemplate();
+  const { mutate: updateDbTemplate, isPending: isUpdating } = useUpdateWhatsappTemplate();
+  const { mutate: deleteDbTemplate, isPending: isDeleting } = useDeleteWhatsappTemplate();
+  const [cloudTemplateIds, setCloudTemplateIds] = useState<Set<string>>(new Set());
 
   // Combine all default templates
   const allDefaultTemplates: UnifiedTemplate[] = [
@@ -59,6 +68,14 @@ export default function Templates() {
     }
   }, []);
 
+  // Track which templates are in the cloud
+  useEffect(() => {
+    if (dbTemplates) {
+      const cloudIds = new Set(dbTemplates.map(t => t.id));
+      setCloudTemplateIds(cloudIds);
+    }
+  }, [dbTemplates]);
+
   const saveTemplates = (newTemplates: UnifiedTemplate[]) => {
     setTemplates(newTemplates);
     localStorage.setItem('whatsapp-templates', JSON.stringify(newTemplates));
@@ -72,7 +89,21 @@ export default function Templates() {
     };
     const updatedTemplates = [...templates, newTemplate];
     saveTemplates(updatedTemplates);
+    
+    // Auto-sync to cloud for custom templates
+    createTemplate({
+      name: newTemplate.name,
+      description: newTemplate.description || '',
+      type: newTemplate.type,
+      template_content: newTemplate.templateContent || '',
+      is_shared: false,
+    });
+    
     console.log('Template added:', newTemplate);
+    toast({
+      title: "התבנית נוספה ונשמרה בענן",
+      description: `התבנית "${newTemplate.name}" נוצרה בהצלחה.`,
+    });
   };
 
   const updateTemplate = (updatedTemplate: UnifiedTemplate) => {
@@ -80,6 +111,17 @@ export default function Templates() {
       t.id === updatedTemplate.id ? updatedTemplate : t
     );
     saveTemplates(newTemplates);
+    
+    // Auto-sync to cloud if template exists there
+    if (cloudTemplateIds.has(updatedTemplate.id)) {
+      updateDbTemplate({
+        id: updatedTemplate.id,
+        name: updatedTemplate.name,
+        description: updatedTemplate.description || '',
+        template_content: updatedTemplate.templateContent || '',
+      });
+    }
+    
     console.log('Template updated:', updatedTemplate);
   };
 
@@ -100,6 +142,12 @@ export default function Templates() {
     if (templateToDelete) {
       const newTemplates = templates.filter(t => t.id !== templateId);
       saveTemplates(newTemplates);
+      
+      // Auto-sync deletion to cloud if template exists there
+      if (cloudTemplateIds.has(templateId)) {
+        deleteDbTemplate(templateId);
+      }
+      
       toast({
         title: "התבנית נמחקה",
         description: `התבנית "${templateToDelete.name}" נמחקה בהצלחה.`,
@@ -130,7 +178,7 @@ export default function Templates() {
 
       // Save each custom template to database
       for (const template of customTemplates) {
-        await createTemplate.mutateAsync({
+        createTemplate({
           name: template.name,
           description: template.description || '',
           type: template.type,
@@ -275,10 +323,10 @@ export default function Templates() {
               onClick={syncToCloud}
               variant="default"
               className="w-full flex items-center justify-center gap-2"
-              disabled={createTemplate.isPending}
+              disabled={isCreating}
             >
               <Cloud className="h-4 w-4" />
-              {createTemplate.isPending ? "מסנכרן..." : "סנכרן לענן"}
+              {isCreating ? "מסנכרן..." : "סנכרן לענן"}
             </Button>
             <Button
               onClick={exportToExcel}
@@ -296,12 +344,18 @@ export default function Templates() {
                 <h3 className="text-lg font-semibold mb-3 text-right">תבניות לקוחות ({leadTemplates.length})</h3>
                 <div className="space-y-4">
                   {leadTemplates.map((template) => (
-                    <TemplateCard
-                      key={template.id}
-                      template={template}
-                      onEdit={() => handleTemplateSelect(template)}
-                      onDelete={() => deleteTemplate(template.id)}
-                    />
+                    <div key={template.id} className="relative">
+                      <TemplateCard
+                        template={template}
+                        onEdit={() => handleTemplateSelect(template)}
+                        onDelete={() => deleteTemplate(template.id)}
+                      />
+                      {cloudTemplateIds.has(template.id) ? (
+                        <Cloud className="absolute top-2 left-2 h-4 w-4 text-primary" />
+                      ) : (
+                        <CloudOff className="absolute top-2 left-2 h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -312,12 +366,18 @@ export default function Templates() {
                 <h3 className="text-lg font-semibold mb-3 text-right">תבניות רכבים ({carTemplates.length})</h3>
                 <div className="space-y-4">
                   {carTemplates.map((template) => (
-                    <TemplateCard
-                      key={template.id}
-                      template={template}
-                      onEdit={() => handleTemplateSelect(template)}
-                      onDelete={() => deleteTemplate(template.id)}
-                    />
+                    <div key={template.id} className="relative">
+                      <TemplateCard
+                        template={template}
+                        onEdit={() => handleTemplateSelect(template)}
+                        onDelete={() => deleteTemplate(template.id)}
+                      />
+                      {cloudTemplateIds.has(template.id) ? (
+                        <Cloud className="absolute top-2 left-2 h-4 w-4 text-primary" />
+                      ) : (
+                        <CloudOff className="absolute top-2 left-2 h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -361,10 +421,10 @@ export default function Templates() {
                 onClick={syncToCloud}
                 variant="default"
                 className="flex items-center gap-2"
-                disabled={createTemplate.isPending}
+                disabled={isCreating}
               >
                 <Cloud className="h-4 w-4" />
-                {createTemplate.isPending ? "מסנכרן..." : "סנכרן לענן"}
+                {isCreating ? "מסנכרן..." : "סנכרן לענן"}
               </Button>
               <Button
                 onClick={exportToExcel}
@@ -384,12 +444,18 @@ export default function Templates() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {leadTemplates.map((template) => (
-                      <TemplateCard
-                        key={template.id}
-                        template={template}
-                        onEdit={() => handleTemplateSelect(template)}
-                        onDelete={() => deleteTemplate(template.id)}
-                      />
+                      <div key={template.id} className="relative">
+                        <TemplateCard
+                          template={template}
+                          onEdit={() => handleTemplateSelect(template)}
+                          onDelete={() => deleteTemplate(template.id)}
+                        />
+                        {cloudTemplateIds.has(template.id) ? (
+                          <Cloud className="absolute top-2 left-2 h-4 w-4 text-primary" />
+                        ) : (
+                          <CloudOff className="absolute top-2 left-2 h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -402,12 +468,18 @@ export default function Templates() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {carTemplates.map((template) => (
-                      <TemplateCard
-                        key={template.id}
-                        template={template}
-                        onEdit={() => handleTemplateSelect(template)}
-                        onDelete={() => deleteTemplate(template.id)}
-                      />
+                      <div key={template.id} className="relative">
+                        <TemplateCard
+                          template={template}
+                          onEdit={() => handleTemplateSelect(template)}
+                          onDelete={() => deleteTemplate(template.id)}
+                        />
+                        {cloudTemplateIds.has(template.id) ? (
+                          <Cloud className="absolute top-2 left-2 h-4 w-4 text-primary" />
+                        ) : (
+                          <CloudOff className="absolute top-2 left-2 h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>

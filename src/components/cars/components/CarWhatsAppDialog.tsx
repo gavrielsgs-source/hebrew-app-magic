@@ -15,6 +15,7 @@ import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { getCarImages } from "@/lib/image-utils";
+import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -29,8 +30,39 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [selectedTemplateId, setSelectedTemplateId] = useState("car_template_default");
   const [customMessage, setCustomMessage] = useState("");
   const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
+  const [templates, setTemplates] = useState<any[]>(whatsappTemplates);
   const { leads } = useLeads();
   const { profile } = useProfile();
+  const { data: dbTemplates } = useWhatsappTemplates();
+
+  // Merge templates from database with default templates
+  useEffect(() => {
+    const carDbTemplates = dbTemplates?.filter(t => t.type === 'car') || [];
+    
+    const dbTemplateIds = new Set(carDbTemplates.map(t => t.id));
+    const localOnlyTemplates = whatsappTemplates.filter((t: any) => !dbTemplateIds.has(t.id));
+    
+    const mergedTemplates = [
+      ...carDbTemplates.map(t => ({
+        id: t.id,
+        name: t.name,
+        description: t.description || '',
+        templateContent: t.template_content,
+        generateMessage: (car: any) => {
+          return t.template_content
+            .replace('{make}', car.make)
+            .replace('{model}', car.model)
+            .replace('{year}', car.year)
+            .replace('{price}', car.price)
+            .replace('{kilometers}', car.kilometers)
+            .replace('{mileage}', car.kilometers);
+        }
+      })),
+      ...localOnlyTemplates
+    ];
+    
+    setTemplates(mergedTemplates);
+  }, [dbTemplates]);
 
   // Load car image on mount
   useEffect(() => {
@@ -57,7 +89,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       return customMessage;
     }
 
-    const template = whatsappTemplates.find(t => t.id === selectedTemplateId);
+    const template = templates.find(t => t.id === selectedTemplateId);
     if (!template) return "";
 
     // Prepare car object with the correct property names
@@ -268,7 +300,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
           <SelectContent align="end">
-            {whatsappTemplates.map(template => (
+            {templates.map(template => (
               <SelectItem 
                 key={template.id} 
                 value={template.id}
@@ -301,7 +333,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         <div>
           <Label className="text-right text-sm">תבנית דפולטיבית (לא ניתנת לעריכה)</Label>
           <Textarea
-            value={whatsappTemplates.find(t => t.id === "car_template_default")?.templateContent || ''}
+            value={templates.find(t => t.id === "car_template_default")?.templateContent || ''}
             disabled
             rows={8}
             className="text-right resize-none opacity-60 cursor-not-allowed bg-muted"
