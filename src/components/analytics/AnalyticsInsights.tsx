@@ -112,22 +112,22 @@ export function generateSalesOverTimeInsight(data: AdvancedAnalyticsData) {
     };
   }
 
-  const recentSales = data.salesOverTime.slice(-7);
-  const totalRecentSales = recentSales.reduce((sum, day) => sum + day.sales, 0);
+  const recentSales = data.salesOverTime.slice(-3);
+  const totalRecentSales = recentSales.reduce((sum, month) => sum + month.sales, 0);
   
   if (totalRecentSales === 0) {
     return {
       title: "ירידה במכירות",
-      description: "לא היו מכירות בשבוע האחרון - בדוק את תהליך הסגירה ומעקב הלידים",
+      description: "לא היו מכירות ב-3 החודשים האחרונים - בדוק את תהליך הסגירה ומעקב הלידים",
       type: "danger" as const,
       trend: "down" as const
     };
   }
   
-  if (totalRecentSales >= 5) {
+  if (totalRecentSales >= 3) {
     return {
       title: "מכירות מצוינות!",
-      description: `${totalRecentSales} מכירות בשבוע האחרון - ביצועים מעולים!`,
+      description: `${totalRecentSales} מכירות ב-3 החודשים האחרונים - ביצועים מעולים!`,
       type: "success" as const,
       trend: "up" as const
     };
@@ -135,7 +135,7 @@ export function generateSalesOverTimeInsight(data: AdvancedAnalyticsData) {
   
   return {
     title: "מכירות יציבות",
-    description: `${totalRecentSales} מכירות בשבוע האחרון - נסה להגביר את הפעילות למכירות נוספות`,
+    description: `${totalRecentSales} מכירות ב-3 החודשים האחרונים - נסה להגביר את הפעילות למכירות נוספות`,
     type: "info" as const,
     trend: "stable" as const
   };
