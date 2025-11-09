@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
 import { UnifiedTemplate } from "./lead-templates";
+import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
 
 interface WhatsappLeadTemplateSelectorProps {
   leadName: string;
@@ -31,8 +32,9 @@ export function WhatsappLeadTemplateSelector({
   const [templateType, setTemplateType] = useState<"lead" | "car">("lead");
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
+  const { data: dbTemplates, isLoading } = useWhatsappTemplates();
 
-// Load templates from localStorage
+  // Load templates from localStorage and merge with database templates
   useEffect(() => {
     try {
       const storedTemplates = localStorage.getItem("whatsapp-templates");
@@ -103,21 +105,76 @@ export function WhatsappLeadTemplateSelector({
           }
         }));
 
-      setLeadTemplates(leadTemplatesFromStorage);
-      setCarTemplates(carTemplatesFromStorage);
+      // Convert database templates to UnifiedTemplate format
+      const dbLeadTemplates: UnifiedTemplate[] = (dbTemplates || [])
+        .filter(t => t.type === 'lead')
+        .map(dbTemplate => ({
+          id: dbTemplate.id,
+          name: dbTemplate.name,
+          description: dbTemplate.description,
+          type: 'lead' as const,
+          templateContent: dbTemplate.template_content,
+          generateMessage: (leadName: string, leadSource?: string) => {
+            return dbTemplate.template_content
+              .replace(/\{\{leadName\}\}/g, leadName || '')
+              .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '')
+              .replace(/\$\{leadName\}/g, leadName || '')
+              .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, leadSource ? ` דרך ${leadSource}` : '');
+          }
+        }));
+
+      const dbCarTemplates: UnifiedTemplate[] = (dbTemplates || [])
+        .filter(t => t.type === 'car')
+        .map(dbTemplate => ({
+          id: dbTemplate.id,
+          name: dbTemplate.name,
+          description: dbTemplate.description,
+          type: 'car' as const,
+          templateContent: dbTemplate.template_content,
+          generateMessage: () => {
+            return dbTemplate.template_content
+              .replace(/\$\{car\.make\}/g, 'רכב מעולה')
+              .replace(/\$\{car\.model\}/g, '')
+              .replace(/\$\{car\.year\}/g, '')
+              .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 'מחיר אטרקטיבי')
+              .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק\"מ`\s*:\s*'[^']*'\}/g, 'קילומטראז נמוך')
+              .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, 'צבע יפה')
+              .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, 'מנוע חזק')
+              .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, 'תיבת הילוכים מעולה')
+              .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, 'חסכוני בדלק');
+          }
+        }));
+
+      // Merge templates - database templates first, then localStorage (remove duplicates by ID)
+      const allLeadTemplates = [...dbLeadTemplates];
+      leadTemplatesFromStorage.forEach(localTemplate => {
+        if (!allLeadTemplates.find(t => t.id === localTemplate.id)) {
+          allLeadTemplates.push(localTemplate);
+        }
+      });
+
+      const allCarTemplates = [...dbCarTemplates];
+      carTemplatesFromStorage.forEach(localTemplate => {
+        if (!allCarTemplates.find(t => t.id === localTemplate.id)) {
+          allCarTemplates.push(localTemplate);
+        }
+      });
+
+      setLeadTemplates(allLeadTemplates);
+      setCarTemplates(allCarTemplates);
 
       // Default selection (prefer client_intro)
-      const clientIntro = leadTemplatesFromStorage.find(t => t.id === 'client_intro');
+      const clientIntro = allLeadTemplates.find(t => t.id === 'client_intro');
       if (clientIntro) {
         setSelectedTemplate(clientIntro);
         setTemplateType('lead');
         setActiveTab('lead-templates');
-      } else if (leadTemplatesFromStorage.length > 0) {
-        setSelectedTemplate(leadTemplatesFromStorage[0]);
+      } else if (allLeadTemplates.length > 0) {
+        setSelectedTemplate(allLeadTemplates[0]);
         setTemplateType('lead');
         setActiveTab('lead-templates');
-      } else if (carTemplatesFromStorage.length > 0) {
-        setSelectedTemplate(carTemplatesFromStorage[0]);
+      } else if (allCarTemplates.length > 0) {
+        setSelectedTemplate(allCarTemplates[0]);
         setTemplateType('car');
         setActiveTab('car-templates');
       }
@@ -133,7 +190,7 @@ export function WhatsappLeadTemplateSelector({
       setLeadTemplates([defaultTemplate]);
       setSelectedTemplate(defaultTemplate);
     }
-  }, []);
+  }, [dbTemplates]);
 
   const generateMessage = () => {
     if (activeTab === "custom" && customMessage.trim()) {
