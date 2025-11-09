@@ -5,8 +5,12 @@ import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
 import { useDateRangeAnalytics } from "@/hooks/analytics/use-date-range-analytics";
 
 export function BasicAnalytics() {
-  const { data: dateRanges } = useDateRangeAnalytics();
-  const currentPeriod = dateRanges?.thisMonth || { from: new Date(), to: new Date() };
+  // הצגת 30 הימים האחרונים במקום רק החודש הנוכחי
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+  
+  const currentPeriod = { from: thirtyDaysAgo, to: now };
   const { data: analytics, isLoading } = useAdvancedAnalytics(currentPeriod);
 
   if (isLoading) {
@@ -43,7 +47,7 @@ export function BasicAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{currentData.totalLeads}</div>
-            <p className="text-xs text-muted-foreground">החודש הנוכחי</p>
+            <p className="text-xs text-muted-foreground">30 הימים האחרונים</p>
           </CardContent>
         </Card>
 
@@ -65,7 +69,7 @@ export function BasicAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{currentData.totalSales}</div>
-            <p className="text-xs text-muted-foreground">החודש הנוכחי</p>
+            <p className="text-xs text-muted-foreground">30 הימים האחרונים</p>
           </CardContent>
         </Card>
 
