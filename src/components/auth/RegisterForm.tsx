@@ -100,6 +100,30 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
           console.error('Error in trial subscription flow:', subError);
           // Continue - user registration was successful
         }
+
+        // Send welcome email with magic link
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-email', {
+            body: {
+              to: formData.email,
+              template: 'welcome',
+              data: {
+                userName: `${formData.firstName} ${formData.lastName}`,
+                magicLink: `${window.location.origin}/auth/callback`,
+                trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('he-IL'),
+                amount: 0
+              }
+            }
+          });
+
+          if (emailError) {
+            console.error('Error sending welcome email:', emailError);
+          } else {
+            console.log('✅ Welcome email sent successfully to:', formData.email);
+          }
+        } catch (emailErr) {
+          console.error('Error in welcome email flow:', emailErr);
+        }
       }
 
       toast({
