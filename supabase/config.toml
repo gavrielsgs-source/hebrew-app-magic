@@ -48,6 +48,15 @@ verify_jwt = false
 [functions.grow-webhook]
 verify_jwt = false
 
+[functions.check-trial-expiration]
+verify_jwt = false
+
+[functions.send-trial-reminders]
+verify_jwt = false
+
+[functions.cancel-subscription]
+verify_jwt = true
+
 [functions.get-next-document-number]
 verify_jwt = true
 

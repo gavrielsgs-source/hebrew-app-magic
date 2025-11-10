@@ -12,6 +12,8 @@ import { SubscriptionProvider } from "@/contexts/subscription-context";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useIsMobile } from "@/hooks/use-mobile";
+import SignupTrial from "./pages/SignupTrial";
+import ManageSubscription from "./pages/ManageSubscription";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
@@ -82,6 +84,7 @@ const App = () => {
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/signup-trial" element={<SignupTrial />} />
               <Route path="/accept-invitation" element={<AcceptInvitation />} />
               <Route path="/welcome" element={
                 <ProtectedRoute>
@@ -135,6 +138,7 @@ function AppLayout() {
                 <Route path="/document-production/tax-invoice" element={<TaxInvoice />} />
                 <Route path="/document-production/:type" element={<DocumentProduction />} />
                 <Route path="/subscription" element={<Subscription />} />
+                <Route path="/subscription/manage" element={<ManageSubscription />} />
                 <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                 <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
                 <Route path="/subscription/payment-error" element={<PaymentError />} />

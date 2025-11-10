@@ -15,6 +15,14 @@ export interface Subscription {
   taskLimit?: number;
   companyLimit?: number;
   analyticsLevel?: 'basic' | 'full' | 'custom';
+  subscription_status?: 'trial' | 'active' | 'cancelled' | 'expired' | 'past_due';
+  cancel_at_period_end?: boolean;
+  cancelled_at?: string;
+  next_billing_date?: string;
+  billing_amount?: number;
+  billing_cycle?: 'monthly' | 'yearly';
+  payment_token?: string;
+  recurring_payment_id?: string;
 }
 
 export const subscriptionFeatures: Record<SubscriptionTier, Subscription> = {

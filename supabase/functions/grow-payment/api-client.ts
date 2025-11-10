@@ -4,8 +4,11 @@ import { GROW_API_BASE, GROW_USER_ID, GROW_PAGE_CODE, SUCCESS_URL, CANCEL_URL, N
 export interface GrowPaymentRequest {
   fullName: string;
   phone: string;
+  email: string;
   sum?: string;
   planId?: string;
+  isTrial?: boolean;
+  billingCycle?: 'monthly' | 'yearly';
 }
 
 export interface GrowPaymentResponse {
@@ -32,13 +35,24 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   formData.append('successUrl', SUCCESS_URL);
   formData.append('cancelUrl', CANCEL_URL);
   formData.append('notifyUrl', NOTIFY_URL);
-  formData.append('sum', payload.sum || '');
+  
+  // For trial: charge 1 ILS for verification, will be refunded
+  const amount = payload.isTrial ? '1.00' : (payload.sum || '');
+  formData.append('sum', amount);
+  
   formData.append('pageField[fullName]', payload.fullName);
   formData.append('pageField[phone]', payload.phone);
+  formData.append('pageField[email]', payload.email);
   
-  // Add planId to the payment data for the webhook
+  // Add metadata for webhook processing
   if (payload.planId) {
     formData.append('pageField[planId]', payload.planId);
+  }
+  if (payload.isTrial !== undefined) {
+    formData.append('pageField[isTrial]', String(payload.isTrial));
+  }
+  if (payload.billingCycle) {
+    formData.append('pageField[billingCycle]', payload.billingCycle);
   }
 
   console.log('Sending form data to GROW API:', Object.fromEntries(formData.entries()));

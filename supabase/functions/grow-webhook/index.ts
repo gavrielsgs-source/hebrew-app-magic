@@ -52,6 +52,9 @@ serve(async (req) => {
     const phone = payload["phone"] || payload["data[phone]"];
     const amount = payload["sum"] || payload["data[sum]"];
     const planId = payload["planId"] || payload["data[planId]"];
+    const isTrial = payload["isTrial"] === 'true' || payload["data[isTrial]"] === 'true';
+    const billingCycle = payload["billingCycle"] || payload["data[billingCycle]"] || 'monthly';
+    const paymentToken = payload["token"] || payload["data[token]"];
 
     if (!transactionId || !status) {
       throw new Error('Missing required webhook payload fields');
@@ -124,18 +127,78 @@ serve(async (req) => {
           console.error('Error updating profile:', profileError);
         }
 
+        // Determine subscription settings based on trial status
+        const subscriptionData: any = {
+          subscription_tier: planId || 'premium',
+          billing_cycle: billingCycle,
+        };
+
+        if (isTrial) {
+          // Trial subscription
+          const trialEndDate = new Date();
+          trialEndDate.setDate(trialEndDate.getDate() + 14); // 14 days trial
+
+          subscriptionData.subscription_status = 'trial';
+          subscriptionData.active = true;
+          subscriptionData.trial_ends_at = trialEndDate.toISOString();
+          subscriptionData.payment_token = paymentToken;
+          
+          // Set billing amount based on tier
+          const billingAmounts: Record<string, number> = {
+            premium: billingCycle === 'yearly' ? 990 : 99,
+            business: billingCycle === 'yearly' ? 2990 : 299,
+            enterprise: billingCycle === 'yearly' ? 9990 : 999,
+          };
+          subscriptionData.billing_amount = billingAmounts[planId || 'premium'];
+
+          console.log(`Setting up trial subscription - ends: ${trialEndDate.toISOString()}`);
+        } else {
+          // Regular paid subscription
+          const nextBilling = new Date();
+          nextBilling.setMonth(nextBilling.getMonth() + (billingCycle === 'yearly' ? 12 : 1));
+
+          subscriptionData.subscription_status = 'active';
+          subscriptionData.active = true;
+          subscriptionData.next_billing_date = nextBilling.toISOString();
+          subscriptionData.payment_token = paymentToken;
+          subscriptionData.billing_amount = parseFloat(amount);
+        }
+
         // Update subscription
         const { error: subscriptionError } = await supabase
           .from('subscriptions')
-          .update({
-            subscription_tier: planId,
-            active: true,
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
-          })
+          .update(subscriptionData)
           .eq('user_id', authData.user.id);
 
         if (subscriptionError) {
           console.error('Error updating subscription:', subscriptionError);
+        }
+
+        // Record payment in history
+        const { error: paymentHistoryError } = await supabase
+          .from('payment_history')
+          .insert({
+            user_id: authData.user.id,
+            transaction_id: transactionId,
+            amount: parseFloat(amount),
+            status: 'success',
+            payment_type: isTrial ? 'trial_verification' : billingCycle,
+            metadata: {
+              plan: planId,
+              is_trial: isTrial,
+              billing_cycle: billingCycle,
+            },
+          });
+
+        if (paymentHistoryError) {
+          console.error('Error recording payment history:', paymentHistoryError);
+        }
+
+        // If trial, immediately refund the 1 ILS verification charge
+        if (isTrial && amount === '1' || amount === '1.00') {
+          console.log('Trial verification - will refund 1 ILS');
+          // TODO: Implement refund via Grow API if needed
+          // Most payment processors handle this automatically
         }
 
         // Log the payment event

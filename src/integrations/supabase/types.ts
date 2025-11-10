@@ -103,6 +103,44 @@ export type Database = {
         }
         Relationships: []
       }
+      cancellation_feedback: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          id: string
+          reason: string | null
+          subscription_id: string | null
+          user_id: string
+          would_return: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          reason?: string | null
+          subscription_id?: string | null
+          user_id: string
+          would_return?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          reason?: string | null
+          subscription_id?: string | null
+          user_id?: string
+          would_return?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cancellation_feedback_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cars: {
         Row: {
           agency_id: string | null
@@ -729,6 +767,59 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_history: {
+        Row: {
+          amount: number
+          asmachta: string | null
+          created_at: string
+          currency: string | null
+          failure_reason: string | null
+          id: string
+          metadata: Json | null
+          payment_type: string
+          status: string
+          subscription_id: string | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          asmachta?: string | null
+          created_at?: string
+          currency?: string | null
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type: string
+          status: string
+          subscription_id?: string | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          asmachta?: string | null
+          created_at?: string
+          currency?: string | null
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type?: string
+          status?: string
+          subscription_id?: string | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -774,7 +865,7 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           resource_id: string | null
           resource_type: string
@@ -787,7 +878,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type: string
@@ -800,7 +891,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type?: string
@@ -814,11 +905,19 @@ export type Database = {
         Row: {
           active: boolean
           active_users_count: number | null
+          billing_amount: number | null
+          billing_cycle: string | null
+          cancel_at_period_end: boolean | null
+          cancelled_at: string | null
           company_id: string | null
           created_at: string
           expires_at: string | null
           id: string
           max_users: number | null
+          next_billing_date: string | null
+          payment_token: string | null
+          recurring_payment_id: string | null
+          subscription_status: string | null
           subscription_tier: string
           trial_ends_at: string | null
           updated_at: string
@@ -827,11 +926,19 @@ export type Database = {
         Insert: {
           active?: boolean
           active_users_count?: number | null
+          billing_amount?: number | null
+          billing_cycle?: string | null
+          cancel_at_period_end?: boolean | null
+          cancelled_at?: string | null
           company_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
           max_users?: number | null
+          next_billing_date?: string | null
+          payment_token?: string | null
+          recurring_payment_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string
           trial_ends_at?: string | null
           updated_at?: string
@@ -840,11 +947,19 @@ export type Database = {
         Update: {
           active?: boolean
           active_users_count?: number | null
+          billing_amount?: number | null
+          billing_cycle?: string | null
+          cancel_at_period_end?: boolean | null
+          cancelled_at?: string | null
           company_id?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
           max_users?: number | null
+          next_billing_date?: string | null
+          payment_token?: string | null
+          recurring_payment_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string
           trial_ends_at?: string | null
           updated_at?: string
@@ -1106,23 +1221,82 @@ export type Database = {
           },
         ]
       }
+      whatsapp_templates: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean | null
+          is_shared: boolean | null
+          name: string
+          template_content: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          name: string
+          template_content: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          name?: string
+          template_content?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      gdpr_delete_user: {
-        Args: { user_id_param: string }
-        Returns: undefined
-      }
+      gdpr_delete_user: { Args: { user_id_param: string }; Returns: undefined }
       get_all_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
           email_confirmed_at: string
           id: string
           last_sign_in_at: string
+        }[]
+      }
+      get_expiring_trials: {
+        Args: { days_ahead?: number }
+        Returns: {
+          days_left: number
+          email: string
+          full_name: string
+          subscription_id: string
+          subscription_tier: string
+          trial_ends_at: string
+          user_id: string
         }[]
       }
       get_facebook_tokens: {
@@ -1136,14 +1310,19 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_user_agencies: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
+      get_failed_payments: {
+        Args: { hours_ago?: number }
+        Returns: {
+          amount: number
+          attempt_count: number
+          email: string
+          failure_reason: string
+          payment_id: string
+          user_id: string
+        }[]
       }
-      get_user_companies: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
+      get_user_agencies: { Args: never; Returns: string[] }
+      get_user_companies: { Args: never; Returns: string[] }
       has_role: {
         Args: {
           agency_id_param?: string
@@ -1151,18 +1330,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
       is_agency_manager_or_admin: {
         Args: { agency_id_param: string }
         Returns: boolean
       }
-      is_company_owner: {
-        Args: { company_id_param: string }
-        Returns: boolean
-      }
+      is_company_owner: { Args: { company_id_param: string }; Returns: boolean }
       log_security_event: {
         Args: {
           p_action_type: string
@@ -1176,22 +1349,13 @@ export type Database = {
         Returns: undefined
       }
       save_facebook_lead: {
-        Args:
-          | {
-              p_created_at: string
-              p_lead_data: Json
-              p_lead_id: string
-              p_page_id: string
-              p_user_id: string
-            }
-          | {
-              p_created_time: string
-              p_field_data: Json
-              p_form_id: string
-              p_lead_id: string
-              p_page_id: string
-              p_user_id: string
-            }
+        Args: {
+          p_created_at: string
+          p_lead_data: Json
+          p_lead_id: string
+          p_page_id: string
+          p_user_id: string
+        }
         Returns: undefined
       }
       save_facebook_token: {
