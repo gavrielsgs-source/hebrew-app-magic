@@ -134,7 +134,10 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
       });
 
       if (isTrialIntent) {
-        navigate('/payment');
+        // Get selected plan from URL if exists
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedPlan = urlParams.get('plan');
+        navigate(selectedPlan ? `/payment?plan=${selectedPlan}` : '/payment');
       } else {
         navigate('/dashboard');
       }
