@@ -223,8 +223,42 @@ serve(async (req) => {
 
         console.log(`User ${authData.user.id} successfully created and upgraded to ${planId}`);
 
-        // TODO: Send welcome email with login credentials
-        // This would typically be done through an email service
+        // Generate magic link for first login
+        try {
+          const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+            type: 'magiclink',
+            email: userEmail,
+          });
+
+          if (!linkError && linkData.properties?.action_link) {
+            console.log('Magic link generated, sending welcome email...');
+            
+            // Send welcome email with magic link
+            const { error: emailError } = await supabase.functions.invoke('send-email', {
+              body: {
+                to: userEmail,
+                template: 'welcome',
+                data: {
+                  userName: fullName,
+                  magicLink: linkData.properties.action_link,
+                  trialEndsAt: trial_ends_at,
+                  amount: billing_amount,
+                }
+              }
+            });
+
+            if (emailError) {
+              console.error('Error sending welcome email:', emailError);
+            } else {
+              console.log('✅ Welcome email sent successfully');
+            }
+          } else {
+            console.error('Error generating magic link:', linkError);
+          }
+        } catch (emailError) {
+          console.error('Error in email sending flow:', emailError);
+          // Don't throw - payment was successful, email is secondary
+        }
 
       } catch (userError) {
         console.error('Error in user creation flow:', userError);

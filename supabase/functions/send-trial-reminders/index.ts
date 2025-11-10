@@ -24,14 +24,13 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const results = {
-      sevenDays: 0,
       threeDays: 0,
       oneDay: 0,
       total: 0,
     };
 
-    // Check for trials expiring in 7, 3, and 1 days
-    const reminderDays = [7, 3, 1];
+    // Check for trials expiring in 3 and 1 days (not 7 days - not too annoying)
+    const reminderDays = [3, 1];
 
     for (const days of reminderDays) {
       const { data: trials, error } = await supabase
@@ -54,21 +53,30 @@ serve(async (req) => {
 
       for (const trial of exactDayTrials) {
         try {
-          // TODO: Send email reminder
-          // This would integrate with Resend or another email service
           console.log(`📧 Sending ${days}-day reminder to ${trial.email}`);
           
-          // For now, just log
-          console.log(`Reminder details:`, {
-            email: trial.email,
-            name: trial.full_name,
-            plan: trial.subscription_tier,
-            expires: trial.trial_ends_at,
-            daysLeft: days,
+          // Send trial reminder email
+          const { error: emailError } = await supabase.functions.invoke('send-email', {
+            body: {
+              to: trial.email,
+              template: 'trial-reminder',
+              data: {
+                userName: trial.full_name || trial.email,
+                daysLeft: days,
+                trialEndsAt: trial.trial_ends_at,
+                amount: 99, // Default amount - should be from subscription data
+              }
+            }
           });
 
+          if (emailError) {
+            console.error(`Failed to send email to ${trial.email}:`, emailError);
+          } else {
+            console.log(`✅ Reminder email sent successfully to ${trial.email}`);
+          }
+
           // Track reminder sent
-          const keyName = days === 7 ? 'sevenDays' : days === 3 ? 'threeDays' : 'oneDay';
+          const keyName = days === 3 ? 'threeDays' : 'oneDay';
           results[keyName]++;
           results.total++;
 

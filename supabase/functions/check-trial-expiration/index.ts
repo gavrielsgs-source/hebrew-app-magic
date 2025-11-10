@@ -174,7 +174,31 @@ serve(async (req) => {
             metadata: { trial_conversion_failed: true },
           });
 
-        // TODO: Send payment failed email
+        // Send payment failed email
+        try {
+          console.log(`📧 Sending payment failed email to ${trial.email}`);
+          
+          const { error: emailError } = await supabase.functions.invoke('send-email', {
+            body: {
+              to: trial.email,
+              template: 'payment-failed',
+              data: {
+                userName: trial.full_name || trial.email,
+                amount: trial.billing_amount || 99,
+                failureReason: error instanceof Error ? error.message : String(error),
+              }
+            }
+          });
+
+          if (emailError) {
+            console.error(`Failed to send payment failed email to ${trial.email}:`, emailError);
+          } else {
+            console.log(`✅ Payment failed email sent successfully to ${trial.email}`);
+          }
+        } catch (emailError) {
+          console.error(`Error sending payment failed email:`, emailError);
+          // Don't throw - recording the failure is more important
+        }
       }
     }
 
