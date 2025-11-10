@@ -78,43 +78,43 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/about-us" element={<AboutUs />} />
-              <Route path="/why-choose-us" element={<WhyChooseUs />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/auth" element={<AuthRoute />} />
-              <Route path="/signup-trial" element={<SignupTrial />} />
-              <Route path="/trial-signup" element={<TrialSignup />} />
-              <Route path="/accept-invitation" element={<AcceptInvitation />} />
-              <Route path="/welcome" element={
-                <ProtectedRoute requireSubscriptionCheck={false}>
-                  <Welcome />
-                </ProtectedRoute>
-              } />
-              <Route path="/subscription/expired" element={
-                <ProtectedRoute requireSubscriptionCheck={false}>
-                  <SubscriptionExpired />
-                </ProtectedRoute>
-              } />
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <SubscriptionProvider>
-                      <AuthProvider>
-                        <AppLayout />
-                      </AuthProvider>
-                    </SubscriptionProvider>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+              <AuthProvider>
+                <SubscriptionProvider>
+                  <Routes>
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/about-us" element={<AboutUs />} />
+                    <Route path="/why-choose-us" element={<WhyChooseUs />} />
+                    <Route path="/features" element={<Features />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/auth" element={<AuthRoute />} />
+                    <Route path="/signup-trial" element={<SignupTrial />} />
+                    <Route path="/trial-signup" element={<TrialSignup />} />
+                    <Route path="/accept-invitation" element={<AcceptInvitation />} />
+                    <Route path="/welcome" element={
+                      <ProtectedRoute requireSubscriptionCheck={false}>
+                        <Welcome />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/subscription/expired" element={
+                      <ProtectedRoute requireSubscriptionCheck={false}>
+                        <SubscriptionExpired />
+                      </ProtectedRoute>
+                    } />
+                    <Route
+                      path="/*"
+                      element={
+                        <ProtectedRoute>
+                          <AppLayout />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </SubscriptionProvider>
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
         </SecurityProvider>
       </QueryClientProvider>
     </ErrorBoundary>
