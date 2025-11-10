@@ -241,8 +241,8 @@ serve(async (req) => {
                 data: {
                   userName: fullName,
                   magicLink: linkData.properties.action_link,
-                  trialEndsAt: trial_ends_at,
-                  amount: billing_amount,
+                  trialEndsAt: subscriptionData.trial_ends_at,
+                  amount: subscriptionData.billing_amount,
                 }
               }
             });
