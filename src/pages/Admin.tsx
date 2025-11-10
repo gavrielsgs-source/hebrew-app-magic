@@ -12,9 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserRole } from "@/types/user";
 import { toast } from "sonner";
-import { ShieldAlert, UserCog, Building, Users, UserPlus } from "lucide-react";
+import { ShieldAlert, UserCog, Building, Users, UserPlus, CreditCard } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { AdminUserInvitations } from "@/components/admin/AdminUserInvitations";
+import { SubscriptionsManager } from "@/components/admin/SubscriptionsManager";
 
 export default function Admin() {
   const { isAdmin, isLoading: adminLoading } = useRealAdminCheck();
@@ -63,6 +64,10 @@ export default function Admin() {
             <UserPlus className="h-4 w-4" />
             <span>הזמנות משתמשים</span>
           </TabsTrigger>
+          <TabsTrigger value="subscriptions" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            <span>מנויים</span>
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="users" className="space-y-4">
@@ -79,6 +84,10 @@ export default function Admin() {
         
         <TabsContent value="invitations" className="space-y-4">
           <AdminUserInvitations />
+        </TabsContent>
+
+        <TabsContent value="subscriptions" className="space-y-4">
+          <SubscriptionsManager />
         </TabsContent>
       </Tabs>
     </div>

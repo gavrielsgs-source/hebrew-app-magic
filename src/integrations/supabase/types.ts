@@ -1282,9 +1282,52 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_change_subscription_status: {
+        Args: {
+          p_new_status: string
+          p_reason?: string
+          p_subscription_id: string
+        }
+        Returns: boolean
+      }
+      admin_change_subscription_tier: {
+        Args: {
+          p_new_tier: string
+          p_reason?: string
+          p_subscription_id: string
+        }
+        Returns: boolean
+      }
+      admin_extend_subscription: {
+        Args: { p_days: number; p_reason?: string; p_subscription_id: string }
+        Returns: boolean
+      }
       decrypt_token: { Args: { encrypted_token: string }; Returns: string }
       encrypt_token: { Args: { token: string }; Returns: string }
       gdpr_delete_user: { Args: { user_id_param: string }; Returns: undefined }
+      get_all_subscriptions: {
+        Args: never
+        Returns: {
+          active_users_count: number
+          billing_amount: number
+          billing_cycle: string
+          cancel_at_period_end: boolean
+          cancelled_at: string
+          company_id: string
+          created_at: string
+          expires_at: string
+          full_name: string
+          max_users: number
+          next_billing_date: string
+          subscription_id: string
+          subscription_status: string
+          subscription_tier: string
+          trial_ends_at: string
+          updated_at: string
+          user_email: string
+          user_id: string
+        }[]
+      }
       get_all_users: {
         Args: never
         Returns: {
@@ -1327,6 +1370,17 @@ export type Database = {
           failure_reason: string
           payment_id: string
           user_id: string
+        }[]
+      }
+      get_subscription_stats: { Args: never; Returns: Json }
+      get_subscription_timeline: {
+        Args: never
+        Returns: {
+          active: number
+          cancelled: number
+          expired: number
+          month: string
+          trial: number
         }[]
       }
       get_user_agencies: { Args: never; Returns: string[] }
