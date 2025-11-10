@@ -195,10 +195,10 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       </CardHeader>
       
       <CardContent className="pt-0 px-6">
-        <div className="bg-gray-50 rounded-xl p-4 min-h-[100px] max-h-[120px] overflow-hidden border border-gray-100">
-          <div className="text-sm text-gray-700 whitespace-pre-line text-right line-clamp-4 leading-relaxed">
+        <div className="bg-muted/50 p-4 rounded-xl border max-h-[150px] overflow-y-auto">
+          <pre className="text-sm whitespace-pre-wrap text-right font-sans" dir="rtl">
             {previewMessage}
-          </div>
+          </pre>
         </div>
       </CardContent>
       
