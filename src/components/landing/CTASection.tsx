@@ -22,7 +22,7 @@ export function CTASection() {
             </div>
             
             <div className="space-y-4">
-              <Link to="/signup-trial" className="block">
+              <Link to="/trial-signup" className="block">
                 <Button 
                   size="lg" 
                   className="w-full bg-background text-brand-primary hover:bg-secondary font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"

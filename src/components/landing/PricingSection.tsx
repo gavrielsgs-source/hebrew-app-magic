@@ -46,7 +46,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
               "דשבורד בסיסי",
               "תמיכה בוואטסאפ"
             ]}
-            onSelect={() => user ? window.location.href = '/dashboard' : window.location.href = '/register?trial=true&plan=premium'}
+            onSelect={() => user ? window.location.href = '/dashboard' : window.location.href = '/trial-signup?plan=premium'}
           />
 
           <PricingCard
@@ -65,7 +65,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
               "תמיכה מועדפת"
             ]}
             isPopular={true}
-            onSelect={() => user ? onPricingSelect('business') : window.location.href = '/register?trial=true&plan=business'}
+            onSelect={() => user ? onPricingSelect('business') : window.location.href = '/trial-signup?plan=business'}
           />
 
           <PricingCard
@@ -83,7 +83,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
               "תמיכה VIP",
               "הדרכה אישית"
             ]}
-            onSelect={() => user ? onPricingSelect('enterprise') : window.location.href = '/register?trial=true&plan=enterprise'}
+            onSelect={() => user ? onPricingSelect('enterprise') : window.location.href = '/trial-signup?plan=enterprise'}
           />
         </div>
       </div>

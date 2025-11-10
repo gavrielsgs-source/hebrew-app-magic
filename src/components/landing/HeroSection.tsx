@@ -12,7 +12,7 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
     if (user) {
       window.location.href = '/dashboard';
     } else {
-      window.location.href = '/register?trial=true';
+      window.location.href = '/trial-signup';
     }
   };
 

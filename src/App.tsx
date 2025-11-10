@@ -13,6 +13,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SignupTrial from "./pages/SignupTrial";
+import TrialSignup from "./pages/TrialSignup";
 import ManageSubscription from "./pages/ManageSubscription";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -85,6 +86,7 @@ const App = () => {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/auth" element={<AuthRoute />} />
               <Route path="/signup-trial" element={<SignupTrial />} />
+              <Route path="/trial-signup" element={<TrialSignup />} />
               <Route path="/accept-invitation" element={<AcceptInvitation />} />
               <Route path="/welcome" element={
                 <ProtectedRoute>
