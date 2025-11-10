@@ -7,6 +7,11 @@ export interface PaymentPayload {
   planId?: string;
   isTrial?: boolean;
   billingCycle?: 'monthly' | 'yearly';
+  companyName?: string;
+  businessId?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
 }
 
 export function validatePayload(payload: PaymentPayload, action: string): string | null {

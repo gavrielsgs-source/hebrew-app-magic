@@ -48,7 +48,7 @@ export default function Invoices() {
 
       if (error) throw error;
 
-      setInvoices(data || []);
+      setInvoices((data as any) || []);
     } catch (error: any) {
       console.error('Error fetching invoices:', error);
       toast({

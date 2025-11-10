@@ -55,6 +55,13 @@ serve(async (req) => {
     const isTrial = payload["isTrial"] === 'true' || payload["data[isTrial]"] === 'true';
     const billingCycle = payload["billingCycle"] || payload["data[billingCycle]"] || 'monthly';
     const paymentToken = payload["token"] || payload["data[token]"];
+    
+    // Extract additional billing details
+    const companyName = payload["companyName"] || payload["data[companyName]"];
+    const businessId = payload["businessId"] || payload["data[businessId]"];
+    const address = payload["address"] || payload["data[address]"];
+    const city = payload["city"] || payload["data[city]"];
+    const postalCode = payload["postalCode"] || payload["data[postalCode]"];
 
     if (!transactionId || !status) {
       throw new Error('Missing required webhook payload fields');
@@ -119,7 +126,8 @@ serve(async (req) => {
           .from('profiles')
           .update({
             full_name: fullName,
-            phone: phone
+            phone: phone,
+            company_name: companyName
           })
           .eq('id', authData.user.id);
 
@@ -222,6 +230,71 @@ serve(async (req) => {
         }
 
         console.log(`User ${authData.user.id} successfully created and upgraded to ${planId}`);
+
+        // Generate invoice after successful payment
+        try {
+          console.log('Generating invoice for payment...');
+          const { data: invoiceData, error: invoiceError } = await supabase.functions.invoke('generate-invoice', {
+            body: {
+              userId: authData.user.id,
+              subscriptionId: authData.user.id, // Using user ID as subscription reference
+              amount: parseFloat(amount),
+              planName: planId || 'premium',
+              billingCycle: billingCycle,
+              paymentDetails: {
+                transactionId: transactionId,
+                paymentDate: new Date().toISOString(),
+              },
+              billingDetails: {
+                fullName: fullName,
+                email: userEmail,
+                phone: phone,
+                companyName: companyName,
+                businessId: businessId,
+                address: address,
+                city: city,
+                postalCode: postalCode,
+              },
+            },
+          });
+
+          if (invoiceError) {
+            console.error('Error generating invoice:', invoiceError);
+          } else {
+            console.log('✅ Invoice generated successfully:', invoiceData?.invoice?.invoiceNumber);
+
+            // Send payment receipt email with invoice
+            if (invoiceData?.invoice) {
+              const { error: receiptError } = await supabase.functions.invoke('send-email', {
+                body: {
+                  to: userEmail,
+                  template: 'payment-receipt',
+                  data: {
+                    userName: fullName,
+                    invoiceNumber: invoiceData.invoice.invoiceNumber,
+                    amount: parseFloat(amount),
+                    planName: planId || 'premium',
+                    billingCycle: billingCycle,
+                    paymentDate: new Date().toLocaleDateString('he-IL'),
+                    nextBillingDate: subscriptionData.next_billing_date 
+                      ? new Date(subscriptionData.next_billing_date).toLocaleDateString('he-IL')
+                      : undefined,
+                    invoiceUrl: invoiceData.invoice.invoiceUrl,
+                  },
+                },
+              });
+
+              if (receiptError) {
+                console.error('Error sending payment receipt:', receiptError);
+              } else {
+                console.log('✅ Payment receipt email sent successfully');
+              }
+            }
+          }
+        } catch (invoiceError) {
+          console.error('Error in invoice generation flow:', invoiceError);
+          // Don't throw - payment was successful, invoice is secondary
+        }
 
         // Generate magic link for first login
         try {

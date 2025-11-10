@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Lock, User, Building, Phone, MapPin } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
+import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 
 interface RegisterFormProps {
   isTrialIntent?: boolean;
@@ -46,6 +47,21 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
       setErrorMsg('חובה לאשר את תנאי השימוש ומדיניות הפרטיות');
       setLoading(false);
       return;
+    }
+
+    // Check for duplicate phone
+    try {
+      const { data: phoneExists } = await supabase.rpc('check_phone_exists', {
+        phone_number: formData.phone
+      });
+
+      if (phoneExists) {
+        setErrorMsg('מספר הטלפון כבר קיים במערכת');
+        setLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking phone:', error);
     }
 
     try {
@@ -332,15 +348,17 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
             <Input
               id="password"
               type="password"
-              placeholder="בחר סיסמה חזקה (לפחות 6 תווים)"
+              placeholder="בחר סיסמה חזקה (לפחות 8 תווים)"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              className="pr-12 h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
+              className="pr-12 h-12 border-gray-200 rounded-xl"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
         </div>
+
+        <PasswordStrengthMeter password={formData.password} />
 
         {/* Terms and Conditions */}
         <div className="flex items-start space-x-2 space-x-reverse pt-4">
@@ -380,7 +398,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
 
         <Button 
           type="submit" 
-          className="w-full h-12 bg-gradient-to-r from-carslead-purple to-carslead-blue hover:from-carslead-purple/90 hover:to-carslead-blue/90 rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
+          className="w-full h-12 bg-brand-primary hover:bg-brand-primary/90 rounded-xl text-white font-medium shadow-lg hover:shadow-xl transition-all" 
           disabled={loading}
         >
           {loading ? 'נרשם...' : isTrialIntent ? 'התחל ניסיון חינם' : 'הירשם למערכת'}

@@ -6,6 +6,7 @@ import React from "npm:react@18.3.1";
 import { WelcomeEmail } from "../_shared/email-templates/welcome-email.tsx";
 import { TrialReminderEmail } from "../_shared/email-templates/trial-reminder-email.tsx";
 import { PaymentFailedEmail } from "../_shared/email-templates/payment-failed-email.tsx";
+import { PaymentReceiptEmail } from "../_shared/email-templates/payment-receipt-email.tsx";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "CarsLeadApp <onboarding@carsleadapp.com>";
@@ -17,7 +18,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  template: "welcome" | "trial-reminder" | "payment-failed";
+  template: "welcome" | "trial-reminder" | "payment-failed" | "payment-receipt";
   data: {
     userName: string;
     magicLink?: string;
@@ -25,6 +26,12 @@ interface EmailRequest {
     amount?: number;
     daysLeft?: number;
     failureReason?: string;
+    invoiceNumber?: string;
+    planName?: string;
+    billingCycle?: string;
+    paymentDate?: string;
+    nextBillingDate?: string;
+    invoiceUrl?: string;
   };
 }
 
@@ -74,6 +81,22 @@ serve(async (req) => {
             userName: data.userName,
             amount: data.amount || 0,
             failureReason: data.failureReason,
+          })
+        );
+        break;
+
+      case "payment-receipt":
+        subject = "אישור תשלום - CarsLeadApp 💳";
+        html = await renderAsync(
+          React.createElement(PaymentReceiptEmail, {
+            userName: data.userName,
+            invoiceNumber: data.invoiceNumber || "",
+            amount: data.amount || 0,
+            planName: data.planName || "",
+            billingCycle: data.billingCycle || "monthly",
+            paymentDate: data.paymentDate || "",
+            nextBillingDate: data.nextBillingDate,
+            invoiceUrl: data.invoiceUrl || "",
           })
         );
         break;

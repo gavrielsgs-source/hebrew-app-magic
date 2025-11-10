@@ -9,6 +9,11 @@ export interface GrowPaymentRequest {
   planId?: string;
   isTrial?: boolean;
   billingCycle?: 'monthly' | 'yearly';
+  companyName?: string;
+  businessId?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
 }
 
 export interface GrowPaymentResponse {
@@ -43,6 +48,23 @@ export async function processDirectDebitPayment(payload: GrowPaymentRequest): Pr
   formData.append('pageField[fullName]', payload.fullName);
   formData.append('pageField[phone]', payload.phone);
   formData.append('pageField[email]', payload.email);
+  
+  // Add additional billing details if provided
+  if (payload.companyName) {
+    formData.append('pageField[companyName]', payload.companyName);
+  }
+  if (payload.businessId) {
+    formData.append('pageField[businessId]', payload.businessId);
+  }
+  if (payload.address) {
+    formData.append('pageField[address]', payload.address);
+  }
+  if (payload.city) {
+    formData.append('pageField[city]', payload.city);
+  }
+  if (payload.postalCode) {
+    formData.append('pageField[postalCode]', payload.postalCode);
+  }
   
   // Add metadata for webhook processing
   if (payload.planId) {

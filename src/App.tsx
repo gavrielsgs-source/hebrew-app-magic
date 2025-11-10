@@ -55,6 +55,11 @@ import Customers from "./pages/Customers";
 import CustomerProfile from "./pages/CustomerProfile";
 import SubscriptionExpired from "./pages/SubscriptionExpired";
 import { GracePeriodWarning } from "./components/subscription/GracePeriodWarning";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Invoices from "./pages/Invoices";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -88,6 +93,10 @@ const App = () => {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/auth" element={<AuthRoute />} />
                     <Route path="/signup-trial" element={<SignupTrial />} />
                     <Route path="/trial-signup" element={<TrialSignup />} />
@@ -152,6 +161,7 @@ function AppLayout() {
                 <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                 <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
                 <Route path="/subscription/payment-error" element={<PaymentError />} />
+                <Route path="/invoices" element={<Invoices />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/companies" element={<AccessManagement />} />
                 <Route path="/company/:companyId/settings" element={<CompanySettings />} />

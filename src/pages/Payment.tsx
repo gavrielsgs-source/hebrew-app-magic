@@ -23,6 +23,11 @@ export default function Payment() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [userFullName, setUserFullName] = useState<string>("");
   const [userPhone, setUserPhone] = useState<string>("");
+  const [userCompanyName, setUserCompanyName] = useState<string>("");
+  const [userBusinessId, setUserBusinessId] = useState<string>("");
+  const [userAddress, setUserAddress] = useState<string>("");
+  const [userCity, setUserCity] = useState<string>("");
+  const [userPostalCode, setUserPostalCode] = useState<string>("");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -32,16 +37,26 @@ export default function Payment() {
       if (user) {
         setUserEmail(user.email || "");
         
+        // Get user metadata from auth
+        const metadata = user.user_metadata || {};
+        
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name, phone')
+          .select('full_name, phone, company_name')
           .eq('id', user.id)
           .single();
         
         if (profile) {
-          setUserFullName(profile.full_name || "");
-          setUserPhone(profile.phone || "");
+          setUserFullName(profile.full_name || metadata.full_name || "");
+          setUserPhone(profile.phone || metadata.phone || "");
+          setUserCompanyName(profile.company_name || metadata.company_name || "");
         }
+        
+        // Try to get business details from user metadata
+        setUserBusinessId(metadata.business_id || "");
+        setUserAddress(metadata.address || "");
+        setUserCity(metadata.city || "");
+        setUserPostalCode(metadata.postal_code || "");
       }
     };
     
@@ -79,7 +94,12 @@ export default function Payment() {
         email: userEmail,
         planId: selectedPlan,
         isTrial: true,
-        billingCycle: isYearly ? 'yearly' : 'monthly'
+        billingCycle: isYearly ? 'yearly' : 'monthly',
+        companyName: data.companyName,
+        businessId: data.businessId,
+        address: data.address,
+        city: data.city,
+        postalCode: data.postalCode,
       };
 
       console.log("Sending payment payload:", paymentPayload);
@@ -213,7 +233,12 @@ export default function Payment() {
               selectedPlan={selectedPlan}
               initialValues={{
                 fullName: userFullName,
-                phone: userPhone
+                phone: userPhone,
+                companyName: userCompanyName,
+                businessId: userBusinessId,
+                address: userAddress,
+                city: userCity,
+                postalCode: userPostalCode,
               }}
             />
           </div>

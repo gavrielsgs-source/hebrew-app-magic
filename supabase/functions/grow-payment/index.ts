@@ -97,6 +97,11 @@ serve(async (req) => {
         planId: payload.planId,
         isTrial: payload.isTrial,
         billingCycle: payload.billingCycle,
+        companyName: payload.companyName,
+        businessId: payload.businessId,
+        address: payload.address,
+        city: payload.city,
+        postalCode: payload.postalCode,
       };
 
       console.log(`Making request to GROW API for ${action}:`, directDebitPayload);

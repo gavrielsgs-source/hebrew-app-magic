@@ -25,6 +25,21 @@ const paymentFormSchema = z.object({
     .min(10, "מספר טלפון חייב להכיל 10 ספרות")
     .max(10, "מספר טלפון חייב להכיל 10 ספרות")
     .regex(/^05\d{8}$/, "מספר טלפון חייב להתחיל ב-05 ולהכיל 10 ספרות"),
+  companyName: z
+    .string()
+    .min(2, "יש להזין שם חברה"),
+  businessId: z
+    .string()
+    .min(5, "יש להזין ח.פ או ע.מ תקין"),
+  address: z
+    .string()
+    .min(5, "יש להזין כתובת מלאה"),
+  city: z
+    .string()
+    .min(2, "יש להזין עיר"),
+  postalCode: z
+    .string()
+    .regex(/^\d{5,7}$/, "מיקוד חייב להכיל 5-7 ספרות"),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
@@ -49,6 +64,11 @@ export function PaymentForm({
     defaultValues: {
       fullName: initialValues?.fullName || "",
       phone: initialValues?.phone || "",
+      companyName: initialValues?.companyName || "",
+      businessId: initialValues?.businessId || "",
+      address: initialValues?.address || "",
+      city: initialValues?.city || "",
+      postalCode: initialValues?.postalCode || "",
     },
   });
 
@@ -82,6 +102,78 @@ export function PaymentForm({
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="companyName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>שם החברה</FormLabel>
+              <FormControl>
+                <Input placeholder="שם החברה" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="businessId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>ח.פ / ע.מ</FormLabel>
+              <FormControl>
+                <Input placeholder="מספר עוסק מורשה או ח.פ" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>כתובת</FormLabel>
+              <FormControl>
+                <Input placeholder="רחוב ומספר בית" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>עיר</FormLabel>
+                <FormControl>
+                  <Input placeholder="תל אביב" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="postalCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>מיקוד</FormLabel>
+                <FormControl>
+                  <Input placeholder="1234567" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex justify-between pt-4">
           <Button variant="outline" onClick={onCancel} disabled={loading} type="button">

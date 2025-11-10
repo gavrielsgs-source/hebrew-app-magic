@@ -659,6 +659,62 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          billing_details: Json
+          created_at: string
+          currency: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          payment_details: Json | null
+          pdf_url: string | null
+          status: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          billing_details: Json
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          payment_details?: Json | null
+          pdf_url?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billing_details?: Json
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          payment_details?: Json | null
+          pdf_url?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           agency_id: string | null
@@ -1302,6 +1358,7 @@ export type Database = {
         Args: { p_days: number; p_reason?: string; p_subscription_id: string }
         Returns: boolean
       }
+      check_phone_exists: { Args: { phone_number: string }; Returns: boolean }
       decrypt_token: { Args: { encrypted_token: string }; Returns: string }
       encrypt_token: { Args: { token: string }; Returns: string }
       gdpr_delete_user: { Args: { user_id_param: string }; Returns: undefined }

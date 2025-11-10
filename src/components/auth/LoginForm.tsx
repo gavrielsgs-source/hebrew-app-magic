@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,7 +97,15 @@ export default function LoginForm() {
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-gray-700 font-medium">סיסמה</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-gray-700 font-medium">סיסמה</Label>
+            <Link 
+              to="/forgot-password" 
+              className="text-sm text-brand-primary hover:text-brand-secondary transition-colors"
+            >
+              שכחתי סיסמה
+            </Link>
+          </div>
           <div className="relative">
             <Lock className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
             <Input
@@ -106,7 +114,7 @@ export default function LoginForm() {
               placeholder="הכנס את הסיסמה שלך"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pr-12 h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
+              className="pr-12 h-12 border-gray-200 rounded-xl"
               required
             />
           </div>
