@@ -31,6 +31,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [customMessage, setCustomMessage] = useState("");
   const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
   const [templates, setTemplates] = useState<any[]>(whatsappTemplates);
+  const [isSending, setIsSending] = useState(false);
   const { leads } = useLeads();
   const { profile } = useProfile();
   const { data: dbTemplates } = useWhatsappTemplates();
@@ -147,6 +148,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     const userPhone = profile.phone;
     
     try {
+      setIsSending(true);
+
       if (selectedTemplateId === 'car_template_default') {
         // בדיקה שקיימת תמונה לרכב
         if (!carImageUrl) {
@@ -154,34 +157,38 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           return;
         }
 
-        const { error } = await supabase.functions.invoke('send-whatsapp-message', {
+        const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
             type: 'template',
             to: formattedNumber,
             templateName: 'car_template',
-            imageUrl: carImageUrl, // שליחת תמונה בheader של התבנית
+            imageUrl: carImageUrl,
             parameters: [
-              car.model, // {{1}}
-              car.year.toString(), // {{2}}
-              car.price.toLocaleString(), // {{3}}
-              car.fuel_type || 'לא צוין', // {{4}}
-              car.kilometers.toLocaleString(), // {{5}}
-              car.transmission || 'לא צוין', // {{6}}
-              userPhone // {{7}} - מספר טלפון של המשתמש
+              car.model,
+              car.year.toString(),
+              car.price.toLocaleString(),
+              car.fuel_type || 'לא צוין',
+              car.kilometers.toLocaleString(),
+              car.transmission || 'לא צוין',
+              userPhone
             ]
           }
         });
 
         if (error) {
-          throw error;
+          throw new Error((error as any).message || 'שגיאה בשליחת הודעת תבנית');
         }
+
+        const status = (data as any)?.messageStatus || 'sent';
+        toast.success(`ההודעה נשלחה (${status})`);
+        onClose();
       } else {
-        // Send custom template or generated message as text
+        // הודעת טקסט רגילה
         const messageText = selectedTemplateId === "custom" 
           ? customMessage 
           : generateCarMessage();
 
-        const { error } = await supabase.functions.invoke('send-whatsapp-message', {
+        const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
             type: 'text',
             to: formattedNumber,
@@ -190,15 +197,18 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         });
 
         if (error) {
-          throw error;
+          throw new Error((error as any).message || 'שגיאה בשליחת הודעת טקסט');
         }
-      }
 
-      toast.success("ההודעה נשלחה בוואטסאפ");
-      onClose();
-    } catch (error) {
+        const status = (data as any)?.messageStatus || 'sent';
+        toast.success(`ההודעה נשלחה (${status})`);
+        onClose();
+      }
+    } catch (error: any) {
       console.error('Error sending WhatsApp message:', error);
-      toast.error("שגיאה בשליחת ההודעה");
+      toast.error(error?.message || "שגיאה בשליחת ההודעה");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -300,6 +310,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
           <SelectContent align="end">
+            <SelectItem value="car_template_default">תבנית וואטסאפ מאושרת (עם תמונה)</SelectItem>
             {templates.map(template => (
               <SelectItem 
                 key={template.id} 
@@ -333,7 +344,16 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         <div>
           <Label className="text-right text-sm">תבנית דפולטיבית (לא ניתנת לעריכה)</Label>
           <Textarea
-            value={templates.find(t => t.id === "car_template_default")?.templateContent || ''}
+            value={`שלום! 👋
+
+הודעת תבנית מאושרת תישלח עם תמונת הרכב:
+
+🚗 ${car.make} ${car.model} ${car.year}
+💰 מחיר: ₪${car.price.toLocaleString()}
+📏 קילומטר: ${car.kilometers.toLocaleString()} ק"מ
+⛽ ${car.fuel_type || 'לא צוין'} | 🔧 ${car.transmission || 'לא צוין'}
+
+ליצירת קשר: ${profile?.phone || ''}`}
             disabled
             rows={8}
             className="text-right resize-none opacity-60 cursor-not-allowed bg-muted"
@@ -369,11 +389,16 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </Button>
         <Button 
           onClick={handleSend}
-          disabled={!phoneNumber || !currentMessage.trim()}
+          disabled={
+            isSending ||
+            !phoneNumber ||
+            (selectedTemplateId !== "car_template_default" && !currentMessage.trim()) ||
+            (selectedTemplateId === "car_template_default" && !carImageUrl)
+          }
           className="flex-1 bg-green-600 hover:bg-green-700"
         >
           <Send className="w-4 h-4 ml-2" />
-          שלח בוואטסאפ
+          {isSending ? "שולח..." : "שלח בוואטסאפ"}
         </Button>
       </div>
     </div>
