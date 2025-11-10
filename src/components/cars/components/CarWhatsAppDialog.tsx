@@ -40,27 +40,35 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   useEffect(() => {
     const carDbTemplates = dbTemplates?.filter(t => t.type === 'car') || [];
     
-    const dbTemplateIds = new Set(carDbTemplates.map(t => t.id));
-    const localOnlyTemplates = whatsappTemplates.filter((t: any) => !dbTemplateIds.has(t.id));
+    // Start with all default templates
+    const mergedTemplates = [...whatsappTemplates];
     
-    const mergedTemplates = [
-      ...carDbTemplates.map(t => ({
-        id: t.id,
-        name: t.name,
-        description: t.description || '',
-        templateContent: t.template_content,
+    // Override or add DB templates
+    carDbTemplates.forEach(dbTemplate => {
+      const existingIndex = mergedTemplates.findIndex(t => t.id === dbTemplate.id);
+      const convertedTemplate = {
+        id: dbTemplate.id,
+        name: dbTemplate.name,
+        description: dbTemplate.description || '',
+        type: 'car' as const,
+        templateContent: dbTemplate.template_content,
         generateMessage: (car: any) => {
-          return t.template_content
-            .replace('{make}', car.make)
-            .replace('{model}', car.model)
-            .replace('{year}', car.year)
-            .replace('{price}', car.price)
-            .replace('{kilometers}', car.kilometers)
-            .replace('{mileage}', car.kilometers);
+          return dbTemplate.template_content
+            .replace(/\{make\}/g, car.make)
+            .replace(/\{model\}/g, car.model)
+            .replace(/\{year\}/g, car.year)
+            .replace(/\{price\}/g, car.price?.toLocaleString() || '')
+            .replace(/\{kilometers\}/g, car.kilometers?.toLocaleString() || '')
+            .replace(/\{mileage\}/g, car.kilometers?.toLocaleString() || '');
         }
-      })),
-      ...localOnlyTemplates
-    ];
+      };
+      
+      if (existingIndex >= 0) {
+        mergedTemplates[existingIndex] = convertedTemplate;
+      } else {
+        mergedTemplates.push(convertedTemplate);
+      }
+    });
     
     setTemplates(mergedTemplates);
   }, [dbTemplates]);
@@ -389,12 +397,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </Button>
         <Button 
           onClick={handleSend}
-          disabled={
-            isSending ||
-            !phoneNumber ||
-            (selectedTemplateId !== "car_template_default" && !currentMessage.trim()) ||
-            (selectedTemplateId === "car_template_default" && !carImageUrl)
-          }
+          disabled={isSending || !phoneNumber}
           className="flex-1 bg-green-600 hover:bg-green-700"
         >
           <Send className="w-4 h-4 ml-2" />

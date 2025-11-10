@@ -8,6 +8,9 @@ import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
 import { UnifiedTemplate } from "./lead-templates";
 import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
+import { whatsappTemplates } from "./whatsapp-templates";
+import { whatsappLeadTemplates } from "./lead-templates";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WhatsappLeadTemplateSelectorProps {
   leadName: string;
@@ -24,8 +27,8 @@ export function WhatsappLeadTemplateSelector({
   leadId,
   onClose 
 }: WhatsappLeadTemplateSelectorProps) {
-  const [leadTemplates, setLeadTemplates] = useState<UnifiedTemplate[]>([]);
-  const [carTemplates, setCarTemplates] = useState<UnifiedTemplate[]>([]);
+  const [leadTemplates, setLeadTemplates] = useState<any[]>([]);
+  const [carTemplates, setCarTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("lead-templates");
@@ -34,77 +37,9 @@ export function WhatsappLeadTemplateSelector({
   const updateLead = useUpdateLead();
   const { data: dbTemplates, isLoading } = useWhatsappTemplates();
 
-  // Load templates from localStorage and merge with database templates
+  // Load templates from localStorage and merge with database templates and default templates
   useEffect(() => {
     try {
-      const storedTemplates = localStorage.getItem("whatsapp-templates");
-      let parsedTemplates: any[] = [];
-
-      if (storedTemplates) {
-        try {
-          parsedTemplates = JSON.parse(storedTemplates);
-        } catch (e) {
-          console.error("Failed parsing templates from localStorage, using defaults", e);
-        }
-      }
-
-      // Normalize objects to ensure templateContent exists
-      const normalized = Array.isArray(parsedTemplates)
-        ? parsedTemplates.map((t: any) => ({
-            id: t.id,
-            name: t.name,
-            description: t.description,
-            type: t.type === 'car' ? 'car' : 'lead',
-            templateContent: typeof t.templateContent === 'string' ? t.templateContent : '',
-          }))
-        : [];
-
-      // Lead templates
-      const leadTemplatesFromStorage: UnifiedTemplate[] = normalized
-        .filter((t) => t.type === 'lead')
-        .map((stored) => ({
-          id: stored.id,
-          name: stored.name,
-          description: stored.description,
-          type: 'lead' as const,
-          templateContent: stored.templateContent || '',
-          generateMessage: (leadName: string, leadSource?: string) => {
-            const content = stored.templateContent || '';
-            if (!content) {
-              return `היי ${leadName}! 👋\n\nקיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.\n\nמתי תהיה זמין לשיחת ייעוץ קצרה? 📞\n\nנשמח לעזור לך למצוא בדיוק מה שמתאים לך!\n\nבברכה,\nצוות המכירות`;
-            }
-            return content
-              .replace(/\{\{leadName\}\}/g, leadName || '')
-              .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '')
-              .replace(/\$\{leadName\}/g, leadName || '')
-              .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, leadSource ? ` דרך ${leadSource}` : '');
-          }
-        }));
-
-      // Car templates
-      const carTemplatesFromStorage: UnifiedTemplate[] = normalized
-        .filter((t) => t.type === 'car' && typeof t.templateContent === 'string' && t.templateContent.trim())
-        .map((stored) => ({
-          id: stored.id,
-          name: stored.name,
-          description: stored.description,
-          type: 'car' as const,
-          templateContent: stored.templateContent,
-          generateMessage: () => {
-            const content = stored.templateContent as string;
-            return content
-              .replace(/\$\{car\.make\}/g, 'רכב מעולה')
-              .replace(/\$\{car\.model\}/g, '')
-              .replace(/\$\{car\.year\}/g, '')
-              .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 'מחיר אטרקטיבי')
-              .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק\"מ`\s*:\s*'[^']*'\}/g, 'קילומטראז נמוך')
-              .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, 'צבע יפה')
-              .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, 'מנוע חזק')
-              .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, 'תיבת הילוכים מעולה')
-              .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, 'חסכוני בדלק');
-          }
-        }));
-
       // Convert database templates to UnifiedTemplate format
       const dbLeadTemplates: UnifiedTemplate[] = (dbTemplates || [])
         .filter(t => t.type === 'lead')
@@ -131,32 +66,35 @@ export function WhatsappLeadTemplateSelector({
           description: dbTemplate.description,
           type: 'car' as const,
           templateContent: dbTemplate.template_content,
-          generateMessage: () => {
+          generateMessage: (car: any) => {
             return dbTemplate.template_content
-              .replace(/\$\{car\.make\}/g, 'רכב מעולה')
-              .replace(/\$\{car\.model\}/g, '')
-              .replace(/\$\{car\.year\}/g, '')
-              .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 'מחיר אטרקטיבי')
-              .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק\"מ`\s*:\s*'[^']*'\}/g, 'קילומטראז נמוך')
-              .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, 'צבע יפה')
-              .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, 'מנוע חזק')
-              .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, 'תיבת הילוכים מעולה')
-              .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, 'חסכוני בדלק');
+              .replace(/\{make\}/g, car?.make || 'רכב')
+              .replace(/\{model\}/g, car?.model || '')
+              .replace(/\{year\}/g, car?.year || '')
+              .replace(/\{price\}/g, car?.price ? car.price.toLocaleString() : '')
+              .replace(/\{kilometers\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
+              .replace(/\{mileage\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '');
           }
         }));
 
-      // Merge templates - database templates first, then localStorage (remove duplicates by ID)
-      const allLeadTemplates = [...dbLeadTemplates];
-      leadTemplatesFromStorage.forEach(localTemplate => {
-        if (!allLeadTemplates.find(t => t.id === localTemplate.id)) {
-          allLeadTemplates.push(localTemplate);
+      // Merge with default templates (default templates first, then DB templates override if same ID)
+      const allLeadTemplates: any[] = [...whatsappLeadTemplates];
+      dbLeadTemplates.forEach(dbTemplate => {
+        const existingIndex = allLeadTemplates.findIndex(t => t.id === dbTemplate.id);
+        if (existingIndex >= 0) {
+          allLeadTemplates[existingIndex] = dbTemplate;
+        } else {
+          allLeadTemplates.push(dbTemplate);
         }
       });
 
-      const allCarTemplates = [...dbCarTemplates];
-      carTemplatesFromStorage.forEach(localTemplate => {
-        if (!allCarTemplates.find(t => t.id === localTemplate.id)) {
-          allCarTemplates.push(localTemplate);
+      const allCarTemplates: any[] = [...whatsappTemplates];
+      dbCarTemplates.forEach(dbTemplate => {
+        const existingIndex = allCarTemplates.findIndex(t => t.id === dbTemplate.id);
+        if (existingIndex >= 0) {
+          allCarTemplates[existingIndex] = dbTemplate;
+        } else {
+          allCarTemplates.push(dbTemplate);
         }
       });
 
@@ -260,17 +198,34 @@ export function WhatsappLeadTemplateSelector({
     }
 
     const formattedPhone = formatPhoneForWhatsApp(leadPhone);
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     
-    window.open(whatsappUrl, '_blank');
-    
-    // Update lead status to 'in_treatment' after sending WhatsApp message
-    if (leadId) {
-      await updateLeadStatus();
+    try {
+      // Send via WhatsApp Bot API
+      const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
+        body: {
+          type: 'text',
+          to: formattedPhone,
+          message: message
+        }
+      });
+
+      if (error) {
+        throw new Error((error as any).message || 'שגיאה בשליחת הודעה');
+      }
+
+      const status = (data as any)?.messageStatus || 'sent';
+      toast.success(`ההודעה נשלחה ל${leadName} (${status})${leadId ? ' והליד עבר לסטטוס "בטיפול"' : ''}`);
+      
+      // Update lead status to 'in_treatment' after sending WhatsApp message
+      if (leadId) {
+        await updateLeadStatus();
+      }
+      
+      onClose();
+    } catch (error: any) {
+      console.error('Error sending WhatsApp message:', error);
+      toast.error(error?.message || "שגיאה בשליחת ההודעה");
     }
-    
-    toast.success(`נפתח וואטסאפ עם ההודעה ל${leadName}${leadId ? ' והליד עבר לסטטוס "בטיפול"' : ''}`);
-    onClose();
   };
 
   const message = generateMessage();
