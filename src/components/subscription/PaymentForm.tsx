@@ -34,6 +34,7 @@ interface PaymentFormProps {
   loading: boolean;
   onCancel: () => void;
   selectedPlan: string | null;
+  initialValues?: Partial<PaymentFormValues>;
 }
 
 export function PaymentForm({
@@ -41,12 +42,13 @@ export function PaymentForm({
   loading,
   onCancel,
   selectedPlan,
+  initialValues,
 }: PaymentFormProps) {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
-      fullName: "",
-      phone: "",
+      fullName: initialValues?.fullName || "",
+      phone: initialValues?.phone || "",
     },
   });
 

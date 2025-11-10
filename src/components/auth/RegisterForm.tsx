@@ -50,7 +50,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
 
     try {
       const redirectUrl = isTrialIntent 
-        ? `${window.location.origin}/welcome`
+        ? `${window.location.origin}/payment`
         : `${window.location.origin}/dashboard`;
 
       const { error } = await supabase.auth.signUp({
@@ -105,12 +105,12 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
       toast({
         title: isTrialIntent ? "ברוך הבא לניסיון החינם!" : "נרשמת בהצלחה",
         description: isTrialIntent 
-          ? "החשבון שלך נוצר והניסיון החינם התחל" 
+          ? "עכשיו בחר את התוכנית המתאימה לך" 
           : "החשבון שלך נוצר בהצלחה עם 14 ימי ניסיון חינם",
       });
 
       if (isTrialIntent) {
-        navigate('/welcome');
+        navigate('/payment');
       } else {
         navigate('/dashboard');
       }

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -20,12 +20,42 @@ export default function Payment() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(preselectedPlan);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [userFullName, setUserFullName] = useState<string>("");
+  const [userPhone, setUserPhone] = useState<string>("");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email || "");
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserFullName(profile.full_name || "");
+          setUserPhone(profile.phone || "");
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, []);
   
   const onSubmit = async (data: PaymentFormValues) => {
     if (!selectedPlan) {
       toast.error("אנא בחר חבילה תחילה");
+      return;
+    }
+
+    if (!userEmail) {
+      toast.error("חובה להיות מחובר כדי להמשיך");
       return;
     }
 
@@ -46,6 +76,10 @@ export default function Payment() {
         sum: actualSum,
         fullName: data.fullName,
         phone: data.phone,
+        email: userEmail,
+        planId: selectedPlan,
+        isTrial: true,
+        billingCycle: isYearly ? 'yearly' : 'monthly'
       };
 
       console.log("Sending payment payload:", paymentPayload);
@@ -177,6 +211,10 @@ export default function Payment() {
               loading={loading}
               onCancel={() => setPaymentDrawerOpen(false)}
               selectedPlan={selectedPlan}
+              initialValues={{
+                fullName: userFullName,
+                phone: userPhone
+              }}
             />
           </div>
           
