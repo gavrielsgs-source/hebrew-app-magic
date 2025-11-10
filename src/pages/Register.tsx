@@ -13,7 +13,7 @@ export default function Register() {
           </p>
         </div>
 
-        <RegisterForm />
+        <RegisterForm isTrialIntent={true} />
 
         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
           כבר יש לך חשבון?{' '}
