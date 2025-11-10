@@ -626,6 +626,7 @@ export type Database = {
       facebook_tokens: {
         Row: {
           access_token: string
+          access_token_encrypted: string | null
           created_at: string | null
           expires_at: string | null
           id: string
@@ -636,6 +637,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          access_token_encrypted?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
@@ -646,6 +648,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          access_token_encrypted?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
@@ -916,6 +919,7 @@ export type Database = {
           max_users: number | null
           next_billing_date: string | null
           payment_token: string | null
+          payment_token_encrypted: string | null
           recurring_payment_id: string | null
           subscription_status: string | null
           subscription_tier: string
@@ -937,6 +941,7 @@ export type Database = {
           max_users?: number | null
           next_billing_date?: string | null
           payment_token?: string | null
+          payment_token_encrypted?: string | null
           recurring_payment_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string
@@ -958,6 +963,7 @@ export type Database = {
           max_users?: number | null
           next_billing_date?: string | null
           payment_token?: string | null
+          payment_token_encrypted?: string | null
           recurring_payment_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string
@@ -1276,6 +1282,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrypt_token: { Args: { encrypted_token: string }; Returns: string }
+      encrypt_token: { Args: { token: string }; Returns: string }
       gdpr_delete_user: { Args: { user_id_param: string }; Returns: undefined }
       get_all_users: {
         Args: never

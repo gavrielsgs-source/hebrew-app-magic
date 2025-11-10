@@ -75,11 +75,38 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
 
       if (error) throw error;
 
+      // Get the newly created user
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+      
+      if (newUser) {
+        // Create trial subscription automatically
+        console.log('Creating trial subscription for new user:', newUser.id);
+        
+        try {
+          const { error: trialError } = await supabase.functions.invoke('create-trial-subscription', {
+            body: {
+              userId: newUser.id,
+              email: formData.email
+            }
+          });
+
+          if (trialError) {
+            console.error('Error creating trial subscription:', trialError);
+            // Don't throw - user is registered, subscription issue is non-critical
+          } else {
+            console.log('✅ Trial subscription created successfully');
+          }
+        } catch (subError) {
+          console.error('Error in trial subscription flow:', subError);
+          // Continue - user registration was successful
+        }
+      }
+
       toast({
         title: isTrialIntent ? "ברוך הבא לניסיון החינם!" : "נרשמת בהצלחה",
         description: isTrialIntent 
           ? "החשבון שלך נוצר והניסיון החינם התחל" 
-          : "נא לבדוק את האימייל שלך לאישור החשבון",
+          : "החשבון שלך נוצר בהצלחה עם 14 ימי ניסיון חינם",
       });
 
       if (isTrialIntent) {

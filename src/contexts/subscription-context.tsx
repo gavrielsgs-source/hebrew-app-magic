@@ -33,8 +33,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     try {
       console.log("Fetching subscription for user:", user.id);
       
-      // Special case for Super Admin
-      if (user.email === "gavrielsgs@gmail.com") {
+      // Check if user is a super admin via admin_emails table
+      const { data: isAdminData } = await supabase.rpc('is_admin');
+      
+      if (isAdminData) {
         console.log("Super Admin detected, granting unlimited access");
         const superAdminSubscription: Subscription = {
           tier: 'enterprise',
@@ -48,7 +50,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           analyticsLevel: 'custom'
         };
         setSubscription(superAdminSubscription);
-        setDaysLeftInTrial(null);
+        setDaysLeftInTrial(0);
         setIsTrialExpired(false);
         return;
       }

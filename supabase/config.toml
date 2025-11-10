@@ -39,6 +39,9 @@ pop3_port = 54327
 [functions.accept-invitation]
 verify_jwt = false
 
+[functions.create-trial-subscription]
+verify_jwt = false
+
 [functions.facebook-leads]
 verify_jwt = false
 
