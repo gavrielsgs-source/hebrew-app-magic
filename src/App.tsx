@@ -53,6 +53,8 @@ import AboutUs from "./pages/AboutUs";
 import TaxInvoice from "./pages/TaxInvoice";
 import Customers from "./pages/Customers";
 import CustomerProfile from "./pages/CustomerProfile";
+import SubscriptionExpired from "./pages/SubscriptionExpired";
+import { GracePeriodWarning } from "./components/subscription/GracePeriodWarning";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -89,8 +91,13 @@ const App = () => {
               <Route path="/trial-signup" element={<TrialSignup />} />
               <Route path="/accept-invitation" element={<AcceptInvitation />} />
               <Route path="/welcome" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireSubscriptionCheck={false}>
                   <Welcome />
+                </ProtectedRoute>
+              } />
+              <Route path="/subscription/expired" element={
+                <ProtectedRoute requireSubscriptionCheck={false}>
+                  <SubscriptionExpired />
                 </ProtectedRoute>
               } />
               <Route
@@ -119,6 +126,7 @@ function AppLayout() {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
+      <GracePeriodWarning />
       <div className="flex min-h-screen w-full">
         {!isMobile && <AppSidebar />}
         <SidebarInset className={isMobile ? "mr-0" : ""}>
@@ -144,11 +152,11 @@ function AppLayout() {
                 <Route path="/subscription/upgrade" element={<UpgradeSubscription />} />
                 <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
                 <Route path="/subscription/payment-error" element={<PaymentError />} />
+                <Route path="/payment" element={<Payment />} />
                 <Route path="/companies" element={<AccessManagement />} />
                 <Route path="/company/:companyId/settings" element={<CompanySettings />} />
                 <Route path="/company/:companyId/users" element={<CompanyUsers />} />
                 <Route path="/team-management" element={<TeamManagement />} />
-                <Route path="/payment" element={<Payment />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

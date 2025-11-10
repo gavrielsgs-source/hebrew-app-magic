@@ -1,12 +1,14 @@
 
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
+import SubscriptionGuard from "./SubscriptionGuard";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
+  requireSubscriptionCheck?: boolean;
 };
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, requireSubscriptionCheck = true }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -24,6 +26,15 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // אם המשתמש מחובר, מציג את תוכן העמוד המוגן
+  // אם המשתמש מחובר, בודקים מנוי (אם נדרש)
+  if (requireSubscriptionCheck) {
+    return (
+      <SubscriptionGuard>
+        {children}
+      </SubscriptionGuard>
+    );
+  }
+
+  // אם לא צריך בדיקת מנוי, מציג את התוכן
   return <>{children}</>;
 }
