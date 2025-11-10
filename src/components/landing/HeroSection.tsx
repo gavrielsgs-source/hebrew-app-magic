@@ -12,7 +12,7 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
     if (user) {
       window.location.href = '/dashboard';
     } else {
-      window.location.href = '/auth';
+      window.location.href = '/signup-trial';
     }
   };
 
@@ -79,7 +79,7 @@ export function HeroSection({ user, onVideoOpen }: HeroSectionProps) {
                 className="bg-gradient-primary hover:opacity-90 text-primary-foreground px-8 py-5 text-lg lg:text-xl rounded-2xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 hover:-translate-y-1"
               >
                 <Zap className="h-5 w-5 ml-3" />
-                {user ? 'כניסה למערכת' : 'התחל בחינם עכשיו'}
+                {user ? 'כניסה למערכת' : 'התחל ניסיון חינם ל-14 ימים'}
               </Button>
               
               <Button 

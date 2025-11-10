@@ -18,43 +18,33 @@ export function CTASection() {
           
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-8 max-w-md mx-auto">
             <div className="bg-green-100 text-green-700 text-sm font-bold px-4 py-2 rounded-full text-center mb-4">
-              🎉 14 ימי ניסיון חינם - ללא כרטיס אשראי!
+              🎉 14 ימי ניסיון חינם - התחל עכשיו!
             </div>
             
             <div className="space-y-4">
-              <Input 
-                type="email" 
-                placeholder="האימייל שלך" 
-                className="bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-2xl h-12"
-              />
-              <Input 
-                type="password" 
-                placeholder="בחר סיסמה" 
-                className="bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-2xl h-12"
-              />
-              <Link to="/auth?intent=trial">
+              <Link to="/signup-trial" className="block">
                 <Button 
                   size="lg" 
                   className="w-full bg-background text-brand-primary hover:bg-secondary font-bold py-4 md:py-6 rounded-2xl shadow-lg min-h-[48px]"
                 >
-                  התחל ניסיון חינם עכשיו!
+                  התחל ניסיון חינם ל-14 ימים
                 </Button>
               </Link>
             </div>
             
             <div className="flex items-center justify-center mt-6 space-x-reverse space-x-4">
               <CheckCircle className="h-5 w-5 text-green-300" />
-              <span className="text-sm opacity-80">ללא כרטיס אשראי</span>
+              <span className="text-sm opacity-80">גישה מלאה לכל התכונות</span>
             </div>
             
             <div className="flex items-center justify-center mt-2 space-x-reverse space-x-4">
               <CheckCircle className="h-5 w-5 text-green-300" />
-              <span className="text-sm opacity-80">14 ימים חינם</span>
+              <span className="text-sm opacity-80">חיוב רק לאחר 14 יום</span>
             </div>
             
             <div className="flex items-center justify-center mt-2 space-x-reverse space-x-4">
               <CheckCircle className="h-5 w-5 text-green-300" />
-              <span className="text-sm opacity-80">בטל בכל עת</span>
+              <span className="text-sm opacity-80">ביטול בכל עת</span>
             </div>
             
             <p className="mt-6 text-sm opacity-70">
