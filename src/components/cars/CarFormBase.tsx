@@ -175,6 +175,19 @@ export function CarFormBase({
           />
           <FormField
             control={form.control}
+            name="trim_level"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>רמת גימור</FormLabel>
+                <FormControl>
+                  <Input placeholder="Elegance / Comfort" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="year"
             render={({ field }) => (
               <FormItem>
@@ -220,14 +233,14 @@ export function CarFormBase({
                 <FormLabel>תיבת הילוכים</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-right" dir="rtl">
                       <SelectValue placeholder="בחר תיבת הילוכים" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="manual">ידני</SelectItem>
-                    <SelectItem value="automatic">אוטומט</SelectItem>
-                    <SelectItem value="robotics">רובוטי</SelectItem>
+                  <SelectContent className="bg-background z-50" dir="rtl">
+                    <SelectItem value="manual" className="text-right">ידני</SelectItem>
+                    <SelectItem value="automatic" className="text-right">אוטומט</SelectItem>
+                    <SelectItem value="robotics" className="text-right">רובוטי</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -242,15 +255,16 @@ export function CarFormBase({
                 <FormLabel>סוג דלק</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-right" dir="rtl">
                       <SelectValue placeholder="בחר סוג דלק" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="gasoline">בנזין</SelectItem>
-                    <SelectItem value="diesel">דיזל</SelectItem>
-                    <SelectItem value="hybrid">היברידי</SelectItem>
-                    <SelectItem value="electric">חשמלי</SelectItem>
+                  <SelectContent className="bg-background z-50" dir="rtl">
+                    <SelectItem value="gasoline" className="text-right">בנזין</SelectItem>
+                    <SelectItem value="diesel" className="text-right">דיזל</SelectItem>
+                    <SelectItem value="hybrid" className="text-right">היברידי</SelectItem>
+                    <SelectItem value="electric" className="text-right">חשמלי</SelectItem>
+                    <SelectItem value="plugin_hybrid" className="text-right">פלאג אין</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

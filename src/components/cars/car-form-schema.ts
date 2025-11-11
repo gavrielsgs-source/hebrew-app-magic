@@ -11,6 +11,9 @@ export const carFormSchema = z.object({
     .min(1, "שדה חובה")
     .max(50, "יותר מדי תווים")
     .transform(sanitizeInput),
+  trim_level: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
   year: z.string()
     .regex(/^\d+$/, "יש להזין מספרים בלבד")
     .refine(val => {

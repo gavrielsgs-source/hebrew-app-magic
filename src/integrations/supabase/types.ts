@@ -165,6 +165,7 @@ export type Database = {
           registration_year: number | null
           status: string | null
           transmission: string | null
+          trim_level: string | null
           updated_at: string | null
           user_id: string
           year: number
@@ -192,6 +193,7 @@ export type Database = {
           registration_year?: number | null
           status?: string | null
           transmission?: string | null
+          trim_level?: string | null
           updated_at?: string | null
           user_id: string
           year: number
@@ -219,6 +221,7 @@ export type Database = {
           registration_year?: number | null
           status?: string | null
           transmission?: string | null
+          trim_level?: string | null
           updated_at?: string | null
           user_id?: string
           year?: number

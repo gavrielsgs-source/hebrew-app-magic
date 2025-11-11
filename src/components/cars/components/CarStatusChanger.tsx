@@ -56,6 +56,7 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
         id: car.id,
         make: car.make,
         model: car.model,
+        trim_level: car.trim_level,
         year: car.year,
         kilometers: car.kilometers,
         price: car.price,

@@ -78,6 +78,7 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
       const carData: NewCar = {
         make: formData.make,
         model: formData.model,
+        trim_level: null,
         year: formData.year,
         price: parsePrice(formData.price),
         kilometers: formData.kilometers ? parseInt(formData.kilometers) : 0,

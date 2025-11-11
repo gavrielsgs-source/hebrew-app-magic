@@ -40,6 +40,7 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         id: car.id,
         make: values.make,
         model: values.model,
+        trim_level: values.trim_level || null,
         year: parseInt(values.year),
         kilometers: parseInt(values.kilometers),
         price: parseInt(values.price),

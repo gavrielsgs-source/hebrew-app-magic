@@ -8,6 +8,7 @@ export function createDefaultFormValues(car: Car): CarFormValues {
   const defaultValues: CarFormValues = {
     make: car.make || "",
     model: car.model || "",
+    trim_level: car.trim_level || "",
     year: car.year?.toString() || "",
     kilometers: car.kilometers?.toString() || "",
     price: car.price?.toString() || "",
