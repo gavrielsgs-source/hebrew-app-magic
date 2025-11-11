@@ -11,6 +11,7 @@ interface Profile {
   company_name: string | null;
   position: string | null;
   avatar_url: string | null;
+  accountant_email: string | null;
 }
 
 interface ProfileUpdate {
@@ -19,6 +20,7 @@ interface ProfileUpdate {
   company_name?: string;
   position?: string;
   avatar_url?: string;
+  accountant_email?: string;
 }
 
 export function useProfile() {
@@ -64,7 +66,8 @@ export function useProfile() {
               phone: newProfile.phone as string | null,
               company_name: newProfile.company_name as string | null,
               position: newProfile.position as string | null,
-              avatar_url: newProfile.avatar_url as string | null
+              avatar_url: newProfile.avatar_url as string | null,
+              accountant_email: newProfile.accountant_email as string | null
             } as Profile;
           } else {
             console.error("Error fetching profile:", error);
@@ -79,7 +82,8 @@ export function useProfile() {
           phone: data.phone as string | null,
           company_name: data.company_name as string | null,
           position: data.position as string | null,
-          avatar_url: data.avatar_url as string | null
+          avatar_url: data.avatar_url as string | null,
+          accountant_email: data.accountant_email as string | null
         } as Profile;
       } catch (error) {
         console.error("Error in profile function:", error);
