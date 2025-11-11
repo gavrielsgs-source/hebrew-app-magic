@@ -99,6 +99,9 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
         license_number: formData.license_number || null,
         chassis_number: formData.chassis_number || null,
         next_test_date: formData.next_test_date || null,
+        purchase_cost: null,
+        purchase_date: null,
+        supplier_name: null,
         // Images
         images: images.length > 0 ? images : undefined,
       };

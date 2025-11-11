@@ -70,11 +70,14 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
         last_test_date: car.last_test_date,
         ownership_history: car.ownership_history,
         status: newStatus,
-        agency_id: car.agency_id,
+        agency_id: car.agency_id || null,
         entry_date: car.entry_date,
         license_number: car.license_number,
         chassis_number: car.chassis_number,
         next_test_date: car.next_test_date,
+        purchase_cost: car.purchase_cost || null,
+        purchase_date: car.purchase_date || null,
+        supplier_name: car.supplier_name || null,
       });
 
       toast.success("סטטוס הרכב עודכן בהצלחה");

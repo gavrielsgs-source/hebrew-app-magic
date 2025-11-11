@@ -21,4 +21,7 @@ export type NewCar = Omit<Car, "id" | "created_at" | "updated_at" | "user_id" | 
   license_number?: string | null;
   chassis_number?: string | null;
   next_test_date?: string | null;
+  purchase_cost?: number | null;
+  purchase_date?: string | null;
+  supplier_name?: string | null;
 };

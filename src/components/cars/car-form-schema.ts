@@ -56,6 +56,12 @@ export const carFormSchema = z.object({
   license_number: z.string().optional().or(z.literal("")), // Allow empty string
   chassis_number: z.string().optional().or(z.literal("")), // Allow empty string
   next_test_date: z.string().optional().or(z.literal("")), // Allow empty string
+  // Purchase fields
+  purchase_cost: z.string().optional().or(z.literal("")), // Allow empty string
+  purchase_date: z.string().optional().or(z.literal("")), // Allow empty string
+  supplier_name: z.string()
+    .optional()
+    .transform((val) => val ? sanitizeInput(val) : val),
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;

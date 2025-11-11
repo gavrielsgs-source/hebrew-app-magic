@@ -30,6 +30,7 @@ export default function Profile() {
     phone: "",
     company_name: "",
     position: "",
+    accountant_email: "",
   });
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export default function Profile() {
         phone: profile.phone || "",
         company_name: profile.company_name || "",
         position: profile.position || "",
+        accountant_email: profile.accountant_email || "",
       });
     }
   }, [profile]);
@@ -184,21 +186,40 @@ export default function Profile() {
                         />
                       </div>
 
-                      <div className="space-y-3">
-                        <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                          <Briefcase className="h-4 w-4 text-blue-600" />
-                          <span>תפקיד</span>
-                        </Label>
-                        <Input
-                          id="position"
-                          value={formData.position}
-                          onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                          placeholder="הכנס תפקיד"
-                          className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
-                          dir="rtl"
-                        />
-                      </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
+                        <Briefcase className="h-4 w-4 text-blue-600" />
+                        <span>תפקיד</span>
+                      </Label>
+                      <Input
+                        id="position"
+                        value={formData.position}
+                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                        placeholder="הכנס תפקיד"
+                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
+                        dir="rtl"
+                      />
                     </div>
+
+                    <div className="space-y-3">
+                      <Label htmlFor="accountant_email" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
+                        <Mail className="h-4 w-4 text-blue-600" />
+                        <span>מייל רואה חשבון</span>
+                      </Label>
+                      <Input
+                        id="accountant_email"
+                        type="email"
+                        value={formData.accountant_email}
+                        onChange={(e) => setFormData({ ...formData, accountant_email: e.target.value })}
+                        placeholder="accountant@example.com"
+                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-left"
+                        dir="ltr"
+                      />
+                      <p className="text-xs text-gray-500 text-right">
+                        כתובת המייל לשליחת דוחות חודשיים
+                      </p>
+                    </div>
+                  </div>
 
                     <div className="pt-6 border-t border-gray-200 flex justify-start">
                       <Button 
@@ -373,6 +394,25 @@ export default function Profile() {
                         className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
                         dir="rtl"
                       />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label htmlFor="accountant_email" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
+                        <Mail className="h-4 w-4 text-blue-600" />
+                        <span>מייל רואה חשבון</span>
+                      </Label>
+                      <Input
+                        id="accountant_email"
+                        type="email"
+                        value={formData.accountant_email}
+                        onChange={(e) => setFormData({ ...formData, accountant_email: e.target.value })}
+                        placeholder="accountant@example.com"
+                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-left"
+                        dir="ltr"
+                      />
+                      <p className="text-xs text-gray-500 text-right">
+                        כתובת המייל לשליחת דוחות חודשיים
+                      </p>
                     </div>
                   </div>
 

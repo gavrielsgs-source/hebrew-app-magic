@@ -61,6 +61,9 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         license_number: values.license_number || null,
         chassis_number: values.chassis_number || null,
         next_test_date: values.next_test_date || null,
+        purchase_cost: values.purchase_cost ? parseFloat(values.purchase_cost as string) : null,
+        purchase_date: values.purchase_date || null,
+        supplier_name: values.supplier_name || null,
       };
 
       console.log("EditCarForm - About to call updateCar.mutateAsync with data:", updateData);

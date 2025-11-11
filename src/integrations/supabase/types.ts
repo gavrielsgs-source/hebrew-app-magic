@@ -141,6 +141,62 @@ export type Database = {
           },
         ]
       }
+      car_expenses: {
+        Row: {
+          amount: number
+          car_id: string
+          created_at: string | null
+          description: string
+          document_url: string | null
+          expense_date: string
+          expense_type: string
+          id: string
+          include_vat: boolean
+          invoice_number: string | null
+          updated_at: string | null
+          user_id: string
+          vat_rate: number | null
+        }
+        Insert: {
+          amount: number
+          car_id: string
+          created_at?: string | null
+          description: string
+          document_url?: string | null
+          expense_date?: string
+          expense_type: string
+          id?: string
+          include_vat?: boolean
+          invoice_number?: string | null
+          updated_at?: string | null
+          user_id: string
+          vat_rate?: number | null
+        }
+        Update: {
+          amount?: number
+          car_id?: string
+          created_at?: string | null
+          description?: string
+          document_url?: string | null
+          expense_date?: string
+          expense_type?: string
+          id?: string
+          include_vat?: boolean
+          invoice_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+          vat_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_expenses_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cars: {
         Row: {
           agency_id: string | null
@@ -162,8 +218,11 @@ export type Database = {
           next_test_date: string | null
           ownership_history: string | null
           price: number
+          purchase_cost: number | null
+          purchase_date: string | null
           registration_year: number | null
           status: string | null
+          supplier_name: string | null
           transmission: string | null
           trim_level: string | null
           updated_at: string | null
@@ -190,8 +249,11 @@ export type Database = {
           next_test_date?: string | null
           ownership_history?: string | null
           price: number
+          purchase_cost?: number | null
+          purchase_date?: string | null
           registration_year?: number | null
           status?: string | null
+          supplier_name?: string | null
           transmission?: string | null
           trim_level?: string | null
           updated_at?: string | null
@@ -218,8 +280,11 @@ export type Database = {
           next_test_date?: string | null
           ownership_history?: string | null
           price?: number
+          purchase_cost?: number | null
+          purchase_date?: string | null
           registration_year?: number | null
           status?: string | null
+          supplier_name?: string | null
           transmission?: string | null
           trim_level?: string | null
           updated_at?: string | null
@@ -884,6 +949,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accountant_email: string | null
           avatar_url: string | null
           company_name: string | null
           created_at: string | null
@@ -896,6 +962,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          accountant_email?: string | null
           avatar_url?: string | null
           company_name?: string | null
           created_at?: string | null
@@ -908,6 +975,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          accountant_email?: string | null
           avatar_url?: string | null
           company_name?: string | null
           created_at?: string | null
