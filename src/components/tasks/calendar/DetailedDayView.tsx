@@ -57,6 +57,7 @@ export function DetailedDayView({
       case 'call': return <Phone className="h-4 w-4" />;
       case 'meeting': return <Users className="h-4 w-4" />;
       case 'follow_up': return <BarChart3 className="h-4 w-4" />;
+      case 'test': return <ClipboardList className="h-4 w-4" />;
       default: return <ClipboardList className="h-4 w-4" />;
     }
   };
@@ -102,6 +103,7 @@ export function DetailedDayView({
       case 'call': return 'שיחת טלפון';
       case 'meeting': return 'פגישה';
       case 'follow_up': return 'מעקב';
+      case 'test': return 'טסט';
       case 'task': return 'משימה';
       default: return 'משימה';
     }

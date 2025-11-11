@@ -34,6 +34,7 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
       case 'call': return 'שיחת טלפון';
       case 'meeting': return 'פגישה';
       case 'follow_up': return 'מעקב';
+      case 'test': return 'טסט';
       case 'task': 
       default: return 'משימה';
     }
@@ -44,6 +45,7 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
       case 'call': return "bg-blue-100 text-blue-700 border-blue-200";
       case 'meeting': return "bg-green-100 text-green-700 border-green-200";
       case 'follow_up': return "bg-purple-100 text-purple-700 border-purple-200";
+      case 'test': return "bg-orange-100 text-orange-700 border-orange-200";
       case 'task':
       default: return "bg-gray-100 text-gray-700 border-gray-200";
     }

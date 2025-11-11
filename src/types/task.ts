@@ -6,7 +6,7 @@ export const taskFormSchema = z.object({
   description: z.string().optional().or(z.literal("")),
   priority: z.enum(["low", "medium", "high"]),
   status: z.enum(["pending", "in_progress", "completed", "cancelled"]),
-  type: z.enum(["task", "call", "meeting", "follow_up"]),
+  type: z.enum(["task", "call", "meeting", "follow_up", "test"]),
   due_date: z.date().optional(),
   car_id: z.string().optional().or(z.literal("")),
   lead_id: z.string().optional().or(z.literal("")),

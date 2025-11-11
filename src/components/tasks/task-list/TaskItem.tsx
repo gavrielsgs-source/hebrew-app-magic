@@ -22,6 +22,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
       case 'call': return 'שיחת טלפון';
       case 'meeting': return 'פגישה';
       case 'follow_up': return 'מעקב';
+      case 'test': return 'טסט';
       case 'task': 
       default: return 'משימה';
     }
@@ -34,6 +35,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
       case 'call': return <UserRound className="h-4 w-4" />;
       case 'meeting': return <UserRound className="h-4 w-4" />;
       case 'follow_up': return <Calendar className="h-4 w-4" />;
+      case 'test': return <Calendar className="h-4 w-4" />;
       case 'task': 
       default: return <UserRound className="h-4 w-4" />;
     }
