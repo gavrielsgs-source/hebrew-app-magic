@@ -5,6 +5,7 @@ import { useCars } from '@/hooks/use-cars';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
 import { CarFormBase } from './CarFormBase';
 import { toast } from 'sonner';
+import { useTasks } from '@/hooks/use-tasks';
 
 interface AddCarFormProps {
   onSuccess?: () => void;
@@ -15,6 +16,7 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
   const { cars } = useCars();
   const { mutate: addCar, isPending: isLoading } = useAddCar();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
+  const { addTask } = useTasks();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (values: any, images: File[]) => {
@@ -42,8 +44,29 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
       };
       
       addCar(carData, {
-        onSuccess: () => {
+        onSuccess: async (newCar) => {
           toast.success('רכב חדש נוסף בהצלחה!');
+          
+          // Create task for next test date if provided
+          if (values.next_test_date && newCar) {
+            try {
+              await addTask.mutateAsync({
+                title: `טסט לרכב ${values.make} ${values.model}`,
+                description: `תאריך טסט לרכב ${values.make} ${values.model} (${values.year}) - מספר רישוי: ${values.license_number || 'לא צוין'}`,
+                due_date: new Date(values.next_test_date).toISOString(),
+                type: 'test',
+                priority: 'high',
+                status: 'pending',
+                car_id: newCar.id,
+                assigned_to: null,
+                agency_id: values.agency_id || null,
+              });
+              console.log('✅ [AddCarForm] Test task created successfully');
+            } catch (taskError) {
+              console.error('❌ [AddCarForm] Error creating test task:', taskError);
+            }
+          }
+          
           if (onSuccess) {
             onSuccess();
           }
@@ -66,6 +89,7 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
       defaultValues={{
         make: '',
         model: '',
+        trim_level: '',
         year: '',
         kilometers: '',
         price: '',
@@ -76,6 +100,8 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
         interior_color: '',
         description: '',
         ownership_history: '',
+        registration_year: '',
+        last_test_date: '',
         entry_date: '',
         license_number: '',
         chassis_number: '',

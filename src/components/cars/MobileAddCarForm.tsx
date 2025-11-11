@@ -26,6 +26,7 @@ export function MobileAddCarForm({ onSuccess }: MobileAddCarFormProps) {
   const [formData, setFormData] = useState({
     make: "",
     model: "",
+    trim_level: "",
     year: new Date().getFullYear(),
     price: "",
     kilometers: "",

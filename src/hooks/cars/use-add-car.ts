@@ -28,6 +28,7 @@ export function useAddCar() {
           .insert({
             make: car.make,
             model: car.model,
+            trim_level: car.trim_level || null,
             year: car.year,
             kilometers: car.kilometers,
             price: car.price,
@@ -42,7 +43,11 @@ export function useAddCar() {
             ownership_history: car.ownership_history || null,
             status: "available",
             agency_id: car.agency_id || defaultAgencyId,
-            user_id: userData.user.id
+            user_id: userData.user.id,
+            entry_date: car.entry_date || null,
+            license_number: car.license_number || null,
+            chassis_number: car.chassis_number || null,
+            next_test_date: car.next_test_date || null
           })
           .select()
           .single();
