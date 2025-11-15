@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { zipSync, strToU8 } from "https://deno.land/x/zipjs@v2.7.29/index.js";
+import { zipSync } from "https://esm.sh/fflate@0.8.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -293,9 +293,10 @@ serve(async (req) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `accountant-report-${timestamp}.zip`;
 
-    // Create ZIP with CSV
+    // Create ZIP with CSV using fflate
+    const encoder = new TextEncoder();
     const files: Record<string, Uint8Array> = {
-      "report.csv": strToU8(csv),
+      "report.csv": encoder.encode(csv),
     };
 
     // Fetch document PDFs from storage (if needed in future)
