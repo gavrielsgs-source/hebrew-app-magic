@@ -1,0 +1,52 @@
+export interface AccountantReportTransaction {
+  date: string;
+  transaction_type: 'sale' | 'purchase' | 'expense';
+  description: string;
+  car_make?: string;
+  car_model?: string;
+  car_year?: number;
+  customer_name?: string;
+  supplier_name?: string;
+  expense_type?: string;
+  amount: number;
+  vat_amount: number;
+  total_with_vat: number;
+  invoice_number?: string;
+  document_id?: string;
+  notes?: string;
+}
+
+export interface GenerateReportRequest {
+  startDate: string;
+  endDate: string;
+}
+
+export interface ValidationError {
+  type: 'missing_purchase_cost' | 'missing_invoice' | 'missing_expense_document' | 'invalid_data';
+  message: string;
+  carId?: string;
+  transactionId?: string;
+  details?: string;
+}
+
+export interface FinancialSummary {
+  totalSales: number;
+  totalPurchases: number;
+  totalExpenses: number;
+  grossProfit: number;
+  totalVAT: number;
+  netProfit: number;
+  transactionCount: number;
+}
+
+export interface GenerateReportResponse {
+  success: boolean;
+  reportUrl?: string;
+  summary: FinancialSummary;
+  validationErrors: ValidationError[];
+  generatedAt: string;
+  period: {
+    start: string;
+    end: string;
+  };
+}

@@ -60,6 +60,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Invoices from "./pages/Invoices";
+import AccountantReports from "./pages/AccountantReports";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -162,6 +163,7 @@ function AppLayout() {
                 <Route path="/subscription/payment-success" element={<PaymentSuccess />} />
                 <Route path="/subscription/payment-error" element={<PaymentError />} />
                 <Route path="/invoices" element={<Invoices />} />
+                <Route path="/reports/accountant" element={<AccountantReports />} />
                 <Route path="/payment" element={<Payment />} />
                 <Route path="/companies" element={<AccessManagement />} />
                 <Route path="/company/:companyId/settings" element={<CompanySettings />} />

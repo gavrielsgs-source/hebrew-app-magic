@@ -42,6 +42,7 @@ import {
   Handshake,
   Eye,
   CheckSquare,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DOCUMENT_TYPES } from "@/types/document-production";
@@ -163,6 +164,17 @@ export function AppSidebar() {
               >
                 <FileBarChart className="h-5 w-5" />
                 <span className="group-data-[collapsible=icon]:hidden">אנליטיקה מתקדמת</span>
+              </button>
+            </SidebarMenuItem>
+            
+            <SidebarMenuItem>
+              <button
+                onClick={() => navigate("/reports/accountant")}
+                data-active={pathname === "/reports/accountant"}
+                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
+              >
+                <FileSpreadsheet className="h-5 w-5" />
+                <span className="group-data-[collapsible=icon]:hidden">דוחות רו״ח</span>
               </button>
             </SidebarMenuItem>
             
