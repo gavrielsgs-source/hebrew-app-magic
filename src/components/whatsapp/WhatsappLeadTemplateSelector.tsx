@@ -265,31 +265,51 @@ export function WhatsappLeadTemplateSelector({
             </div>
           ) : (
             <div className="grid gap-3">
-              {leadTemplates.map((template) => (
-                <div
-                  key={template.id}
-                  className={`border rounded-lg cursor-pointer transition-colors ${
-                    isMobile ? 'p-3' : 'p-4'
-                  } ${
-                    selectedTemplate?.id === template.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => {
-                    setSelectedTemplate(template);
-                    setTemplateType("lead");
-                  }}
-                >
-                  <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
-                    {template.name}
-                  </h3>
-                  <p className={`text-gray-600 text-right mt-1 ${
-                    isMobile ? 'text-xs' : 'text-sm'
-                  }`}>
-                    {template.description}
-                  </p>
-                </div>
-              ))}
+              {leadTemplates.map((template) => {
+                const previewMessage = typeof template.generateMessage === 'function' 
+                  ? template.generateMessage(leadName, leadSource) 
+                  : template.templateContent || '';
+                const previewLines = previewMessage.split('\n').slice(0, 3);
+                
+                return (
+                  <div
+                    key={template.id}
+                    className={`border rounded-lg cursor-pointer transition-colors ${
+                      isMobile ? 'p-3' : 'p-4'
+                    } ${
+                      selectedTemplate?.id === template.id
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                    onClick={() => {
+                      setSelectedTemplate(template);
+                      setTemplateType("lead");
+                    }}
+                  >
+                    <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
+                      {template.name}
+                    </h3>
+                    <p className={`text-gray-600 text-right mt-1 ${
+                      isMobile ? 'text-xs' : 'text-sm'
+                    }`}>
+                      {template.description}
+                    </p>
+                    <div className={`mt-3 p-2 bg-gray-50 rounded border border-gray-200 text-right ${
+                      isMobile ? 'text-xs' : 'text-sm'
+                    }`}>
+                      <p className="text-xs text-gray-500 mb-1">תצוגה מקדימה:</p>
+                      {previewLines.map((line, idx) => (
+                        <p key={idx} className="text-gray-700 leading-relaxed">
+                          {line || '\u00A0'}
+                        </p>
+                      ))}
+                      {previewMessage.split('\n').length > 3 && (
+                        <p className="text-gray-400 mt-1">...</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -302,31 +322,49 @@ export function WhatsappLeadTemplateSelector({
             </div>
           ) : (
             <div className="grid gap-3">
-              {carTemplates.map((template) => (
-                <div
-                  key={template.id}
-                  className={`border rounded-lg cursor-pointer transition-colors ${
-                    isMobile ? 'p-3' : 'p-4'
-                  } ${
-                    selectedTemplate?.id === template.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => {
-                    setSelectedTemplate(template);
-                    setTemplateType("car");
-                  }}
-                >
-                  <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
-                    {template.name}
-                  </h3>
-                  <p className={`text-gray-600 text-right mt-1 ${
-                    isMobile ? 'text-xs' : 'text-sm'
-                  }`}>
-                    {template.description}
-                  </p>
-                </div>
-              ))}
+              {carTemplates.map((template) => {
+                const previewMessage = template.templateContent || '';
+                const previewLines = previewMessage.split('\n').slice(0, 3);
+                
+                return (
+                  <div
+                    key={template.id}
+                    className={`border rounded-lg cursor-pointer transition-colors ${
+                      isMobile ? 'p-3' : 'p-4'
+                    } ${
+                      selectedTemplate?.id === template.id
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                    onClick={() => {
+                      setSelectedTemplate(template);
+                      setTemplateType("car");
+                    }}
+                  >
+                    <h3 className={`font-medium text-right ${isMobile ? 'text-sm' : ''}`}>
+                      {template.name}
+                    </h3>
+                    <p className={`text-gray-600 text-right mt-1 ${
+                      isMobile ? 'text-xs' : 'text-sm'
+                    }`}>
+                      {template.description}
+                    </p>
+                    <div className={`mt-3 p-2 bg-gray-50 rounded border border-gray-200 text-right ${
+                      isMobile ? 'text-xs' : 'text-sm'
+                    }`}>
+                      <p className="text-xs text-gray-500 mb-1">תצוגה מקדימה:</p>
+                      {previewLines.map((line, idx) => (
+                        <p key={idx} className="text-gray-700 leading-relaxed">
+                          {line || '\u00A0'}
+                        </p>
+                      ))}
+                      {previewMessage.split('\n').length > 3 && (
+                        <p className="text-gray-400 mt-1">...</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -346,7 +384,9 @@ export function WhatsappLeadTemplateSelector({
         </TabsContent>
       </Tabs>
 
-      <WhatsappTemplatePreview template={message} />
+      {message && message.trim() && (
+        <WhatsappTemplatePreview template={message} />
+      )}
 
       <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
         <Button 
