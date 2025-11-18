@@ -1,4 +1,5 @@
 
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
@@ -11,6 +12,9 @@ import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
 import { whatsappCustomerTemplates } from "@/components/whatsapp/customer-templates";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface TemplateCardProps {
   template: UnifiedTemplate;
@@ -35,9 +39,17 @@ const mockLeadName = "יואב כהן";
 const mockLeadSource = "פייסבוק";
 
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
+  const [previewCta, setPreviewCta] = useState("לקבוע פגישה");
+  const [customPreviewCta, setCustomPreviewCta] = useState("");
+  
   // Check if this is a default (system) template
   const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates, ...whatsappCustomerTemplates];
   const isDefaultTemplate = allDefaultTemplates.some(t => t.id === template.id);
+  
+  // Get current CTA
+  const getCurrentCta = () => {
+    return previewCta === "custom" ? customPreviewCta : previewCta;
+  };
   
   // Generate preview message based on template type
   const generatePreviewMessage = () => {
@@ -47,23 +59,25 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
       
       if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
+        const currentCta = getCurrentCta();
         if (originalTemplate.type === 'car') {
-          return originalTemplate.generateMessage(mockCar, 'לקבוע פגישה');
+          return originalTemplate.generateMessage(mockCar, currentCta);
         } else if (originalTemplate.type === 'lead') {
-          return originalTemplate.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
+          return originalTemplate.generateMessage(mockLeadName, mockLeadSource, currentCta);
         } else if ((originalTemplate as any).type === 'customer') {
-          return (originalTemplate as any).generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, 'לקבוע שיחה');
+          return (originalTemplate as any).generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, currentCta);
         }
       }
 
       // SECOND: Try to use the template's generateMessage function directly
       if (template.generateMessage && typeof template.generateMessage === 'function') {
+        const currentCta = getCurrentCta();
         if (template.type === 'car') {
-          return template.generateMessage(mockCar, 'לקבוע פגישה');
+          return template.generateMessage(mockCar, currentCta);
         } else if (template.type === 'lead') {
-          return template.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
+          return template.generateMessage(mockLeadName, mockLeadSource, currentCta);
         } else if (template.type === 'customer') {
-          return template.generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, 'לקבוע שיחה');
+          return template.generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, currentCta);
         }
       }
 
@@ -83,8 +97,8 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             .replace(/\{\{7\}\}/g, mockCar.engine_size)
             .replace(/\{\{8\}\}/g, mockCar.transmission)
             .replace(/\{\{9\}\}/g, mockCar.fuel_type)
-            .replace(/\{\{CTA\}\}/g, 'לקבוע פגישה')
-            .replace(/\{\{10\}\}/g, 'לקבוע פגישה');
+            .replace(/\{\{CTA\}\}/g, getCurrentCta())
+            .replace(/\{\{10\}\}/g, getCurrentCta());
           return preview;
         } else if (template.type === 'lead') {
           // Replace lead placeholders
@@ -92,14 +106,14 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             .replace(/\{\{leadName\}\}/g, mockLeadName)
             .replace(/\{\{leadSource\}\}/g, ` דרך ${mockLeadSource}`)
             .replace(/\{\{carDetails\}\}/g, ` ${mockCar.make} ${mockCar.model} ${mockCar.year}`)
-            .replace(/\{\{CTA\}\}/g, 'לקבוע שיחה');
+            .replace(/\{\{CTA\}\}/g, getCurrentCta());
           return preview;
         } else if (template.type === 'customer') {
           // Replace customer placeholders
           preview = preview
             .replace(/\{\{customerName\}\}/g, mockLeadName)
             .replace(/\{\{carDetails\}\}/g, `${mockCar.make} ${mockCar.model} ${mockCar.year}`)
-            .replace(/\{\{CTA\}\}/g, 'לקבוע שיחה');
+            .replace(/\{\{CTA\}\}/g, getCurrentCta());
           return preview;
         }
       }
@@ -227,6 +241,11 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             <Button 
               variant="outline" 
               size="sm" 
+              onClick={() => {
+                // Reset CTA when opening preview
+                setPreviewCta("לקבוע פגישה");
+                setCustomPreviewCta("");
+              }}
               className="flex items-center gap-2 rounded-xl border-2 border-gray-200 hover:border-[#2F3C7E] hover:text-[#2F3C7E] transition-all duration-200 px-4 py-2 font-medium"
             >
               <Eye className="h-4 w-4" />
@@ -237,6 +256,33 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             <DialogHeader>
               <DialogTitle className="text-right">תצוגה מקדימה - {template.name}</DialogTitle>
             </DialogHeader>
+            
+            {/* CTA Selector in Preview */}
+            <div className="space-y-2 mb-4">
+              <Label htmlFor="preview-cta">קריאה לפעולה (CTA) לתצוגה מקדימה</Label>
+              <Select value={previewCta} onValueChange={setPreviewCta}>
+                <SelectTrigger id="preview-cta" className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40 text-right">
+                  <SelectValue placeholder="בחר קריאה לפעולה" />
+                </SelectTrigger>
+                <SelectContent className="bg-background/95 backdrop-blur-xl border-primary/20 z-[100]">
+                  <SelectItem value="לקבוע פגישה">לקבוע פגישה</SelectItem>
+                  <SelectItem value="לתאם צפייה">לתאם צפייה</SelectItem>
+                  <SelectItem value="לקבוע שיחה קצרה">לקבוע שיחה קצרה</SelectItem>
+                  <SelectItem value="להתייעץ">להתייעץ</SelectItem>
+                  <SelectItem value="לקבל הצעת מחיר">לקבל הצעת מחיר</SelectItem>
+                  <SelectItem value="custom">טקסט מותאם אישית</SelectItem>
+                </SelectContent>
+              </Select>
+              {previewCta === "custom" && (
+                <Input
+                  placeholder="הזן קריאה לפעולה מותאמת אישית"
+                  value={customPreviewCta}
+                  onChange={(e) => setCustomPreviewCta(e.target.value)}
+                  className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40"
+                />
+              )}
+            </div>
+            
             <div className="mt-4">
               <WhatsappTemplatePreview template={previewMessage} />
             </div>
