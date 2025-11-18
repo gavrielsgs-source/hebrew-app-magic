@@ -81,9 +81,11 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       // First try to use the template's generateMessage function directly
       if (template.generateMessage && typeof template.generateMessage === 'function') {
         if (template.type === 'car') {
-          return template.generateMessage(mockCar);
+          return template.generateMessage(mockCar, 'לקבוע פגישה');
         } else if (template.type === 'lead') {
-          return template.generateMessage(mockLeadName, mockLeadSource);
+          return template.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
+        } else if (template.type === 'customer') {
+          return template.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
         }
       }
 
@@ -93,9 +95,11 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       
       if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
         if (originalTemplate.type === 'car') {
-          return originalTemplate.generateMessage(mockCar);
+          return originalTemplate.generateMessage(mockCar, 'לקבוע פגישה');
         } else if (originalTemplate.type === 'lead') {
-          return originalTemplate.generateMessage(mockLeadName, mockLeadSource);
+          return originalTemplate.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
+        } else if ((originalTemplate as any).type === 'customer') {
+          return (originalTemplate as any).generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
         }
       }
       
