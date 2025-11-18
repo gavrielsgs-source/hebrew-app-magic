@@ -32,6 +32,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
   const [templates, setTemplates] = useState<any[]>(whatsappTemplates);
   const [isSending, setIsSending] = useState(false);
+  const [selectedCta, setSelectedCta] = useState("לקבוע פגישה");
+  const [customCta, setCustomCta] = useState("");
   const { leads } = useLeads();
   const { profile } = useProfile();
   const { data: dbTemplates } = useWhatsappTemplates();
@@ -107,8 +109,9 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       mileage: car.kilometers // Map kilometers to mileage for template compatibility
     };
 
-    // Generate message using template function
-    let message = template.generateMessage(carForTemplate);
+    // Generate message using template function with CTA
+    const currentCta = selectedCta === "custom" ? customCta : selectedCta;
+    let message = template.generateMessage(carForTemplate, currentCta);
     
     // Replace client name placeholder if exists
     message = message.replace(/שלום[!]?/, `שלום ${clientName}!`);
@@ -332,6 +335,34 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           </SelectContent>
         </Select>
       </div>
+
+      {/* CTA Selection */}
+      {selectedTemplateId !== "custom" && selectedTemplateId !== "car_template_default" && (
+        <div className="space-y-2">
+          <Label htmlFor="cta" className="text-right text-sm">קריאה לפעולה (CTA)</Label>
+          <Select value={selectedCta} onValueChange={setSelectedCta}>
+            <SelectTrigger id="cta" className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40 text-right">
+              <SelectValue placeholder="בחר קריאה לפעולה" />
+            </SelectTrigger>
+            <SelectContent className="bg-background/95 backdrop-blur-xl border-primary/20 z-[100]">
+              <SelectItem value="לקבוע פגישה">לקבוע פגישה</SelectItem>
+              <SelectItem value="לתאם צפייה">לתאם צפייה</SelectItem>
+              <SelectItem value="לקבוע שיחה קצרה">לקבוע שיחה קצרה</SelectItem>
+              <SelectItem value="להתייעץ">להתייעץ</SelectItem>
+              <SelectItem value="לקבל הצעת מחיר">לקבל הצעת מחיר</SelectItem>
+              <SelectItem value="custom">טקסט מותאם אישית</SelectItem>
+            </SelectContent>
+          </Select>
+          {selectedCta === "custom" && (
+            <Input
+              placeholder="הזן קריאה לפעולה מותאמת אישית"
+              value={customCta}
+              onChange={(e) => setCustomCta(e.target.value)}
+              className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40 text-right"
+            />
+          )}
+        </div>
+      )}
 
       {/* Custom Message Input or Default Template Display */}
       {selectedTemplateId === "custom" && (
