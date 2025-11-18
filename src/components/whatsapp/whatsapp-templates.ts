@@ -4,7 +4,7 @@ export interface WhatsappTemplate {
   name: string;
   description: string;
   type: 'car';
-  generateMessage: (car: any) => string;
+  generateMessage: (car: any, cta?: string) => string;
   templateContent?: string;
 }
 
@@ -22,11 +22,11 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 💰 מחיר: {{4}}
 📏 קילומטר: {{5}}
 
-מעוניין לשמוע עוד פרטים או לתאם צפייה?
+מעוניין {{CTA}}?
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car) => `שלום! 👋
+    generateMessage: (car, cta = 'לשמוע עוד פרטים או לתאם צפייה') => `שלום! 👋
 
 רציתי לשתף אותך בפרטים על הרכב הזה:
 
@@ -34,7 +34,7 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 💰 מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
 📏 קילומטר: ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין'}
 
-מעוניין לשמוע עוד פרטים או לתאם צפייה?
+מעוניין ${cta}?
 
 בברכה,
 צוות המכירות`
@@ -54,10 +54,10 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 🔧 תיבת הילוכים: {{8}}
 ⛽ סוג דלק: {{9}}
 
-האם תרצה לתאם נסיעת מבחן או יש שאלות נוספות?
+האם תרצה {{CTA}}?
 
 צוות המכירות 📞`,
-    generateMessage: (car) => `🚗 *${car.make} ${car.model} ${car.year}*
+    generateMessage: (car, cta = 'לתאם נסיעת מבחן או יש שאלות נוספות') => `🚗 *${car.make} ${car.model} ${car.year}*
 
 📋 *פרטים טכניים:*
 💰 מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
@@ -67,7 +67,7 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 🔧 תיבת הילוכים: ${car.transmission || 'לא צוין'}
 ⛽ סוג דלק: ${car.fuel_type || 'לא צוין'}
 
-האם תרצה לתאם נסיעת מבחן או יש שאלות נוספות?
+האם תרצה ${cta}?
 
 צוות המכירות 📞`
   },
@@ -156,17 +156,17 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 איך שלומך? אני מהצוות שלנו ורציתי ליצור איתך קשר בנושא {{1}} {{2}} {{3}}.
 
-האם זה זמן נוח לשיחה קצרה על המכונית שאתה מחפש?
+האם {{CTA}}?
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך! 🚗
 
 בברכה,  
 צוות המכירות`,
-    generateMessage: (car) => `שלום! 😊
+    generateMessage: (car, cta = 'זה זמן נוח לשיחה קצרה על המכונית שאתה מחפש') => `שלום! 😊
 
 איך שלומך? אני מהצוות שלנו ורציתי ליצור איתך קשר בנושא ${car.make} ${car.model} ${car.year}.
 
-האם זה זמן נוח לשיחה קצרה על המכונית שאתה מחפש?
+האם ${cta}?
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך! 🚗
 
@@ -184,17 +184,17 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 נשמח לשמוע מה המפרט שאתה מחפש ולהציע לך את הפתרונות הטובים ביותר.
 
-האם נוח לך שנתקשר או שאתה מעדיף לתאם פגישה?
+האם {{CTA}}?
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car) => `שלום,
+    generateMessage: (car, cta = 'נוח לך שנתקשר או שאתה מעדיף לתאם פגישה') => `שלום,
 
 אני פונה אליך מצוות המכירות של חברת הרכב שלנו בנושא ${car.make} ${car.model} ${car.year}.
 
 נשמח לשמוע מה המפרט שאתה מחפש ולהציע לך את הפתרונות הטובים ביותר.
 
-האם נוח לך שנתקשר או שאתה מעדיף לתאם פגישה?
+האם ${cta}?
 
 בברכה,
 צוות המכירות`
@@ -215,11 +215,11 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 🔹 אפשרות למימון נוח  
 🔹 נסיעת מבחן ללא התחייבות
 
-האם תרצה לשמוע עוד פרטים או לתאם ביקור במכירות?
+האם {{CTA}}?
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car) => `שלום! 🎉
+    generateMessage: (car, cta = 'תרצה לשמוע עוד פרטים או לתאם ביקור במכירות') => `שלום! 🎉
 
 יש לנו חדשות נהדרות בשבילך!
 
@@ -230,7 +230,7 @@ ${car.make} ${car.model} ${car.year} - כרגע במבצע מיוחד! 🚗
 🔹 אפשרות למימון נוח  
 🔹 נסיעת מבחן ללא התחייבות
 
-האם תרצה לשמוע עוד פרטים או לתאם ביקור במכירות?
+האם ${cta}?
 
 בברכה,
 צוות המכירות`
@@ -246,19 +246,19 @@ ${car.make} ${car.model} ${car.year} - כרגע במבצע מיוחד! 🚗
 
 רציתי לוודא שקיבלת את כל המידע שחיפשת ולראות אם יש עוד שאלות או דברים שאוכל לעזור לך איתם.
 
-האם יש מידע נוסף שמעניין אותך על הרכב הזה?
+האם {{CTA}}?
 
 אני כאן לכל שאלה! 😊
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car) => `שלום, 👋
+    generateMessage: (car, cta = 'יש מידע נוסף שמעניין אותך על הרכב הזה') => `שלום, 👋
 
 אני חוזר אליך בנושא ${car.make} ${car.model} ${car.year}.
 
 רציתי לוודא שקיבלת את כל המידע שחיפשת ולראות אם יש עוד שאלות או דברים שאוכל לעזור לך איתם.
 
-האם יש מידע נוסף שמעניין אותך על הרכב הזה?
+האם ${cta}?
 
 אני כאן לכל שאלה! 😊
 

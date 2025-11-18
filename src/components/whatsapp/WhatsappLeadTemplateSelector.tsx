@@ -33,6 +33,8 @@ export function WhatsappLeadTemplateSelector({
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("lead-templates");
   const [templateType, setTemplateType] = useState<"lead" | "car">("lead");
+  const [selectedCTA, setSelectedCTA] = useState<string>("לקבוע פגישה");
+  const [customCTA, setCustomCTA] = useState<string>("");
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
   const { data: dbTemplates, isLoading } = useWhatsappTemplates();
@@ -66,14 +68,15 @@ export function WhatsappLeadTemplateSelector({
           description: dbTemplate.description,
           type: 'car' as const,
           templateContent: dbTemplate.template_content,
-          generateMessage: (car: any) => {
+          generateMessage: (car: any, cta?: string) => {
             return dbTemplate.template_content
               .replace(/\{make\}/g, car?.make || 'רכב')
               .replace(/\{model\}/g, car?.model || '')
               .replace(/\{year\}/g, car?.year || '')
               .replace(/\{price\}/g, car?.price ? car.price.toLocaleString() : '')
               .replace(/\{kilometers\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
-              .replace(/\{mileage\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '');
+              .replace(/\{mileage\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
+              .replace(/\{\{CTA\}\}/g, cta || 'לתאם שיחה');
           }
         }));
 
@@ -130,6 +133,20 @@ export function WhatsappLeadTemplateSelector({
     }
   }, [dbTemplates]);
 
+  const ctaOptions = [
+    { value: "לקבוע פגישה", label: "לקבוע פגישה" },
+    { value: "לקבוע שיחה", label: "לקבוע שיחה" },
+    { value: "לקבוע נסיעת מבחן", label: "לקבוע נסיעת מבחן" },
+    { value: "custom", label: "טקסט חופשי" }
+  ];
+
+  const getCurrentCTA = () => {
+    if (selectedCTA === "custom") {
+      return customCTA || "לקבוע פגישה";
+    }
+    return selectedCTA;
+  };
+
   const generateMessage = () => {
     if (activeTab === "custom" && customMessage.trim()) {
       return customMessage;
@@ -137,7 +154,8 @@ export function WhatsappLeadTemplateSelector({
     
     if (selectedTemplate && typeof selectedTemplate.generateMessage === 'function') {
       try {
-        return selectedTemplate.generateMessage(leadName, leadSource);
+        const cta = getCurrentCTA();
+        return selectedTemplate.generateMessage(leadName, leadSource, cta);
       } catch (error) {
         console.error('Error generating message:', error);
         return `היי ${leadName}! 👋
@@ -383,6 +401,40 @@ export function WhatsappLeadTemplateSelector({
           </div>
         </TabsContent>
       </Tabs>
+
+      {activeTab !== "custom" && (
+        <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+          <label className="block text-sm font-medium">בחר פעולה (CTA)</label>
+          <div className="grid grid-cols-2 gap-2">
+            {ctaOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setSelectedCTA(option.value)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  selectedCTA === option.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background border border-border hover:bg-muted"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {selectedCTA === "custom" && (
+            <div className="mt-3">
+              <input
+                type="text"
+                value={customCTA}
+                onChange={(e) => setCustomCTA(e.target.value)}
+                placeholder="הכנס טקסט חופשי..."
+                className="w-full px-3 py-2 border border-border rounded-md text-right focus:outline-none focus:ring-2 focus:ring-primary"
+                dir="rtl"
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {message && message.trim() && (
         <WhatsappTemplatePreview template={message} />

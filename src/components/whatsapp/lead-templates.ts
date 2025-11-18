@@ -6,7 +6,7 @@ export interface WhatsappLeadTemplate {
   name: string;
   description: string;
   type: 'lead';
-  generateMessage: (leadName: string, leadSource?: string) => string;
+  generateMessage: (leadName: string, leadSource?: string, cta?: string) => string;
   templateContent?: string;
 }
 
@@ -20,19 +20,19 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
 
 קיבלנו את הפנייה שלך{{leadSource}} וראינו שאתה מתעניין ברכב.
 
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+{{CTA}}? 📞
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (leadName: string, leadSource?: string) => {
+    generateMessage: (leadName: string, leadSource?: string, cta = 'מתי תהיה זמין לשיחת ייעוץ קצרה') => {
       const sourceText = leadSource ? ` דרך ${leadSource}` : '';
       return `היי ${leadName}! 👋
 
 קיבלנו את הפנייה שלך${sourceText} וראינו שאתה מתעניין ברכב.
 
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+${cta}? 📞
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
@@ -48,16 +48,16 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     templateContent: `היי {{leadName}}! 👋  
 
 רק רצינו לוודא שקיבלת את הפרטים על הרכב{{carDetails}} 🚗  
-אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
+אם תרצה {{CTA}} - נשמח לעזור!
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (leadName: string, carDetails?: string) => {
+    generateMessage: (leadName: string, carDetails?: string, cta = 'לתאם שיחה קצרה או להגיע לצפייה') => {
       const carText = carDetails ? ` ${carDetails}` : '';
       return `היי ${leadName}! 👋  
 
 רק רצינו לוודא שקיבלת את הפרטים על הרכב${carText} 🚗  
-אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
+אם תרצה ${cta} - נשמח לעזור!
 
 בברכה,
 צוות המכירות`;

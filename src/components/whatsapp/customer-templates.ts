@@ -4,7 +4,7 @@ export interface WhatsappCustomerTemplate {
   name: string;
   description: string;
   type: 'customer';
-  generateMessage: (customerName: string, customerSource?: string) => string;
+  generateMessage: (customerName: string, customerSource?: string, cta?: string) => string;
   templateContent?: string;
 }
 
@@ -19,7 +19,7 @@ export const whatsappCustomerTemplates: WhatsappCustomerTemplate[] = [
 קיבלנו את פנייתך 🙏 
 
 צוות המכירות שלנו יחזור אליך בקרוב 😊`,
-    generateMessage: (customerName: string) => {
+    generateMessage: (customerName: string, customerSource?: string, cta?: string) => {
       return `שלום ${customerName}! 👋
 
 קיבלנו את פנייתך 🙏 
@@ -35,22 +35,23 @@ export const whatsappCustomerTemplates: WhatsappCustomerTemplate[] = [
     templateContent: `היי {{customerName}}! 👋  
 
 רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
-אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
+אם תרצה {{CTA}} - נשמח לעזור!
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (customerName: string, carDetails?: string) => {
+    generateMessage: (customerName: string, carDetails?: string, cta = 'לתאם שיחה קצרה או להגיע לצפייה') => {
       const content = `היי {{customerName}}! 👋  
 
 רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
-אם תרצה לתאם שיחה קצרה או להגיע לצפייה — נשמח לעזור!
+אם תרצה {{CTA}} - נשמח לעזור!
 
 בברכה,
 צוות המכירות`;
       
       return content
         .replace(/\{\{customerName\}\}/g, customerName || '')
-        .replace(/\{\{carDetails\}\}/g, carDetails || '');
+        .replace(/\{\{carDetails\}\}/g, carDetails || '')
+        .replace(/\{\{CTA\}\}/g, cta || 'לתאם שיחה קצרה או להגיע לצפייה');
     }
   }
 ];
