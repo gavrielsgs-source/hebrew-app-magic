@@ -44,9 +44,6 @@ export function UserNav() {
   // אם אין משתמש, לא מציג כלום
   if (!user) return null;
 
-  // Debug log to track profile loading
-  console.log("UserNav - Profile state:", { profile, isLoading });
-
   // קבלת האות הראשונה מהאימייל או משם המשתמש לתצוגה באווטאר
   const userInitial = profile?.full_name 
     ? profile.full_name[0].toUpperCase() 
