@@ -9,6 +9,7 @@ import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { Badge } from "@/components/ui/badge";
 import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
+import { whatsappCustomerTemplates } from "@/components/whatsapp/customer-templates";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TemplateCardProps {
@@ -35,7 +36,7 @@ const mockLeadSource = "פייסבוק";
 
 export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) {
   // Check if this is a default (system) template
-  const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
+  const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates, ...whatsappCustomerTemplates];
   const isDefaultTemplate = allDefaultTemplates.some(t => t.id === template.id);
   
   // Generate preview message based on template type
@@ -43,25 +44,38 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
     try {
       // If template has templateContent, use it directly for preview
       if ((template as any).templateContent && (template as any).templateContent.trim()) {
+        let preview = (template as any).templateContent;
+        
         if (template.type === 'car') {
-          // Replace car placeholders with mock data
-          return (template as any).templateContent
-            .replace(/\{\{car\.make\}\}/g, mockCar.make)
-            .replace(/\{\{car\.model\}\}/g, mockCar.model)
-            .replace(/\{\{car\.year\}\}/g, mockCar.year.toString())
-            .replace(/\{\{car\.price\}\}/g, `₪${mockCar.price.toLocaleString()}`)
-            .replace(/\{\{car\.mileage\}\}/g, `${mockCar.mileage.toLocaleString()} ק"מ`)
-            .replace(/\{\{car\.exteriorColor\}\}/g, mockCar.exterior_color)
-            .replace(/\{\{car\.engineSize\}\}/g, mockCar.engine_size)
-            .replace(/\{\{car\.transmission\}\}/g, mockCar.transmission)
-            .replace(/\{\{car\.fuelType\}\}/g, mockCar.fuel_type);
+          // Replace numbered placeholders ({{1}}, {{2}}, etc.)
+          preview = preview
+            .replace(/\{\{1\}\}/g, mockCar.make)
+            .replace(/\{\{2\}\}/g, mockCar.model)
+            .replace(/\{\{3\}\}/g, mockCar.year.toString())
+            .replace(/\{\{4\}\}/g, `₪${mockCar.price.toLocaleString()}`)
+            .replace(/\{\{5\}\}/g, `${mockCar.mileage.toLocaleString()} ק"מ`)
+            .replace(/\{\{6\}\}/g, mockCar.exterior_color)
+            .replace(/\{\{7\}\}/g, mockCar.engine_size)
+            .replace(/\{\{8\}\}/g, mockCar.transmission)
+            .replace(/\{\{9\}\}/g, mockCar.fuel_type)
+            .replace(/\{\{CTA\}\}/g, 'לקבוע פגישה')
+            .replace(/\{\{10\}\}/g, 'לקבוע פגישה');
         } else if (template.type === 'lead') {
-          // Replace lead placeholders with mock data
-          return (template as any).templateContent
+          // Replace lead placeholders
+          preview = preview
             .replace(/\{\{leadName\}\}/g, mockLeadName)
-            .replace(/\{\{leadSource\}\}/g, mockLeadSource);
+            .replace(/\{\{leadSource\}\}/g, ` דרך ${mockLeadSource}`)
+            .replace(/\{\{carDetails\}\}/g, ` ${mockCar.make} ${mockCar.model} ${mockCar.year}`)
+            .replace(/\{\{CTA\}\}/g, 'לקבוע שיחה');
+        } else if (template.type === 'customer') {
+          // Replace customer placeholders
+          preview = preview
+            .replace(/\{\{customerName\}\}/g, mockLeadName)
+            .replace(/\{\{carDetails\}\}/g, `${mockCar.make} ${mockCar.model} ${mockCar.year}`)
+            .replace(/\{\{CTA\}\}/g, 'לקבוע שיחה');
         }
-        return (template as any).templateContent;
+        
+        return preview;
       }
 
       // First try to use the template's generateMessage function directly
@@ -74,7 +88,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       }
 
       // Fallback: Try to find in default templates
-      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
+      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates, ...whatsappCustomerTemplates];
       const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
       
       if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {

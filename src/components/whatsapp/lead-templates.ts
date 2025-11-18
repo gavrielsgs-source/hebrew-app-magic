@@ -1,5 +1,6 @@
 
 import { WhatsappTemplate } from "./whatsapp-templates";
+import { WhatsappCustomerTemplate } from "./customer-templates";
 
 export interface WhatsappLeadTemplate {
   id: string;
@@ -65,5 +66,5 @@ ${cta}? 📞
   }
 ];
 
-// Unified template type for both car and lead templates
-export type UnifiedTemplate = WhatsappTemplate | WhatsappLeadTemplate;
+// Unified template type for both car, lead, and customer templates
+export type UnifiedTemplate = WhatsappTemplate | WhatsappLeadTemplate | WhatsappCustomerTemplate;

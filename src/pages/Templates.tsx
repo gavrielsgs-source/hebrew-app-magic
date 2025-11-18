@@ -8,6 +8,7 @@ import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { whatsappTemplates, WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
 import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/components/whatsapp/lead-templates";
+import { whatsappCustomerTemplates } from "@/components/whatsapp/customer-templates";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useToast } from "@/hooks/use-toast";
@@ -43,7 +44,8 @@ export default function Templates() {
   // Combine all default templates
   const allDefaultTemplates: UnifiedTemplate[] = [
     ...whatsappTemplates,
-    ...whatsappLeadTemplates
+    ...whatsappLeadTemplates,
+    ...whatsappCustomerTemplates as any[]
   ];
 
   useEffect(() => {
