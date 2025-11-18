@@ -42,7 +42,32 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   // Generate preview message based on template type
   const generatePreviewMessage = () => {
     try {
-      // If template has templateContent, use it directly for preview
+      // FIRST: Try to find in default templates and use generateMessage
+      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates, ...whatsappCustomerTemplates];
+      const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
+      
+      if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
+        if (originalTemplate.type === 'car') {
+          return originalTemplate.generateMessage(mockCar, 'לקבוע פגישה');
+        } else if (originalTemplate.type === 'lead') {
+          return originalTemplate.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
+        } else if ((originalTemplate as any).type === 'customer') {
+          return (originalTemplate as any).generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, 'לקבוע שיחה');
+        }
+      }
+
+      // SECOND: Try to use the template's generateMessage function directly
+      if (template.generateMessage && typeof template.generateMessage === 'function') {
+        if (template.type === 'car') {
+          return template.generateMessage(mockCar, 'לקבוע פגישה');
+        } else if (template.type === 'lead') {
+          return template.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
+        } else if (template.type === 'customer') {
+          return template.generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, 'לקבוע שיחה');
+        }
+      }
+
+      // THIRD: If template has templateContent with placeholders, replace them
       if ((template as any).templateContent && (template as any).templateContent.trim()) {
         let preview = (template as any).templateContent;
         
@@ -60,6 +85,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             .replace(/\{\{9\}\}/g, mockCar.fuel_type)
             .replace(/\{\{CTA\}\}/g, 'לקבוע פגישה')
             .replace(/\{\{10\}\}/g, 'לקבוע פגישה');
+          return preview;
         } else if (template.type === 'lead') {
           // Replace lead placeholders
           preview = preview
@@ -67,39 +93,14 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
             .replace(/\{\{leadSource\}\}/g, ` דרך ${mockLeadSource}`)
             .replace(/\{\{carDetails\}\}/g, ` ${mockCar.make} ${mockCar.model} ${mockCar.year}`)
             .replace(/\{\{CTA\}\}/g, 'לקבוע שיחה');
+          return preview;
         } else if (template.type === 'customer') {
           // Replace customer placeholders
           preview = preview
             .replace(/\{\{customerName\}\}/g, mockLeadName)
             .replace(/\{\{carDetails\}\}/g, `${mockCar.make} ${mockCar.model} ${mockCar.year}`)
             .replace(/\{\{CTA\}\}/g, 'לקבוע שיחה');
-        }
-        
-        return preview;
-      }
-
-      // First try to use the template's generateMessage function directly
-      if (template.generateMessage && typeof template.generateMessage === 'function') {
-        if (template.type === 'car') {
-          return template.generateMessage(mockCar, 'לקבוע פגישה');
-        } else if (template.type === 'lead') {
-          return template.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
-        } else if (template.type === 'customer') {
-          return template.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
-        }
-      }
-
-      // Fallback: Try to find in default templates
-      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates, ...whatsappCustomerTemplates];
-      const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
-      
-      if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
-        if (originalTemplate.type === 'car') {
-          return originalTemplate.generateMessage(mockCar, 'לקבוע פגישה');
-        } else if (originalTemplate.type === 'lead') {
-          return originalTemplate.generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
-        } else if ((originalTemplate as any).type === 'customer') {
-          return (originalTemplate as any).generateMessage(mockLeadName, mockLeadSource, 'לקבוע שיחה');
+          return preview;
         }
       }
       
