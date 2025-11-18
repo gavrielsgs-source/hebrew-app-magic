@@ -13,12 +13,6 @@ export function useIsMobile() {
         const width = window.innerWidth;
         const isMobileScreen = width < MOBILE_BREAKPOINT;
         
-        console.log('Mobile detection:', {
-          width,
-          isMobileScreen,
-          userAgent: navigator.userAgent
-        });
-        
         setIsMobile(isMobileScreen);
       } catch (error) {
         console.error('Error in mobile detection:', error);
