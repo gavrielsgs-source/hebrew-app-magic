@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUpdateLead } from "@/hooks/use-leads";
@@ -33,7 +35,7 @@ export function WhatsappLeadTemplateSelector({
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("lead-templates");
   const [templateType, setTemplateType] = useState<"lead" | "car">("lead");
-  const [selectedCTA, setSelectedCTA] = useState<string>("לקבוע פגישה");
+  const [selectedCTA, setSelectedCTA] = useState<string>("פגישה");
   const [customCTA, setCustomCTA] = useState<string>("");
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
@@ -51,10 +53,11 @@ export function WhatsappLeadTemplateSelector({
           description: dbTemplate.description,
           type: 'lead' as const,
           templateContent: dbTemplate.template_content,
-          generateMessage: (leadName: string, leadSource?: string) => {
+          generateMessage: (leadName: string, leadSource?: string, cta?: string) => {
             return dbTemplate.template_content
               .replace(/\{\{leadName\}\}/g, leadName || '')
               .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '')
+              .replace(/\{\{CTA\}\}/g, cta || 'פגישה')
               .replace(/\$\{leadName\}/g, leadName || '')
               .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, leadSource ? ` דרך ${leadSource}` : '');
           }
@@ -104,17 +107,12 @@ export function WhatsappLeadTemplateSelector({
       setLeadTemplates(allLeadTemplates);
       setCarTemplates(allCarTemplates);
 
-      // Default selection (prefer client_intro)
-      const clientIntro = allLeadTemplates.find(t => t.id === 'client_intro');
-      if (clientIntro) {
-        setSelectedTemplate(clientIntro);
-        setTemplateType('lead');
-        setActiveTab('lead-templates');
-      } else if (allLeadTemplates.length > 0) {
+      // Set first template as default
+      if (allLeadTemplates.length > 0 && !selectedTemplate) {
         setSelectedTemplate(allLeadTemplates[0]);
         setTemplateType('lead');
         setActiveTab('lead-templates');
-      } else if (allCarTemplates.length > 0) {
+      } else if (allCarTemplates.length > 0 && !selectedTemplate) {
         setSelectedTemplate(allCarTemplates[0]);
         setTemplateType('car');
         setActiveTab('car-templates');
@@ -134,7 +132,7 @@ export function WhatsappLeadTemplateSelector({
   }, [dbTemplates]);
 
   const ctaOptions = [
-    { value: "לקבוע פגישה", label: "לקבוע פגישה" },
+    { value: "פגישה", label: "פגישה" },
     { value: "לקבוע שיחה", label: "לקבוע שיחה" },
     { value: "לקבוע נסיעת מבחן", label: "לקבוע נסיעת מבחן" },
     { value: "custom", label: "טקסט חופשי" }
@@ -142,7 +140,7 @@ export function WhatsappLeadTemplateSelector({
 
   const getCurrentCTA = () => {
     if (selectedCTA === "custom") {
-      return customCTA || "לקבוע פגישה";
+      return customCTA || "פגישה";
     }
     return selectedCTA;
   };
@@ -404,31 +402,27 @@ export function WhatsappLeadTemplateSelector({
 
       {activeTab !== "custom" && (
         <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
-          <label className="block text-sm font-medium">בחר פעולה (CTA)</label>
-          <div className="grid grid-cols-2 gap-2">
-            {ctaOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setSelectedCTA(option.value)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  selectedCTA === option.value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background border border-border hover:bg-muted"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <label className="block text-sm font-medium text-right">בחר פעולה (CTA)</label>
+          <Select value={selectedCTA} onValueChange={setSelectedCTA}>
+            <SelectTrigger className="w-full text-right" dir="rtl">
+              <SelectValue placeholder="בחר פעולה..." />
+            </SelectTrigger>
+            <SelectContent>
+              {ctaOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value} className="text-right">
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {selectedCTA === "custom" && (
             <div className="mt-3">
-              <input
+              <Input
                 type="text"
                 value={customCTA}
                 onChange={(e) => setCustomCTA(e.target.value)}
                 placeholder="הכנס טקסט חופשי..."
-                className="w-full px-3 py-2 border border-border rounded-md text-right focus:outline-none focus:ring-2 focus:ring-primary"
+                className="text-right"
                 dir="rtl"
               />
             </div>
