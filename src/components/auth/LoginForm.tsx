@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Lock } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -122,14 +123,12 @@ export default function LoginForm() {
 
         {/* Remember Me Checkbox */}
         <div className="flex items-center space-x-2 space-x-reverse">
-          <input
+          <Checkbox
             id="remember"
-            type="checkbox"
             checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 text-carslead-purple focus:ring-carslead-purple border-gray-300 rounded"
+            onCheckedChange={(checked) => setRememberMe(checked as boolean)}
           />
-          <Label htmlFor="remember" className="text-sm text-gray-600">
+          <Label htmlFor="remember" className="text-sm text-gray-600 cursor-pointer">
             זכור אותי במכשיר זה
           </Label>
         </div>
