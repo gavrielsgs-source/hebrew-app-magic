@@ -4,7 +4,7 @@ import { Plus, RefreshCw, MessageSquare } from "lucide-react";
 
 interface TemplateHeaderProps {
   onNewTemplate: () => void;
-  onResetDefaults: () => void;
+  onResetDefaults?: () => void;
   canAddTemplate?: boolean;
 }
 
@@ -32,15 +32,17 @@ export function TemplateHeader({
         
         {/* כפתורי פעולה - צד ימין */}
         <div className="flex gap-3 order-2 sm:order-2">
-          <Button
-            variant="outline"
-            size="default"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-2"
-            onClick={onResetDefaults}
-          >
-            <RefreshCw className="h-4 w-4" />
-            אפס לברירת מחדל
-          </Button>
+          {onResetDefaults && (
+            <Button
+              variant="outline"
+              size="default"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-2"
+              onClick={onResetDefaults}
+            >
+              <RefreshCw className="h-4 w-4" />
+              אפס לברירת מחדל
+            </Button>
+          )}
           <Button
             size="default"
             className="bg-white text-brand-primary hover:bg-white/90 flex items-center gap-2 font-semibold"
