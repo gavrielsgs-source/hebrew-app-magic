@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button";
 import { TemplateHeader } from "@/components/templates/TemplateHeader";
 import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateDialog } from "@/components/templates/TemplateDialog";
-import { whatsappTemplates, WhatsappTemplate } from "@/components/whatsapp/whatsapp-templates";
-import { whatsappLeadTemplates, WhatsappLeadTemplate, UnifiedTemplate } from "@/components/whatsapp/lead-templates";
-import { whatsappCustomerTemplates } from "@/components/whatsapp/customer-templates";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useToast } from "@/hooks/use-toast";
@@ -20,8 +17,21 @@ import {
   useDeleteWhatsappTemplate
 } from "@/hooks/whatsapp-templates";
 
+// Define types for templates
+type TemplateType = 'car' | 'lead' | 'customer';
+
+interface UnifiedTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: TemplateType;
+  template_content?: string;
+  templateContent?: string;
+  is_default?: boolean;
+  user_id?: string;
+}
+
 export default function Templates() {
-  const [templates, setTemplates] = useState<UnifiedTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNew, setIsNew] = useState(false);
@@ -30,72 +40,26 @@ export default function Templates() {
     name: '',
     description: '',
     type: 'lead',
-    generateMessage: () => '',
     templateContent: ''
   });
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { data: dbTemplates } = useWhatsappTemplates();
+  const { data: dbTemplates, isLoading } = useWhatsappTemplates();
   const { mutate: createTemplate, isPending: isCreating } = useCreateWhatsappTemplate();
   const { mutate: updateDbTemplate, isPending: isUpdating } = useUpdateWhatsappTemplate();
   const { mutate: deleteDbTemplate, isPending: isDeleting } = useDeleteWhatsappTemplate();
-  const [cloudTemplateIds, setCloudTemplateIds] = useState<Set<string>>(new Set());
 
-  // Combine all default templates
-  const allDefaultTemplates: UnifiedTemplate[] = [
-    ...whatsappTemplates,
-    ...whatsappLeadTemplates,
-    ...whatsappCustomerTemplates as any[]
-  ];
-
-  useEffect(() => {
-    const savedTemplates = localStorage.getItem('whatsapp-templates');
-    console.log('Current localStorage templates:', savedTemplates);
-    
-    // Force reset localStorage to include templateContent for existing templates
-    const shouldReset = !savedTemplates || !savedTemplates.includes('templateContent');
-    
-    if (shouldReset) {
-      console.log('Resetting localStorage with updated templates');
-      setTemplates(allDefaultTemplates);
-      localStorage.setItem('whatsapp-templates', JSON.stringify(allDefaultTemplates));
-    } else {
-      const parsed = JSON.parse(savedTemplates);
-      // Always ensure templates have templateContent
-      const validTemplates = parsed.map((template: any) => ({
-        ...template,
-        templateContent: template.templateContent || '', 
-      }));
-      setTemplates(validTemplates);
-    }
-  }, []);
-
-  // Track which templates are in the cloud
-  useEffect(() => {
-    if (dbTemplates) {
-      const cloudIds = new Set(dbTemplates.map(t => t.id));
-      setCloudTemplateIds(cloudIds);
-    }
-  }, [dbTemplates]);
-
-  const saveTemplates = (newTemplates: UnifiedTemplate[]) => {
-    setTemplates(newTemplates);
-    localStorage.setItem('whatsapp-templates', JSON.stringify(newTemplates));
-    console.log('Templates saved to localStorage:', newTemplates);
-  };
+  // Read templates directly from database
+  const templates: UnifiedTemplate[] = dbTemplates?.map(t => ({
+    ...t,
+    templateContent: t.template_content || '',
+  })) || [];
 
   const addTemplate = (template: Omit<UnifiedTemplate, 'id'>) => {
-    const newTemplate = {
-      ...template,
-      id: Date.now().toString()
-    };
-    const updatedTemplates = [...templates, newTemplate];
-    saveTemplates(updatedTemplates);
-    
-    // Auto-sync to cloud for custom templates
+    // Save directly to database
     createTemplate({
-      name: newTemplate.name,
-      description: newTemplate.description || '',
+      name: template.name,
+      description: template.description || '',
       type: newTemplate.type,
       template_content: newTemplate.templateContent || '',
       is_shared: false,
