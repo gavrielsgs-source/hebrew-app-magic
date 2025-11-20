@@ -220,17 +220,21 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                                 </Button>
                               }
                             />
-                            <Button 
-                              variant="outline" 
-                              size={isMobile ? "default" : "lg"}
-                              className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
-                              onClick={() => {
-                                toast.info('הורדת מסמכים תהיה זמינה בקרוב');
-                              }}
-                            >
-                              <Download className="h-5 w-5 ml-2" />
-                              הורד מסמך
-                            </Button>
+                            <DocumentPreviewDialog
+                              documentId={doc.id}
+                              documentTitle={doc.title}
+                              documentType={doc.type}
+                              trigger={
+                                <Button 
+                                  variant="outline" 
+                                  size={isMobile ? "default" : "lg"}
+                                  className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
+                                >
+                                  <Download className="h-5 w-5 ml-2" />
+                                  הורד PDF
+                                </Button>
+                              }
+                            />
                             <Button 
                               variant="outline" 
                               size={isMobile ? "default" : "lg"}
