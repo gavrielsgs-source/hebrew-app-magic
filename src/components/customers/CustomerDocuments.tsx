@@ -220,20 +220,14 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                             />
                             <Button 
                               variant="outline" 
-                              size="sm" 
-                              className="rounded-xl hover:bg-green-50 hover:border-green-300"
+                              size="lg" 
+                              className="rounded-xl text-base px-6 hover:bg-green-50 hover:border-green-300"
                               onClick={() => {
-                                // Create a link and trigger download
-                                const link = document.createElement('a');
-                                link.href = `/api/documents/${doc.id}/download`;
-                                link.download = `${doc.title}.pdf`;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                                toast.success('המסמך הורד בהצלחה');
+                                toast.info('הורדת מסמכים תהיה זמינה בקרוב');
                               }}
                             >
-                              <Download className="h-4 w-4" />
+                              <Download className="h-5 w-5 ml-2" />
+                              הורד מסמך
                             </Button>
                             <Button 
                               variant="outline" 
