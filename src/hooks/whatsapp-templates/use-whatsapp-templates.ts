@@ -11,6 +11,7 @@ export interface WhatsappTemplate {
   template_content: string;
   is_default: boolean;
   is_shared: boolean;
+  facebook_template_name?: string;
   created_at: string;
   updated_at: string;
 }

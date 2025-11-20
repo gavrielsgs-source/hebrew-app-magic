@@ -6,6 +6,7 @@ export interface WhatsappTemplate {
   type: 'car';
   generateMessage: (carName: string, car: any, cta?: string) => string;
   templateContent?: string;
+  facebookTemplateName?: string;
 }
 
 export const whatsappTemplates: WhatsappTemplate[] = [

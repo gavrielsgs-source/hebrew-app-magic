@@ -53,6 +53,7 @@ export function WhatsappLeadTemplateSelector({
           description: dbTemplate.description,
           type: 'lead' as const,
           templateContent: dbTemplate.template_content,
+          facebookTemplateName: dbTemplate.facebook_template_name,
           generateMessage: (leadName: string, leadSource?: string, cta?: string) => {
             return dbTemplate.template_content
               .replace(/\{\{leadName\}\}/g, leadName || '')
@@ -71,11 +72,10 @@ export function WhatsappLeadTemplateSelector({
           description: dbTemplate.description,
           type: 'car' as const,
           templateContent: dbTemplate.template_content,
+          facebookTemplateName: dbTemplate.facebook_template_name,
           generateMessage: (car: any, cta?: string) => {
             return dbTemplate.template_content
-              .replace(/\{make\}/g, car?.make || 'רכב')
-              .replace(/\{model\}/g, car?.model || '')
-              .replace(/\{year\}/g, car?.year || '')
+              .replace(/\{\{carName\}\}/g, car ? `${car.make} ${car.model} ${car.year}` : 'רכב')
               .replace(/\{price\}/g, car?.price ? car.price.toLocaleString() : '')
               .replace(/\{kilometers\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
               .replace(/\{mileage\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
