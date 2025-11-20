@@ -90,8 +90,22 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     try {
       toast.loading('מכין את המסמך להורדה...');
 
-      // Check if PDF already exists in storage
-      if (doc.file_path) {
+      // For attached documents that already have a URL, download directly
+      if (doc.status === 'attached' && doc.url) {
+        const link = document.createElement('a');
+        link.href = doc.url;
+        link.download = `${doc.title}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.dismiss();
+        toast.success('המסמך הורד בהצלחה');
+        return;
+      }
+
+      // Check if PDF already exists in storage for customer documents
+      if (doc.file_path && doc.status !== 'attached') {
         const { data, error } = await supabase.storage
           .from('customer-documents')
           .download(doc.file_path);
@@ -111,7 +125,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         }
       }
 
-      // Generate PDF from HTML content
+      // Generate PDF from HTML content for customer documents
       const element = document.createElement('div');
       element.innerHTML = `
         <div style="padding: 40px; font-family: Arial, sans-serif; direction: rtl;">
