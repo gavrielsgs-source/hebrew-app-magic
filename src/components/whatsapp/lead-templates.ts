@@ -9,6 +9,7 @@ export interface WhatsappLeadTemplate {
   type: 'lead';
   generateMessage: (leadName: string, leadSource?: string, cta?: string) => string;
   templateContent?: string;
+  facebookTemplateName?: string;
 }
 
 export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [

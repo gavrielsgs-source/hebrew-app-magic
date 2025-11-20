@@ -6,6 +6,7 @@ export interface WhatsappCustomerTemplate {
   type: 'customer';
   generateMessage: (customerName: string, customerSource?: string, cta?: string) => string;
   templateContent?: string;
+  facebookTemplateName?: string;
 }
 
 export const whatsappCustomerTemplates: WhatsappCustomerTemplate[] = [

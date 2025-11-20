@@ -1359,6 +1359,7 @@ export type Database = {
           company_id: string | null
           created_at: string
           description: string | null
+          facebook_template_name: string | null
           id: string
           is_default: boolean | null
           is_shared: boolean | null
@@ -1372,6 +1373,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           description?: string | null
+          facebook_template_name?: string | null
           id?: string
           is_default?: boolean | null
           is_shared?: boolean | null
@@ -1385,6 +1387,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           description?: string | null
+          facebook_template_name?: string | null
           id?: string
           is_default?: boolean | null
           is_shared?: boolean | null

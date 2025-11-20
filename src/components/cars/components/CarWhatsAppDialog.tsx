@@ -54,6 +54,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         description: dbTemplate.description || '',
         type: 'car' as const,
         templateContent: dbTemplate.template_content,
+        facebookTemplateName: dbTemplate.facebook_template_name,
         generateMessage: (carName: string, car: any) => {
           return dbTemplate.template_content
             .replace(/\{carName\}/g, carName)
@@ -174,8 +175,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             templateName: 'car_template',
             imageUrl: carImageUrl,
             parameters: [
-              car.model,
-              car.year.toString(),
+              `${car.make} ${car.model} ${car.year}`,
               car.price.toLocaleString(),
               car.fuel_type || 'לא צוין',
               car.kilometers.toLocaleString(),
