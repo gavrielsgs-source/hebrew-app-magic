@@ -98,7 +98,7 @@ export function SwipeDialog({ children, onOpenChange, open, ...props }: SwipeDia
     <Dialog open={open} onOpenChange={onOpenChange} {...props}>
       <DialogContent 
         ref={contentRef}
-        className={isMobile ? "transition-none mobile-scroll max-h-[90vh] overflow-y-auto safe-area-inset touch-action-manipulation" : ""}
+        className={isMobile ? "transition-none mobile-scroll safe-area-inset touch-action-manipulation" : ""}
         style={isMobile ? {
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
