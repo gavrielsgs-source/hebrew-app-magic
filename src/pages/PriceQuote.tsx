@@ -16,8 +16,10 @@ import { Switch } from "@/components/ui/switch";
 import { cn, formatPrice } from "@/lib/utils";
 import { PriceQuoteData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
+import { CustomerSearchSelect } from "@/components/customers/CustomerSearchSelect";
 import { LeadSearchSelect } from "@/components/leads/LeadSearchSelect";
 import { useLeads } from "@/hooks/use-leads";
+import { useCustomers } from "@/hooks/customers";
 import { usePriceQuote } from "@/hooks/price-quote/use-price-quote";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -27,6 +29,7 @@ import { useUploadProductionDocument } from "@/hooks/use-upload-production-docum
 const priceQuoteSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
   leadId: z.string().optional(),
+  customerId: z.string().optional(),
   includeVAT: z.boolean().default(true),
   customer: z.object({
     fullName: z.string().min(2, "שם מלא נדרש"),
@@ -56,12 +59,14 @@ export default function PriceQuote() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const { leads } = useLeads();
+  const { data: customers } = useCustomers();
   const { createPriceQuote, isCreating } = usePriceQuote();
   const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
   const [showPreview, setShowPreview] = useState(false);
   const [savedQuoteData, setSavedQuoteData] = useState<PriceQuoteData | null>(null);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [useExistingLead, setUseExistingLead] = useState(false);
+  const [useExistingCustomer, setUseExistingCustomer] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   const form = useForm<PriceQuoteFormValues>({
@@ -119,6 +124,22 @@ export default function PriceQuote() {
       
       // If lead has no city/address, keep the default values
       // Don't override with empty values
+    }
+  };
+
+  const handleCustomerSelect = (customerId: string) => {
+    const selectedCustomer = customers?.find(customer => customer.id === customerId);
+    if (selectedCustomer) {
+      // Set customerId in form
+      form.setValue("customerId", customerId);
+      
+      // Sync customer data
+      form.setValue("customer.fullName", selectedCustomer.full_name || "");
+      form.setValue("customer.firstName", selectedCustomer.full_name?.split(' ')[0] || "");
+      form.setValue("customer.phone", selectedCustomer.phone || "");
+      form.setValue("customer.email", selectedCustomer.email || "");
+      form.setValue("customer.city", selectedCustomer.city || "תל אביב");
+      form.setValue("customer.address", selectedCustomer.address || "");
     }
   };
 
@@ -192,13 +213,26 @@ export default function PriceQuote() {
       // Generate PDF as Blob and upload to cloud
       try {
         const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
+        
+        // Determine entity type and ID
+        let entityType: string | undefined;
+        let entityId: string | undefined;
+        
+        if (data.customerId) {
+          entityType = 'customer';
+          entityId = data.customerId;
+        } else if (data.leadId) {
+          entityType = 'lead';
+          entityId = data.leadId;
+        }
+        
         const url = await uploadDocument({
           pdfBlob,
           documentType: 'price_quote',
           documentNumber: result.quoteNumber,
           customerName: result.customer.fullName,
-          entityType: data.leadId ? 'lead' : undefined,
-          entityId: data.leadId || undefined
+          entityType,
+          entityId
         });
         
         setDocumentUrl(url);
@@ -374,33 +408,61 @@ export default function PriceQuote() {
                       type="button"
                       variant={useExistingLead ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setUseExistingLead(true)}
+                      onClick={() => {
+                        setUseExistingLead(true);
+                        setUseExistingCustomer(false);
+                      }}
                       className="flex-1 h-10"
                     >
-                      בחר לקוח קיים
+                      בחר ליד
                     </Button>
                     <Button
                       type="button"
-                      variant={!useExistingLead ? "default" : "outline"}
+                      variant={useExistingCustomer ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setUseExistingCustomer(true);
+                        setUseExistingLead(false);
+                      }}
+                      className="flex-1 h-10"
+                    >
+                      בחר לקוח
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={!useExistingLead && !useExistingCustomer ? "default" : "outline"}
                       size="sm"
                       onClick={() => {
                         setUseExistingLead(false);
-                        // Clear leadId when switching to new customer
+                        setUseExistingCustomer(false);
+                        // Clear IDs when switching to new customer
                         form.setValue("leadId", undefined);
+                        form.setValue("customerId", undefined);
                       }}
                       className="flex-1 h-10 flex items-center gap-2"
                     >
                       <UserPlus className="h-4 w-4" />
-                      לקוח חדש
+                      חדש
                     </Button>
                   </div>
 
                   {useExistingLead && (
                     <div className="space-y-2">
-                      <Label htmlFor="leadId">בחר לקוח מהרשימה</Label>
+                      <Label htmlFor="leadId">בחר ליד מהרשימה</Label>
                       <LeadSearchSelect
                         value={form.watch("leadId") || ""}
                         onValueChange={handleLeadSelect}
+                        placeholder="חפש ליד..."
+                      />
+                    </div>
+                  )}
+
+                  {useExistingCustomer && (
+                    <div className="space-y-2">
+                      <Label htmlFor="customerId">בחר לקוח מהרשימה</Label>
+                      <CustomerSearchSelect
+                        value={form.watch("customerId") || ""}
+                        onValueChange={handleCustomerSelect}
                         placeholder="חפש לקוח..."
                       />
                     </div>
@@ -780,23 +842,39 @@ export default function PriceQuote() {
                       type="button"
                       variant={useExistingLead ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setUseExistingLead(true)}
+                      onClick={() => {
+                        setUseExistingLead(true);
+                        setUseExistingCustomer(false);
+                      }}
                     >
-                      בחר לקוח קיים
+                      בחר ליד
                     </Button>
                     <Button
                       type="button"
-                      variant={!useExistingLead ? "default" : "outline"}
+                      variant={useExistingCustomer ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setUseExistingCustomer(true);
+                        setUseExistingLead(false);
+                      }}
+                    >
+                      בחר לקוח
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={!useExistingLead && !useExistingCustomer ? "default" : "outline"}
                       size="sm"
                       onClick={() => {
                         setUseExistingLead(false);
-                        // Clear leadId when switching to new customer
+                        setUseExistingCustomer(false);
+                        // Clear IDs when switching to new customer
                         form.setValue("leadId", undefined);
+                        form.setValue("customerId", undefined);
                       }}
                       className="flex items-center gap-2"
                     >
                       <UserPlus className="h-4 w-4" />
-                      לקוח חדש
+                      חדש
                     </Button>
                   </div>
                   <h3 className="text-lg font-semibold">פרטי הלקוח</h3>
@@ -804,10 +882,21 @@ export default function PriceQuote() {
 
                 {useExistingLead && (
                   <div className="space-y-2">
-                    <Label htmlFor="leadId">בחר לקוח מהרשימה</Label>
+                    <Label htmlFor="leadId">בחר ליד מהרשימה</Label>
                     <LeadSearchSelect
                       value={form.watch("leadId") || ""}
                       onValueChange={handleLeadSelect}
+                      placeholder="חפש ליד..."
+                    />
+                  </div>
+                )}
+
+                {useExistingCustomer && (
+                  <div className="space-y-2">
+                    <Label htmlFor="customerId">בחר לקוח מהרשימה</Label>
+                    <CustomerSearchSelect
+                      value={form.watch("customerId") || ""}
+                      onValueChange={handleCustomerSelect}
                       placeholder="חפש לקוח..."
                     />
                   </div>
