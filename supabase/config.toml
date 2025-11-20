@@ -52,13 +52,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.check-trial-expiration]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-trial-reminders]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.cancel-subscription]
 verify_jwt = true
@@ -70,7 +70,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.exchange-for-long-lived-token]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-whatsapp-message]
 verify_jwt = true
