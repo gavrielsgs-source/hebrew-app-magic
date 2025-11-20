@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Eye, Download, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import html2pdf from 'html2pdf.js';
 
 interface DocumentPreviewDialogProps {
   documentId: string;
@@ -125,15 +126,93 @@ export function DocumentPreviewDialog({
     };
   }, [previewUrl]);
 
-  const handleDownload = () => {
-    if (previewUrl) {
-      const link = document.createElement('a');
-      link.href = previewUrl;
-      link.download = `${documentTitle}.html`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('המסמך הורד בהצלחה');
+  const handleDownload = async () => {
+    try {
+      setLoading(true);
+      
+      // Check if PDF already exists in storage
+      const { data: docData } = await supabase
+        .from('customer_documents')
+        .select('file_path')
+        .eq('id', documentId)
+        .single();
+
+      if (docData?.file_path) {
+        // Download existing PDF from storage
+        const { data: fileData, error: downloadError } = await supabase.storage
+          .from('customer-documents')
+          .download(docData.file_path);
+
+        if (downloadError) throw downloadError;
+
+        // Create download link
+        const url = URL.createObjectURL(fileData);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${documentTitle}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast.success('המסמך הורד בהצלחה');
+      } else {
+        // Generate PDF from preview content
+        if (!previewUrl) {
+          await generatePreview();
+        }
+
+        // Create a temporary element for PDF generation
+        const element = document.createElement('div');
+        element.innerHTML = await fetch(previewUrl!).then(r => r.text());
+        element.style.direction = 'rtl';
+        element.style.fontFamily = 'Arial, sans-serif';
+
+        // Generate PDF
+        const opt = {
+          margin: 10,
+          filename: `${documentTitle}.pdf`,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        };
+
+        const pdfBlob = await html2pdf().from(element).set(opt).output('blob');
+
+        // Upload to storage
+        const fileName = `${documentId}.pdf`;
+        const { error: uploadError } = await supabase.storage
+          .from('customer-documents')
+          .upload(fileName, pdfBlob, {
+            contentType: 'application/pdf',
+            upsert: true
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Update document record with file path
+        await supabase
+          .from('customer_documents')
+          .update({ file_path: fileName })
+          .eq('id', documentId);
+
+        // Download the generated PDF
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${documentTitle}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success('המסמך נוצר והורד בהצלחה');
+      }
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast.error('שגיאה בהורדת המסמך');
+    } finally {
+      setLoading(false);
     }
   };
 
