@@ -40,7 +40,7 @@ pop3_port = 54327
 verify_jwt = false
 
 [functions.create-trial-subscription]
-verify_jwt = false
+verify_jwt = true
 
 [functions.facebook-leads]
 verify_jwt = false
