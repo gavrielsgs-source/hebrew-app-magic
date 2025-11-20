@@ -166,16 +166,16 @@ export function DocumentPreviewDialog({
             </div>
           ) : previewUrl ? (
             <>
-              <div className="border rounded-lg overflow-hidden bg-white">
+              <div className="border rounded-lg overflow-hidden bg-white" style={{ maxHeight: '60vh' }}>
                 <iframe
                   src={previewUrl}
-                  className="w-full h-96"
-                  style={{ minHeight: '400px' }}
+                  className="w-full"
+                  style={{ minHeight: '60vh', height: '60vh' }}
                   title="Document Preview"
                 />
               </div>
               
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-3">
                 <Button variant="outline" onClick={() => setOpen(false)}>
                   סגור
                 </Button>
