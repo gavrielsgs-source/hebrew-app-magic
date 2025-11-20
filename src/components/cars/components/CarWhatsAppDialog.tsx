@@ -111,7 +111,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
 
     // Generate message using template function with CTA
     const currentCta = selectedCta === "custom" ? customCta : selectedCta;
-    let message = template.generateMessage(carForTemplate, currentCta);
+    const carName = `${car.make} ${car.model} ${car.year}`;
+    let message = template.generateMessage(carName, carForTemplate, currentCta);
     
     // Replace client name placeholder if exists
     message = message.replace(/שלום[!]?/, `שלום ${clientName}!`);
