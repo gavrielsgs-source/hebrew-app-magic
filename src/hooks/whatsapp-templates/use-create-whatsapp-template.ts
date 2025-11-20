@@ -5,7 +5,7 @@ import { toast } from "sonner";
 interface CreateTemplateData {
   name: string;
   description: string;
-  type: "car" | "lead" | "customer";
+  type: "car" | "lead";
   template_content: string;
   is_shared?: boolean;
 }

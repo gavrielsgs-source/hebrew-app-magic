@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Send } from "lucide-react";
-import { whatsappCustomerTemplates } from "@/components/whatsapp/customer-templates";
+import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
@@ -18,7 +18,7 @@ interface WhatsAppCustomerDialogProps {
 }
 
 export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDialogProps) {
-  const [selectedTemplateId, setSelectedTemplateId] = useState(whatsappCustomerTemplates[0]?.id || "");
+  const [selectedTemplateId, setSelectedTemplateId] = useState(whatsappLeadTemplates[0]?.id || "");
   const [customMessage, setCustomMessage] = useState("");
   const [selectedCta, setSelectedCta] = useState("לקבוע פגישה");
   const [customCta, setCustomCta] = useState("");
@@ -36,7 +36,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       return customMessage;
     }
 
-    const template = whatsappCustomerTemplates.find(t => t.id === selectedTemplateId);
+    const template = whatsappLeadTemplates.find(t => t.id === selectedTemplateId);
     if (!template) return "";
 
     const currentCta = getCurrentCta();
@@ -93,7 +93,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
           <SelectContent align="end">
-            {whatsappCustomerTemplates.map(template => (
+            {whatsappLeadTemplates.map(template => (
               <SelectItem key={template.id} value={template.id}>
                 {template.name}
               </SelectItem>
@@ -104,7 +104,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       </div>
 
       {/* Car Details Input (optional) */}
-      {selectedTemplateId !== "custom" && selectedTemplateId === "customer_follow_up_car" && (
+      {selectedTemplateId !== "custom" && selectedTemplateId === "follow_up_car" && (
         <div className="space-y-2">
           <Label htmlFor="carDetails">פרטי רכב (אופציונלי)</Label>
           <Input

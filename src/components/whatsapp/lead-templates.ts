@@ -1,6 +1,5 @@
 
 import { WhatsappTemplate } from "./whatsapp-templates";
-import { WhatsappCustomerTemplate } from "./customer-templates";
 
 export interface WhatsappLeadTemplate {
   id: string;
@@ -13,6 +12,24 @@ export interface WhatsappLeadTemplate {
 }
 
 export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
+  {
+    id: "customer_welcome",
+    name: "ברוכים הבאים - לקוח חדש",
+    description: "הודעת ברכה ללקוח שנוסף למערכת",
+    type: 'lead' as const,
+    templateContent: `שלום {{customerName}}! 👋
+
+קיבלנו את פנייתך 🙏 
+
+צוות המכירות שלנו יחזור אליך בקרוב 😊`,
+    generateMessage: (customerName: string, customerSource?: string, cta?: string) => {
+      return `שלום ${customerName}! 👋
+
+קיבלנו את פנייתך 🙏 
+
+צוות המכירות שלנו יחזור אליך בקרוב 😊`;
+    }
+  },
   {
     id: "potential_customer",
     name: "הכרות עם לקוח פוטנציאלי",
@@ -67,5 +84,5 @@ ${cta}? 📞
   }
 ];
 
-// Unified template type for both car, lead, and customer templates
-export type UnifiedTemplate = WhatsappTemplate | WhatsappLeadTemplate | WhatsappCustomerTemplate;
+// Unified template type for both car and lead templates
+export type UnifiedTemplate = WhatsappTemplate | WhatsappLeadTemplate;
