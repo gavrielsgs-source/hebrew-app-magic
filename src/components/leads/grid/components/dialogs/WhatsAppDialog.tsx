@@ -1,6 +1,5 @@
 
-import { SwipeDialog } from "@/components/ui/swipe-dialog";
-import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { WhatsappLeadTemplateSelector } from "@/components/whatsapp/WhatsappLeadTemplateSelector";
 
 interface WhatsAppDialogProps {
@@ -21,7 +20,7 @@ export function WhatsAppDialog({
   leadSource
 }: WhatsAppDialogProps) {
   return (
-    <SwipeDialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95%] sm:w-[600px]">
         <DialogHeader>
           <DialogTitle>שליחת הודעה בוואטסאפ</DialogTitle>
@@ -35,6 +34,6 @@ export function WhatsAppDialog({
           onClose={() => onOpenChange(false)}
         />
       </DialogContent>
-    </SwipeDialog>
+    </Dialog>
   );
 }
