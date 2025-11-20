@@ -406,10 +406,23 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                           )}
                         </>
                       ) : (
-                        <div className="flex gap-3 w-full justify-center">
-                          <Button variant="outline" size="lg" className="rounded-xl text-base px-8 hover:bg-blue-50 hover:border-blue-300">
+                        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-3 w-full ${isMobile ? '' : 'justify-center'}`}>
+                          <Button 
+                            variant="outline" 
+                            size={isMobile ? "default" : "lg"}
+                            className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-8'} hover:bg-blue-50 hover:border-blue-300`}
+                          >
                             <Eye className="h-5 w-5 ml-2" />
                             צפה במסמך
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size={isMobile ? "default" : "lg"}
+                            className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-8'} hover:bg-green-50 hover:border-green-300`}
+                            onClick={() => handleDownloadPDF(doc)}
+                          >
+                            <Download className="h-5 w-5 ml-2" />
+                            הורד PDF
                           </Button>
                         </div>
                       )}
