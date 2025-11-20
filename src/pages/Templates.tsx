@@ -17,7 +17,7 @@ import {
 } from "@/hooks/whatsapp-templates";
 
 // Define types for templates
-type TemplateType = 'car' | 'lead' | 'customer';
+type TemplateType = 'car' | 'lead';
 
 interface UnifiedTemplate {
   id: string;
@@ -165,7 +165,7 @@ export default function Templates() {
     setIsDialogOpen(false);
   };
 
-  const leadTemplates = templates.filter((t) => t.type === 'lead' || t.type === 'customer');
+  const leadTemplates = templates.filter((t) => t.type === 'lead');
   const carTemplates = templates.filter((t) => t.type === 'car');
 
   const templateTags = [

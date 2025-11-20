@@ -10,7 +10,7 @@ import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { Badge } from "@/components/ui/badge";
 import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
-import { whatsappCustomerTemplates } from "@/components/whatsapp/customer-templates";
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -43,7 +43,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   const [customPreviewCta, setCustomPreviewCta] = useState("");
   
   // Check if this is a default (system) template
-  const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates, ...whatsappCustomerTemplates];
+  const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
   const isDefaultTemplate = allDefaultTemplates.some(t => t.id === template.id);
   
   // Get current CTA
@@ -55,7 +55,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   const generatePreviewMessage = () => {
     try {
       // FIRST: Try to find in default templates and use generateMessage
-      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates, ...whatsappCustomerTemplates];
+      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
       const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
       
       if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
@@ -65,8 +65,6 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           return originalTemplate.generateMessage(carName, mockCar, currentCta);
         } else if (originalTemplate.type === 'lead') {
           return originalTemplate.generateMessage(mockLeadName, mockLeadSource, currentCta);
-        } else if ((originalTemplate as any).type === 'customer') {
-          return (originalTemplate as any).generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, currentCta);
         }
       }
 
@@ -78,8 +76,6 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           return template.generateMessage(carName, mockCar, currentCta);
         } else if (template.type === 'lead') {
           return template.generateMessage(mockLeadName, mockLeadSource, currentCta);
-        } else if (template.type === 'customer') {
-          return template.generateMessage(mockLeadName, `${mockCar.make} ${mockCar.model} ${mockCar.year}`, currentCta);
         }
       }
 
@@ -106,15 +102,9 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
           // Replace lead placeholders
           preview = preview
             .replace(/\{\{leadName\}\}/g, mockLeadName)
+            .replace(/\{\{customerName\}\}/g, mockLeadName)
             .replace(/\{\{leadSource\}\}/g, ` דרך ${mockLeadSource}`)
             .replace(/\{\{carDetails\}\}/g, ` ${mockCar.make} ${mockCar.model} ${mockCar.year}`)
-            .replace(/\{\{CTA\}\}/g, getCurrentCta());
-          return preview;
-        } else if (template.type === 'customer') {
-          // Replace customer placeholders
-          preview = preview
-            .replace(/\{\{customerName\}\}/g, mockLeadName)
-            .replace(/\{\{carDetails\}\}/g, `${mockCar.make} ${mockCar.model} ${mockCar.year}`)
             .replace(/\{\{CTA\}\}/g, getCurrentCta());
           return preview;
         }
