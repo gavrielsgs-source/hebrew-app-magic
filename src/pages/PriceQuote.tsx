@@ -108,10 +108,17 @@ export default function PriceQuote() {
   const handleLeadSelect = (leadId: string) => {
     const selectedLead = leads?.find(lead => lead.id === leadId);
     if (selectedLead) {
+      // Set leadId in form
+      form.setValue("leadId", leadId);
+      
+      // Sync customer data from lead
       form.setValue("customer.fullName", selectedLead.name || "");
       form.setValue("customer.firstName", selectedLead.name?.split(' ')[0] || "");
       form.setValue("customer.phone", selectedLead.phone || "");
       form.setValue("customer.email", selectedLead.email || "");
+      
+      // If lead has no city/address, keep the default values
+      // Don't override with empty values
     }
   };
 
@@ -361,7 +368,11 @@ export default function PriceQuote() {
                       type="button"
                       variant={!useExistingLead ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setUseExistingLead(false)}
+                      onClick={() => {
+                        setUseExistingLead(false);
+                        // Clear leadId when switching to new customer
+                        form.setValue("leadId", undefined);
+                      }}
                       className="flex-1 h-10 flex items-center gap-2"
                     >
                       <UserPlus className="h-4 w-4" />
@@ -762,7 +773,11 @@ export default function PriceQuote() {
                       type="button"
                       variant={!useExistingLead ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setUseExistingLead(false)}
+                      onClick={() => {
+                        setUseExistingLead(false);
+                        // Clear leadId when switching to new customer
+                        form.setValue("leadId", undefined);
+                      }}
                       className="flex items-center gap-2"
                     >
                       <UserPlus className="h-4 w-4" />

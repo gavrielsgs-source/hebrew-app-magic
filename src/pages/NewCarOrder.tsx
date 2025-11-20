@@ -215,7 +215,11 @@ export default function NewCarOrder() {
                     type="button"
                     variant={!useExistingLead ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setUseExistingLead(false)}
+                    onClick={() => {
+                      setUseExistingLead(false);
+                      // Clear leadId when switching to new customer
+                      form.setValue("leadId", undefined);
+                    }}
                     className="flex-1 h-12 flex items-center gap-2"
                   >
                     <UserPlus className="h-4 w-4" />
@@ -564,7 +568,11 @@ export default function NewCarOrder() {
                         type="button"
                         variant={!useExistingLead ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setUseExistingLead(false)}
+                        onClick={() => {
+                          setUseExistingLead(false);
+                          // Clear leadId when switching to new customer
+                          form.setValue("leadId", undefined);
+                        }}
                         className="flex items-center gap-2"
                       >
                         <UserPlus className="h-4 w-4" />
