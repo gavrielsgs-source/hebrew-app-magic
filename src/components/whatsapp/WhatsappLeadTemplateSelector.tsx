@@ -273,7 +273,7 @@ export function WhatsappLeadTemplateSelector({
           <TabsTrigger value="custom" className={isMobile ? "text-xs" : ""}>הודעה מותאמת</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="lead-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''} overflow-y-auto max-h-[60vh]`}>
+        <TabsContent value="lead-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           {leadTemplates.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>לא נמצאו תבניות לקוחות.</p>
@@ -323,7 +323,7 @@ export function WhatsappLeadTemplateSelector({
           )}
         </TabsContent>
 
-        <TabsContent value="car-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''} overflow-y-auto max-h-[60vh]`}>
+        <TabsContent value="car-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           {carTemplates.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>לא נמצאו תבניות רכבים.</p>
@@ -371,7 +371,7 @@ export function WhatsappLeadTemplateSelector({
           )}
         </TabsContent>
         
-        <TabsContent value="custom" className={`space-y-4 ${isMobile ? 'space-y-3' : ''} overflow-y-auto max-h-[60vh]`}>
+        <TabsContent value="custom" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
           <div>
             <label className="block text-sm font-medium mb-2">כתוב הודעה מותאמת אישית</label>
             <Textarea
