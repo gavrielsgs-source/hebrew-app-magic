@@ -184,26 +184,41 @@ export default function PriceQuote() {
       setSavedQuoteData(result);
       setIsSaved(true);
       
-      // Generate PDF as Blob and upload to cloud
-      const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
-      const url = await uploadDocument({
-        pdfBlob,
-        documentType: 'price_quote',
-        documentNumber: result.quoteNumber,
-        customerName: result.customer.fullName,
-        entityType: data.leadId ? 'lead' : undefined,
-        entityId: data.leadId || undefined
-      });
-      
-      setDocumentUrl(url);
-      setShowPreview(true);
-      
       toast({
         title: "הצעת המחיר נשמרה בהצלחה",
         description: `מספר הצעה: ${result.quoteNumber}`,
       });
+      
+      // Generate PDF as Blob and upload to cloud
+      try {
+        const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
+        const url = await uploadDocument({
+          pdfBlob,
+          documentType: 'price_quote',
+          documentNumber: result.quoteNumber,
+          customerName: result.customer.fullName,
+          entityType: data.leadId ? 'lead' : undefined,
+          entityId: data.leadId || undefined
+        });
+        
+        setDocumentUrl(url);
+        setShowPreview(true);
+      } catch (uploadError) {
+        console.error("Error uploading PDF:", uploadError);
+        // PDF upload failed but the quote was saved
+        toast({
+          title: "הקובץ לא הועלה לענן",
+          description: "ההצעה נשמרה אבל ההעלאה לענן נכשלה. תוכל להוריד PDF ידנית.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error saving price quote:", error);
+      toast({
+        title: "שגיאה בשמירת הצעת המחיר",
+        description: "אנא נסה שוב",
+        variant: "destructive",
+      });
     }
   };
 
