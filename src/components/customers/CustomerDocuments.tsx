@@ -12,6 +12,8 @@ import { useCustomer } from "@/hooks/customers/use-customer";
 import type { Document as AppDocument } from "@/hooks/documents/types";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import html2pdf from 'html2pdf.js';
 interface CustomerDocumentsProps {
   customerId: string;
 }
@@ -82,6 +84,97 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     
     // Open WhatsApp
     window.open(whatsappUrl, '_blank');
+  };
+
+  const handleDownloadPDF = async (doc: any) => {
+    try {
+      toast.loading('מכין את המסמך להורדה...');
+
+      // Check if PDF already exists in storage
+      if (doc.file_path) {
+        const { data, error } = await supabase.storage
+          .from('customer-documents')
+          .download(doc.file_path);
+
+        if (!error && data) {
+          const url = URL.createObjectURL(data);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${doc.title}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          toast.dismiss();
+          toast.success('המסמך הורד בהצלחה');
+          return;
+        }
+      }
+
+      // Generate PDF from HTML content
+      const element = document.createElement('div');
+      element.innerHTML = `
+        <div style="padding: 40px; font-family: Arial, sans-serif; direction: rtl;">
+          <h1 style="text-align: center; margin-bottom: 30px;">${doc.title}</h1>
+          <div style="margin-bottom: 20px;">
+            <strong>מספר מסמך:</strong> ${doc.document_number}
+          </div>
+          <div style="margin-bottom: 20px;">
+            <strong>סוג:</strong> ${doc.type}
+          </div>
+          <div style="margin-bottom: 20px;">
+            <strong>סכום:</strong> ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}
+          </div>
+          <div style="margin-bottom: 20px;">
+            <strong>תאריך:</strong> ${new Date(doc.date || doc.created_at).toLocaleDateString('he-IL')}
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin: 10,
+        filename: `${doc.title}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+      };
+
+      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+      
+      // Upload to Supabase storage
+      const fileName = `${doc.id}.pdf`;
+      const { error: uploadError } = await supabase.storage
+        .from('customer-documents')
+        .upload(fileName, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Update document record with file path
+      await supabase
+        .from('customer_documents')
+        .update({ file_path: fileName })
+        .eq('id', doc.id);
+
+      // Download the file
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${doc.title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.dismiss();
+      toast.success('המסמך הורד בהצלחה');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast.dismiss();
+      toast.error('שגיאה בהורדת המסמך');
+    }
   };
 
   return (
@@ -220,21 +313,15 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                                 </Button>
                               }
                             />
-                            <DocumentPreviewDialog
-                              documentId={doc.id}
-                              documentTitle={doc.title}
-                              documentType={doc.type}
-                              trigger={
-                                <Button 
-                                  variant="outline" 
-                                  size={isMobile ? "default" : "lg"}
-                                  className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
-                                >
-                                  <Download className="h-5 w-5 ml-2" />
-                                  הורד PDF
-                                </Button>
-                              }
-                            />
+                            <Button 
+                              variant="outline" 
+                              size={isMobile ? "default" : "lg"}
+                              className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
+                              onClick={() => handleDownloadPDF(doc)}
+                            >
+                              <Download className="h-5 w-5 ml-2" />
+                              הורד PDF
+                            </Button>
                             <Button 
                               variant="outline" 
                               size={isMobile ? "default" : "lg"}
