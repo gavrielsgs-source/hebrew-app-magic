@@ -11,6 +11,7 @@ import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocu
 import { useCustomer } from "@/hooks/customers/use-customer";
 import type { Document as AppDocument } from "@/hooks/documents/types";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 interface CustomerDocumentsProps {
   customerId: string;
 }
@@ -21,6 +22,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   const { data: attachedDocs = [], isLoading: attachedLoading } = useCustomerRelatedDocuments(customerId);
   const { data: customer } = useCustomer(customerId);
   const updateDocumentStatus = useUpdateCustomerDocumentStatus();
+  const isMobile = useIsMobile();
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
@@ -203,16 +205,16 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between pt-4 border-t-2 border-slate-100">
+                    <div className={`pt-4 border-t-2 border-slate-100 ${isMobile ? 'space-y-3' : 'flex items-center justify-between'}`}>
                       {doc.status !== 'attached' ? (
                         <>
-                          <div className="flex gap-3">
+                          <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 flex-wrap`}>
                             <DocumentPreviewDialog
                               documentId={doc.id}
                               documentTitle={doc.title}
                               documentType={doc.type}
                               trigger={
-                                <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-blue-50 hover:border-blue-300">
+                                <Button variant="outline" size={isMobile ? "default" : "lg"} className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-blue-50 hover:border-blue-300`}>
                                   <Eye className="h-5 w-5 ml-2" />
                                   תצוגה מקדימה
                                 </Button>
@@ -220,8 +222,8 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                             />
                             <Button 
                               variant="outline" 
-                              size="lg" 
-                              className="rounded-xl text-base px-6 hover:bg-green-50 hover:border-green-300"
+                              size={isMobile ? "default" : "lg"}
+                              className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
                               onClick={() => {
                                 toast.info('הורדת מסמכים תהיה זמינה בקרוב');
                               }}
@@ -231,47 +233,86 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                             </Button>
                             <Button 
                               variant="outline" 
-                              size="lg" 
-                              className="rounded-xl text-base px-6 hover:bg-green-50 hover:border-green-300"
+                              size={isMobile ? "default" : "lg"}
+                              className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
                               onClick={() => handleSendToWhatsApp(doc)}
                               disabled={updateDocumentStatus.isPending || !customer?.phone}
                             >
                               <Send className="h-5 w-5 ml-2" />
                               שלח לוואטסאפ
                             </Button>
-                            <UploadDocumentDialog
-                              customerId={customerId}
-                              documentId={doc.id}
-                              trigger={
-                                <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-purple-50 hover:border-purple-300">
-                                  <Upload className="h-5 w-5 ml-2" />
-                                  העלה מסמך חתום
+                            {!isMobile && (
+                              <>
+                                <UploadDocumentDialog
+                                  customerId={customerId}
+                                  documentId={doc.id}
+                                  trigger={
+                                    <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-purple-50 hover:border-purple-300">
+                                      <Upload className="h-5 w-5 ml-2" />
+                                      העלה מסמך חתום
+                                    </Button>
+                                  }
+                                />
+                                <Button 
+                                  variant="outline" 
+                                  size="lg" 
+                                  className="rounded-xl text-base px-6 hover:bg-emerald-50 hover:border-emerald-300"
+                                  onClick={() => handleStatusUpdate(doc.id, 'signed')}
+                                  disabled={updateDocumentStatus.isPending}
+                                >
+                                  <CheckCircle className="h-5 w-5 ml-2" />
+                                  סמן כחתום
                                 </Button>
-                              }
-                            />
-                            <Button 
-                              variant="outline" 
-                              size="lg" 
-                              className="rounded-xl text-base px-6 hover:bg-emerald-50 hover:border-emerald-300"
-                              onClick={() => handleStatusUpdate(doc.id, 'signed')}
-                              disabled={updateDocumentStatus.isPending}
-                            >
-                              <CheckCircle className="h-5 w-5 ml-2" />
-                              סמן כחתום
-                            </Button>
+                              </>
+                            )}
                           </div>
-                          <div className="flex gap-3">
-                            <Button 
-                              variant="outline" 
-                              size="lg" 
-                              className="text-destructive rounded-xl text-base px-6 hover:bg-red-50 hover:border-red-300"
-                              onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
-                              disabled={updateDocumentStatus.isPending}
-                            >
-                              <X className="h-5 w-5 ml-2" />
-                              בטל
-                            </Button>
-                          </div>
+                          {isMobile ? (
+                            <div className="flex flex-col gap-2">
+                              <UploadDocumentDialog
+                                customerId={customerId}
+                                documentId={doc.id}
+                                trigger={
+                                  <Button variant="outline" size="default" className="rounded-xl w-full justify-start hover:bg-purple-50 hover:border-purple-300">
+                                    <Upload className="h-5 w-5 ml-2" />
+                                    העלה מסמך חתום
+                                  </Button>
+                                }
+                              />
+                              <Button 
+                                variant="outline" 
+                                size="default"
+                                className="rounded-xl w-full justify-start hover:bg-emerald-50 hover:border-emerald-300"
+                                onClick={() => handleStatusUpdate(doc.id, 'signed')}
+                                disabled={updateDocumentStatus.isPending}
+                              >
+                                <CheckCircle className="h-5 w-5 ml-2" />
+                                סמן כחתום
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="default"
+                                className="text-destructive rounded-xl w-full justify-start hover:bg-red-50 hover:border-red-300"
+                                onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
+                                disabled={updateDocumentStatus.isPending}
+                              >
+                                <X className="h-5 w-5 ml-2" />
+                                בטל
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-3">
+                              <Button 
+                                variant="outline" 
+                                size="lg" 
+                                className="text-destructive rounded-xl text-base px-6 hover:bg-red-50 hover:border-red-300"
+                                onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
+                                disabled={updateDocumentStatus.isPending}
+                              >
+                                <X className="h-5 w-5 ml-2" />
+                                בטל
+                              </Button>
+                            </div>
+                          )}
                         </>
                       ) : (
                         <div className="flex gap-3 w-full justify-center">
