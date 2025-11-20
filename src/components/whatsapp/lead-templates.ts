@@ -43,20 +43,20 @@ ${cta}? 📞
     }
   },
   {
-    id: "lead_follow_up_car",
-    name: "מעקב - פרטי רכב ללקוח",
-    description: "הודעת מעקב לאחר שליחת פרטי רכב ללקוח פוטנציאלי",
+    id: "follow_up_car",
+    name: "מעקב - פרטי רכב",
+    description: "הודעת מעקב לאחר שליחת פרטי רכב",
     type: 'lead' as const,
-    templateContent: `היי {{leadName}}! 👋  
+    templateContent: `היי {{name}}! 👋  
 
 רק רצינו לוודא שקיבלת את הפרטים על הרכב{{carDetails}} 🚗  
 אם תרצה {{CTA}} - נשמח לעזור!
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (leadName: string, carDetails?: string, cta = 'לתאם שיחה קצרה או להגיע לצפייה') => {
+    generateMessage: (name: string, carDetails?: string, cta = 'לתאם שיחה קצרה או להגיע לצפייה') => {
       const carText = carDetails ? ` ${carDetails}` : '';
-      return `היי ${leadName}! 👋  
+      return `היי ${name}! 👋  
 
 רק רצינו לוודא שקיבלת את הפרטים על הרכב${carText} 🚗  
 אם תרצה ${cta} - נשמח לעזור!
