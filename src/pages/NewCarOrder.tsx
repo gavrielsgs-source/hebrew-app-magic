@@ -13,7 +13,9 @@ import { cn, formatPrice } from "@/lib/utils";
 import { NewCarOrderData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
 import { LeadSearchSelect } from "@/components/leads/LeadSearchSelect";
+import { CustomerAndLeadSearchSelect } from "@/components/customers/CustomerAndLeadSearchSelect";
 import { useLeads } from "@/hooks/use-leads";
+import { useCustomers } from "@/hooks/customers";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
@@ -48,9 +50,11 @@ type NewCarOrderFormValues = z.infer<typeof newCarOrderSchema>;
 export default function NewCarOrder() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
-  const [useExistingLead, setUseExistingLead] = useState(true);
+  const [useExisting, setUseExisting] = useState(true);
+  const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
   const [includeVAT, setIncludeVAT] = useState(false);
   const { leads } = useLeads();
+  const { data: customers = [] } = useCustomers();
   const isMobile = useIsMobile();
 
   const form = useForm<NewCarOrderFormValues>({
@@ -114,16 +118,20 @@ export default function NewCarOrder() {
     }
   };
 
-  const handleLeadSelect = (leadId: string) => {
-    const selectedLead = leads?.find(lead => lead.id === leadId);
-    if (selectedLead) {
-      form.setValue("leadId", leadId);
-      form.setValue("customer.fullName", selectedLead.name || "");
-      form.setValue("customer.firstName", selectedLead.name?.split(" ")[0] || "");
-      form.setValue("customer.city", "");
-      form.setValue("customer.address", "");
-      form.setValue("customer.birthYear", "");
-      form.setValue("customer.idNumber", "");
+  const handleLeadSelect = (value: { type: 'customer' | 'lead'; id: string; data: any }) => {
+    setSelectedEntity(value);
+    
+    if (value.type === 'lead') {
+      form.setValue("leadId", value.id);
+      form.setValue("customer.fullName", value.data.name || "");
+      form.setValue("customer.firstName", value.data.name?.split(" ")[0] || "");
+    } else {
+      form.setValue("leadId", undefined);
+      form.setValue("customer.fullName", value.data.full_name || "");
+      form.setValue("customer.firstName", value.data.full_name?.split(" ")[0] || "");
+      form.setValue("customer.idNumber", value.data.id_number || "");
+      form.setValue("customer.city", value.data.city || "");
+      form.setValue("customer.address", value.data.address || "");
     }
   };
 
@@ -204,21 +212,22 @@ export default function NewCarOrder() {
                 <div className="flex gap-2">
                   <Button
                     type="button"
-                    variant={useExistingLead ? "default" : "outline"}
+                    variant={useExisting ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setUseExistingLead(true)}
+                    onClick={() => setUseExisting(true)}
                     className="flex-1 h-12"
                   >
                     בחר לקוח קיים
                   </Button>
                   <Button
                     type="button"
-                    variant={!useExistingLead ? "default" : "outline"}
+                    variant={!useExisting ? "default" : "outline"}
                     size="sm"
                     onClick={() => {
-                      setUseExistingLead(false);
+                      setUseExisting(false);
                       // Clear leadId when switching to new customer
                       form.setValue("leadId", undefined);
+                      setSelectedEntity(null);
                     }}
                     className="flex-1 h-12 flex items-center gap-2"
                   >
@@ -227,13 +236,13 @@ export default function NewCarOrder() {
                   </Button>
                 </div>
 
-                {useExistingLead && (
+                {useExisting && (
                   <div className="space-y-2">
                     <Label htmlFor="leadId">בחר לקוח מהרשימה</Label>
-                    <LeadSearchSelect
-                      value={form.watch("leadId") || ""}
+                    <CustomerAndLeadSearchSelect
+                      value={selectedEntity}
                       onValueChange={handleLeadSelect}
-                      placeholder="חפש לקוח..."
+                      placeholder="חפש לקוח או ליד..."
                     />
                   </div>
                 )}
@@ -558,20 +567,21 @@ export default function NewCarOrder() {
                     <div className="flex gap-2">
                       <Button
                         type="button"
-                        variant={useExistingLead ? "default" : "outline"}
+                        variant={useExisting ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setUseExistingLead(true)}
+                        onClick={() => setUseExisting(true)}
                       >
                         בחר לקוח קיים
                       </Button>
                       <Button
                         type="button"
-                        variant={!useExistingLead ? "default" : "outline"}
+                        variant={!useExisting ? "default" : "outline"}
                         size="sm"
                         onClick={() => {
-                          setUseExistingLead(false);
+                          setUseExisting(false);
                           // Clear leadId when switching to new customer
                           form.setValue("leadId", undefined);
+                          setSelectedEntity(null);
                         }}
                         className="flex items-center gap-2"
                       >
@@ -582,13 +592,13 @@ export default function NewCarOrder() {
                     <h3 className="text-lg font-semibold">פרטי הלקוח</h3>
                   </div>
 
-                  {useExistingLead && (
+                  {useExisting && (
                     <div className="space-y-2">
                       <Label htmlFor="leadId">בחר לקוח מהרשימה</Label>
-                      <LeadSearchSelect
-                        value={form.watch("leadId") || ""}
+                      <CustomerAndLeadSearchSelect
+                        value={selectedEntity}
                         onValueChange={handleLeadSelect}
-                        placeholder="חפש לקוח..."
+                        placeholder="חפש לקוח או ליד..."
                       />
                     </div>
                   )}

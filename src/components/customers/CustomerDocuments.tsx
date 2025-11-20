@@ -1,4 +1,4 @@
-import { FileText, Plus, Filter, Eye, Send, Upload, X, Clock, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { FileText, Plus, Filter, Eye, Send, Upload, X, Clock, CheckCircle, AlertCircle, XCircle, Download } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -218,6 +218,23 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                                 </Button>
                               }
                             />
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-xl hover:bg-green-50 hover:border-green-300"
+                              onClick={() => {
+                                // Create a link and trigger download
+                                const link = document.createElement('a');
+                                link.href = `/api/documents/${doc.id}/download`;
+                                link.download = `${doc.title}.pdf`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                toast.success('המסמך הורד בהצלחה');
+                              }}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
                             <Button 
                               variant="outline" 
                               size="lg" 

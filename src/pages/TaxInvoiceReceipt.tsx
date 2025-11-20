@@ -17,8 +17,9 @@ import { he } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useLeads } from '@/hooks/use-leads';
-import { LeadSearchSelect } from '@/components/leads/LeadSearchSelect';
+import { CustomerAndLeadSearchSelect } from '@/components/customers/CustomerAndLeadSearchSelect';
 import { useCars } from '@/hooks/use-cars';
+import { useCustomers } from '@/hooks/customers';
 import { useProfile } from '@/hooks/use-profile';
 import { generateTaxInvoiceReceiptPDF } from '@/utils/tax-invoice-receipt-pdf-generator';
 import { useTaxInvoiceReceipt } from '@/hooks/tax-invoice-receipt/use-tax-invoice-receipt';
@@ -92,7 +93,9 @@ export default function TaxInvoiceReceipt() {
   const [savedReceiptData, setSavedReceiptData] = useState<TaxInvoiceReceiptData | null>(null);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
   const { leads = [] } = useLeads();
+  const { data: customers = [] } = useCustomers();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
   const { createTaxInvoiceReceipt, isCreating } = useTaxInvoiceReceipt();
@@ -146,19 +149,28 @@ export default function TaxInvoiceReceipt() {
   const watchedFields = form.watch();
   const selectedLead = leads.find(lead => lead.id === watchedFields.leadId);
 
-  // Update customer info when lead is selected
-  useEffect(() => {
-    if (selectedLead && selectedLead.id !== 'no-lead') {
-      form.setValue('customerName', selectedLead.name);
-      form.setValue('customerPhone', selectedLead.phone || '');
+  // Handle entity selection (customer or lead)
+  const handleEntitySelect = (value: { type: 'customer' | 'lead'; id: string; data: any }) => {
+    setSelectedEntity(value);
+    
+    if (value.type === 'lead') {
+      form.setValue('leadId', value.id);
+      form.setValue('customerName', value.data.name);
+      form.setValue('customerPhone', value.data.phone || '');
       if (!form.getValues('customerAddress')) {
         form.setValue('customerAddress', '');
       }
       if (!form.getValues('customerHp')) {
         form.setValue('customerHp', '');
       }
+    } else {
+      form.setValue('leadId', undefined);
+      form.setValue('customerName', value.data.full_name);
+      form.setValue('customerPhone', value.data.phone || '');
+      form.setValue('customerAddress', value.data.address || '');
+      form.setValue('customerHp', value.data.id_number || '');
     }
-  }, [selectedLead, form]);
+  };
 
   // Calculate totals for each item
   useEffect(() => {
@@ -549,9 +561,10 @@ export default function TaxInvoiceReceipt() {
                     <FormItem>
                       <FormLabel className="text-right">קשור ללקוח (אופציונלי)</FormLabel>
                       <FormControl>
-                        <LeadSearchSelect
-                          value={field.value}
-                          onValueChange={field.onChange}
+                        <CustomerAndLeadSearchSelect
+                          value={selectedEntity}
+                          onValueChange={handleEntitySelect}
+                          placeholder="בחר לקוח או ליד מהרשימה"
                         />
                       </FormControl>
                       <FormMessage />
