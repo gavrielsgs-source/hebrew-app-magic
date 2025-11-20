@@ -24,10 +24,10 @@ export function useUploadProductionDocument() {
         throw new Error('User not authenticated');
       }
 
-      // Create unique filename with timestamp
+      // Create unique filename with timestamp (ASCII only for compatibility)
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const sanitizedCustomer = customerName.replace(/[^א-ת\w\s-]/g, '').trim();
-      const fileName = `${documentType}-${documentNumber}-${sanitizedCustomer}-${timestamp}.pdf`;
+      const sanitizedCustomer = customerName.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
+      const fileName = `${documentType}-${documentNumber}-${sanitizedCustomer || 'customer'}-${timestamp}.pdf`;
       const filePath = `${userData.user.id}/${fileName}`;
 
       // Upload PDF to Supabase Storage
