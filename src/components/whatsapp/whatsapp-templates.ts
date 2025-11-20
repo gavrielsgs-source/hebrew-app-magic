@@ -4,6 +4,7 @@ export interface WhatsappTemplate {
   name: string;
   description: string;
   type: 'car';
+  usesCta: boolean;
   generateMessage: (carName: string, car: any, cta?: string) => string;
   templateContent?: string;
   facebookTemplateName?: string;
@@ -15,6 +16,7 @@ export const whatsappTemplates: WhatsappTemplate[] = [
     name: "תבנית רכב מלאה",
     description: "תבנית מפורטת עם כל פרטי הרכב והקונטקט",
     type: 'car' as const,
+    usesCta: true,
     facebookTemplateName: "car_template",
     templateContent: `שלום לקוח יקר! 👋
 
@@ -55,6 +57,7 @@ ${phone}
     name: "פרטי רכב בסיסיים",
     description: "הודעה פשוטה עם פרטי הרכב העיקריים",
     type: 'car' as const,
+    usesCta: true,
     templateContent: `שלום! 👋
 
 רציתי לשתף אותך בפרטים על הרכב הזה:
@@ -85,6 +88,7 @@ ${phone}
     name: "מפרט מפורט",
     description: "הודעה מפורטת עם כל המפרטים הטכניים",
     type: 'car' as const,
+    usesCta: true,
     templateContent: `🚗 *{{carName}}*
 
 📋 *פרטים טכניים:*
@@ -117,6 +121,7 @@ ${phone}
     name: "הזדמנות לזמן מוגבל",
     description: "הודעה עם דחיפות למכירה מהירה",
     type: 'car' as const,
+    usesCta: false,
     templateContent: `🔥 *הזדמנות לזמן מוגבל!* 🔥
 
 🚗 {{carName}}
@@ -155,6 +160,7 @@ ${phone}
     name: "הזמנה לנסיעת מבחן",
     description: "הודעה המזמינה לנסיעת מבחן",
     type: 'car' as const,
+    usesCta: false,
     templateContent: `שלום! 🚗
 
 מעוניין לחוות נסיעה ב{{carName}}?
@@ -193,6 +199,7 @@ ${phone}
     name: "יצירת קשר חדש",
     description: "הודעה חמה ופתוחה לפתיחת שיחה",
     type: 'car' as const,
+    usesCta: true,
     templateContent: `שלום! 😊
 
 איך שלומך? אני מהצוות שלנו ורציתי ליצור איתך קשר בנושא {{carName}}.
@@ -219,6 +226,7 @@ ${phone}
     name: "הצגה מקצועית",
     description: "הודעה עסקית ופרקטית",
     type: 'car' as const,
+    usesCta: true,
     templateContent: `שלום,
 
 אני פונה אליך מצוות המכירות של חברת הרכב שלנו בנושא {{carName}}.
@@ -245,6 +253,7 @@ ${phone}
     name: "הצעה מיוחדת",
     description: "הודעה עם דגש על מבצעים וייתרונות",
     type: 'car' as const,
+    usesCta: true,
     templateContent: `שלום! 🎉
 
 יש לנו חדשות נהדרות בשבילך!
@@ -281,6 +290,7 @@ ${carName} - כרגע במבצע מיוחד! 🚗
     name: "מעקב שני",
     description: "הודעה לטיפול בפנייה קיימת",
     type: 'car' as const,
+    usesCta: true,
     templateContent: `שלום, 👋
 
 אני חוזר אליך בנושא {{carName}}.

@@ -6,6 +6,7 @@ export interface WhatsappLeadTemplate {
   name: string;
   description: string;
   type: 'lead';
+  usesCta: boolean;
   generateMessage: (leadName: string, leadSource?: string, cta?: string) => string;
   templateContent?: string;
   facebookTemplateName?: string;
@@ -17,6 +18,7 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     name: "ברוכים הבאים - לקוח חדש",
     description: "הודעת ברכה ללקוח שנוסף למערכת",
     type: 'lead' as const,
+    usesCta: false,
     templateContent: `שלום {{customerName}}! 👋
 
 קיבלנו את פנייתך 🙏 
@@ -35,6 +37,7 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     name: "הכרות עם לקוח פוטנציאלי",
     description: "הודעת היכרות ראשונית עם לקוח שפנה אלינו",
     type: 'lead' as const,
+    usesCta: true,
     templateContent: `היי {{leadName}}! 👋
 
 קיבלנו את הפנייה שלך{{leadSource}} וראינו שאתה מתעניין ברכב.
@@ -64,6 +67,7 @@ ${cta}? 📞
     name: "מעקב - פרטי רכב",
     description: "הודעת מעקב לאחר שליחת פרטי רכב",
     type: 'lead' as const,
+    usesCta: true,
     templateContent: `היי {{name}}! 👋  
 
 רק רצינו לוודא שקיבלת את הפרטים על הרכב{{carDetails}} 🚗  

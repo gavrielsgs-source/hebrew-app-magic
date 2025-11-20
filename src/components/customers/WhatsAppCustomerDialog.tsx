@@ -30,6 +30,9 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
     return selectedCta === "custom" ? customCta : selectedCta;
   };
 
+  // Get selected template
+  const selectedTemplate = whatsappLeadTemplates.find(t => t.id === selectedTemplateId);
+
   // Generate message based on template
   const generateCustomerMessage = () => {
     if (selectedTemplateId === "custom") {
@@ -39,7 +42,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
     const template = whatsappLeadTemplates.find(t => t.id === selectedTemplateId);
     if (!template) return "";
 
-    const currentCta = getCurrentCta();
+    const currentCta = template.usesCta ? getCurrentCta() : undefined;
     return template.generateMessage(customer.full_name, carDetails, currentCta);
   };
 
@@ -118,7 +121,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       )}
 
       {/* CTA Selection */}
-      {selectedTemplateId !== "custom" && (
+      {selectedTemplateId !== "custom" && selectedTemplate?.usesCta && (
         <div className="space-y-2">
           <Label htmlFor="cta">קריאה לפעולה (CTA)</Label>
           <Select value={selectedCta} onValueChange={setSelectedCta}>

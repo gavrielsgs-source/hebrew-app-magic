@@ -52,6 +52,7 @@ export function WhatsappLeadTemplateSelector({
           name: dbTemplate.name,
           description: dbTemplate.description,
           type: 'lead' as const,
+          usesCta: dbTemplate.template_content.includes('{{CTA}}'),
           templateContent: dbTemplate.template_content,
           facebookTemplateName: dbTemplate.facebook_template_name,
           generateMessage: (leadName: string, leadSource?: string, cta?: string) => {
@@ -71,6 +72,7 @@ export function WhatsappLeadTemplateSelector({
           name: dbTemplate.name,
           description: dbTemplate.description,
           type: 'car' as const,
+          usesCta: dbTemplate.template_content.includes('{{CTA}}'),
           templateContent: dbTemplate.template_content,
           facebookTemplateName: dbTemplate.facebook_template_name,
           generateMessage: (car: any, cta?: string) => {
@@ -124,6 +126,7 @@ export function WhatsappLeadTemplateSelector({
         name: 'הכרות עם לקוח פוטנציאלי',
         description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
         type: 'lead' as const,
+        usesCta: false,
         generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋\n\nקיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.\n\nמתי תהיה זמין לשיחת ייעוץ קצרה? 📞\n\nנשמח לעזור לך למצוא בדיוק מה שמתאים לך!\n\nבברכה,\nצוות המכירות`
       };
       setLeadTemplates([defaultTemplate]);
