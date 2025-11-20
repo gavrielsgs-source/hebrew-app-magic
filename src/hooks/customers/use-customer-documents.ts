@@ -131,12 +131,15 @@ export function useCreateCustomerDocument() {
       return result;
     },
     onSuccess: (_, variables) => {
-      // Invalidate both customer documents and general documents
+      // Invalidate all related queries with proper query keys
       queryClient.invalidateQueries({ 
-        queryKey: ['customer-documents', variables.customerId] 
+        queryKey: ['customer-documents'] 
       });
       queryClient.invalidateQueries({ 
-        queryKey: ['documents'] 
+        queryKey: ['customer-document-returns']
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['documents']
       });
       toast.success('מסמך נוצר בהצלחה');
     },
@@ -166,10 +169,13 @@ export function useUpdateCustomerDocumentStatus() {
       if (error) throw error;
       return result;
     },
-    onSuccess: (_, variables) => {
-      // Invalidate both customer documents and general documents
+    onSuccess: () => {
+      // Invalidate all customer documents queries
       queryClient.invalidateQueries({ 
-        queryKey: ['customer-documents', variables.customerId] 
+        queryKey: ['customer-documents'] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['customer-document-returns']
       });
       queryClient.invalidateQueries({ 
         queryKey: ['documents'] 
