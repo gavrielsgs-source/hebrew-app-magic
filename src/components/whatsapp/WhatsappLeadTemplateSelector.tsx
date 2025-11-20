@@ -262,7 +262,7 @@ export function WhatsappLeadTemplateSelector({
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-y-auto max-h-[60vh]" dir="rtl">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
         <TabsList className={`w-full ${isMobile ? 'h-auto grid-cols-3 text-xs' : 'grid grid-cols-3'}`}>
           <TabsTrigger value="lead-templates" className={isMobile ? "text-xs" : ""}>
             תבניות לקוחות ({leadTemplates.length})
@@ -273,7 +273,7 @@ export function WhatsappLeadTemplateSelector({
           <TabsTrigger value="custom" className={isMobile ? "text-xs" : ""}>הודעה מותאמת</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="lead-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
+        <TabsContent value="lead-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''} overflow-y-auto max-h-[60vh]`}>
           {leadTemplates.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>לא נמצאו תבניות לקוחות.</p>
@@ -323,7 +323,7 @@ export function WhatsappLeadTemplateSelector({
           )}
         </TabsContent>
 
-        <TabsContent value="car-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
+        <TabsContent value="car-templates" className={`space-y-4 ${isMobile ? 'space-y-3' : ''} overflow-y-auto max-h-[60vh]`}>
           {carTemplates.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>לא נמצאו תבניות רכבים.</p>
@@ -371,7 +371,7 @@ export function WhatsappLeadTemplateSelector({
           )}
         </TabsContent>
         
-        <TabsContent value="custom" className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
+        <TabsContent value="custom" className={`space-y-4 ${isMobile ? 'space-y-3' : ''} overflow-y-auto max-h-[60vh]`}>
           <div>
             <label className="block text-sm font-medium mb-2">כתוב הודעה מותאמת אישית</label>
             <Textarea
