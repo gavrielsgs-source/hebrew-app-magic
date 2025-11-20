@@ -22,17 +22,19 @@ export function WhatsAppDialog({
 }: WhatsAppDialogProps) {
   return (
     <SwipeDialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
+      <DialogContent className="w-[95%] sm:w-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>שליחת הודעה בוואטסאפ</DialogTitle>
         </DialogHeader>
-        <WhatsappLeadTemplateSelector
-          leadName={leadName}
-          leadPhone={leadPhone}
-          leadSource={leadSource}
-          leadId={leadId}
-          onClose={() => onOpenChange(false)}
-        />
+        <div className="overflow-y-auto flex-1">
+          <WhatsappLeadTemplateSelector
+            leadName={leadName}
+            leadPhone={leadPhone}
+            leadSource={leadSource}
+            leadId={leadId}
+            onClose={() => onOpenChange(false)}
+          />
+        </div>
       </DialogContent>
     </SwipeDialog>
   );
