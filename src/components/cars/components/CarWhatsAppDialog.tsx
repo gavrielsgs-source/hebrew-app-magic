@@ -54,11 +54,9 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         description: dbTemplate.description || '',
         type: 'car' as const,
         templateContent: dbTemplate.template_content,
-        generateMessage: (car: any) => {
+        generateMessage: (carName: string, car: any) => {
           return dbTemplate.template_content
-            .replace(/\{make\}/g, car.make)
-            .replace(/\{model\}/g, car.model)
-            .replace(/\{year\}/g, car.year)
+            .replace(/\{carName\}/g, carName)
             .replace(/\{price\}/g, car.price?.toLocaleString() || '')
             .replace(/\{kilometers\}/g, car.kilometers?.toLocaleString() || '')
             .replace(/\{mileage\}/g, car.kilometers?.toLocaleString() || '');
