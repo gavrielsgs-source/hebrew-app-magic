@@ -262,7 +262,7 @@ export function WhatsappLeadTemplateSelector({
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-y-auto max-h-[60vh]" dir="rtl">
         <TabsList className={`w-full ${isMobile ? 'h-auto grid-cols-3 text-xs' : 'grid grid-cols-3'}`}>
           <TabsTrigger value="lead-templates" className={isMobile ? "text-xs" : ""}>
             תבניות לקוחות ({leadTemplates.length})
@@ -293,12 +293,12 @@ export function WhatsappLeadTemplateSelector({
                     }
                   }}
                 >
-                  <SelectTrigger className="w-full text-right">
+                  <SelectTrigger className="w-full text-right" dir="rtl">
                     <SelectValue placeholder="בחר תבנית לקוח" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-[300px] overflow-y-auto bg-background z-[9999]">
+                  <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
                     {leadTemplates.map((template) => (
-                      <SelectItem key={template.id} value={template.id} className="text-right">
+                      <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer">
                         <div className="flex flex-col items-end">
                           <span className="font-medium">{template.name}</span>
                           <span className="text-xs text-muted-foreground">{template.description}</span>
@@ -343,12 +343,12 @@ export function WhatsappLeadTemplateSelector({
                     }
                   }}
                 >
-                  <SelectTrigger className="w-full text-right">
+                  <SelectTrigger className="w-full text-right" dir="rtl">
                     <SelectValue placeholder="בחר תבנית רכב" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-[300px] overflow-y-auto bg-background z-[9999]">
+                  <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
                     {carTemplates.map((template) => (
-                      <SelectItem key={template.id} value={template.id} className="text-right">
+                      <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer">
                         <div className="flex flex-col items-end">
                           <span className="font-medium">{template.name}</span>
                           <span className="text-xs text-muted-foreground">{template.description}</span>
