@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CreateCustomerDocumentDialog } from "./CreateCustomerDocumentDialog";
 import { UploadDocumentDialog } from "./UploadDocumentDialog";
 import { DocumentPreviewDialog } from "./DocumentPreviewDialog";
-import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocumentStatus } from "@/hooks/customers";
-import { useFetchDocuments } from "@/hooks/documents/use-fetch-documents";
+import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocumentStatus, useCustomerRelatedDocuments } from "@/hooks/customers";
 import { useCustomer } from "@/hooks/customers/use-customer";
 import type { Document as AppDocument } from "@/hooks/documents/types";
 import { toast } from "sonner";
@@ -19,7 +18,7 @@ interface CustomerDocumentsProps {
 export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   const { data: documents = [], isLoading: documentsLoading } = useCustomerDocuments(customerId);
   const { data: documentReturns = [], isLoading: returnsLoading } = useCustomerDocumentReturns(customerId);
-  const { data: attachedDocs = [], isLoading: attachedLoading } = useFetchDocuments('customer', customerId);
+  const { data: attachedDocs = [], isLoading: attachedLoading } = useCustomerRelatedDocuments(customerId);
   const { data: customer } = useCustomer(customerId);
   const updateDocumentStatus = useUpdateCustomerDocumentStatus();
   const getStatusBadge = (status: string) => {

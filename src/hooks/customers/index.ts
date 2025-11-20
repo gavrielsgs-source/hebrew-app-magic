@@ -16,3 +16,4 @@ export {
   useCreateCustomerDocument, 
   useUpdateCustomerDocumentStatus 
 } from './use-customer-documents';
+export { useCustomerRelatedDocuments } from './use-customer-related-documents';
