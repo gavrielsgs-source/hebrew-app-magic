@@ -28,31 +28,4 @@ export const whatsappCustomerTemplates: WhatsappCustomerTemplate[] = [
 צוות המכירות שלנו יחזור אליך בקרוב 😊`;
     }
   },
-  {
-    id: "customer_follow_up_car",
-    name: "מעקב - פרטי רכב",
-    description: "הודעת מעקב לאחר שליחת פרטי רכב ללקוח",
-    type: 'customer' as const,
-    templateContent: `היי {{customerName}}! 👋  
-
-רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
-אם תרצה {{CTA}} - נשמח לעזור!
-
-בברכה,
-צוות המכירות`,
-    generateMessage: (customerName: string, carDetails?: string, cta = 'לתאם שיחה קצרה או להגיע לצפייה') => {
-      const content = `היי {{customerName}}! 👋  
-
-רק רצינו לוודא שקיבלת את הפרטים על הרכב {{carDetails}} 🚗  
-אם תרצה {{CTA}} - נשמח לעזור!
-
-בברכה,
-צוות המכירות`;
-      
-      return content
-        .replace(/\{\{customerName\}\}/g, customerName || '')
-        .replace(/\{\{carDetails\}\}/g, carDetails || '')
-        .replace(/\{\{CTA\}\}/g, cta || 'לתאם שיחה קצרה או להגיע לצפייה');
-    }
-  }
 ];
