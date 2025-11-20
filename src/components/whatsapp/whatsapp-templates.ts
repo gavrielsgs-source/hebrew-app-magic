@@ -4,7 +4,7 @@ export interface WhatsappTemplate {
   name: string;
   description: string;
   type: 'car';
-  generateMessage: (car: any, cta?: string) => string;
+  generateMessage: (carName: string, car: any, cta?: string) => string;
   templateContent?: string;
 }
 
@@ -18,19 +18,19 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 רציתי לשתף אותך בפרטים על הרכב הזה:
 
-🚗 *{{1}} {{2}} {{3}}*
-💰 מחיר: {{4}}
-📏 קילומטר: {{5}}
+🚗 *{{carName}}*
+💰 מחיר: {{price}}
+📏 קילומטר: {{mileage}}
 
 מעוניין {{CTA}}?
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car, cta = 'לשמוע עוד פרטים או לתאם צפייה') => `שלום! 👋
+    generateMessage: (carName, car, cta = 'לשמוע עוד פרטים או לתאם צפייה') => `שלום! 👋
 
 רציתי לשתף אותך בפרטים על הרכב הזה:
 
-🚗 *${car.make} ${car.model} ${car.year}*
+🚗 *${carName}*
 💰 מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
 📏 קילומטר: ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין'}
 
@@ -44,20 +44,20 @@ export const whatsappTemplates: WhatsappTemplate[] = [
     name: "מפרט מפורט",
     description: "הודעה מפורטת עם כל המפרטים הטכניים",
     type: 'car' as const,
-    templateContent: `🚗 *{{1}} {{2}} {{3}}*
+    templateContent: `🚗 *{{carName}}*
 
 📋 *פרטים טכניים:*
-💰 מחיר: {{4}}
-📏 קילומטר: {{5}}
-🎨 צבע: {{6}}
-⚙️ נפח מנוע: {{7}}
-🔧 תיבת הילוכים: {{8}}
-⛽ סוג דלק: {{9}}
+💰 מחיר: {{price}}
+📏 קילומטר: {{mileage}}
+🎨 צבע: {{color}}
+⚙️ נפח מנוע: {{engine}}
+🔧 תיבת הילוכים: {{transmission}}
+⛽ סוג דלק: {{fuel}}
 
 האם תרצה {{CTA}}?
 
 צוות המכירות 📞`,
-    generateMessage: (car, cta = 'לתאם נסיעת מבחן או יש שאלות נוספות') => `🚗 *${car.make} ${car.model} ${car.year}*
+    generateMessage: (carName, car, cta = 'לתאם נסיעת מבחן או יש שאלות נוספות') => `🚗 *${carName}*
 
 📋 *פרטים טכניים:*
 💰 מחיר: ${car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה'}
@@ -78,9 +78,9 @@ export const whatsappTemplates: WhatsappTemplate[] = [
     type: 'car' as const,
     templateContent: `🔥 *הזדמנות לזמן מוגבל!* 🔥
 
-🚗 {{1}} {{2}} {{3}}
-💰 מחיר מיוחד: {{4}}
-📏 {{5}} ק"מ
+🚗 {{carName}}
+💰 מחיר מיוחד: {{price}}
+📏 {{mileage}} ק"מ
 
 ⚡ *למה לחטוף עכשיו:*
 ✅ מחיר מוזל לתקופה קצרה  
@@ -92,9 +92,9 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 בברכה,  
 צוות המכירות`,
-    generateMessage: (car) => `🔥 *הזדמנות לזמן מוגבל!* 🔥
+    generateMessage: (carName, car) => `🔥 *הזדמנות לזמן מוגבל!* 🔥
 
-🚗 ${car.make} ${car.model} ${car.year}
+🚗 ${carName}
 💰 מחיר מיוחד: ${car.price ? `₪${car.price.toLocaleString()}` : 'התקשר לפרטים'}
 📏 ${car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'מצב מעולה'}
 
@@ -116,23 +116,23 @@ export const whatsappTemplates: WhatsappTemplate[] = [
     type: 'car' as const,
     templateContent: `שלום! 🚗
 
-מעוניין לחוות נסיעה ב{{1}} {{2}} {{3}}?
+מעוניין לחוות נסיעה ב{{carName}}?
 
 🔑 *נסיעת מבחן חינם:*  
 📅 נוכל לתאם לך מועד נוח  
 ⏰ הנסיעה אורכת כ-30 דקות  
 📍 ניתן לצאת ישירות מהמכירות שלנו
 
-💰 מחיר: {{4}}  
-📏 קילומטר: {{5}} ק"מ
+💰 מחיר: {{price}}  
+📏 קילומטר: {{mileage}} ק"מ
 
 מתי נוח לך להגיע? 📞
 
 בברכה,  
 צוות המכירות`,
-    generateMessage: (car) => `שלום! 🚗
+    generateMessage: (carName, car) => `שלום! 🚗
 
-מעוניין לחוות נסיעה ב${car.make} ${car.model} ${car.year}?
+מעוניין לחוות נסיעה ב${carName}?
 
 🔑 *נסיעת מבחן חינם:*  
 📅 נוכל לתאם לך מועד נוח  
@@ -154,7 +154,7 @@ export const whatsappTemplates: WhatsappTemplate[] = [
     type: 'car' as const,
     templateContent: `שלום! 😊
 
-איך שלומך? אני מהצוות שלנו ורציתי ליצור איתך קשר בנושא {{1}} {{2}} {{3}}.
+איך שלומך? אני מהצוות שלנו ורציתי ליצור איתך קשר בנושא {{carName}}.
 
 האם {{CTA}}?
 
@@ -162,9 +162,9 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 בברכה,  
 צוות המכירות`,
-    generateMessage: (car, cta = 'זה זמן נוח לשיחה קצרה על המכונית שאתה מחפש') => `שלום! 😊
+    generateMessage: (carName, car, cta = 'זה זמן נוח לשיחה קצרה על המכונית שאתה מחפש') => `שלום! 😊
 
-איך שלומך? אני מהצוות שלנו ורציתי ליצור איתך קשר בנושא ${car.make} ${car.model} ${car.year}.
+איך שלומך? אני מהצוות שלנו ורציתי ליצור איתך קשר בנושא ${carName}.
 
 האם ${cta}?
 
@@ -180,7 +180,7 @@ export const whatsappTemplates: WhatsappTemplate[] = [
     type: 'car' as const,
     templateContent: `שלום,
 
-אני פונה אליך מצוות המכירות של חברת הרכב שלנו בנושא {{1}} {{2}} {{3}}.
+אני פונה אליך מצוות המכירות של חברת הרכב שלנו בנושא {{carName}}.
 
 נשמח לשמוע מה המפרט שאתה מחפש ולהציע לך את הפתרונות הטובים ביותר.
 
@@ -188,9 +188,9 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car, cta = 'נוח לך שנתקשר או שאתה מעדיף לתאם פגישה') => `שלום,
+    generateMessage: (carName, car, cta = 'נוח לך שנתקשר או שאתה מעדיף לתאם פגישה') => `שלום,
 
-אני פונה אליך מצוות המכירות של חברת הרכב שלנו בנושא ${car.make} ${car.model} ${car.year}.
+אני פונה אליך מצוות המכירות של חברת הרכב שלנו בנושא ${carName}.
 
 נשמח לשמוע מה המפרט שאתה מחפש ולהציע לך את הפתרונות הטובים ביותר.
 
@@ -208,7 +208,7 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 יש לנו חדשות נהדרות בשבילך!
 
-{{1}} {{2}} {{3}} - כרגע במבצע מיוחד! 🚗
+{{carName}} - כרגע במבצע מיוחד! 🚗
 
 🔹 מחירים מיוחדים לתקופה מוגבלת  
 🔹 אחריות מורחבת  
@@ -219,11 +219,11 @@ export const whatsappTemplates: WhatsappTemplate[] = [
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car, cta = 'תרצה לשמוע עוד פרטים או לתאם ביקור במכירות') => `שלום! 🎉
+    generateMessage: (carName, car, cta = 'תרצה לשמוע עוד פרטים או לתאם ביקור במכירות') => `שלום! 🎉
 
 יש לנו חדשות נהדרות בשבילך!
 
-${car.make} ${car.model} ${car.year} - כרגע במבצע מיוחד! 🚗
+${carName} - כרגע במבצע מיוחד! 🚗
 
 🔹 מחירים מיוחדים לתקופה מוגבלת  
 🔹 אחריות מורחבת  
@@ -242,7 +242,7 @@ ${car.make} ${car.model} ${car.year} - כרגע במבצע מיוחד! 🚗
     type: 'car' as const,
     templateContent: `שלום, 👋
 
-אני חוזר אליך בנושא {{1}} {{2}} {{3}}.
+אני חוזר אליך בנושא {{carName}}.
 
 רציתי לוודא שקיבלת את כל המידע שחיפשת ולראות אם יש עוד שאלות או דברים שאוכל לעזור לך איתם.
 
@@ -252,9 +252,9 @@ ${car.make} ${car.model} ${car.year} - כרגע במבצע מיוחד! 🚗
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (car, cta = 'יש מידע נוסף שמעניין אותך על הרכב הזה') => `שלום, 👋
+    generateMessage: (carName, car, cta = 'יש מידע נוסף שמעניין אותך על הרכב הזה') => `שלום, 👋
 
-אני חוזר אליך בנושא ${car.make} ${car.model} ${car.year}.
+אני חוזר אליך בנושא ${carName}.
 
 רציתי לוודא שקיבלת את כל המידע שחיפשת ולראות אם יש עוד שאלות או דברים שאוכל לעזור לך איתם.
 

@@ -61,7 +61,8 @@ export function TemplateDialog({
       // Always generate the message using generateMessage function if available
       if (newTemplate.generateMessage && typeof newTemplate.generateMessage === 'function') {
         if (newTemplate.type === 'car') {
-          setTemplateContent(newTemplate.generateMessage(mockCar));
+          const carName = `${mockCar.make} ${mockCar.model} ${mockCar.year}`;
+          setTemplateContent(newTemplate.generateMessage(carName, mockCar));
         } else if (newTemplate.type === 'lead') {
           setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
         }

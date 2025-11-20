@@ -61,7 +61,8 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
         const currentCta = getCurrentCta();
         if (originalTemplate.type === 'car') {
-          return originalTemplate.generateMessage(mockCar, currentCta);
+          const carName = `${mockCar.make} ${mockCar.model} ${mockCar.year}`;
+          return originalTemplate.generateMessage(carName, mockCar, currentCta);
         } else if (originalTemplate.type === 'lead') {
           return originalTemplate.generateMessage(mockLeadName, mockLeadSource, currentCta);
         } else if ((originalTemplate as any).type === 'customer') {
@@ -73,7 +74,8 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
       if (template.generateMessage && typeof template.generateMessage === 'function') {
         const currentCta = getCurrentCta();
         if (template.type === 'car') {
-          return template.generateMessage(mockCar, currentCta);
+          const carName = `${mockCar.make} ${mockCar.model} ${mockCar.year}`;
+          return template.generateMessage(carName, mockCar, currentCta);
         } else if (template.type === 'lead') {
           return template.generateMessage(mockLeadName, mockLeadSource, currentCta);
         } else if (template.type === 'customer') {
