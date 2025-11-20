@@ -16,10 +16,29 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Get authenticated user from JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization header');
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+
+    if (authError || !user) {
+      throw new Error('Unauthorized');
+    }
+
     const { userId, email } = await req.json();
 
     if (!userId) {
       throw new Error('User ID is required');
+    }
+
+    // Verify that the authenticated user matches the userId parameter
+    if (user.id !== userId) {
+      throw new Error('User ID mismatch - you can only create subscriptions for yourself');
     }
 
     console.log(`Creating trial subscription for user ${userId} (${email})`);
