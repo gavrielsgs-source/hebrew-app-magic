@@ -19,11 +19,10 @@ export function FAQSection() {
             <Card className="p-8 rounded-2xl border-0 shadow-md">
               <CardContent className="space-y-4">
                 <h3 className="text-xl font-bold text-gray-900">
-                  האם החבילה החינמית באמת חינמית לתמיד?
+                  צריך כרטיס אשראי בשביל הניסיון חינם?
                 </h3>
                 <p className="text-gray-700">
-                  כן! החבילה החינמית שלנו חינמית לחלוטין ולתמיד. 
-                  היא כוללת 5 רכבים, 10 לידים ו-50 הודעות וואטסאפ בחודש.
+                  לא, לא צריך כרטיס אשראי ב-14 ימי הניסיון. תקבל גישה מלאה למערכת שתסתיים לאחר תקופת הניסיון.
                 </p>
               </CardContent>
             </Card>
