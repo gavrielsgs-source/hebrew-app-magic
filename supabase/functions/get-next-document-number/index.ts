@@ -91,16 +91,8 @@ serve(async (req) => {
     }
 
     // Format the number based on document type
-    switch (documentType) {
-      case 'tax_invoice':
-        formattedNumber = `${prefix}${String(nextNumber).padStart(6, '0')}`;
-        break;
-      case 'sales_agreement':
-        formattedNumber = `${prefix}SA${String(nextNumber).padStart(4, '0')}`;
-        break;
-      default:
-        formattedNumber = `${prefix}${String(nextNumber).padStart(4, '0')}`;
-    }
+    // Remove any prefix like 'Toyota' and start from 0001
+    formattedNumber = String(nextNumber).padStart(4, '0');
 
     console.log('Generated document number:', formattedNumber);
 

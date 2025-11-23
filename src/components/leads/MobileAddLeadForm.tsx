@@ -36,7 +36,7 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
   const [sendWhatsApp, setSendWhatsApp] = useState(true);
 
   // Enhanced mobile-first submit handler
-  const handleSubmit = async (e: React.FormEvent | React.TouchEvent | React.MouseEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -102,10 +102,12 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     
     console.log('MobileAddLeadForm - Submit button clicked/touched');
     
-    // Ensure immediate response on mobile
-    requestAnimationFrame(() => {
-      handleSubmit(e);
-    });
+    // Trigger form submission programmatically
+    const form = (e.currentTarget as HTMLElement).closest('form');
+    if (form) {
+      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      form.dispatchEvent(submitEvent);
+    }
   };
 
   return (

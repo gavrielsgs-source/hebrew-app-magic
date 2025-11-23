@@ -70,9 +70,17 @@ export function CarImageSection({
             src={allImages[currentImageIndex]} 
             alt={`${car.make} ${car.model}`}
             className="h-full w-full object-cover transition-all duration-500"
+            loading="eager"
+            fetchPriority="high"
             onError={(e) => {
               console.error('Error loading image:', e);
-              e.currentTarget.style.display = 'none';
+              const target = e.currentTarget;
+              target.style.display = 'none';
+              // Try to load next image if available
+              if (allImages.length > 1) {
+                const nextIndex = (currentImageIndex + 1) % allImages.length;
+                setCurrentImageIndex(nextIndex);
+              }
             }}
           />
           {/* אפקט הצללה עדין */}

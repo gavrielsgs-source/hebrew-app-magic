@@ -84,10 +84,10 @@ export function CustomerAndLeadSearchSelect({
           <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className="w-[95vw] sm:w-full max-w-md p-0 z-[100]" align="start" sideOffset={8}>
         <Command>
-          <CommandInput placeholder="חפש לקוח או ליד..." className="text-right" />
-          <CommandList>
+          <CommandInput placeholder="חפש לקוח או ליד..." className="text-right h-12" />
+          <CommandList className="max-h-[300px]">
             <CommandEmpty>לא נמצאו תוצאות</CommandEmpty>
             {customers.length > 0 && (
               <CommandGroup heading="לקוחות">
