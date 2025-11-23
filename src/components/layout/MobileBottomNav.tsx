@@ -114,9 +114,9 @@ export function MobileBottomNav() {
       { id: "saved-documents", label: "מסמכים שמורים", path: "/documents", icon: "FileText" }
     ])},
     { id: "templates", label: "תבניות", icon: Settings, path: "/templates" },
+    { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" },
     { id: "invoices", label: "חשבוניות", icon: Receipt, path: "/invoices" },
-    { id: "accountant-reports", label: "ייצוא דוח לרו״ח", icon: FileText, path: "/reports/accountant" },
-    { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" }
+    { id: "accountant-reports", label: "דוח לרו״ח", icon: FileText, path: "/reports/accountant" }
   ];
 
   const isActive = (path: string) => {
