@@ -59,7 +59,7 @@ export function MobileBottomNav() {
   const { data: dashboardData } = useDashboardData();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [docProductionExpanded, setDocProductionExpanded] = useState(false);
+  const [documentsExpanded, setDocumentsExpanded] = useState(false);
 
   if (!isMobile) return null;
 
@@ -105,10 +105,13 @@ export function MobileBottomNav() {
     { id: "profile", label: "פרופיל", icon: User, path: "/profile" },
     { id: "team-management", label: "ניהול צוות", icon: Users, path: "/team-management" },
     { id: "analytics", label: "אנליטיקה", icon: BarChart, path: "/analytics" },
-    { id: "documents", label: "מסמכים", icon: FileText, path: "/documents" },
-    { id: "document-production", label: "הפקת מסמכים", icon: Sparkles, path: null, expandable: true, badge: "BETA" },
+    { id: "documents", label: "מסמכים", icon: FileText, path: null, expandable: true, children: [
+      { id: "saved-documents", label: "מסמכים שמורים", path: "/documents" },
+      { id: "document-production", label: "הפקת מסמכים", path: "/document-production", badge: "BETA" }
+    ]},
     { id: "templates", label: "תבניות", icon: Settings, path: "/templates" },
-    { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" }
+    { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" },
+    { id: "accountant-reports", label: "ייצוא דוח לרו״ח", icon: FileText, path: "/reports/accountant" }
   ];
 
   const isActive = (path: string) => {
@@ -131,9 +134,11 @@ export function MobileBottomNav() {
     }
   };
 
-  const handleMenuItemClick = (path: string | null, expandable?: boolean) => {
+  const handleMenuItemClick = (path: string | null, expandable?: boolean, itemId?: string) => {
     if (expandable) {
-      setDocProductionExpanded(!docProductionExpanded);
+      if (itemId === 'documents') {
+        setDocumentsExpanded(!documentsExpanded);
+      }
     } else if (path) {
       navigate(path);
       setIsMenuOpen(false);
@@ -201,48 +206,72 @@ export function MobileBottomNav() {
           >
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const active = item.path ? isActive(item.path) : false;
+              const active = item.path ? isActive(item.path) : (item.children ? item.children.some(child => isActive(child.path)) : false);
+              const isExpanded = item.id === 'documents' ? documentsExpanded : false;
+              const itemBadge = 'badge' in item && typeof item.badge === 'string' ? item.badge : undefined;
               
               return (
                 <div key={item.id}>
                   <MobileButton
                     variant={active ? "primary" : "outline"}
                     size="xl"
-                    onClick={() => handleMenuItemClick(item.path, item.expandable)}
+                    onClick={() => handleMenuItemClick(item.path, item.expandable, item.id)}
                     icon={<Icon className="h-6 w-6" />}
                     className="justify-start w-full relative"
                   >
                     <span className="flex-1 text-right">{item.label}</span>
-                    {item.badge && (
+                    {itemBadge && (
                       <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 mr-2">
-                        {item.badge}
+                        {itemBadge}
                       </Badge>
                     )}
                     {item.expandable && (
                       <ChevronDown 
                         className={`h-5 w-5 transition-transform duration-200 ${
-                          docProductionExpanded ? 'rotate-180' : ''
+                          isExpanded ? 'rotate-180' : ''
                         }`}
                       />
                     )}
                   </MobileButton>
                   
-                  {item.expandable && docProductionExpanded && (
+                  {item.expandable && isExpanded && item.children && (
                     <div className="flex flex-col gap-2 mt-3 pr-4">
-                      {DOCUMENT_TYPES.map((doc) => {
-                        const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
-                        const docPath = `/document-production/${doc.id}`;
-                        const docActive = location.pathname === docPath;
+                      {item.children.map((child) => {
+                        const childActive = child.path ? isActive(child.path) : false;
+                        const childBadge = 'badge' in child && typeof child.badge === 'string' ? child.badge : undefined;
+                        
+                        // If it's document-production, show all document types
+                        if (child.id === 'document-production') {
+                          return (
+                            <div key={child.id} className="flex flex-col gap-2">
+                              <MobileButton
+                                variant={childActive ? "primary" : "outline"}
+                                size="lg"
+                                onClick={() => handleMenuItemClick(child.path)}
+                                icon={<Sparkles className="h-4 w-4" />}
+                                className="justify-start text-sm"
+                              >
+                                {child.label}
+                                {childBadge && (
+                                  <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 mr-2">
+                                    {childBadge}
+                                  </Badge>
+                                )}
+                              </MobileButton>
+                            </div>
+                          );
+                        }
+                        
                         return (
                           <MobileButton
-                            key={doc.id}
-                            variant={docActive ? "primary" : "outline"}
+                            key={child.id}
+                            variant={childActive ? "primary" : "outline"}
                             size="lg"
-                            onClick={() => handleMenuItemClick(docPath)}
-                            icon={<IconComponent className="h-4 w-4" />}
+                            onClick={() => handleMenuItemClick(child.path)}
+                            icon={<FileText className="h-4 w-4" />}
                             className="justify-start text-sm"
                           >
-                            {doc.name}
+                            {child.label}
                           </MobileButton>
                         );
                       })}

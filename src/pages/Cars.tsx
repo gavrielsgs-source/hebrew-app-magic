@@ -60,8 +60,6 @@ export default function Cars() {
 
         <CarsMobileHeader
           onAddCar={handleAddCar}
-          onWhatsApp={handleWhatsApp}
-          onFilter={handleFilter}
           carsCount={cars.length}
         />
         
