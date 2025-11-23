@@ -59,7 +59,7 @@ export function MobileBottomNav() {
   const { data: dashboardData } = useDashboardData();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [documentsExpanded, setDocumentsExpanded] = useState(false);
+  const [docProductionExpanded, setDocProductionExpanded] = useState(false);
 
   if (!isMobile) return null;
 
@@ -105,13 +105,18 @@ export function MobileBottomNav() {
     { id: "profile", label: "פרופיל", icon: User, path: "/profile" },
     { id: "team-management", label: "ניהול צוות", icon: Users, path: "/team-management" },
     { id: "analytics", label: "אנליטיקה", icon: BarChart, path: "/analytics" },
-    { id: "documents", label: "מסמכים", icon: FileText, path: null, expandable: true, children: [
-      { id: "saved-documents", label: "מסמכים שמורים", path: "/documents" },
-      { id: "document-production", label: "הפקת מסמכים", path: "/document-production", badge: "BETA" }
-    ]},
+    { id: "document-production", label: "הפקת מסמכים", icon: Sparkles, path: null, expandable: true, badge: "BETA", children: DOCUMENT_TYPES.map(doc => ({
+      id: doc.id,
+      label: doc.name,
+      path: `/document-production/${doc.id}`,
+      icon: doc.icon
+    })).concat([
+      { id: "saved-documents", label: "מסמכים שמורים", path: "/documents", icon: "FileText" }
+    ])},
     { id: "templates", label: "תבניות", icon: Settings, path: "/templates" },
-    { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" },
-    { id: "accountant-reports", label: "ייצוא דוח לרו״ח", icon: FileText, path: "/reports/accountant" }
+    { id: "invoices", label: "חשבוניות", icon: Receipt, path: "/invoices" },
+    { id: "accountant-reports", label: "ייצוא דוח לרו״ח", icon: FileText, path: "/reports/accountant" },
+    { id: "subscription", label: "מנוי", icon: CreditCard, path: "/subscription" }
   ];
 
   const isActive = (path: string) => {
@@ -136,8 +141,8 @@ export function MobileBottomNav() {
 
   const handleMenuItemClick = (path: string | null, expandable?: boolean, itemId?: string) => {
     if (expandable) {
-      if (itemId === 'documents') {
-        setDocumentsExpanded(!documentsExpanded);
+      if (itemId === 'document-production') {
+        setDocProductionExpanded(!docProductionExpanded);
       }
     } else if (path) {
       navigate(path);
@@ -207,7 +212,7 @@ export function MobileBottomNav() {
             {menuItems.map((item) => {
               const Icon = item.icon;
               const active = item.path ? isActive(item.path) : (item.children ? item.children.some(child => isActive(child.path)) : false);
-              const isExpanded = item.id === 'documents' ? documentsExpanded : false;
+              const isExpanded = item.id === 'document-production' ? docProductionExpanded : false;
               const itemBadge = 'badge' in item && typeof item.badge === 'string' ? item.badge : undefined;
               
               return (
@@ -239,28 +244,7 @@ export function MobileBottomNav() {
                       {item.children.map((child) => {
                         const childActive = child.path ? isActive(child.path) : false;
                         const childBadge = 'badge' in child && typeof child.badge === 'string' ? child.badge : undefined;
-                        
-                        // If it's document-production, show all document types
-                        if (child.id === 'document-production') {
-                          return (
-                            <div key={child.id} className="flex flex-col gap-2">
-                              <MobileButton
-                                variant={childActive ? "primary" : "outline"}
-                                size="lg"
-                                onClick={() => handleMenuItemClick(child.path)}
-                                icon={<Sparkles className="h-4 w-4" />}
-                                className="justify-start text-sm"
-                              >
-                                {child.label}
-                                {childBadge && (
-                                  <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 mr-2">
-                                    {childBadge}
-                                  </Badge>
-                                )}
-                              </MobileButton>
-                            </div>
-                          );
-                        }
+                        const ChildIcon = iconMap[child.icon as keyof typeof iconMap] || FileText;
                         
                         return (
                           <MobileButton
@@ -268,10 +252,15 @@ export function MobileBottomNav() {
                             variant={childActive ? "primary" : "outline"}
                             size="lg"
                             onClick={() => handleMenuItemClick(child.path)}
-                            icon={<FileText className="h-4 w-4" />}
+                            icon={<ChildIcon className="h-4 w-4" />}
                             className="justify-start text-sm"
                           >
                             {child.label}
+                            {childBadge && (
+                              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 mr-2">
+                                {childBadge}
+                              </Badge>
+                            )}
                           </MobileButton>
                         );
                       })}

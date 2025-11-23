@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { FormControl } from "@/components/ui/form";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -44,11 +43,9 @@ export function CarSearchSelect({
 
   return (
     <Select onValueChange={onValueChange} value={value}>
-      <FormControl>
-        <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all text-right [&>span]:w-full [&>span]:text-right">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-      </FormControl>
+      <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all text-right [&>span]:w-full [&>span]:text-right">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
       <SelectContent 
         dir="rtl"
         side="bottom"
