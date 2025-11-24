@@ -17,8 +17,6 @@ const WHITELISTED_PATHS = [
   '/welcome'
 ];
 
-const GRACE_PERIOD_HOURS = 48;
-
 export default function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const { subscription, isLoading } = useSubscription();
   const navigate = useNavigate();
@@ -37,28 +35,16 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
     const isExpiredOrPastDue = subscription?.subscription_status === 'expired' || 
                                 subscription?.subscription_status === 'past_due';
 
-    if (!isExpiredOrPastDue) {
-      return; // הכל תקין
-    }
+    // בדיקה אם הניסיון נגמר (trial_ends_at עבר)
+    const isTrialExpired = subscription?.subscription_status === 'trial' &&
+                           subscription?.trialEndsAt && 
+                           new Date(subscription.trialEndsAt) < new Date();
 
-    // בדיקה אם עברו 48 שעות מאז הפקיעה
-    const expiresAt = subscription?.expiresAt ? new Date(subscription.expiresAt) : null;
-    
-    if (!expiresAt) {
-      // אין תאריך פקיעה - חוסמים
+    // אם המנוי פג או הניסיון נגמר - חסימה מיידית
+    if (isExpiredOrPastDue || isTrialExpired) {
       navigate('/subscription/expired', { replace: true });
       return;
     }
-
-    const now = new Date();
-    const hoursSinceExpiration = (now.getTime() - expiresAt.getTime()) / (1000 * 60 * 60);
-
-    // אם עברו יותר מ-48 שעות - חוסמים
-    if (hoursSinceExpiration > GRACE_PERIOD_HOURS) {
-      navigate('/subscription/expired', { replace: true });
-    }
-    
-    // אם בתוך 48 שעות - מאפשרים כניסה עם אזהרה (האזהרה מוצגת ב-GracePeriodWarning)
   }, [subscription, isLoading, navigate, location.pathname]);
 
   if (isLoading) {
