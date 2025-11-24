@@ -138,6 +138,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         active: subscriptionData.active,
         expiresAt: subscriptionData.expires_at,
         trialEndsAt: subscriptionData.trial_ends_at,
+        subscription_status: subscriptionData.subscription_status,
         isTrialActive: subscriptionData.trial_ends_at ? new Date(subscriptionData.trial_ends_at) > new Date() : false,
         // Override user limit with database value if available
         userLimit: subscriptionData.max_users || baseSubscription.userLimit

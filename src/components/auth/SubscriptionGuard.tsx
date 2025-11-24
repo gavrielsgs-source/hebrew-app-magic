@@ -18,7 +18,7 @@ const WHITELISTED_PATHS = [
 ];
 
 export default function SubscriptionGuard({ children }: SubscriptionGuardProps) {
-  const { subscription, isLoading } = useSubscription();
+  const { subscription, isLoading, isTrialExpired } = useSubscription();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,21 +31,20 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
       return;
     }
 
-    // בדיקה אם המנוי פג תוקף
-    const isExpiredOrPastDue = subscription?.subscription_status === 'expired' || 
-                                subscription?.subscription_status === 'past_due';
-
-    // בדיקה אם הניסיון נגמר (trial_ends_at עבר)
-    const isTrialExpired = subscription?.subscription_status === 'trial' &&
-                           subscription?.trialEndsAt && 
-                           new Date(subscription.trialEndsAt) < new Date();
-
-    // אם המנוי פג או הניסיון נגמר - חסימה מיידית
-    if (isExpiredOrPastDue || isTrialExpired) {
+    // חסימה מיידית אם הניסיון פג תוקף
+    if (isTrialExpired) {
+      console.log('🚫 Trial expired, blocking access to:', location.pathname);
       navigate('/subscription/expired', { replace: true });
       return;
     }
-  }, [subscription, isLoading, navigate, location.pathname]);
+
+    // בדיקה נוספת: אם המנוי לא פעיל
+    if (!subscription?.active) {
+      console.log('🚫 Subscription not active, blocking access to:', location.pathname);
+      navigate('/subscription/expired', { replace: true });
+      return;
+    }
+  }, [subscription, isLoading, isTrialExpired, navigate, location.pathname]);
 
   if (isLoading) {
     return (
