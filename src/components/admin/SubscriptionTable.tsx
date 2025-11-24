@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Edit, ArrowUpDown, Download } from "lucide-react";
+import { Calendar, Clock, Edit, ArrowUpDown, Download, Mail, Phone } from "lucide-react";
 import { AdminSubscription } from "@/hooks/use-admin-subscriptions";
 import { ExtendSubscriptionDialog } from "./ExtendSubscriptionDialog";
 import { ChangeStatusDialog } from "./ChangeStatusDialog";
@@ -59,8 +59,10 @@ export function SubscriptionTable({
     const exportData = subscriptions.map(sub => ({
       "אימייל": sub.user_email,
       "שם מלא": sub.full_name || "",
+      "טלפון": sub.phone || "",
       "חבילה": sub.subscription_tier,
       "סטטוס": getStatusLabel(sub.subscription_status),
+      "סיום ניסיון": sub.trial_ends_at ? new Date(sub.trial_ends_at).toLocaleDateString("he-IL") : "",
       "תאריך פקיעה": sub.expires_at ? new Date(sub.expires_at).toLocaleDateString("he-IL") : "",
       "סכום חיוב": sub.billing_amount || 0,
       "מחזור חיוב": sub.billing_cycle || "",
@@ -95,12 +97,7 @@ export function SubscriptionTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-right">
-                <Button variant="ghost" onClick={() => handleSort("user_email")}>
-                  אימייל
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
-                </Button>
-              </TableHead>
+              <TableHead className="text-right">פרטי קשר</TableHead>
               <TableHead className="text-right">שם מלא</TableHead>
               <TableHead className="text-right">
                 <Button variant="ghost" onClick={() => handleSort("subscription_tier")}>
@@ -114,6 +111,12 @@ export function SubscriptionTable({
                   <ArrowUpDown className="mr-2 h-4 w-4" />
                 </Button>
               </TableHead>
+              <TableHead className="text-right">
+                <Button variant="ghost" onClick={() => handleSort("trial_ends_at")}>
+                  סיום ניסיון
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                </Button>
+              </TableHead>
               <TableHead className="text-right">תאריך פקיעה</TableHead>
               <TableHead className="text-right">ימים נותרים</TableHead>
               <TableHead className="text-right">סכום חיוב</TableHead>
@@ -124,15 +127,68 @@ export function SubscriptionTable({
           <TableBody>
             {sortedSubscriptions.map((sub) => {
               const daysRemaining = getDaysRemaining(sub.expires_at);
+              const trialDaysRemaining = getDaysRemaining(sub.trial_ends_at);
+              const hasRenewed = sub.subscription_status === 'active' && sub.billing_amount && sub.billing_amount > 0;
+              
               return (
                 <TableRow key={sub.subscription_id}>
-                  <TableCell className="font-medium text-right">{sub.user_email}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex flex-col gap-1">
+                      <a 
+                        href={`mailto:${sub.user_email}`}
+                        className="flex items-center gap-1 text-sm text-primary hover:underline justify-end"
+                      >
+                        <span className="max-w-[180px] truncate">{sub.user_email}</span>
+                        <Mail className="h-3 w-3 flex-shrink-0" />
+                      </a>
+                      {sub.phone && (
+                        <a 
+                          href={`tel:${sub.phone}`}
+                          className="flex items-center gap-1 text-sm text-primary hover:underline justify-end"
+                        >
+                          <span>{sub.phone}</span>
+                          <Phone className="h-3 w-3 flex-shrink-0" />
+                        </a>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right">{sub.full_name || "-"}</TableCell>
                   <TableCell className="text-right">
                     <Badge variant="outline">{sub.subscription_tier}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {getStatusBadge(sub.subscription_status)}
+                    <div className="flex flex-col gap-1">
+                      {getStatusBadge(sub.subscription_status)}
+                      {hasRenewed && (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          חידש
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {sub.trial_ends_at ? (
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-end gap-1 text-sm">
+                          <span>{new Date(sub.trial_ends_at).toLocaleDateString("he-IL")}</span>
+                          <Calendar className="h-3 w-3" />
+                        </div>
+                        {trialDaysRemaining !== null && (
+                          <div className={`text-xs ${
+                            trialDaysRemaining < 0 ? "text-red-600" : 
+                            trialDaysRemaining < 3 ? "text-yellow-600" : 
+                            "text-muted-foreground"
+                          }`}>
+                            {trialDaysRemaining < 0 ? 
+                              `פג לפני ${Math.abs(trialDaysRemaining)} ימים` : 
+                              `נותרו ${trialDaysRemaining} ימים`
+                            }
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     {sub.expires_at ? (

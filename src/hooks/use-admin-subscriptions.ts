@@ -7,6 +7,7 @@ export interface AdminSubscription {
   user_id: string;
   user_email: string;
   full_name: string | null;
+  phone: string | null;
   subscription_tier: string;
   subscription_status: string;
   trial_ends_at: string | null;

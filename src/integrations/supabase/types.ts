@@ -1450,6 +1450,7 @@ export type Database = {
           full_name: string
           max_users: number
           next_billing_date: string
+          phone: string
           subscription_id: string
           subscription_status: string
           subscription_tier: string
