@@ -40,6 +40,25 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // First, update all expired trials that are still marked as 'trial'
+    console.log('Updating expired trial subscriptions...');
+    const { data: expiredUpdate, error: expiredError } = await supabase
+      .from('subscriptions')
+      .update({
+        subscription_status: 'expired',
+        active: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('subscription_status', 'trial')
+      .lt('trial_ends_at', new Date().toISOString())
+      .select('id');
+
+    if (expiredError) {
+      console.error('Error updating expired trials:', expiredError);
+    } else {
+      console.log(`✅ Updated ${expiredUpdate?.length || 0} expired trial subscriptions to 'expired' status`);
+    }
+
     // Get subscriptions where trial ends today
     const { data: expiringTrials, error: fetchError } = await supabase
       .rpc('get_expiring_trials', { days_ahead: 0 });
