@@ -38,23 +38,23 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     description: "הודעת היכרות ראשונית עם לקוח שפנה אלינו",
     type: 'lead' as const,
     usesCta: true,
-    templateContent: `היי {{leadName}}! 👋
+    templateContent: `היי {{leadName}} ! 👋
 
-קיבלנו את הפנייה שלך{{leadSource}} וראינו שאתה מתעניין ברכב.
+קיבלנו את הפנייה שלך {{leadSource}} וראינו שאתה מתעניין ברכב.
 
-{{CTA}}? 📞
+מתי תהיה זמין ל{{CTA}}? 📞
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
 בברכה,
 צוות המכירות`,
-    generateMessage: (leadName: string, leadSource?: string, cta = 'מתי תהיה זמין לשיחת ייעוץ קצרה') => {
-      const sourceText = leadSource ? ` דרך ${leadSource}` : '';
-      return `היי ${leadName}! 👋
+    generateMessage: (leadName: string, leadSource?: string, cta = 'שיחת ייעוץ קצרה') => {
+      const sourceText = leadSource ? ` ${leadSource}` : '';
+      return `היי ${leadName} ! 👋
 
 קיבלנו את הפנייה שלך${sourceText} וראינו שאתה מתעניין ברכב.
 
-${cta}? 📞
+מתי תהיה זמין ל${cta}? 📞
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
