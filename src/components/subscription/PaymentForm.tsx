@@ -10,8 +10,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "react-router-dom";
 
 const paymentFormSchema = z.object({
   fullName: z
@@ -40,6 +43,11 @@ const paymentFormSchema = z.object({
   postalCode: z
     .string()
     .regex(/^\d{5,7}$/, "מיקוד חייב להכיל 5-7 ספרות"),
+  acceptTerms: z
+    .boolean()
+    .refine((val) => val === true, {
+      message: "חובה לאשר את תנאי השימוש ומדיניות הפרטיות",
+    }),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
@@ -69,6 +77,7 @@ export function PaymentForm({
       address: initialValues?.address || "",
       city: initialValues?.city || "",
       postalCode: initialValues?.postalCode || "",
+      acceptTerms: false,
     },
   });
 
@@ -174,6 +183,42 @@ export function PaymentForm({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="acceptTerms"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none mr-2">
+                <FormLabel>
+                  אני מאשר/ת את{" "}
+                  <Link 
+                    to="/terms-of-service" 
+                    target="_blank"
+                    className="text-primary underline hover:text-primary/80"
+                  >
+                    תנאי השימוש
+                  </Link>
+                  {" "}ואת{" "}
+                  <Link 
+                    to="/privacy-policy" 
+                    target="_blank"
+                    className="text-primary underline hover:text-primary/80"
+                  >
+                    מדיניות הפרטיות
+                  </Link>
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
 
         <div className="flex justify-between pt-4">
           <Button variant="outline" onClick={onCancel} disabled={loading} type="button">

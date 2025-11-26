@@ -38,6 +38,13 @@ export default function Contact() {
       value: '050-271-0262',
       action: 'https://wa.me/972502710262',
       description: 'התחל שיחה מהירה'
+    },
+    {
+      icon: MapPin,
+      title: 'כתובת',
+      value: 'מושב מעגלים, השלדג 78',
+      action: 'https://maps.google.com/?q=מושב+מעגלים+השלדג+78',
+      description: 'הכתובת הפיזית של העסק'
     }
   ];
 

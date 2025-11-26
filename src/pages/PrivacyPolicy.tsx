@@ -100,7 +100,7 @@ export default function PrivacyPolicy() {
             <section className="mb-8">
               <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">11. יצירת קשר בנושא פרטיות</h2>
               <p className="text-gray-700">
-                itscarslead@gmail.com | עמוד "צור קשר".
+                itscarslead@gmail.com | עמוד "צור קשר" | מושב מעגלים, השלדג 78
               </p>
             </section>
           </div>
