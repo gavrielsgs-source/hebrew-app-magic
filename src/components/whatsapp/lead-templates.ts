@@ -63,7 +63,7 @@ export const whatsappLeadTemplates: WhatsappLeadTemplate[] = [
     }
   },
   {
-    id: "follow_up_car",
+    id: "follow_up",
     name: "מעקב - פרטי רכב",
     description: "הודעת מעקב לאחר שליחת פרטי רכב",
     type: 'lead' as const,
