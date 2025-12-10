@@ -3,7 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_TOKEN");
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0";
-const PHONE_NUMBER_ID = "734825146390804";
+const PHONE_NUMBER_ID = "867489066452280";
+const WABA_ID = "4320549034895129";
 
 console.log("🔑 WhatsApp token configured:", WHATSAPP_TOKEN ? "Yes" : "No");
 
