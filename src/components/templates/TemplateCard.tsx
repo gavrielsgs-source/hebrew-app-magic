@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 interface TemplateCardProps {
-  template: UnifiedTemplate;
+  template: UnifiedTemplate & { is_default?: boolean };
   onEdit: (template: UnifiedTemplate) => void;
   onDelete: (id: string) => void;
 }
@@ -42,9 +42,8 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   const [previewCta, setPreviewCta] = useState("לקבוע פגישה");
   const [customPreviewCta, setCustomPreviewCta] = useState("");
   
-  // Check if this is a default (system) template
-  const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
-  const isDefaultTemplate = allDefaultTemplates.some(t => t.id === template.id);
+  // Check if this is a default (system) template - use is_default from DB
+  const isDefaultTemplate = (template as any).is_default === true;
   
   // Get current CTA
   const getCurrentCta = () => {
@@ -122,20 +121,24 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
   const previewMessage = generatePreviewMessage();
   
   return (
-    <Card className="hover:shadow-xl transition-all duration-300 border border-gray-200 bg-white rounded-2xl overflow-hidden">
+    <Card className={`hover:shadow-xl transition-all duration-300 border rounded-2xl overflow-hidden ${
+      isDefaultTemplate 
+        ? 'border-primary/30 bg-primary/5 dark:bg-primary/10' 
+        : 'border-gray-200 bg-white dark:bg-card'
+    }`}>
       <CardHeader className="pb-4 p-6">
         <div className="flex items-start justify-between w-full">
           {/* כותרת ותיאור - צד שמאל */}
           <div className="text-left order-1 flex-1">
-            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-start mb-2">
-              <span className="text-gray-800">{template.name}</span>
+            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-start mb-2 flex-wrap">
+              <span className="text-gray-800 dark:text-gray-100">{template.name}</span>
               <FileText className="h-5 w-5 text-gray-400" />
               <Badge 
                 variant={template.type === 'car' ? 'default' : 'secondary'} 
                 className={`text-xs font-medium px-3 py-1.5 rounded-full border-2 ${
                   template.type === 'car' 
-                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                    : 'bg-gray-50 text-gray-700 border-gray-200'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700' 
+                    : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'
                 }`}
               >
                 {template.type === 'car' ? (
@@ -150,6 +153,14 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
                   </>
                 )}
               </Badge>
+              {isDefaultTemplate && (
+                <Badge 
+                  variant="outline" 
+                  className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary border-primary/30"
+                >
+                  ברירת מחדל
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription className="text-left text-gray-600 leading-relaxed">
               {template.description}
