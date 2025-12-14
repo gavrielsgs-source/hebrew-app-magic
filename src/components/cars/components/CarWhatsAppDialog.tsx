@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { getCarImages } from "@/lib/image-utils";
 import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
+import { NonDefaultTemplateWarning } from "@/components/whatsapp/NonDefaultTemplateWarning";
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -74,6 +75,17 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     
     setTemplates(mergedTemplates);
   }, [dbTemplates]);
+
+  // Check if selected template is default
+  const isSelectedTemplateDefault = () => {
+    if (selectedTemplateId === "custom") return true; // Custom messages don't need warning
+    if (selectedTemplateId === "car_template_default") return true; // This is the approved FB template
+    
+    // Find the template in DB and check if it's default
+    const selectedTemplateName = templates.find(t => t.id === selectedTemplateId)?.name;
+    const dbTemplate = dbTemplates?.find(t => t.name === selectedTemplateName);
+    return dbTemplate?.is_default ?? false;
+  };
 
   // Load car image on mount
   useEffect(() => {
@@ -404,6 +416,14 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             dir="rtl"
           />
         </div>
+      )}
+
+      {/* Non-Default Template Warning */}
+      {!isSelectedTemplateDefault() && (
+        <NonDefaultTemplateWarning 
+          phoneNumber={phoneNumber} 
+          message={currentMessage} 
+        />
       )}
 
       {/* Message Preview */}

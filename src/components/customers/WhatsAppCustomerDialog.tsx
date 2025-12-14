@@ -10,6 +10,8 @@ import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
+import { NonDefaultTemplateWarning } from "@/components/whatsapp/NonDefaultTemplateWarning";
+import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
 import type { Customer } from "@/types/customer";
 
 interface WhatsAppCustomerDialogProps {
@@ -24,6 +26,18 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
   const [customCta, setCustomCta] = useState("");
   const [carDetails, setCarDetails] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const { data: dbTemplates } = useWhatsappTemplates();
+
+  // Check if the selected template is default
+  const isSelectedTemplateDefault = () => {
+    if (selectedTemplateId === "custom") return true; // Custom messages don't need warning
+    
+    // Check if it's a DB template and if it's default
+    const dbTemplate = dbTemplates?.find(t => 
+      t.name === whatsappLeadTemplates.find(lt => lt.id === selectedTemplateId)?.name
+    );
+    return dbTemplate?.is_default ?? false;
+  };
 
   // Get current CTA
   const getCurrentCta = () => {
@@ -162,6 +176,14 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
             placeholder="כתוב כאן את ההודעה המותאמת אישית..."
           />
         </div>
+      )}
+
+      {/* Non-Default Template Warning */}
+      {!isSelectedTemplateDefault() && (
+        <NonDefaultTemplateWarning 
+          phoneNumber={customer.phone || ""} 
+          message={generateCustomerMessage()} 
+        />
       )}
 
       {/* Preview */}
