@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
-import { FileText, Edit, Trash2, Eye, Car, User } from "lucide-react";
+import { FileText, Edit, Trash2, Eye, Car, User, AlertTriangle } from "lucide-react";
 import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
 
@@ -230,7 +231,16 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 px-6">
+      <CardContent className="pt-0 px-6 space-y-3">
+        {/* Warning for non-default templates */}
+        {!isDefaultTemplate && (
+          <Alert className="border-amber-500/50 bg-amber-500/10">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertDescription className="text-right text-xs" dir="rtl">
+              תבנית זו אינה מאושרת על ידי WhatsApp Business. ניתן לשלוח רק אם הלקוח ענה לבוט ב-24 השעות האחרונות.
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="bg-muted/50 p-4 rounded-xl border max-h-[150px] overflow-y-auto">
           <pre className="text-sm whitespace-pre-wrap text-right font-sans" dir="rtl">
             {previewMessage}

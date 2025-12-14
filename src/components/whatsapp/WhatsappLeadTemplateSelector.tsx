@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { WhatsappTemplatePreview } from "./WhatsappTemplatePreview";
+import { NonDefaultTemplateWarning } from "./NonDefaultTemplateWarning";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
@@ -133,6 +134,16 @@ export function WhatsappLeadTemplateSelector({
       setSelectedTemplate(defaultTemplate);
     }
   }, [dbTemplates]);
+
+  // Check if selected template is default
+  const isSelectedTemplateDefault = () => {
+    if (activeTab === "custom") return true; // Custom messages don't need warning
+    
+    // Find the selected template name and check if it's default in DB
+    const selectedTemplateName = selectedTemplate?.name;
+    const dbTemplate = dbTemplates?.find(t => t.name === selectedTemplateName);
+    return dbTemplate?.is_default ?? false;
+  };
 
   const ctaOptions = [
     { value: "פגישה", label: "פגישה" },
@@ -417,6 +428,14 @@ export function WhatsappLeadTemplateSelector({
             </div>
           )}
         </div>
+      )}
+
+      {/* Non-Default Template Warning */}
+      {!isSelectedTemplateDefault() && message && message.trim() && (
+        <NonDefaultTemplateWarning 
+          phoneNumber={leadPhone} 
+          message={message} 
+        />
       )}
 
       {message && message.trim() && (
