@@ -46,6 +46,7 @@ export default function UpgradeSubscription() {
         sum: actualSum,
         fullName: data.fullName,
         phone: data.phone,
+        email: data.email,
       };
 
       console.log("Sending payment payload:", paymentPayload);
