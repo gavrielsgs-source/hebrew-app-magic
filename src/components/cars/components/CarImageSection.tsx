@@ -22,11 +22,14 @@ export function CarImageSection({
   const [allImages, setAllImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoadingAll, setIsLoadingAll] = useState(false);
+  const [imageErrorCount, setImageErrorCount] = useState(0);
+  const MAX_IMAGE_RETRIES = 3;
 
   // Fetch all images when component mounts
   useEffect(() => {
     const fetchAllImages = async () => {
       setIsLoadingAll(true);
+      setImageErrorCount(0); // Reset error count on new car
       try {
         const images = await getCarImages(car.id);
         setAllImages(images);
@@ -73,13 +76,16 @@ export function CarImageSection({
             loading="eager"
             fetchPriority="high"
             onError={(e) => {
-              console.error('Error loading image:', e);
-              const target = e.currentTarget;
-              target.style.display = 'none';
-              // Try to load next image if available
-              if (allImages.length > 1) {
-                const nextIndex = (currentImageIndex + 1) % allImages.length;
-                setCurrentImageIndex(nextIndex);
+              if (imageErrorCount < MAX_IMAGE_RETRIES) {
+                console.warn(`Image load failed (attempt ${imageErrorCount + 1}/${MAX_IMAGE_RETRIES})`);
+                setImageErrorCount(prev => prev + 1);
+                const target = e.currentTarget;
+                target.style.display = 'none';
+                // Try to load next image if available
+                if (allImages.length > 1) {
+                  const nextIndex = (currentImageIndex + 1) % allImages.length;
+                  setCurrentImageIndex(nextIndex);
+                }
               }
             }}
           />
