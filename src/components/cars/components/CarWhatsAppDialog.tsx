@@ -85,32 +85,43 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
 
   // Initialize variable values when template changes
   useEffect(() => {
-    if (templateVariables.length > 0) {
+    if (templateVariables.length > 0 && selectedTemplate) {
       const clientName = activeTab === "lead" 
-        ? (leads?.find(lead => lead.id === selectedLeadId)?.name as string || "")
-        : manualName;
+        ? (leads?.find(lead => lead.id === selectedLeadId)?.name as string || "לקוח יקר")
+        : (manualName || "לקוח יקר");
       
       const carName = `${car.make} ${car.model} ${car.year}`;
       
       const initialValues: Record<string, string> = {};
       templateVariables.forEach((variable: string) => {
+        // Keep existing value if already set, otherwise use default
+        const existingValue = variableValues[variable];
+        
         if (variable === 'clientName') {
-          initialValues[variable] = clientName || "לקוח יקר";
+          initialValues[variable] = existingValue || clientName;
         } else if (variable === 'carName') {
-          initialValues[variable] = carName;
+          initialValues[variable] = existingValue || carName;
         } else if (variable === 'price') {
-          initialValues[variable] = car.price?.toLocaleString() || '';
+          initialValues[variable] = existingValue || `₪${car.price?.toLocaleString()}`;
         } else if (variable === 'kilometers' || variable === 'mileage') {
-          initialValues[variable] = car.kilometers?.toLocaleString() || '';
+          initialValues[variable] = existingValue || `${car.kilometers?.toLocaleString()} ק"מ`;
+        } else if (variable === 'fuelType') {
+          initialValues[variable] = existingValue || (car.fuel_type || 'לא צוין');
+        } else if (variable === 'transmission') {
+          initialValues[variable] = existingValue || (car.transmission || 'לא צוין');
+        } else if (variable === 'year') {
+          initialValues[variable] = existingValue || String(car.year);
+        } else if (variable === 'color') {
+          initialValues[variable] = existingValue || (car.exterior_color || 'לא צוין');
         } else if (variable === 'CTA') {
-          initialValues[variable] = variableValues['CTA'] || "לקבוע פגישה";
+          initialValues[variable] = existingValue || "לקבוע פגישה";
         } else {
-          initialValues[variable] = variableValues[variable] || '';
+          initialValues[variable] = existingValue || '';
         }
       });
       setVariableValues(initialValues);
     }
-  }, [selectedTemplateId, activeTab, selectedLeadId, manualName, car]);
+  }, [selectedTemplateId, templates, activeTab, selectedLeadId, manualName]);
 
   // Check if selected template is default
   const isSelectedTemplateDefault = () => {
