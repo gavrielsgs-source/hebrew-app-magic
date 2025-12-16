@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useLeads } from "@/hooks/use-leads";
 import { Car } from "@/types/car";
 import { Send, Car as CarIcon, Phone, User, ExternalLink, AlertTriangle } from "lucide-react";
-import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
+
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -38,43 +38,21 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const { profile } = useProfile();
   const { data: dbTemplates } = useWhatsappTemplates();
 
-  // Merge templates from database with default templates
+  // Use DB templates as source of truth (all DB templates are approved)
   useEffect(() => {
     const carDbTemplates = dbTemplates?.filter(t => t.type === 'car') || [];
     
-    // Convert default templates to a format with templateContent
-    const defaultTemplates = whatsappTemplates.map(t => ({
-      id: t.id,
-      name: t.name,
-      description: t.description || '',
-      type: t.type,
-      templateContent: t.templateContent || '',
-      facebookTemplateName: t.facebookTemplateName,
+    // Convert DB templates - these are the source of truth
+    const convertedDbTemplates = carDbTemplates.map(dbTemplate => ({
+      id: dbTemplate.id,
+      name: dbTemplate.name,
+      description: dbTemplate.description || '',
+      type: 'car' as const,
+      templateContent: dbTemplate.template_content,
+      facebookTemplateName: dbTemplate.facebook_template_name,
     }));
     
-    // Start with default templates
-    const mergedTemplates: any[] = [...defaultTemplates];
-    
-    // Override or add DB templates
-    carDbTemplates.forEach(dbTemplate => {
-      const existingIndex = mergedTemplates.findIndex(t => t.id === dbTemplate.id);
-      const convertedTemplate = {
-        id: dbTemplate.id,
-        name: dbTemplate.name,
-        description: dbTemplate.description || '',
-        type: 'car' as const,
-        templateContent: dbTemplate.template_content,
-        facebookTemplateName: dbTemplate.facebook_template_name,
-      };
-      
-      if (existingIndex >= 0) {
-        mergedTemplates[existingIndex] = convertedTemplate;
-      } else {
-        mergedTemplates.push(convertedTemplate);
-      }
-    });
-    
-    setTemplates(mergedTemplates);
+    setTemplates(convertedDbTemplates);
   }, [dbTemplates]);
 
   // Extract variables from selected template and initialize values
