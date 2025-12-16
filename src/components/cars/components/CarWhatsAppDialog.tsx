@@ -31,10 +31,9 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [selectedTemplateId, setSelectedTemplateId] = useState("car_template_default");
   const [customMessage, setCustomMessage] = useState("");
   const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
-  const [templates, setTemplates] = useState<any[]>(whatsappTemplates);
+  const [templates, setTemplates] = useState<any[]>([]);
   const [isSending, setIsSending] = useState(false);
-  const [selectedCta, setSelectedCta] = useState("לקבוע פגישה");
-  const [customCta, setCustomCta] = useState("");
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
   const { leads } = useLeads();
   const { profile } = useProfile();
   const { data: dbTemplates } = useWhatsappTemplates();
@@ -43,8 +42,18 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   useEffect(() => {
     const carDbTemplates = dbTemplates?.filter(t => t.type === 'car') || [];
     
-    // Start with all default templates
-    const mergedTemplates = [...whatsappTemplates];
+    // Convert default templates to a format with templateContent
+    const defaultTemplates = whatsappTemplates.map(t => ({
+      id: t.id,
+      name: t.name,
+      description: t.description || '',
+      type: t.type,
+      templateContent: t.templateContent || '',
+      facebookTemplateName: t.facebookTemplateName,
+    }));
+    
+    // Start with default templates
+    const mergedTemplates: any[] = [...defaultTemplates];
     
     // Override or add DB templates
     carDbTemplates.forEach(dbTemplate => {
@@ -54,16 +63,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         name: dbTemplate.name,
         description: dbTemplate.description || '',
         type: 'car' as const,
-        usesCta: dbTemplate.template_content.includes('{{CTA}}'),
         templateContent: dbTemplate.template_content,
         facebookTemplateName: dbTemplate.facebook_template_name,
-        generateMessage: (carName: string, car: any) => {
-          return dbTemplate.template_content
-            .replace(/\{carName\}/g, carName)
-            .replace(/\{price\}/g, car.price?.toLocaleString() || '')
-            .replace(/\{kilometers\}/g, car.kilometers?.toLocaleString() || '')
-            .replace(/\{mileage\}/g, car.kilometers?.toLocaleString() || '');
-        }
       };
       
       if (existingIndex >= 0) {
@@ -76,12 +77,46 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     setTemplates(mergedTemplates);
   }, [dbTemplates]);
 
+  // Extract variables from selected template and initialize values
+  const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+  const templateContent = selectedTemplate?.templateContent || '';
+  const templateVariables = templateContent.match(/\{\{([^}]+)\}\}/g)?.map((v: string) => v.replace(/\{\{|\}\}/g, '')) || [];
+  const hasCta = templateVariables.includes('CTA');
+
+  // Initialize variable values when template changes
+  useEffect(() => {
+    if (templateVariables.length > 0) {
+      const clientName = activeTab === "lead" 
+        ? (leads?.find(lead => lead.id === selectedLeadId)?.name as string || "")
+        : manualName;
+      
+      const carName = `${car.make} ${car.model} ${car.year}`;
+      
+      const initialValues: Record<string, string> = {};
+      templateVariables.forEach((variable: string) => {
+        if (variable === 'clientName') {
+          initialValues[variable] = clientName || "לקוח יקר";
+        } else if (variable === 'carName') {
+          initialValues[variable] = carName;
+        } else if (variable === 'price') {
+          initialValues[variable] = car.price?.toLocaleString() || '';
+        } else if (variable === 'kilometers' || variable === 'mileage') {
+          initialValues[variable] = car.kilometers?.toLocaleString() || '';
+        } else if (variable === 'CTA') {
+          initialValues[variable] = variableValues['CTA'] || "לקבוע פגישה";
+        } else {
+          initialValues[variable] = variableValues[variable] || '';
+        }
+      });
+      setVariableValues(initialValues);
+    }
+  }, [selectedTemplateId, activeTab, selectedLeadId, manualName, car]);
+
   // Check if selected template is default
   const isSelectedTemplateDefault = () => {
-    if (selectedTemplateId === "custom") return true; // Custom messages don't need warning
-    if (selectedTemplateId === "car_template_default") return true; // This is the approved FB template
+    if (selectedTemplateId === "custom") return true;
+    if (selectedTemplateId === "car_template_default") return true;
     
-    // Find the template in DB and check if it's default
     const selectedTemplateName = templates.find(t => t.id === selectedTemplateId)?.name;
     const dbTemplate = dbTemplates?.find(t => t.name === selectedTemplateName);
     return dbTemplate?.is_default ?? false;
@@ -102,32 +137,18 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     loadCarImage();
   }, [car.id]);
 
-  // Generate message based on template and car details
+  // Generate message based on template and variable values
   const generateCarMessage = () => {
-    const clientName = activeTab === "lead" 
-      ? (leads?.find(lead => lead.id === selectedLeadId)?.name as string || "לקוח יקר")
-      : manualName || "לקוח יקר";
-
     if (selectedTemplateId === "custom") {
       return customMessage;
     }
 
-    const template = templates.find(t => t.id === selectedTemplateId);
-    if (!template) return "";
+    if (!selectedTemplate || !templateContent) return "";
 
-    // Prepare car object with the correct property names
-    const carForTemplate = {
-      ...car,
-      mileage: car.kilometers // Map kilometers to mileage for template compatibility
-    };
-
-    // Generate message using template function with CTA only if template uses it
-    const currentCta = template.usesCta ? (selectedCta === "custom" ? customCta : selectedCta) : undefined;
-    const carName = `${car.make} ${car.model} ${car.year}`;
-    let message = template.generateMessage(carName, carForTemplate, currentCta);
-    
-    // Replace client name placeholder if exists
-    message = message.replace(/שלום[!]?/, `שלום ${clientName}!`);
+    let message = templateContent;
+    Object.entries(variableValues).forEach(([key, value]) => {
+      message = message.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+    });
 
     return message;
   };
@@ -348,37 +369,46 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </Select>
       </div>
 
-      {/* CTA Selection */}
-      {selectedTemplateId !== "custom" && selectedTemplateId !== "car_template_default" && (
-        (() => {
-          const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
-          return selectedTemplate?.usesCta ? (
-            <div className="space-y-2">
-              <Label htmlFor="cta" className="text-right text-sm">קריאה לפעולה (CTA)</Label>
-              <Select value={selectedCta} onValueChange={setSelectedCta}>
-                <SelectTrigger id="cta" className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40 text-right">
-                  <SelectValue placeholder="בחר קריאה לפעולה" />
-                </SelectTrigger>
-                <SelectContent className="bg-background/95 backdrop-blur-xl border-primary/20 z-[100]">
-                  <SelectItem value="לקבוע פגישה">לקבוע פגישה</SelectItem>
-                  <SelectItem value="לתאם צפייה">לתאם צפייה</SelectItem>
-                  <SelectItem value="לקבוע שיחה קצרה">לקבוע שיחה קצרה</SelectItem>
-                  <SelectItem value="להתייעץ">להתייעץ</SelectItem>
-                  <SelectItem value="לקבל הצעת מחיר">לקבל הצעת מחיר</SelectItem>
-                  <SelectItem value="custom">טקסט מותאם אישית</SelectItem>
-                </SelectContent>
-              </Select>
-              {selectedCta === "custom" && (
-                <Input
-                  placeholder="הזן קריאה לפעולה מותאמת אישית"
-                  value={customCta}
-                  onChange={(e) => setCustomCta(e.target.value)}
-                  className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40 text-right"
-                />
-              )}
-            </div>
-          ) : null;
-        })()
+      {/* Dynamic Variable Inputs */}
+      {selectedTemplateId !== "custom" && selectedTemplateId !== "car_template_default" && templateVariables.length > 0 && (
+        <div className="space-y-3">
+          <Label className="text-right text-sm block">ערכי משתנים</Label>
+          <div className="grid gap-3">
+            {templateVariables.map((variable: string) => (
+              variable === 'CTA' ? (
+                <div key={variable} className="space-y-2">
+                  <Label htmlFor={variable} className="text-right text-sm">קריאה לפעולה (CTA)</Label>
+                  <Select 
+                    value={variableValues[variable] || "לקבוע פגישה"} 
+                    onValueChange={(value) => setVariableValues(prev => ({ ...prev, [variable]: value }))}
+                  >
+                    <SelectTrigger className="text-right">
+                      <SelectValue placeholder="בחר קריאה לפעולה" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="לקבוע פגישה">לקבוע פגישה</SelectItem>
+                      <SelectItem value="לתאם צפייה">לתאם צפייה</SelectItem>
+                      <SelectItem value="לקבוע שיחה קצרה">לקבוע שיחה קצרה</SelectItem>
+                      <SelectItem value="להתייעץ">להתייעץ</SelectItem>
+                      <SelectItem value="לקבל הצעת מחיר">לקבל הצעת מחיר</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div key={variable}>
+                  <Label htmlFor={variable} className="text-right text-sm">{variable}</Label>
+                  <Input
+                    id={variable}
+                    value={variableValues[variable] || ''}
+                    onChange={(e) => setVariableValues(prev => ({ ...prev, [variable]: e.target.value }))}
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+              )
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Custom Message Input or Default Template Display */}
