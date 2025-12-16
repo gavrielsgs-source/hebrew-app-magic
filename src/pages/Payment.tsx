@@ -90,8 +90,8 @@ export default function Payment() {
       const paymentPayload = {
         sum: actualSum,
         fullName: data.fullName,
-        phone: data.phone,
-        email: userEmail,
+        phone: data.phone,userEmail
+        email: data.email,
         planId: selectedPlan,
         isTrial: true,
         billingCycle: isYearly ? 'yearly' : 'monthly',
