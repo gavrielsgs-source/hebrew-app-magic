@@ -46,6 +46,7 @@ export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initial
     defaultValues: {
       fullName: initialValues?.fullName || "",
       phone: initialValues?.phone || "",
+      email: initialValues?.email || "",
       companyName: initialValues?.companyName || "",
       businessId: initialValues?.businessId || "",
       address: initialValues?.address || "",
