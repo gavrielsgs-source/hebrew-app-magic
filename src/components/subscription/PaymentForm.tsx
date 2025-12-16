@@ -1,17 +1,8 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
@@ -23,31 +14,25 @@ const paymentFormSchema = z.object({
     .refine((val) => val.includes(" "), {
       message: "יש להזין שם פרטי ושם משפחה",
     }),
+  email: z
+    .string()
+    .min(3, "יש להזין אימייל")
+    .refine((val) => val.includes(" "), {
+      message: "יש להזין אימייל",
+    }),
   phone: z
     .string()
     .min(10, "מספר טלפון חייב להכיל 10 ספרות")
     .max(10, "מספר טלפון חייב להכיל 10 ספרות")
     .regex(/^05\d{8}$/, "מספר טלפון חייב להתחיל ב-05 ולהכיל 10 ספרות"),
-  companyName: z
-    .string()
-    .min(2, "יש להזין שם חברה"),
-  businessId: z
-    .string()
-    .min(5, "יש להזין ח.פ או ע.מ תקין"),
-  address: z
-    .string()
-    .min(5, "יש להזין כתובת מלאה"),
-  city: z
-    .string()
-    .min(2, "יש להזין עיר"),
-  postalCode: z
-    .string()
-    .regex(/^\d{5,7}$/, "מיקוד חייב להכיל 5-7 ספרות"),
-  acceptTerms: z
-    .boolean()
-    .refine((val) => val === true, {
-      message: "חובה לאשר את תנאי השימוש ומדיניות הפרטיות",
-    }),
+  companyName: z.string().min(2, "יש להזין שם חברה"),
+  businessId: z.string().min(5, "יש להזין ח.פ או ע.מ תקין"),
+  address: z.string().min(5, "יש להזין כתובת מלאה"),
+  city: z.string().min(2, "יש להזין עיר"),
+  postalCode: z.string().regex(/^\d{5,7}$/, "מיקוד חייב להכיל 5-7 ספרות"),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "חובה לאשר את תנאי השימוש ומדיניות הפרטיות",
+  }),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
@@ -60,13 +45,7 @@ interface PaymentFormProps {
   initialValues?: Partial<PaymentFormValues>;
 }
 
-export function PaymentForm({
-  onSubmit,
-  loading,
-  onCancel,
-  selectedPlan,
-  initialValues,
-}: PaymentFormProps) {
+export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initialValues }: PaymentFormProps) {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
@@ -190,27 +169,16 @@ export function PaymentForm({
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
               <div className="space-y-1 leading-none mr-2">
                 <FormLabel>
                   אני מאשר/ת את{" "}
-                  <Link 
-                    to="/terms-of-service" 
-                    target="_blank"
-                    className="text-primary underline hover:text-primary/80"
-                  >
+                  <Link to="/terms-of-service" target="_blank" className="text-primary underline hover:text-primary/80">
                     תנאי השימוש
-                  </Link>
-                  {" "}ואת{" "}
-                  <Link 
-                    to="/privacy-policy" 
-                    target="_blank"
-                    className="text-primary underline hover:text-primary/80"
-                  >
+                  </Link>{" "}
+                  ואת{" "}
+                  <Link to="/privacy-policy" target="_blank" className="text-primary underline hover:text-primary/80">
                     מדיניות הפרטיות
                   </Link>
                 </FormLabel>
