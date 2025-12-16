@@ -79,6 +79,20 @@ export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initial
 
         <FormField
           control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>אימייל</FormLabel>
+              <FormControl>
+                <Input placeholder="email@gmail.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
