@@ -9,14 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useLeads } from "@/hooks/use-leads";
 import { Car } from "@/types/car";
-import { Send, Car as CarIcon, Phone, User } from "lucide-react";
+import { Send, Car as CarIcon, Phone, User, ExternalLink, AlertTriangle } from "lucide-react";
 import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { getCarImages } from "@/lib/image-utils";
 import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
-import { NonDefaultTemplateWarning } from "@/components/whatsapp/NonDefaultTemplateWarning";
+
 
 interface CarWhatsAppDialogProps {
   car: Car;
@@ -122,17 +122,6 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       setVariableValues(initialValues);
     }
   }, [selectedTemplateId, templates, activeTab, selectedLeadId, manualName]);
-
-  // Check if selected template is default
-  const isSelectedTemplateDefault = () => {
-    if (selectedTemplateId === "custom") return true;
-    if (selectedTemplateId === "car_template_default") return true;
-    
-    const selectedTemplateName = templates.find(t => t.id === selectedTemplateId)?.name;
-    const dbTemplate = dbTemplates?.find(t => t.name === selectedTemplateName);
-    return dbTemplate?.is_default ?? false;
-  };
-
   // Load car image on mount
   useEffect(() => {
     const loadCarImage = async () => {
@@ -188,6 +177,20 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     return '972' + cleanPhone;
   };
 
+  // Check if template has facebook_template_name
+  const hasApprovedTemplate = () => {
+    if (selectedTemplateId === "car_template_default") return true;
+    if (selectedTemplateId === "custom") return false;
+    return !!selectedTemplate?.facebookTemplateName;
+  };
+
+  // Generate WhatsApp link for free text messages
+  const generateWhatsAppLink = () => {
+    const formattedNumber = formatPhoneNumber(phoneNumber);
+    const message = encodeURIComponent(generateCarMessage());
+    return `https://wa.me/${formattedNumber}?text=${message}`;
+  };
+
   const handleSend = async () => {
     if (!phoneNumber) {
       toast.error("יש להזין מספר טלפון או לבחור לקוח");
@@ -237,27 +240,27 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         const status = (data as any)?.messageStatus || 'sent';
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
-      } else {
-        // הודעת טקסט רגילה
-        const messageText = selectedTemplateId === "custom" 
-          ? customMessage 
-          : generateCarMessage();
-
+      } else if (selectedTemplate?.facebookTemplateName) {
+        // שליחה כתבנית מאושרת
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
-            type: 'text',
+            type: 'template',
             to: formattedNumber,
-            message: messageText
+            templateName: selectedTemplate.facebookTemplateName,
+            parameters: Object.values(variableValues).filter(v => v)
           }
         });
 
         if (error) {
-          throw new Error((error as any).message || 'שגיאה בשליחת הודעת טקסט');
+          throw new Error((error as any).message || 'שגיאה בשליחת הודעת תבנית');
         }
 
         const status = (data as any)?.messageStatus || 'sent';
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
+      } else {
+        // אין facebook_template_name - לא ניתן לשלוח דרך API
+        toast.error("תבנית זו אינה מאושרת בפייסבוק. השתמש בלינק WhatsApp לשליחה ידנית");
       }
     } catch (error: any) {
       console.error('Error sending WhatsApp message:', error);
@@ -458,15 +461,6 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           />
         </div>
       )}
-
-      {/* Non-Default Template Warning */}
-      {!isSelectedTemplateDefault() && (
-        <NonDefaultTemplateWarning 
-          phoneNumber={phoneNumber} 
-          message={currentMessage} 
-        />
-      )}
-
       {/* Message Preview */}
       {selectedTemplateId !== "car_template_default" && (
         <div>
@@ -487,19 +481,56 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </div>
       )}
 
+      {/* Warning for non-approved templates */}
+      {!hasApprovedTemplate() && selectedTemplateId !== "car_template_default" && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-right">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                תבנית לא מאושרת בפייסבוק
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                הודעה זו תגיע רק אם הנמען כתב לבוט ב-24 השעות האחרונות.
+                לחלופין, ניתן לשלוח דרך לינק WhatsApp.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4">
         <Button variant="outline" onClick={onClose} className="flex-1">
           ביטול
         </Button>
-        <Button 
-          onClick={handleSend}
-          disabled={isSending || !phoneNumber}
-          className="flex-1 bg-green-600 hover:bg-green-700"
-        >
-          <Send className="w-4 h-4 ml-2" />
-          {isSending ? "שולח..." : "שלח בוואטסאפ"}
-        </Button>
+        
+        {hasApprovedTemplate() ? (
+          <Button 
+            onClick={handleSend}
+            disabled={isSending || !phoneNumber}
+            className="flex-1 bg-green-600 hover:bg-green-700"
+          >
+            <Send className="w-4 h-4 ml-2" />
+            {isSending ? "שולח..." : "שלח בוואטסאפ"}
+          </Button>
+        ) : (
+          <Button 
+            asChild
+            disabled={!phoneNumber || !currentMessage}
+            className="flex-1 bg-green-600 hover:bg-green-700"
+          >
+            <a 
+              href={generateWhatsAppLink()} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={onClose}
+            >
+              <ExternalLink className="w-4 h-4 ml-2" />
+              פתח בוואטסאפ
+            </a>
+          </Button>
+        )}
       </div>
     </div>
   );
