@@ -16,10 +16,10 @@ import {
   useDeleteWhatsappTemplate
 } from "@/hooks/whatsapp-templates";
 
-// Define types for templates
+// Define types for templates - matches database structure
 type TemplateType = 'car' | 'lead';
 
-interface UnifiedTemplate {
+interface DbTemplate {
   id: string;
   name: string;
   description: string;
@@ -27,14 +27,16 @@ interface UnifiedTemplate {
   template_content?: string;
   templateContent?: string;
   is_default?: boolean;
+  is_shared?: boolean;
   user_id?: string;
+  facebook_template_name?: string;
 }
 
 export default function Templates() {
-  const [selectedTemplate, setSelectedTemplate] = useState<UnifiedTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<DbTemplate | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNew, setIsNew] = useState(false);
-  const [newTemplate, setNewTemplate] = useState<UnifiedTemplate>({
+  const [newTemplate, setNewTemplate] = useState<DbTemplate>({
     id: '',
     name: '',
     description: '',
@@ -49,12 +51,12 @@ export default function Templates() {
   const { mutate: deleteDbTemplate, isPending: isDeleting } = useDeleteWhatsappTemplate();
 
   // Read templates directly from database
-  const templates: UnifiedTemplate[] = dbTemplates?.map(t => ({
+  const templates: DbTemplate[] = dbTemplates?.map(t => ({
     ...t,
     templateContent: t.template_content || '',
   })) || [];
 
-  const addTemplate = (template: Omit<UnifiedTemplate, 'id'>) => {
+  const addTemplate = (template: Omit<DbTemplate, 'id'>) => {
     // Save directly to database
     createTemplate({
       name: template.name,
@@ -71,7 +73,7 @@ export default function Templates() {
     });
   };
 
-  const updateTemplate = (updatedTemplate: UnifiedTemplate) => {
+  const updateTemplate = (updatedTemplate: DbTemplate) => {
     // Update directly in database
     updateDbTemplate({
       id: updatedTemplate.id,
@@ -129,7 +131,7 @@ export default function Templates() {
     });
   };
 
-  const handleTemplateSelect = (template: UnifiedTemplate) => {
+  const handleTemplateSelect = (template: DbTemplate) => {
     setSelectedTemplate(template);
     setNewTemplate({
       ...template,

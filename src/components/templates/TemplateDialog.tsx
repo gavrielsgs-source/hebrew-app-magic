@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,15 +11,26 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus, Sparkles, Car, User, AlertCircle } from "lucide-react";
-import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
+
+// Template interface matching database structure
+interface DbTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: 'car' | 'lead';
+  template_content?: string;
+  templateContent?: string;
+  is_default?: boolean;
+  facebook_template_name?: string;
+}
 
 interface TemplateDialogProps {
   isOpen: boolean;
   isNew: boolean;
-  newTemplate: UnifiedTemplate;
+  newTemplate: DbTemplate;
   setIsOpen: (open: boolean) => void;
   onSave: () => void;
-  onTemplateChange: (template: UnifiedTemplate) => void;
+  onTemplateChange: (template: DbTemplate) => void;
   templateTags: string[];
   readOnly?: boolean;
 }
@@ -55,86 +65,48 @@ export function TemplateDialog({
   const isMobile = useIsMobile();
   const [templateContent, setTemplateContent] = useState("");
 
-  // Generate preview message based on template - same logic as TemplateCard
+  // Load template content when dialog opens
   React.useEffect(() => {
     try {
-      // Always generate the message using generateMessage function if available
-      if (newTemplate.generateMessage && typeof newTemplate.generateMessage === 'function') {
-        if (newTemplate.type === 'car') {
-          const carName = `${mockCar.make} ${mockCar.model} ${mockCar.year}`;
-          setTemplateContent(newTemplate.generateMessage(carName, mockCar));
-        } else if (newTemplate.type === 'lead') {
-          setTemplateContent(newTemplate.generateMessage(mockLeadName, mockLeadSource));
-        }
-      } else if (newTemplate.templateContent) {
-        // Fallback to templateContent if no generateMessage function
-        setTemplateContent(newTemplate.templateContent);
-      }
+      // Use templateContent from the template (mapped from database template_content)
+      const content = newTemplate.templateContent || newTemplate.template_content || '';
+      setTemplateContent(content);
     } catch (error) {
-      console.error("Error generating template content:", error);
-      setTemplateContent("שגיאה ביצירת תצוגה מקדימה");
+      console.error("Error loading template content:", error);
+      setTemplateContent("");
     }
   }, [newTemplate, isOpen]);
 
   const handleTemplateContentChange = (content: string) => {
     setTemplateContent(content);
-    // Create a new generateMessage function based on template type
-    if (newTemplate.type === 'car') {
-      onTemplateChange({
-        ...newTemplate,
-        generateMessage: (car: any) => {
-          // Simple template variable replacement for cars
-          return content
-            .replace(/\$\{car\.make\}/g, car.make || '')
-            .replace(/\$\{car\.model\}/g, car.model || '')
-            .replace(/\$\{car\.year\}/g, car.year || '')
-            .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 
-                     car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה')
-            .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g,
-                     car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין')
-            .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, car.exterior_color || 'לא צוין')
-            .replace(/\$\{car\.engine_size\s*\|\|\s*'[^']*'\}/g, car.engine_size || 'לא צוין')
-            .replace(/\$\{car\.transmission\s*\|\|\s*'[^']*'\}/g, car.transmission || 'לא צוין')
-            .replace(/\$\{car\.fuel_type\s*\|\|\s*'[^']*'\}/g, car.fuel_type || 'לא צוין');
-        },
-        templateContent: content // Store the template content for editing
-      });
-    } else {
-      onTemplateChange({
-        ...newTemplate,
-        generateMessage: (leadName: string, leadSource?: string) => {
-          // Simple template variable replacement for leads
-          return content
-            .replace(/\$\{leadName\}/g, leadName || '')
-            .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                     leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו');
-        },
-        templateContent: content // Store the template content for editing
-      });
-    }
+    // Update template content directly - no generateMessage needed for DB storage
+    onTemplateChange({
+      ...newTemplate,
+      templateContent: content
+    });
   };
 
   const handleTypeChange = (newType: 'car' | 'lead') => {
-    // When changing type, update template content and provide default content
+    // When changing type, update template content and provide default content with DB-compatible placeholders
     const defaultContent = newType === 'car' 
       ? `שלום,
 
 רצינו לשתף אותך בפרטים על הרכב שהתעניינת בו:
 
-*\${car.make} \${car.model} \${car.year}*
-מחיר: \${car.price ? \`₪\${car.price.toLocaleString()}\` : 'בהתאם להצעה'}
-ק"מ: \${car.mileage ? \`\${car.mileage.toLocaleString()} ק"מ\` : 'לא צוין'}
-צבע: \${car.exterior_color || 'לא צוין'}
+*{{carName}}*
+מחיר: {{price}}
+ק"מ: {{mileage}}
+צבע: {{color}}
 
 נשמח לתאם פגישה לצפייה ברכב.
 
 בברכה,
 צוות המכירות`
-      : `היי \${leadName}! 👋
+      : `היי {{leadName}}! 👋
 
-קיבלנו את הפנייה שלך\${leadSource ? \` דרך \${leadSource}\` : ''} וראינו שאתה מתעניין ברכב.
+קיבלנו את הפנייה שלך {{leadSource}} וראינו שאתה מתעניין ברכב.
 
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
+מתי תהיה זמין ל{{CTA}}? 📞
 
 נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
 
@@ -146,21 +118,7 @@ export function TemplateDialog({
     onTemplateChange({
       ...newTemplate,
       type: newType,
-      templateContent: defaultContent,
-      generateMessage: newType === 'car' 
-        ? (car: any) => defaultContent
-            .replace(/\$\{car\.make\}/g, car.make || '')
-            .replace(/\$\{car\.model\}/g, car.model || '')
-            .replace(/\$\{car\.year\}/g, car.year || '')
-            .replace(/\$\{car\.price\s*\?\s*`₪\$\{car\.price\.toLocaleString\(\)\}`\s*:\s*'[^']*'\}/g, 
-                     car.price ? `₪${car.price.toLocaleString()}` : 'בהתאם להצעה')
-            .replace(/\$\{car\.mileage\s*\?\s*`\$\{car\.mileage\.toLocaleString\(\)\}\s*ק"מ`\s*:\s*'[^']*'\}/g,
-                     car.mileage ? `${car.mileage.toLocaleString()} ק"מ` : 'לא צוין')
-            .replace(/\$\{car\.exterior_color\s*\|\|\s*'[^']*'\}/g, car.exterior_color || 'לא צוין')
-        : (leadName: string, leadSource?: string) => defaultContent
-            .replace(/\$\{leadName\}/g, leadName || '')
-            .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, 
-                     leadSource ? `בעקבות הפנייה שלך ב${leadSource}` : 'מהצוות שלנו')
+      templateContent: defaultContent
     });
   };
 
@@ -338,15 +296,8 @@ export function TemplateDialog({
                       isMobile ? 'text-xs px-2 py-1' : ''
                     }`}
                     onClick={() => {
-                      if (newTemplate.type === 'car') {
-                        const carVar = tag.replace(/{{|}}/g, '').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-                        const templateVar = `\${car.${carVar}}`;
-                        handleTemplateContentChange(templateContent + templateVar);
-                      } else {
-                        const leadVar = tag.replace(/{{|}}/g, '');
-                        const templateVar = `\${${leadVar}}`;
-                        handleTemplateContentChange(templateContent + templateVar);
-                      }
+                      // Insert tag directly in {{tag}} format - consistent with DB templates
+                      handleTemplateContentChange(templateContent + tag);
                     }}
                   >
                     {tag}

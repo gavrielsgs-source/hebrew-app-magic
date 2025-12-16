@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,20 +5,28 @@ import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
 import { FileText, Edit, Trash2, Eye, Car, User, AlertTriangle } from "lucide-react";
-import { UnifiedTemplate } from "@/components/whatsapp/lead-templates";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { whatsappTemplates } from "@/components/whatsapp/whatsapp-templates";
-import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
-
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
+// Template interface matching database structure
+interface DbTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: 'car' | 'lead';
+  template_content?: string;
+  templateContent?: string;
+  is_default?: boolean;
+  facebook_template_name?: string;
+}
+
 interface TemplateCardProps {
-  template: UnifiedTemplate & { is_default?: boolean };
-  onEdit: (template: UnifiedTemplate) => void;
+  template: DbTemplate;
+  onEdit: (template: DbTemplate) => void;
   onDelete: (id: string) => void;
 }
 
@@ -51,68 +58,53 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
     return previewCta === "custom" ? customPreviewCta : previewCta;
   };
   
-  // Generate preview message based on template type
+  // Generate preview message based on template type - uses template_content from DB
   const generatePreviewMessage = () => {
     try {
-      // FIRST: Try to find in default templates and use generateMessage
-      const allDefaultTemplates = [...whatsappTemplates, ...whatsappLeadTemplates];
-      const originalTemplate = allDefaultTemplates.find(t => t.id === template.id);
+      // Get template content from database (mapped to templateContent or original template_content)
+      const content = (template as any).templateContent || (template as any).template_content || '';
       
-      if (originalTemplate && typeof originalTemplate.generateMessage === 'function') {
-        const currentCta = getCurrentCta();
-        if (originalTemplate.type === 'car') {
-          const carName = `${mockCar.make} ${mockCar.model} ${mockCar.year}`;
-          return originalTemplate.generateMessage(carName, mockCar, currentCta);
-        } else if (originalTemplate.type === 'lead') {
-          return originalTemplate.generateMessage(mockLeadName, mockLeadSource, currentCta);
-        }
+      if (!content.trim()) {
+        return "תצוגה מקדימה של ההודעה תופיע כאן";
       }
 
-      // SECOND: Try to use the template's generateMessage function directly
-      if (template.generateMessage && typeof template.generateMessage === 'function') {
-        const currentCta = getCurrentCta();
-        if (template.type === 'car') {
-          const carName = `${mockCar.make} ${mockCar.model} ${mockCar.year}`;
-          return template.generateMessage(carName, mockCar, currentCta);
-        } else if (template.type === 'lead') {
-          return template.generateMessage(mockLeadName, mockLeadSource, currentCta);
-        }
-      }
-
-      // THIRD: If template has templateContent with placeholders, replace them
-      if ((template as any).templateContent && (template as any).templateContent.trim()) {
-        let preview = (template as any).templateContent;
-        
-        if (template.type === 'car') {
-          // Replace numbered placeholders ({{1}}, {{2}}, etc.)
-          preview = preview
-            .replace(/\{\{1\}\}/g, mockCar.make)
-            .replace(/\{\{2\}\}/g, mockCar.model)
-            .replace(/\{\{3\}\}/g, mockCar.year.toString())
-            .replace(/\{\{4\}\}/g, `₪${mockCar.price.toLocaleString()}`)
-            .replace(/\{\{5\}\}/g, `${mockCar.mileage.toLocaleString()} ק"מ`)
-            .replace(/\{\{6\}\}/g, mockCar.exterior_color)
-            .replace(/\{\{7\}\}/g, mockCar.engine_size)
-            .replace(/\{\{8\}\}/g, mockCar.transmission)
-            .replace(/\{\{9\}\}/g, mockCar.fuel_type)
-            .replace(/\{\{CTA\}\}/g, getCurrentCta())
-            .replace(/\{\{10\}\}/g, getCurrentCta());
-          return preview;
-        } else if (template.type === 'lead') {
-          // Replace lead placeholders
-          preview = preview
-            .replace(/\{\{leadName\}\}/g, mockLeadName)
-            .replace(/\{\{customerName\}\}/g, mockLeadName)
-            .replace(/\{\{leadSource\}\}/g, ` דרך ${mockLeadSource}`)
-            .replace(/\{\{carDetails\}\}/g, ` ${mockCar.make} ${mockCar.model} ${mockCar.year}`)
-            .replace(/\{\{CTA\}\}/g, getCurrentCta());
-          return preview;
-        }
+      let preview = content;
+      const currentCta = getCurrentCta();
+      const carName = `${mockCar.make} ${mockCar.model} ${mockCar.year}`;
+      
+      if (template.type === 'car') {
+        // Replace car template placeholders - both numbered and named
+        preview = preview
+          // Named placeholders
+          .replace(/\{\{carName\}\}/g, carName)
+          .replace(/\{\{price\}\}/g, `₪${mockCar.price.toLocaleString()}`)
+          .replace(/\{\{mileage\}\}/g, `${mockCar.mileage.toLocaleString()} ק"מ`)
+          .replace(/\{\{kilometers\}\}/g, `${mockCar.mileage.toLocaleString()} ק"מ`)
+          .replace(/\{\{color\}\}/g, mockCar.exterior_color)
+          .replace(/\{\{engine\}\}/g, mockCar.engine_size)
+          .replace(/\{\{transmission\}\}/g, mockCar.transmission)
+          .replace(/\{\{fuel\}\}/g, mockCar.fuel_type)
+          .replace(/\{\{CTA\}\}/g, currentCta)
+          // Numbered placeholders (for Facebook-approved templates)
+          .replace(/\{\{1\}\}/g, carName)
+          .replace(/\{\{2\}\}/g, mockCar.price.toLocaleString())
+          .replace(/\{\{3\}\}/g, mockCar.fuel_type)
+          .replace(/\{\{4\}\}/g, mockCar.mileage.toLocaleString())
+          .replace(/\{\{5\}\}/g, mockCar.transmission)
+          .replace(/\{\{6\}\}/g, "054-1234567")
+          .replace(/\{\{7\}\}/g, currentCta);
+      } else if (template.type === 'lead') {
+        // Replace lead template placeholders
+        preview = preview
+          .replace(/\{\{leadName\}\}/g, mockLeadName)
+          .replace(/\{\{customerName\}\}/g, mockLeadName)
+          .replace(/\{\{name\}\}/g, mockLeadName)
+          .replace(/\{\{leadSource\}\}/g, ` דרך ${mockLeadSource}`)
+          .replace(/\{\{carDetails\}\}/g, ` ${carName}`)
+          .replace(/\{\{CTA\}\}/g, currentCta);
       }
       
-      // Final fallback
-      return "תצוגה מקדימה של ההודעה תופיע כאן";
-      
+      return preview;
     } catch (error) {
       console.error("Error generating preview message:", error);
       return "שגיאה ביצירת תצוגה מקדימה";
