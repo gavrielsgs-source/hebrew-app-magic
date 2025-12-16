@@ -14,10 +14,7 @@ const paymentFormSchema = z.object({
     .refine((val) => val.includes(" "), {
       message: "יש להזין שם פרטי ושם משפחה",
     }),
-   email: z
-    .string()
-    .min(3, "יש להזין אימייל")
-    .email("יש להזין אימייל")
+  email: z.string().min(3, "יש להזין אימייל").email("יש להזין אימייל"),
   phone: z
     .string()
     .min(10, "מספר טלפון חייב להכיל 10 ספרות")
