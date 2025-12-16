@@ -87,6 +87,7 @@ export default function Payment() {
         ? selectedPlanObj.yearlyPrice * 12
         : selectedPlanObj.monthlyPrice;
 
+      console.log(data)
       const paymentPayload = {
         sum: actualSum,
         fullName: data.fullName,
