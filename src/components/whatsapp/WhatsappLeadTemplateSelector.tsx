@@ -36,11 +36,49 @@ export function WhatsappLeadTemplateSelector({
   const [customMessage, setCustomMessage] = useState("");
   const [activeTab, setActiveTab] = useState("lead-templates");
   const [templateType, setTemplateType] = useState<"lead" | "car">("lead");
-  const [selectedCTA, setSelectedCTA] = useState<string>("פגישה");
-  const [customCTA, setCustomCTA] = useState<string>("");
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
   const isMobile = useIsMobile();
   const updateLead = useUpdateLead();
   const { data: dbTemplates, isLoading } = useWhatsappTemplates();
+
+  // Extract variables from template content
+  const extractVariables = (templateContent: string | undefined): string[] => {
+    if (!templateContent) return [];
+    const regex = /\{\{(\w+)\}\}/g;
+    const variables: string[] = [];
+    let match;
+    while ((match = regex.exec(templateContent)) !== null) {
+      if (!variables.includes(match[1])) {
+        variables.push(match[1]);
+      }
+    }
+    return variables;
+  };
+
+  // Get current template variables
+  const currentVariables = extractVariables(selectedTemplate?.templateContent);
+  const hasCTA = currentVariables.includes('CTA');
+
+  // Initialize variable values when template changes
+  useEffect(() => {
+    if (selectedTemplate?.templateContent) {
+      const vars = extractVariables(selectedTemplate.templateContent);
+      const newValues: Record<string, string> = {};
+      vars.forEach(v => {
+        // Set default values for known variables
+        if (v === 'leadName' || v === 'customerName' || v === 'name') {
+          newValues[v] = leadName || '';
+        } else if (v === 'leadSource') {
+          newValues[v] = leadSource ? `דרך ${leadSource}` : '';
+        } else if (v === 'CTA') {
+          newValues[v] = variableValues['CTA'] || 'פגישה';
+        } else {
+          newValues[v] = variableValues[v] || '';
+        }
+      });
+      setVariableValues(newValues);
+    }
+  }, [selectedTemplate, leadName, leadSource]);
 
   // Load templates from localStorage and merge with database templates and default templates
   useEffect(() => {
@@ -149,14 +187,18 @@ export function WhatsappLeadTemplateSelector({
     { value: "פגישה", label: "פגישה" },
     { value: "לקבוע שיחה", label: "לקבוע שיחה" },
     { value: "לקבוע נסיעת מבחן", label: "לקבוע נסיעת מבחן" },
-    { value: "custom", label: "טקסט חופשי" }
   ];
 
-  const getCurrentCTA = () => {
-    if (selectedCTA === "custom") {
-      return customCTA || "פגישה";
-    }
-    return selectedCTA;
+  const getVariableLabel = (varName: string): string => {
+    const labels: Record<string, string> = {
+      'leadName': 'שם הליד',
+      'customerName': 'שם הלקוח',
+      'name': 'שם',
+      'leadSource': 'מקור הליד',
+      'CTA': 'קריאה לפעולה',
+      'carDetails': 'פרטי הרכב',
+    };
+    return labels[varName] || varName;
   };
 
   const generateMessage = () => {
@@ -164,23 +206,13 @@ export function WhatsappLeadTemplateSelector({
       return customMessage;
     }
     
-    if (selectedTemplate && typeof selectedTemplate.generateMessage === 'function') {
-      try {
-        const cta = getCurrentCTA();
-        return selectedTemplate.generateMessage(leadName, leadSource, cta);
-      } catch (error) {
-        console.error('Error generating message:', error);
-        return `היי ${leadName}! 👋
-
-קיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.
-
-מתי תהיה זמין לשיחת ייעוץ קצרה? 📞
-
-נשמח לעזור לך למצוא בדיוק מה שמתאים לך!
-
-בברכה,
-צוות המכירות`;
-      }
+    if (selectedTemplate?.templateContent) {
+      let message = selectedTemplate.templateContent;
+      // Replace all variables with their values
+      Object.entries(variableValues).forEach(([key, value]) => {
+        message = message.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+      });
+      return message;
     }
 
     return "";
@@ -400,33 +432,42 @@ export function WhatsappLeadTemplateSelector({
         </TabsContent>
       </Tabs>
 
-      {activeTab !== "custom" && (
+      {activeTab !== "custom" && currentVariables.length > 0 && (
         <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
-          <label className="block text-sm font-medium text-right">בחר פעולה (CTA)</label>
-          <Select value={selectedCTA} onValueChange={setSelectedCTA}>
-            <SelectTrigger className="w-full text-right" dir="rtl">
-              <SelectValue placeholder="בחר פעולה..." />
-            </SelectTrigger>
-            <SelectContent>
-              {ctaOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value} className="text-right">
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedCTA === "custom" && (
-            <div className="mt-3">
-              <Input
-                type="text"
-                value={customCTA}
-                onChange={(e) => setCustomCTA(e.target.value)}
-                placeholder="הכנס טקסט חופשי..."
-                className="text-right"
-                dir="rtl"
-              />
+          <label className="block text-sm font-medium text-right">משתנים בתבנית</label>
+          {currentVariables.map((varName) => (
+            <div key={varName} className="space-y-1">
+              <label className="text-xs text-muted-foreground text-right block">
+                {getVariableLabel(varName)}
+              </label>
+              {varName === 'CTA' ? (
+                <Select 
+                  value={variableValues[varName] || 'פגישה'} 
+                  onValueChange={(value) => setVariableValues(prev => ({ ...prev, [varName]: value }))}
+                >
+                  <SelectTrigger className="w-full text-right" dir="rtl">
+                    <SelectValue placeholder="בחר פעולה..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ctaOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-right">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  type="text"
+                  value={variableValues[varName] || ''}
+                  onChange={(e) => setVariableValues(prev => ({ ...prev, [varName]: e.target.value }))}
+                  placeholder={`הכנס ${getVariableLabel(varName)}...`}
+                  className="text-right"
+                  dir="rtl"
+                />
+              )}
             </div>
-          )}
+          ))}
         </div>
       )}
 
