@@ -346,8 +346,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
           <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
-            <SelectItem value="car_template_default" className="text-right cursor-pointer">
-              <div className="flex flex-col items-end">
+            <SelectItem value="car_template_default" className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
+              <div className="flex flex-col items-end w-full">
                 <span className="font-medium">תבנית וואטסאפ מאושרת (עם תמונה)</span>
                 <span className="text-xs text-muted-foreground">תבנית דיפולטית עם תמונת רכב</span>
               </div>
@@ -357,9 +357,9 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
                 key={template.id} 
                 value={template.id}
                 disabled={template.id === "car_template_default"}
-                className="text-right cursor-pointer"
+                className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse"
               >
-                <div className="flex flex-col items-end">
+                <div className="flex flex-col items-end w-full">
                   <span className="font-medium">{template.name}</span>
                   {template.description && (
                     <span className="text-xs text-muted-foreground">{template.description}</span>
@@ -367,8 +367,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
                 </div>
               </SelectItem>
             ))}
-            <SelectItem value="custom" className="text-right cursor-pointer">
-              <div className="flex flex-col items-end">
+            <SelectItem value="custom" className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
+              <div className="flex flex-col items-end w-full">
                 <span className="font-medium">הודעה מותאמת אישית</span>
                 <span className="text-xs text-muted-foreground">כתוב הודעה חופשית</span>
               </div>
@@ -390,15 +390,15 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
                     value={variableValues[variable] || "לקבוע פגישה"} 
                     onValueChange={(value) => setVariableValues(prev => ({ ...prev, [variable]: value }))}
                   >
-                    <SelectTrigger className="text-right">
+                    <SelectTrigger className="text-right" dir="rtl">
                       <SelectValue placeholder="בחר קריאה לפעולה" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="לקבוע פגישה">לקבוע פגישה</SelectItem>
-                      <SelectItem value="לתאם צפייה">לתאם צפייה</SelectItem>
-                      <SelectItem value="לקבוע שיחה קצרה">לקבוע שיחה קצרה</SelectItem>
-                      <SelectItem value="להתייעץ">להתייעץ</SelectItem>
-                      <SelectItem value="לקבל הצעת מחיר">לקבל הצעת מחיר</SelectItem>
+                    <SelectContent align="end" dir="rtl" className="bg-background z-[9999]">
+                      <SelectItem value="לקבוע פגישה" className="text-right pl-8 pr-2 flex-row-reverse">לקבוע פגישה</SelectItem>
+                      <SelectItem value="לתאם צפייה" className="text-right pl-8 pr-2 flex-row-reverse">לתאם צפייה</SelectItem>
+                      <SelectItem value="לקבוע שיחה קצרה" className="text-right pl-8 pr-2 flex-row-reverse">לקבוע שיחה קצרה</SelectItem>
+                      <SelectItem value="להתייעץ" className="text-right pl-8 pr-2 flex-row-reverse">להתייעץ</SelectItem>
+                      <SelectItem value="לקבל הצעת מחיר" className="text-right pl-8 pr-2 flex-row-reverse">לקבל הצעת מחיר</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
