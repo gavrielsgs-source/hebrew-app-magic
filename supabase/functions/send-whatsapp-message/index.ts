@@ -1,12 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_TOKEN");
+// Trim and sanitize the token to remove any newlines or whitespace
+const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_TOKEN")?.trim().replace(/[\r\n]/g, '');
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0";
 const PHONE_NUMBER_ID = "867489066452280";
 const WABA_ID = "4320549034895129";
 
 console.log("🔑 WhatsApp token configured:", WHATSAPP_TOKEN ? "Yes" : "No");
+console.log("🔑 Token length:", WHATSAPP_TOKEN?.length || 0);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
