@@ -30,7 +30,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [manualName, setManualName] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState("");
-  const [selectedTemplateId, setSelectedTemplateId] = useState("car_template_default");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
   const [carTemplates, setCarTemplates] = useState<any[]>([]);
@@ -66,6 +66,12 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     
     setCarTemplates(convertedCarTemplates);
     setLeadTemplates(convertedLeadTemplates);
+    
+    // Set default template - prefer car_template (the approved one)
+    if (convertedCarTemplates.length > 0 && !selectedTemplateId) {
+      const defaultTemplate = convertedCarTemplates.find(t => t.facebookTemplateName === 'car_template');
+      setSelectedTemplateId(defaultTemplate?.id || convertedCarTemplates[0].id);
+    }
   }, [dbTemplates]);
 
   // Get current templates based on template type
@@ -77,6 +83,35 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const templateVariables = templateContent.match(/\{\{([^}]+)\}\}/g)?.map((v: string) => v.replace(/\{\{|\}\}/g, '')) || [];
   const hasCta = templateVariables.includes('CTA');
 
+  // Variable labels for numbered parameters
+  const getVariableLabel = (variable: string): string => {
+    const labels: Record<string, string> = {
+      '1': 'שם הרכב',
+      '2': 'מחיר',
+      '3': 'סוג דלק',
+      '4': 'קילומטראז\'',
+      '5': 'תיבת הילוכים',
+      '6': 'טלפון ליצירת קשר',
+      '7': 'קריאה לפעולה (CTA)',
+      'clientName': 'שם הלקוח',
+      'carName': 'שם הרכב',
+      'price': 'מחיר',
+      'kilometers': 'קילומטראז\'',
+      'mileage': 'קילומטראז\'',
+      'fuelType': 'סוג דלק',
+      'transmission': 'תיבת הילוכים',
+      'year': 'שנה',
+      'color': 'צבע',
+      'CTA': 'קריאה לפעולה (CTA)',
+    };
+    return labels[variable] || variable;
+  };
+
+  // Check if variable is a CTA field
+  const isCtaVariable = (variable: string): boolean => {
+    return variable === 'CTA' || variable === '7';
+  };
+
   // Initialize variable values when template changes
   useEffect(() => {
     if (templateVariables.length > 0 && selectedTemplate) {
@@ -85,13 +120,31 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         : (manualName || "לקוח יקר");
       
       const carName = `${car.make} ${car.model} ${car.year}`;
+      const userPhone = profile?.phone || '';
       
       const initialValues: Record<string, string> = {};
       templateVariables.forEach((variable: string) => {
         // Keep existing value if already set, otherwise use default
         const existingValue = variableValues[variable];
         
-        if (variable === 'clientName') {
+        // Numbered parameters for car_template
+        if (variable === '1') {
+          initialValues[variable] = existingValue || carName;
+        } else if (variable === '2') {
+          initialValues[variable] = existingValue || car.price?.toLocaleString() || '';
+        } else if (variable === '3') {
+          initialValues[variable] = existingValue || (car.fuel_type || 'לא צוין');
+        } else if (variable === '4') {
+          initialValues[variable] = existingValue || car.kilometers?.toLocaleString() || '';
+        } else if (variable === '5') {
+          initialValues[variable] = existingValue || (car.transmission || 'לא צוין');
+        } else if (variable === '6') {
+          initialValues[variable] = existingValue || userPhone;
+        } else if (variable === '7') {
+          initialValues[variable] = existingValue || 'לקבוע פגישה';
+        }
+        // Named parameters
+        else if (variable === 'clientName') {
           initialValues[variable] = existingValue || clientName;
         } else if (variable === 'carName') {
           initialValues[variable] = existingValue || carName;
@@ -115,7 +168,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       });
       setVariableValues(initialValues);
     }
-  }, [selectedTemplateId, currentTemplates, activeTab, selectedLeadId, manualName]);
+  }, [selectedTemplateId, currentTemplates, activeTab, selectedLeadId, manualName, profile?.phone]);
   // Load car image on mount
   useEffect(() => {
     const loadCarImage = async () => {
@@ -173,7 +226,6 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
 
   // Check if template has facebook_template_name
   const hasApprovedTemplate = () => {
-    if (selectedTemplateId === "car_template_default") return true;
     if (templateType === "custom" || selectedTemplateId === "custom") return false;
     return !!selectedTemplate?.facebookTemplateName;
   };
@@ -203,12 +255,23 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     try {
       setIsSending(true);
 
-      if (selectedTemplateId === 'car_template_default') {
-        // בדיקה שקיימת תמונה לרכב
+      if (selectedTemplate?.facebookTemplateName === 'car_template') {
+        // תבנית רכב מאושרת - שליחה עם תמונה
         if (!carImageUrl) {
-          toast.error("לא ניתן לשלוח תבנית דפולטיבית ללא תמונת רכב");
+          toast.error("לא ניתן לשלוח תבנית רכב ללא תמונה");
           return;
         }
+
+        // Build parameters in correct order (1-7)
+        const parameters = [
+          variableValues['1'] || `${car.make} ${car.model} ${car.year}`,
+          variableValues['2'] || car.price.toLocaleString(),
+          variableValues['3'] || car.fuel_type || 'לא צוין',
+          variableValues['4'] || car.kilometers.toLocaleString(),
+          variableValues['5'] || car.transmission || 'לא צוין',
+          variableValues['6'] || userPhone,
+          variableValues['7'] || 'לקבוע פגישה'
+        ];
 
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
@@ -216,15 +279,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             to: formattedNumber,
             templateName: 'car_template',
             imageUrl: carImageUrl,
-            parameters: [
-              `${car.make} ${car.model} ${car.year}`,
-              car.price.toLocaleString(),
-              car.fuel_type || 'לא צוין',
-              car.kilometers.toLocaleString(),
-              car.transmission || 'לא צוין',
-              userPhone,
-              'לקבוע פגישה'
-            ]
+            parameters
           }
         });
 
@@ -358,8 +413,9 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       {/* Template Type Tabs */}
       <Tabs value={templateType} onValueChange={(value) => {
         setTemplateType(value as "car" | "lead" | "custom");
-        if (value === "car") {
-          setSelectedTemplateId("car_template_default");
+        if (value === "car" && carTemplates.length > 0) {
+          const defaultTemplate = carTemplates.find(t => t.facebookTemplateName === 'car_template');
+          setSelectedTemplateId(defaultTemplate?.id || carTemplates[0].id);
         } else if (value === "lead" && leadTemplates.length > 0) {
           setSelectedTemplateId(leadTemplates[0].id);
         } else if (value === "custom") {
@@ -388,14 +444,6 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
               <SelectValue placeholder="בחר תבנית" />
             </SelectTrigger>
             <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
-              {templateType === "car" && (
-                <SelectItem value="car_template_default" className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
-                  <div className="flex flex-col items-end w-full">
-                    <span className="font-medium">תבנית וואטסאפ מאושרת (עם תמונה)</span>
-                    <span className="text-xs text-muted-foreground">תבנית דיפולטית עם תמונת רכב</span>
-                  </div>
-                </SelectItem>
-              )}
               {currentTemplates.map(template => (
                 <SelectItem 
                   key={template.id} 
@@ -403,7 +451,12 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
                   className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse"
                 >
                   <div className="flex flex-col items-end w-full">
-                    <span className="font-medium">{template.name}</span>
+                    <span className="font-medium">
+                      {template.name}
+                      {template.facebookTemplateName && (
+                        <span className="text-xs text-green-600 mr-2">✓ מאושר</span>
+                      )}
+                    </span>
                     {template.description && (
                       <span className="text-xs text-muted-foreground">{template.description}</span>
                     )}
@@ -416,14 +469,14 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       )}
 
       {/* Dynamic Variable Inputs */}
-      {templateType !== "custom" && selectedTemplateId !== "car_template_default" && templateVariables.length > 0 && (
+      {templateType !== "custom" && templateVariables.length > 0 && (
         <div className="space-y-3">
           <Label className="text-right text-sm block">ערכי משתנים</Label>
           <div className="grid gap-3">
             {templateVariables.map((variable: string) => (
-              variable === 'CTA' ? (
+              isCtaVariable(variable) ? (
                 <div key={variable} className="space-y-2">
-                  <Label htmlFor={variable} className="text-right text-sm">קריאה לפעולה (CTA)</Label>
+                  <Label htmlFor={variable} className="text-right text-sm">{getVariableLabel(variable)}</Label>
                   <Select 
                     value={variableValues[variable] || "לקבוע פגישה"} 
                     onValueChange={(value) => setVariableValues(prev => ({ ...prev, [variable]: value }))}
@@ -442,7 +495,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
                 </div>
               ) : (
                 <div key={variable}>
-                  <Label htmlFor={variable} className="text-right text-sm">{variable}</Label>
+                  <Label htmlFor={variable} className="text-right text-sm">{getVariableLabel(variable)}</Label>
                   <Input
                     id={variable}
                     value={variableValues[variable] || ''}
@@ -472,49 +525,25 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </div>
       )}
       
-      {selectedTemplateId === "car_template_default" && (
-        <div>
-          <Label className="text-right text-sm">תבנית דפולטיבית (לא ניתנת לעריכה)</Label>
-          <Textarea
-            value={`שלום! 👋
-
-הודעת תבנית מאושרת תישלח עם תמונת הרכב:
-
-🚗 ${car.make} ${car.model} ${car.year}
-💰 מחיר: ₪${car.price.toLocaleString()}
-📏 קילומטר: ${car.kilometers.toLocaleString()} ק"מ
-⛽ ${car.fuel_type || 'לא צוין'} | 🔧 ${car.transmission || 'לא צוין'}
-
-ליצירת קשר: ${profile?.phone || ''}`}
-            disabled
-            rows={8}
-            className="text-right resize-none opacity-60 cursor-not-allowed bg-muted"
-            dir="rtl"
-          />
-        </div>
-      )}
       {/* Message Preview */}
-      {selectedTemplateId !== "car_template_default" && (
+      {templateType !== "custom" && (
         <div>
           <Label className="text-right text-sm mb-2 block">תצוגה מקדימה של ההודעה</Label>
           <div className="bg-muted/50 p-3 rounded-lg border max-h-48 overflow-y-auto">
             <pre className="text-sm whitespace-pre-wrap text-right" dir="rtl">
-              {currentMessage || "בחר תבנית או כתוב הודעה מותאמת"}
+              {currentMessage || "בחר תבנית"}
             </pre>
           </div>
-        </div>
-      )}
-      
-      {selectedTemplateId === "car_template_default" && (
-        <div className="bg-muted/50 p-3 rounded-lg border">
-          <p className="text-sm text-muted-foreground text-right">
-            ההודעה תישלח בתבנית דפולטיבית של WhatsApp Business עם תמונת הרכב
-          </p>
+          {selectedTemplate?.facebookTemplateName === 'car_template' && (
+            <p className="text-xs text-green-600 mt-2 text-right">
+              ✓ תבנית מאושרת - תישלח עם תמונת הרכב
+            </p>
+          )}
         </div>
       )}
 
       {/* Warning for non-approved templates */}
-      {!hasApprovedTemplate() && selectedTemplateId !== "car_template_default" && currentMessage.trim() && (
+      {!hasApprovedTemplate() && currentMessage.trim() && (
         <NonDefaultTemplateWarning 
           phoneNumber={phoneNumber} 
           message={currentMessage} 
