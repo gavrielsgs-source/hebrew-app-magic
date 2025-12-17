@@ -9,7 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useLeads } from "@/hooks/use-leads";
 import { Car } from "@/types/car";
-import { Send, Car as CarIcon, Phone, User, ExternalLink, AlertTriangle } from "lucide-react";
+import { Send, Car as CarIcon, Phone, User, ExternalLink } from "lucide-react";
+import { NonDefaultTemplateWarning } from "@/components/whatsapp/NonDefaultTemplateWarning";
 
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -476,21 +477,11 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       )}
 
       {/* Warning for non-approved templates */}
-      {!hasApprovedTemplate() && selectedTemplateId !== "car_template_default" && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 rounded-lg">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-right">
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                תבנית לא מאושרת בפייסבוק
-              </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                הודעה זו תגיע רק אם הנמען כתב לבוט ב-24 השעות האחרונות.
-                לחלופין, ניתן לשלוח דרך לינק WhatsApp.
-              </p>
-            </div>
-          </div>
-        </div>
+      {!hasApprovedTemplate() && selectedTemplateId !== "car_template_default" && currentMessage.trim() && (
+        <NonDefaultTemplateWarning 
+          phoneNumber={phoneNumber} 
+          message={currentMessage} 
+        />
       )}
 
       {/* Action Buttons */}
