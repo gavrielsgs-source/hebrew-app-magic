@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Send, ExternalLink, AlertTriangle, Users, Car as CarIcon } from "lucide-react";
+import { Send, ExternalLink, Users, Car as CarIcon } from "lucide-react";
+import { NonDefaultTemplateWarning } from "@/components/whatsapp/NonDefaultTemplateWarning";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
@@ -371,21 +372,11 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       )}
 
       {/* Warning for non-approved templates */}
-      {!hasApprovedTemplate() && activeTab !== "custom" && selectedTemplate && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 rounded-lg">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-right">
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                תבנית לא מאושרת בפייסבוק
-              </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                הודעה זו תגיע רק אם הנמען כתב לבוט ב-24 השעות האחרונות.
-                לחלופין, ניתן לשלוח דרך לינק WhatsApp.
-              </p>
-            </div>
-          </div>
-        </div>
+      {!hasApprovedTemplate() && currentMessage.trim() && (
+        <NonDefaultTemplateWarning 
+          phoneNumber={customer.phone || ''} 
+          message={currentMessage} 
+        />
       )}
 
       {/* Actions */}

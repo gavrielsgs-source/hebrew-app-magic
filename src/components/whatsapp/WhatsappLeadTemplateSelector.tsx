@@ -138,14 +138,10 @@ export function WhatsappLeadTemplateSelector({
     }
   }, [dbTemplates]);
 
-  // Check if selected template is default
-  const isSelectedTemplateDefault = () => {
-    if (activeTab === "custom") return true; // Custom messages don't need warning
-    
-    // Find the selected template name and check if it's default in DB
-    const selectedTemplateName = selectedTemplate?.name;
-    const dbTemplate = dbTemplates?.find(t => t.name === selectedTemplateName);
-    return dbTemplate?.is_default ?? false;
+  // Check if template has facebook_template_name (approved template)
+  const hasApprovedTemplate = () => {
+    if (activeTab === "custom") return false; // Custom messages are never approved
+    return !!selectedTemplate?.facebookTemplateName;
   };
 
   const ctaOptions = [
@@ -463,7 +459,7 @@ export function WhatsappLeadTemplateSelector({
       )}
 
       {/* Non-Default Template Warning */}
-      {!isSelectedTemplateDefault() && message && message.trim() && (
+      {!hasApprovedTemplate() && message && message.trim() && (
         <NonDefaultTemplateWarning 
           phoneNumber={leadPhone} 
           message={message} 
