@@ -222,7 +222,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
               car.fuel_type || 'לא צוין',
               car.kilometers.toLocaleString(),
               car.transmission || 'לא צוין',
-              userPhone
+              userPhone,
+              'לקבוע פגישה'
             ]
           }
         });
