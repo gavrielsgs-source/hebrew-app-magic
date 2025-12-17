@@ -11,8 +11,6 @@ import { useUpdateLead } from "@/hooks/use-leads";
 import { toast } from "sonner";
 import { UnifiedTemplate } from "./lead-templates";
 import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
-import { whatsappTemplates } from "./whatsapp-templates";
-import { whatsappLeadTemplates } from "./lead-templates";
 import { supabase } from "@/integrations/supabase/client";
 
 interface WhatsappLeadTemplateSelectorProps {
@@ -71,7 +69,7 @@ export function WhatsappLeadTemplateSelector({
         } else if (v === 'leadSource') {
           newValues[v] = leadSource ? `דרך ${leadSource}` : '';
         } else if (v === 'CTA') {
-          newValues[v] = variableValues['CTA'] || 'פגישה';
+          newValues[v] = variableValues['CTA'] || 'לקבוע פגישה';
         } else {
           newValues[v] = variableValues[v] || '';
         }
@@ -80,96 +78,63 @@ export function WhatsappLeadTemplateSelector({
     }
   }, [selectedTemplate, leadName, leadSource]);
 
-  // Load templates from localStorage and merge with database templates and default templates
+  // Load templates from database only (source of truth)
   useEffect(() => {
-    try {
-      // Convert database templates to UnifiedTemplate format
-      const dbLeadTemplates: UnifiedTemplate[] = (dbTemplates || [])
-        .filter(t => t.type === 'lead')
-        .map(dbTemplate => ({
-          id: dbTemplate.id,
-          name: dbTemplate.name,
-          description: dbTemplate.description,
-          type: 'lead' as const,
-          usesCta: dbTemplate.template_content.includes('{{CTA}}'),
-          templateContent: dbTemplate.template_content,
-          facebookTemplateName: dbTemplate.facebook_template_name,
-          generateMessage: (leadName: string, leadSource?: string, cta?: string) => {
-            return dbTemplate.template_content
-              .replace(/\{\{leadName\}\}/g, leadName || '')
-              .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '')
-              .replace(/\{\{CTA\}\}/g, cta || 'פגישה')
-              .replace(/\$\{leadName\}/g, leadName || '')
-              .replace(/\$\{leadSource\s*\?\s*`[^`]*\$\{leadSource\}[^`]*`\s*:\s*'[^']*'\}/g, leadSource ? ` דרך ${leadSource}` : '');
-          }
-        }));
+    if (!dbTemplates) return;
 
-      const dbCarTemplates: UnifiedTemplate[] = (dbTemplates || [])
-        .filter(t => t.type === 'car')
-        .map(dbTemplate => ({
-          id: dbTemplate.id,
-          name: dbTemplate.name,
-          description: dbTemplate.description,
-          type: 'car' as const,
-          usesCta: dbTemplate.template_content.includes('{{CTA}}'),
-          templateContent: dbTemplate.template_content,
-          facebookTemplateName: dbTemplate.facebook_template_name,
-          generateMessage: (car: any, cta?: string) => {
-            return dbTemplate.template_content
-              .replace(/\{\{carName\}\}/g, car ? `${car.make} ${car.model} ${car.year}` : 'רכב')
-              .replace(/\{price\}/g, car?.price ? car.price.toLocaleString() : '')
-              .replace(/\{kilometers\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
-              .replace(/\{mileage\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
-              .replace(/\{\{CTA\}\}/g, cta || 'לתאם שיחה');
-          }
-        }));
-
-      // Merge with default templates (default templates first, then DB templates override if same ID)
-      const allLeadTemplates: any[] = [...whatsappLeadTemplates];
-      dbLeadTemplates.forEach(dbTemplate => {
-        const existingIndex = allLeadTemplates.findIndex(t => t.id === dbTemplate.id);
-        if (existingIndex >= 0) {
-          allLeadTemplates[existingIndex] = dbTemplate;
-        } else {
-          allLeadTemplates.push(dbTemplate);
-        }
-      });
-
-      const allCarTemplates: any[] = [...whatsappTemplates];
-      dbCarTemplates.forEach(dbTemplate => {
-        const existingIndex = allCarTemplates.findIndex(t => t.id === dbTemplate.id);
-        if (existingIndex >= 0) {
-          allCarTemplates[existingIndex] = dbTemplate;
-        } else {
-          allCarTemplates.push(dbTemplate);
-        }
-      });
-
-      setLeadTemplates(allLeadTemplates);
-      setCarTemplates(allCarTemplates);
-
-      // Set first template as default
-      if (allLeadTemplates.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(allLeadTemplates[0]);
-        setTemplateType('lead');
-        setActiveTab('lead-templates');
-      } else if (allCarTemplates.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(allCarTemplates[0]);
-        setTemplateType('car');
-        setActiveTab('car-templates');
-      }
-    } catch (error) {
-      console.error("Error loading templates:", error);
-      const defaultTemplate: UnifiedTemplate = {
-        id: 'default_intro',
-        name: 'הכרות עם לקוח פוטנציאלי',
-        description: 'הודעת היכרות ראשונית עם לקוח שפנה אלינו',
+    // Convert database templates to UnifiedTemplate format - DB is source of truth
+    const dbLeadTemplates: UnifiedTemplate[] = dbTemplates
+      .filter(t => t.type === 'lead')
+      .map(dbTemplate => ({
+        id: dbTemplate.id,
+        name: dbTemplate.name,
+        description: dbTemplate.description,
         type: 'lead' as const,
-        usesCta: false,
-        generateMessage: (leadName: string, leadSource?: string) => `היי ${leadName}! 👋\n\nקיבלנו את הפנייה שלך${leadSource ? ` דרך ${leadSource}` : ''} וראינו שאתה מתעניין ברכב.\n\nמתי תהיה זמין לשיחת ייעוץ קצרה? 📞\n\nנשמח לעזור לך למצוא בדיוק מה שמתאים לך!\n\nבברכה,\nצוות המכירות`
-      };
-      setLeadTemplates([defaultTemplate]);
-      setSelectedTemplate(defaultTemplate);
+        usesCta: dbTemplate.template_content.includes('{{CTA}}'),
+        templateContent: dbTemplate.template_content,
+        facebookTemplateName: dbTemplate.facebook_template_name,
+        generateMessage: (leadName: string, leadSource?: string, cta?: string) => {
+          return dbTemplate.template_content
+            .replace(/\{\{leadName\}\}/g, leadName || '')
+            .replace(/\{\{customerName\}\}/g, leadName || '')
+            .replace(/\{\{name\}\}/g, leadName || '')
+            .replace(/\{\{leadSource\}\}/g, leadSource ? ` דרך ${leadSource}` : '')
+            .replace(/\{\{CTA\}\}/g, cta || 'פגישה');
+        }
+      }));
+
+    const dbCarTemplates: UnifiedTemplate[] = dbTemplates
+      .filter(t => t.type === 'car')
+      .map(dbTemplate => ({
+        id: dbTemplate.id,
+        name: dbTemplate.name,
+        description: dbTemplate.description,
+        type: 'car' as const,
+        usesCta: dbTemplate.template_content.includes('{{CTA}}'),
+        templateContent: dbTemplate.template_content,
+        facebookTemplateName: dbTemplate.facebook_template_name,
+        generateMessage: (car: any, cta?: string) => {
+          return dbTemplate.template_content
+            .replace(/\{\{carName\}\}/g, car ? `${car.make} ${car.model} ${car.year}` : 'רכב')
+            .replace(/\{price\}/g, car?.price ? car.price.toLocaleString() : '')
+            .replace(/\{kilometers\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
+            .replace(/\{mileage\}/g, car?.kilometers ? car.kilometers.toLocaleString() : '')
+            .replace(/\{\{CTA\}\}/g, cta || 'לתאם שיחה');
+        }
+      }));
+
+    setLeadTemplates(dbLeadTemplates);
+    setCarTemplates(dbCarTemplates);
+
+    // Set first template as default
+    if (dbLeadTemplates.length > 0 && !selectedTemplate) {
+      setSelectedTemplate(dbLeadTemplates[0]);
+      setTemplateType('lead');
+      setActiveTab('lead-templates');
+    } else if (dbCarTemplates.length > 0 && !selectedTemplate) {
+      setSelectedTemplate(dbCarTemplates[0]);
+      setTemplateType('car');
+      setActiveTab('car-templates');
     }
   }, [dbTemplates]);
 
@@ -184,10 +149,15 @@ export function WhatsappLeadTemplateSelector({
   };
 
   const ctaOptions = [
-    { value: "פגישה", label: "פגישה" },
-    { value: "לקבוע שיחה", label: "לקבוע שיחה" },
-    { value: "לקבוע נסיעת מבחן", label: "לקבוע נסיעת מבחן" },
+    { value: "לקבוע פגישה", label: "לקבוע פגישה" },
+    { value: "לתאם צפייה", label: "לתאם צפייה" },
+    { value: "לקבוע שיחה קצרה", label: "לקבוע שיחה קצרה" },
+    { value: "להתייעץ", label: "להתייעץ" },
+    { value: "לקבל הצעת מחיר", label: "לקבל הצעת מחיר" },
+    { value: "custom", label: "טקסט מותאם אישית" },
   ];
+  
+  const [customCta, setCustomCta] = useState("");
 
   const getVariableLabel = (varName: string): string => {
     const labels: Record<string, string> = {
@@ -441,21 +411,42 @@ export function WhatsappLeadTemplateSelector({
                 {getVariableLabel(varName)}
               </label>
               {varName === 'CTA' ? (
-                <Select 
-                  value={variableValues[varName] || 'פגישה'} 
-                  onValueChange={(value) => setVariableValues(prev => ({ ...prev, [varName]: value }))}
-                >
-                  <SelectTrigger className="w-full text-right" dir="rtl">
-                    <SelectValue placeholder="בחר פעולה..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ctaOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="text-right">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Select 
+                    value={ctaOptions.slice(0, -1).some(o => o.value === variableValues[varName]) ? variableValues[varName] : 'custom'} 
+                    onValueChange={(value) => {
+                      if (value === 'custom') {
+                        setVariableValues(prev => ({ ...prev, [varName]: customCta || '' }));
+                      } else {
+                        setVariableValues(prev => ({ ...prev, [varName]: value }));
+                        setCustomCta('');
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full text-right" dir="rtl">
+                      <SelectValue placeholder="בחר פעולה..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ctaOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="text-right">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!ctaOptions.slice(0, -1).some(o => o.value === variableValues[varName]) && (
+                    <Input
+                      placeholder="הזן קריאה לפעולה מותאמת אישית"
+                      value={customCta || variableValues[varName] || ''}
+                      onChange={(e) => {
+                        setCustomCta(e.target.value);
+                        setVariableValues(prev => ({ ...prev, [varName]: e.target.value }));
+                      }}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  )}
+                </div>
               ) : (
                 <Input
                   type="text"
