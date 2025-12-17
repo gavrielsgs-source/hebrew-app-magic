@@ -342,21 +342,37 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       <div>
         <Label className="text-right text-sm mb-2 block">בחר תבנית הודעה</Label>
         <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-          <SelectTrigger className="text-right">
+          <SelectTrigger className="w-full text-right" dir="rtl">
             <SelectValue placeholder="בחר תבנית" />
           </SelectTrigger>
-          <SelectContent align="end">
-            <SelectItem value="car_template_default">תבנית וואטסאפ מאושרת (עם תמונה)</SelectItem>
+          <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
+            <SelectItem value="car_template_default" className="text-right cursor-pointer">
+              <div className="flex flex-col items-end">
+                <span className="font-medium">תבנית וואטסאפ מאושרת (עם תמונה)</span>
+                <span className="text-xs text-muted-foreground">תבנית דיפולטית עם תמונת רכב</span>
+              </div>
+            </SelectItem>
             {templates.map(template => (
               <SelectItem 
                 key={template.id} 
                 value={template.id}
                 disabled={template.id === "car_template_default"}
+                className="text-right cursor-pointer"
               >
-                {template.name}
+                <div className="flex flex-col items-end">
+                  <span className="font-medium">{template.name}</span>
+                  {template.description && (
+                    <span className="text-xs text-muted-foreground">{template.description}</span>
+                  )}
+                </div>
               </SelectItem>
             ))}
-            <SelectItem value="custom">הודעה מותאמת אישית</SelectItem>
+            <SelectItem value="custom" className="text-right cursor-pointer">
+              <div className="flex flex-col items-end">
+                <span className="font-medium">הודעה מותאמת אישית</span>
+                <span className="text-xs text-muted-foreground">כתוב הודעה חופשית</span>
+              </div>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
