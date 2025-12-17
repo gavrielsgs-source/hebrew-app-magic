@@ -1,16 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Send } from "lucide-react";
-import { whatsappLeadTemplates } from "@/components/whatsapp/lead-templates";
+import { Send, ExternalLink, AlertTriangle, Users, Car as CarIcon } from "lucide-react";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { WhatsappTemplatePreview } from "@/components/whatsapp/WhatsappTemplatePreview";
-import { NonDefaultTemplateWarning } from "@/components/whatsapp/NonDefaultTemplateWarning";
 import { useWhatsappTemplates } from "@/hooks/whatsapp-templates";
 import type { Customer } from "@/types/customer";
 
@@ -19,45 +18,125 @@ interface WhatsAppCustomerDialogProps {
   onClose: () => void;
 }
 
+interface ConvertedTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: 'lead' | 'car';
+  templateContent: string;
+  facebookTemplateName: string | null;
+}
+
 export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDialogProps) {
-  const [selectedTemplateId, setSelectedTemplateId] = useState(whatsappLeadTemplates[0]?.id || "");
+  const [activeTab, setActiveTab] = useState<"lead" | "car" | "custom">("lead");
+  const [leadTemplates, setLeadTemplates] = useState<ConvertedTemplate[]>([]);
+  const [carTemplates, setCarTemplates] = useState<ConvertedTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const [selectedCta, setSelectedCta] = useState("לקבוע פגישה");
   const [customCta, setCustomCta] = useState("");
-  const [carDetails, setCarDetails] = useState("");
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
   const { data: dbTemplates } = useWhatsappTemplates();
 
-  // Check if the selected template is default
-  const isSelectedTemplateDefault = () => {
-    if (selectedTemplateId === "custom") return true; // Custom messages don't need warning
-    
-    // Check if it's a DB template and if it's default
-    const dbTemplate = dbTemplates?.find(t => 
-      t.name === whatsappLeadTemplates.find(lt => lt.id === selectedTemplateId)?.name
-    );
-    return dbTemplate?.is_default ?? false;
-  };
+  // Load templates from DB
+  useEffect(() => {
+    if (!dbTemplates) return;
+
+    const convertedLeadTemplates: ConvertedTemplate[] = dbTemplates
+      .filter(t => t.type === 'lead')
+      .map(t => ({
+        id: t.id,
+        name: t.name,
+        description: t.description || '',
+        type: 'lead' as const,
+        templateContent: t.template_content,
+        facebookTemplateName: t.facebook_template_name,
+      }));
+
+    const convertedCarTemplates: ConvertedTemplate[] = dbTemplates
+      .filter(t => t.type === 'car')
+      .map(t => ({
+        id: t.id,
+        name: t.name,
+        description: t.description || '',
+        type: 'car' as const,
+        templateContent: t.template_content,
+        facebookTemplateName: t.facebook_template_name,
+      }));
+
+    setLeadTemplates(convertedLeadTemplates);
+    setCarTemplates(convertedCarTemplates);
+
+    // Select first lead template by default
+    if (convertedLeadTemplates.length > 0 && !selectedTemplateId) {
+      setSelectedTemplateId(convertedLeadTemplates[0].id);
+    }
+  }, [dbTemplates]);
+
+  // Get selected template
+  const selectedTemplate = activeTab === "lead" 
+    ? leadTemplates.find(t => t.id === selectedTemplateId)
+    : activeTab === "car"
+    ? carTemplates.find(t => t.id === selectedTemplateId)
+    : null;
+
+  // Extract variables from template
+  const templateVariables = selectedTemplate?.templateContent
+    ?.match(/\{\{([^}]+)\}\}/g)
+    ?.map((v: string) => v.replace(/\{\{|\}\}/g, '')) || [];
+  const hasCta = templateVariables.includes('CTA');
+
+  // Initialize variable values when template changes
+  useEffect(() => {
+    if (selectedTemplate?.templateContent) {
+      const initialValues: Record<string, string> = {};
+      templateVariables.forEach((variable: string) => {
+        const existingValue = variableValues[variable];
+        if (variable === 'leadName' || variable === 'customerName' || variable === 'name' || variable === 'clientName') {
+          initialValues[variable] = existingValue || customer.full_name || '';
+        } else if (variable === 'CTA') {
+          initialValues[variable] = existingValue || selectedCta;
+        } else {
+          initialValues[variable] = existingValue || '';
+        }
+      });
+      setVariableValues(initialValues);
+    }
+  }, [selectedTemplateId, selectedTemplate, customer.full_name]);
 
   // Get current CTA
   const getCurrentCta = () => {
     return selectedCta === "custom" ? customCta : selectedCta;
   };
 
-  // Get selected template
-  const selectedTemplate = whatsappLeadTemplates.find(t => t.id === selectedTemplateId);
-
   // Generate message based on template
   const generateCustomerMessage = () => {
-    if (selectedTemplateId === "custom") {
+    if (activeTab === "custom") {
       return customMessage;
     }
 
-    const template = whatsappLeadTemplates.find(t => t.id === selectedTemplateId);
-    if (!template) return "";
+    if (!selectedTemplate?.templateContent) return "";
 
-    const currentCta = template.usesCta ? getCurrentCta() : undefined;
-    return template.generateMessage(customer.full_name, carDetails, currentCta);
+    let message = selectedTemplate.templateContent;
+    Object.entries(variableValues).forEach(([key, value]) => {
+      message = message.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+    });
+
+    return message;
+  };
+
+  // Check if template has facebook_template_name
+  const hasApprovedTemplate = () => {
+    if (activeTab === "custom") return false;
+    return !!selectedTemplate?.facebookTemplateName;
+  };
+
+  // Generate WhatsApp link for free text messages
+  const generateWhatsAppLink = () => {
+    const formattedNumber = formatPhoneForWhatsApp(customer.phone || '');
+    const message = encodeURIComponent(generateCustomerMessage());
+    return `https://wa.me/${formattedNumber}?text=${message}`;
   };
 
   const handleSend = async () => {
@@ -77,21 +156,28 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
     try {
       setIsSending(true);
 
-      const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
-        body: {
-          type: 'text',
-          to: formattedNumber,
-          message: messageText
+      if (selectedTemplate?.facebookTemplateName) {
+        // Send as approved template
+        const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
+          body: {
+            type: 'template',
+            to: formattedNumber,
+            templateName: selectedTemplate.facebookTemplateName,
+            parameters: Object.values(variableValues).filter(v => v)
+          }
+        });
+
+        if (error) {
+          throw new Error((error as any).message || 'שגיאה בשליחת הודעת תבנית');
         }
-      });
 
-      if (error) {
-        throw new Error((error as any).message || 'שגיאה בשליחת הודעת טקסט');
+        const status = (data as any)?.messageStatus || 'sent';
+        toast.success(`ההודעה נשלחה ללקוח ${customer.full_name} (${status})`);
+        onClose();
+      } else {
+        // No facebook_template_name - can't send via API
+        toast.error("תבנית זו אינה מאושרת בפייסבוק. השתמש בלינק WhatsApp לשליחה ידנית");
       }
-
-      const status = (data as any)?.messageStatus || 'sent';
-      toast.success(`ההודעה נשלחה ללקוח ${customer.full_name} (${status})`);
-      onClose();
     } catch (error: any) {
       console.error('Error sending WhatsApp message:', error);
       toast.error(error?.message || "שגיאה בשליחת ההודעה");
@@ -100,111 +186,240 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
     }
   };
 
+  // Handle tab change
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as "lead" | "car" | "custom");
+    
+    // Select first template of new type
+    if (tab === "lead" && leadTemplates.length > 0) {
+      setSelectedTemplateId(leadTemplates[0].id);
+    } else if (tab === "car" && carTemplates.length > 0) {
+      setSelectedTemplateId(carTemplates[0].id);
+    } else if (tab === "custom") {
+      setSelectedTemplateId("");
+    }
+  };
+
+  const currentMessage = generateCustomerMessage();
+  const currentTemplates = activeTab === "lead" ? leadTemplates : activeTab === "car" ? carTemplates : [];
+
+  const ctaOptions = [
+    { value: "לקבוע פגישה", label: "לקבוע פגישה" },
+    { value: "לתאם צפייה", label: "לתאם צפייה" },
+    { value: "לקבוע שיחה קצרה", label: "לקבוע שיחה קצרה" },
+    { value: "להתייעץ", label: "להתייעץ" },
+    { value: "לקבל הצעת מחיר", label: "לקבל הצעת מחיר" },
+    { value: "custom", label: "טקסט מותאם אישית" },
+  ];
+
   return (
-    <div className="space-y-4">
-      {/* Template Selection */}
-      <div className="space-y-2">
-        <Label htmlFor="template">בחר תבנית הודעה</Label>
-        <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-          <SelectTrigger id="template" className="text-right">
-            <SelectValue placeholder="בחר תבנית" />
-          </SelectTrigger>
-          <SelectContent align="end">
-            {whatsappLeadTemplates.map(template => (
-              <SelectItem key={template.id} value={template.id}>
-                {template.name}
-              </SelectItem>
-            ))}
-            <SelectItem value="custom">הודעה מותאמת אישית</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="space-y-4" dir="rtl">
+      {/* Template Type Tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="lead" className="flex items-center gap-2 text-sm">
+            <Users className="h-4 w-4" />
+            לקוחות ({leadTemplates.length})
+          </TabsTrigger>
+          <TabsTrigger value="car" className="flex items-center gap-2 text-sm">
+            <CarIcon className="h-4 w-4" />
+            רכבים ({carTemplates.length})
+          </TabsTrigger>
+          <TabsTrigger value="custom" className="text-sm">
+            הודעה מותאמת
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Car Details Input (optional) */}
-      {selectedTemplateId !== "custom" && selectedTemplateId === "follow_up_car" && (
-        <div className="space-y-2">
-          <Label htmlFor="carDetails">פרטי רכב (אופציונלי)</Label>
-          <Input
-            id="carDetails"
-            placeholder="לדוגמה: טויוטה קורולה 2020"
-            value={carDetails}
-            onChange={(e) => setCarDetails(e.target.value)}
-            className="text-right"
-          />
-        </div>
-      )}
-
-      {/* CTA Selection */}
-      {selectedTemplateId !== "custom" && selectedTemplate?.usesCta && (
-        <div className="space-y-2">
-          <Label htmlFor="cta">קריאה לפעולה (CTA)</Label>
-          <Select value={selectedCta} onValueChange={setSelectedCta}>
-            <SelectTrigger id="cta" className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40 text-right">
-              <SelectValue placeholder="בחר קריאה לפעולה" />
-            </SelectTrigger>
-            <SelectContent className="bg-background/95 backdrop-blur-xl border-primary/20 z-[100]">
-              <SelectItem value="לקבוע פגישה">לקבוע פגישה</SelectItem>
-              <SelectItem value="לתאם צפייה">לתאם צפייה</SelectItem>
-              <SelectItem value="לקבוע שיחה קצרה">לקבוע שיחה קצרה</SelectItem>
-              <SelectItem value="להתייעץ">להתייעץ</SelectItem>
-              <SelectItem value="לקבל הצעת מחיר">לקבל הצעת מחיר</SelectItem>
-              <SelectItem value="custom">טקסט מותאם אישית</SelectItem>
-            </SelectContent>
-          </Select>
-          {selectedCta === "custom" && (
-            <Input
-              placeholder="הזן קריאה לפעולה מותאמת אישית"
-              value={customCta}
-              onChange={(e) => setCustomCta(e.target.value)}
-              className="bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary/40"
-            />
+        <TabsContent value="lead" className="space-y-4 mt-4">
+          {leadTemplates.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <p>לא נמצאו תבניות לקוחות</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label className="text-right text-sm">בחר תבנית</Label>
+              <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                <SelectTrigger className="text-right">
+                  <SelectValue placeholder="בחר תבנית" />
+                </SelectTrigger>
+                <SelectContent align="end" className="max-h-[300px]">
+                  {leadTemplates.map(template => (
+                    <SelectItem key={template.id} value={template.id} className="text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="font-medium">{template.name}</span>
+                        {template.description && (
+                          <span className="text-xs text-muted-foreground">{template.description}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Custom Message Input */}
-      {selectedTemplateId === "custom" && (
-        <div className="space-y-2">
-          <Label htmlFor="customMessage">הודעה מותאמת אישית</Label>
-          <Textarea
-            id="customMessage"
-            value={customMessage}
-            onChange={(e) => setCustomMessage(e.target.value)}
-            rows={8}
-            className="text-right resize-none"
-            dir="rtl"
-            placeholder="כתוב כאן את ההודעה המותאמת אישית..."
-          />
-        </div>
-      )}
+        <TabsContent value="car" className="space-y-4 mt-4">
+          {carTemplates.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <p>לא נמצאו תבניות רכבים</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label className="text-right text-sm">בחר תבנית</Label>
+              <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                <SelectTrigger className="text-right">
+                  <SelectValue placeholder="בחר תבנית" />
+                </SelectTrigger>
+                <SelectContent align="end" className="max-h-[300px]">
+                  {carTemplates.map(template => (
+                    <SelectItem key={template.id} value={template.id} className="text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="font-medium">{template.name}</span>
+                        {template.description && (
+                          <span className="text-xs text-muted-foreground">{template.description}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </TabsContent>
 
-      {/* Non-Default Template Warning */}
-      {!isSelectedTemplateDefault() && (
-        <NonDefaultTemplateWarning 
-          phoneNumber={customer.phone || ""} 
-          message={generateCustomerMessage()} 
-        />
+        <TabsContent value="custom" className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label htmlFor="customMessage">הודעה מותאמת אישית</Label>
+            <Textarea
+              id="customMessage"
+              value={customMessage}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              rows={8}
+              className="text-right resize-none"
+              dir="rtl"
+              placeholder="כתוב כאן את ההודעה המותאמת אישית..."
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Dynamic Variable Inputs */}
+      {activeTab !== "custom" && selectedTemplate && templateVariables.length > 0 && (
+        <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+          <Label className="text-right text-sm block">ערכי משתנים</Label>
+          <div className="grid gap-3">
+            {templateVariables.map((variable: string) => (
+              variable === 'CTA' ? (
+                <div key={variable} className="space-y-2">
+                  <Label htmlFor={variable} className="text-right text-sm">קריאה לפעולה (CTA)</Label>
+                  <Select 
+                    value={selectedCta} 
+                    onValueChange={(value) => {
+                      setSelectedCta(value);
+                      if (value !== 'custom') {
+                        setVariableValues(prev => ({ ...prev, CTA: value }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="text-right">
+                      <SelectValue placeholder="בחר קריאה לפעולה" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ctaOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="text-right">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedCta === "custom" && (
+                    <Input
+                      placeholder="הזן קריאה לפעולה מותאמת אישית"
+                      value={customCta}
+                      onChange={(e) => {
+                        setCustomCta(e.target.value);
+                        setVariableValues(prev => ({ ...prev, CTA: e.target.value }));
+                      }}
+                      className="text-right"
+                    />
+                  )}
+                </div>
+              ) : (
+                <div key={variable}>
+                  <Label htmlFor={variable} className="text-right text-sm">{variable}</Label>
+                  <Input
+                    id={variable}
+                    value={variableValues[variable] || ''}
+                    onChange={(e) => setVariableValues(prev => ({ ...prev, [variable]: e.target.value }))}
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+              )
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Preview */}
-      <div className="space-y-2">
-        <Label>תצוגה מקדימה</Label>
-        <WhatsappTemplatePreview template={generateCustomerMessage()} />
-      </div>
+      {currentMessage && (
+        <div className="space-y-2">
+          <Label>תצוגה מקדימה</Label>
+          <WhatsappTemplatePreview template={currentMessage} />
+        </div>
+      )}
+
+      {/* Warning for non-approved templates */}
+      {!hasApprovedTemplate() && activeTab !== "custom" && selectedTemplate && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-right">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                תבנית לא מאושרת בפייסבוק
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                הודעה זו תגיע רק אם הנמען כתב לבוט ב-24 השעות האחרונות.
+                לחלופין, ניתן לשלוח דרך לינק WhatsApp.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
-      <div className="flex gap-2 justify-end pt-4">
-        <Button variant="outline" onClick={onClose}>
+      <div className="flex gap-3 pt-4">
+        <Button variant="outline" onClick={onClose} className="flex-1">
           ביטול
         </Button>
-        <Button 
-          onClick={handleSend} 
-          disabled={isSending || !customer.phone}
-          className="gap-2"
-        >
-          <Send className="h-4 w-4" />
-          {isSending ? "שולח..." : "שלח הודעה"}
-        </Button>
+        
+        {hasApprovedTemplate() ? (
+          <Button 
+            onClick={handleSend} 
+            disabled={isSending || !customer.phone || !currentMessage.trim()}
+            className="flex-1 bg-green-600 hover:bg-green-700"
+          >
+            <Send className="h-4 w-4 ml-2" />
+            {isSending ? "שולח..." : "שלח בוואטסאפ"}
+          </Button>
+        ) : (
+          <Button 
+            asChild
+            disabled={!customer.phone || !currentMessage.trim()}
+            className="flex-1 bg-green-600 hover:bg-green-700"
+          >
+            <a 
+              href={generateWhatsAppLink()} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={onClose}
+            >
+              <ExternalLink className="h-4 w-4 ml-2" />
+              פתח בוואטסאפ
+            </a>
+          </Button>
+        )}
       </div>
     </div>
   );
