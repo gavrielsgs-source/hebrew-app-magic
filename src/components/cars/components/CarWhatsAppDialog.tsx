@@ -265,7 +265,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           return;
         }
         
-        // Build parameters in correct order (1-8)
+        // Build parameters in correct order (1-7)
         const parameters = [
           variableValues['1'] || `${car.make} ${car.model} ${car.year}`,
           variableValues['2'] || car.price.toLocaleString(),
@@ -273,8 +273,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           variableValues['4'] || car.kilometers.toLocaleString(),
           variableValues['5'] || car.transmission || 'לא צוין',
           variableValues['6'] || userPhone,
-          variableValues['7'] || 'לקבוע פגישה',
-          variableValues['8'] || 'צוות המכירות' // 8th parameter - signature
+          variableValues['7'] || 'לקבוע פגישה'
         ];
 
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
