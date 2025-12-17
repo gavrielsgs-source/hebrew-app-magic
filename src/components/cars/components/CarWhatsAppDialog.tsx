@@ -93,6 +93,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       '5': 'תיבת הילוכים',
       '6': 'טלפון ליצירת קשר',
       '7': 'קריאה לפעולה (CTA)',
+      '8': 'חתימה',
       'clientName': 'שם הלקוח',
       'carName': 'שם הרכב',
       'price': 'מחיר',
@@ -142,6 +143,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           initialValues[variable] = existingValue || userPhone;
         } else if (variable === '7') {
           initialValues[variable] = existingValue || 'לקבוע פגישה';
+        } else if (variable === '8') {
+          initialValues[variable] = existingValue || 'צוות המכירות';
         }
         // Named parameters
         else if (variable === 'clientName') {
@@ -256,8 +259,13 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       setIsSending(true);
 
       if (selectedTemplate?.facebookTemplateName === 'car_template') {
-        // תבנית רכב מאושרת - שליחה ללא תמונה (התבנית בפייסבוק לא תומכת בהדר)
-        // Build parameters in correct order (1-7)
+        // תבנית רכב מאושרת - שליחה עם תמונה (התבנית בפייסבוק דורשת הדר עם תמונה ו-8 פרמטרים)
+        if (!carImageUrl) {
+          toast.error("לא ניתן לשלוח תבנית רכב ללא תמונה");
+          return;
+        }
+        
+        // Build parameters in correct order (1-8)
         const parameters = [
           variableValues['1'] || `${car.make} ${car.model} ${car.year}`,
           variableValues['2'] || car.price.toLocaleString(),
@@ -265,7 +273,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           variableValues['4'] || car.kilometers.toLocaleString(),
           variableValues['5'] || car.transmission || 'לא צוין',
           variableValues['6'] || userPhone,
-          variableValues['7'] || 'לקבוע פגישה'
+          variableValues['7'] || 'לקבוע פגישה',
+          variableValues['8'] || 'צוות המכירות' // 8th parameter - signature
         ];
 
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
@@ -273,6 +282,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             type: 'template',
             to: formattedNumber,
             templateName: 'car_template',
+            imageUrl: carImageUrl,
             parameters
           }
         });
