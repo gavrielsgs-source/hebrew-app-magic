@@ -289,7 +289,9 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
       } else if (selectedTemplate?.facebookTemplateName) {
-        // שליחה כתבנית מאושרת - עם תמונה אופציונלית אם קיימת
+        // תבניות שתומכות בהדר תמונה
+        const templatesWithImageHeader = ['basic_car_details'];
+        
         const requestBody: any = {
           type: 'template',
           to: formattedNumber,
@@ -297,8 +299,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           parameters: Object.values(variableValues).filter(v => v)
         };
         
-        // הוסף תמונה אם קיימת (אופציונלי לתבניות שתומכות בהדר תמונה)
-        if (carImageUrl) {
+        // הוסף תמונה רק לתבניות שתומכות בהדר תמונה
+        if (carImageUrl && templatesWithImageHeader.includes(selectedTemplate.facebookTemplateName)) {
           requestBody.imageUrl = carImageUrl;
         }
         
