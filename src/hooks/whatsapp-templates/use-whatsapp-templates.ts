@@ -12,6 +12,7 @@ export interface WhatsappTemplate {
   is_default: boolean;
   is_shared: boolean;
   facebook_template_name?: string;
+  supports_image_header?: boolean;
   created_at: string;
   updated_at: string;
 }
