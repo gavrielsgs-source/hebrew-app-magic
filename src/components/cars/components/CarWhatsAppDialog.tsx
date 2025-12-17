@@ -259,11 +259,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       setIsSending(true);
 
       if (selectedTemplate?.facebookTemplateName === 'car_template') {
-        // תבנית רכב מאושרת - שליחה עם תמונה (התבנית בפייסבוק דורשת הדר עם תמונה ו-8 פרמטרים)
-        if (!carImageUrl) {
-          toast.error("לא ניתן לשלוח תבנית רכב ללא תמונה");
-          return;
-        }
+        // תבנית רכב מאושרת - שליחה ללא תמונה (התבנית בפייסבוק לא כוללת הדר עם תמונה)
         
         // Build parameters in correct order (1-7)
         const parameters = [
@@ -281,7 +277,6 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             type: 'template',
             to: formattedNumber,
             templateName: 'car_template',
-            imageUrl: carImageUrl,
             parameters
           }
         });
