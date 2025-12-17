@@ -1364,6 +1364,7 @@ export type Database = {
           is_default: boolean | null
           is_shared: boolean | null
           name: string
+          supports_image_header: boolean | null
           template_content: string
           type: string
           updated_at: string
@@ -1378,6 +1379,7 @@ export type Database = {
           is_default?: boolean | null
           is_shared?: boolean | null
           name: string
+          supports_image_header?: boolean | null
           template_content: string
           type: string
           updated_at?: string
@@ -1392,6 +1394,7 @@ export type Database = {
           is_default?: boolean | null
           is_shared?: boolean | null
           name?: string
+          supports_image_header?: boolean | null
           template_content?: string
           type?: string
           updated_at?: string

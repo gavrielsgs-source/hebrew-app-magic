@@ -53,6 +53,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       type: 'car' as const,
       templateContent: dbTemplate.template_content,
       facebookTemplateName: dbTemplate.facebook_template_name,
+      supportsImageHeader: dbTemplate.supports_image_header || false,
     }));
 
     const convertedLeadTemplates = leadDbTemplates.map(dbTemplate => ({
@@ -62,6 +63,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       type: 'lead' as const,
       templateContent: dbTemplate.template_content,
       facebookTemplateName: dbTemplate.facebook_template_name,
+      supportsImageHeader: dbTemplate.supports_image_header || false,
     }));
     
     setCarTemplates(convertedCarTemplates);
@@ -289,9 +291,6 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
       } else if (selectedTemplate?.facebookTemplateName) {
-        // תבניות שתומכות בהדר תמונה
-        const templatesWithImageHeader = ['basic_car_details'];
-        
         const requestBody: any = {
           type: 'template',
           to: formattedNumber,
@@ -299,8 +298,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
           parameters: Object.values(variableValues).filter(v => v)
         };
         
-        // הוסף תמונה רק לתבניות שתומכות בהדר תמונה
-        if (carImageUrl && templatesWithImageHeader.includes(selectedTemplate.facebookTemplateName)) {
+        // הוסף תמונה רק לתבניות שתומכות בהדר תמונה (לפי השדה מה-DB)
+        if (carImageUrl && selectedTemplate.supportsImageHeader) {
           requestBody.imageUrl = carImageUrl;
         }
         
