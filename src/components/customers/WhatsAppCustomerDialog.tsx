@@ -158,23 +158,14 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       setIsSending(true);
 
       if (selectedTemplate?.facebookTemplateName) {
-        // תבניות שלא מצפות לפרמטרים (0 parameters בפייסבוק)
-        const templatesWithNoParameters = ['potential_customer'];
-        
-        const requestBody: any = {
-          type: 'template',
-          to: formattedNumber,
-          templateName: selectedTemplate.facebookTemplateName,
-        };
-        
-        // הוסף פרמטרים רק לתבניות שמצפות להם
-        if (!templatesWithNoParameters.includes(selectedTemplate.facebookTemplateName)) {
-          requestBody.parameters = Object.values(variableValues).filter(v => v);
-        }
-        
         // Send as approved template
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
-          body: requestBody
+          body: {
+            type: 'template',
+            to: formattedNumber,
+            templateName: selectedTemplate.facebookTemplateName,
+            parameters: Object.values(variableValues).filter(v => v)
+          }
         });
 
         if (error) {

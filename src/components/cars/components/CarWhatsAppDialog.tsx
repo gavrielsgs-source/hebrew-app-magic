@@ -291,19 +291,12 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
       } else if (selectedTemplate?.facebookTemplateName) {
-        // תבניות שלא מצפות לפרמטרים (0 parameters בפייסבוק)
-        const templatesWithNoParameters = ['potential_customer'];
-        
         const requestBody: any = {
           type: 'template',
           to: formattedNumber,
           templateName: selectedTemplate.facebookTemplateName,
+          parameters: Object.values(variableValues).filter(v => v)
         };
-        
-        // הוסף פרמטרים רק לתבניות שמצפות להם
-        if (!templatesWithNoParameters.includes(selectedTemplate.facebookTemplateName)) {
-          requestBody.parameters = Object.values(variableValues).filter(v => v);
-        }
         
         // הוסף תמונה רק לתבניות שתומכות בהדר תמונה (לפי השדה מה-DB)
         if (carImageUrl && selectedTemplate.supportsImageHeader) {
