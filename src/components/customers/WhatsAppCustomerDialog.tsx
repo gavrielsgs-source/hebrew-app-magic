@@ -239,12 +239,12 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
             <div className="space-y-2">
               <Label className="text-right text-sm">בחר תבנית</Label>
               <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                <SelectTrigger className="text-right">
+                <SelectTrigger className="w-full text-right" dir="rtl">
                   <SelectValue placeholder="בחר תבנית" />
                 </SelectTrigger>
-                <SelectContent align="end" className="max-h-[300px]">
+                <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
                   {leadTemplates.map(template => (
-                    <SelectItem key={template.id} value={template.id} className="text-right">
+                    <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer">
                       <div className="flex flex-col items-end">
                         <span className="font-medium">{template.name}</span>
                         {template.description && (
@@ -268,12 +268,12 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
             <div className="space-y-2">
               <Label className="text-right text-sm">בחר תבנית</Label>
               <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                <SelectTrigger className="text-right">
+                <SelectTrigger className="w-full text-right" dir="rtl">
                   <SelectValue placeholder="בחר תבנית" />
                 </SelectTrigger>
-                <SelectContent align="end" className="max-h-[300px]">
+                <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
                   {carTemplates.map(template => (
-                    <SelectItem key={template.id} value={template.id} className="text-right">
+                    <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer">
                       <div className="flex flex-col items-end">
                         <span className="font-medium">{template.name}</span>
                         {template.description && (
