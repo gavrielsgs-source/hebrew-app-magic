@@ -289,14 +289,21 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
       } else if (selectedTemplate?.facebookTemplateName) {
-        // שליחה כתבנית מאושרת
+        // שליחה כתבנית מאושרת - עם תמונה אופציונלית אם קיימת
+        const requestBody: any = {
+          type: 'template',
+          to: formattedNumber,
+          templateName: selectedTemplate.facebookTemplateName,
+          parameters: Object.values(variableValues).filter(v => v)
+        };
+        
+        // הוסף תמונה אם קיימת (אופציונלי לתבניות שתומכות בהדר תמונה)
+        if (carImageUrl) {
+          requestBody.imageUrl = carImageUrl;
+        }
+        
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
-          body: {
-            type: 'template',
-            to: formattedNumber,
-            templateName: selectedTemplate.facebookTemplateName,
-            parameters: Object.values(variableValues).filter(v => v)
-          }
+          body: requestBody
         });
 
         if (error) {
