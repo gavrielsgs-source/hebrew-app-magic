@@ -26,25 +26,27 @@ interface CarWhatsAppDialogProps {
 
 export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [activeTab, setActiveTab] = useState("manual");
+  const [templateType, setTemplateType] = useState<"car" | "lead" | "custom">("car");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [manualName, setManualName] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("car_template_default");
   const [customMessage, setCustomMessage] = useState("");
   const [carImageUrl, setCarImageUrl] = useState<string | undefined>();
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [carTemplates, setCarTemplates] = useState<any[]>([]);
+  const [leadTemplates, setLeadTemplates] = useState<any[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [variableValues, setVariableValues] = useState<Record<string, string>>({});
   const { leads } = useLeads();
   const { profile } = useProfile();
   const { data: dbTemplates } = useWhatsappTemplates();
 
-  // Use DB templates as source of truth (all DB templates are approved)
+  // Use DB templates as source of truth
   useEffect(() => {
     const carDbTemplates = dbTemplates?.filter(t => t.type === 'car') || [];
+    const leadDbTemplates = dbTemplates?.filter(t => t.type === 'lead') || [];
     
-    // Convert DB templates - these are the source of truth
-    const convertedDbTemplates = carDbTemplates.map(dbTemplate => ({
+    const convertedCarTemplates = carDbTemplates.map(dbTemplate => ({
       id: dbTemplate.id,
       name: dbTemplate.name,
       description: dbTemplate.description || '',
@@ -52,12 +54,25 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       templateContent: dbTemplate.template_content,
       facebookTemplateName: dbTemplate.facebook_template_name,
     }));
+
+    const convertedLeadTemplates = leadDbTemplates.map(dbTemplate => ({
+      id: dbTemplate.id,
+      name: dbTemplate.name,
+      description: dbTemplate.description || '',
+      type: 'lead' as const,
+      templateContent: dbTemplate.template_content,
+      facebookTemplateName: dbTemplate.facebook_template_name,
+    }));
     
-    setTemplates(convertedDbTemplates);
+    setCarTemplates(convertedCarTemplates);
+    setLeadTemplates(convertedLeadTemplates);
   }, [dbTemplates]);
 
+  // Get current templates based on template type
+  const currentTemplates = templateType === "car" ? carTemplates : templateType === "lead" ? leadTemplates : [];
+
   // Extract variables from selected template and initialize values
-  const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+  const selectedTemplate = currentTemplates.find(t => t.id === selectedTemplateId);
   const templateContent = selectedTemplate?.templateContent || '';
   const templateVariables = templateContent.match(/\{\{([^}]+)\}\}/g)?.map((v: string) => v.replace(/\{\{|\}\}/g, '')) || [];
   const hasCta = templateVariables.includes('CTA');
@@ -100,7 +115,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       });
       setVariableValues(initialValues);
     }
-  }, [selectedTemplateId, templates, activeTab, selectedLeadId, manualName]);
+  }, [selectedTemplateId, currentTemplates, activeTab, selectedLeadId, manualName]);
   // Load car image on mount
   useEffect(() => {
     const loadCarImage = async () => {
@@ -118,7 +133,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
 
   // Generate message based on template and variable values
   const generateCarMessage = () => {
-    if (selectedTemplateId === "custom") {
+    if (templateType === "custom" || selectedTemplateId === "custom") {
       return customMessage;
     }
 
@@ -159,7 +174,7 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   // Check if template has facebook_template_name
   const hasApprovedTemplate = () => {
     if (selectedTemplateId === "car_template_default") return true;
-    if (selectedTemplateId === "custom") return false;
+    if (templateType === "custom" || selectedTemplateId === "custom") return false;
     return !!selectedTemplate?.facebookTemplateName;
   };
 
@@ -339,47 +354,68 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Template Selection */}
-      <div>
-        <Label className="text-right text-sm mb-2 block">בחר תבנית הודעה</Label>
-        <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-          <SelectTrigger className="w-full text-right" dir="rtl">
-            <SelectValue placeholder="בחר תבנית" />
-          </SelectTrigger>
-          <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
-            <SelectItem value="car_template_default" className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
-              <div className="flex flex-col items-end w-full">
-                <span className="font-medium">תבנית וואטסאפ מאושרת (עם תמונה)</span>
-                <span className="text-xs text-muted-foreground">תבנית דיפולטית עם תמונת רכב</span>
-              </div>
-            </SelectItem>
-            {templates.map(template => (
-              <SelectItem 
-                key={template.id} 
-                value={template.id}
-                disabled={template.id === "car_template_default"}
-                className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse"
-              >
-                <div className="flex flex-col items-end w-full">
-                  <span className="font-medium">{template.name}</span>
-                  {template.description && (
-                    <span className="text-xs text-muted-foreground">{template.description}</span>
-                  )}
-                </div>
-              </SelectItem>
-            ))}
-            <SelectItem value="custom" className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
-              <div className="flex flex-col items-end w-full">
-                <span className="font-medium">הודעה מותאמת אישית</span>
-                <span className="text-xs text-muted-foreground">כתוב הודעה חופשית</span>
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Template Type Tabs */}
+      <Tabs value={templateType} onValueChange={(value) => {
+        setTemplateType(value as "car" | "lead" | "custom");
+        if (value === "car") {
+          setSelectedTemplateId("car_template_default");
+        } else if (value === "lead" && leadTemplates.length > 0) {
+          setSelectedTemplateId(leadTemplates[0].id);
+        } else if (value === "custom") {
+          setSelectedTemplateId("custom");
+        }
+      }} className="w-full">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="car" className="text-sm">
+            רכבים ({carTemplates.length})
+          </TabsTrigger>
+          <TabsTrigger value="lead" className="text-sm">
+            לקוחות ({leadTemplates.length})
+          </TabsTrigger>
+          <TabsTrigger value="custom" className="text-sm">
+            הודעה מותאמת
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Template Selection - only show for car and lead types */}
+      {templateType !== "custom" && (
+        <div>
+          <Label className="text-right text-sm mb-2 block">בחר תבנית הודעה</Label>
+          <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+            <SelectTrigger className="w-full text-right" dir="rtl">
+              <SelectValue placeholder="בחר תבנית" />
+            </SelectTrigger>
+            <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
+              {templateType === "car" && (
+                <SelectItem value="car_template_default" className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
+                  <div className="flex flex-col items-end w-full">
+                    <span className="font-medium">תבנית וואטסאפ מאושרת (עם תמונה)</span>
+                    <span className="text-xs text-muted-foreground">תבנית דיפולטית עם תמונת רכב</span>
+                  </div>
+                </SelectItem>
+              )}
+              {currentTemplates.map(template => (
+                <SelectItem 
+                  key={template.id} 
+                  value={template.id}
+                  className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse"
+                >
+                  <div className="flex flex-col items-end w-full">
+                    <span className="font-medium">{template.name}</span>
+                    {template.description && (
+                      <span className="text-xs text-muted-foreground">{template.description}</span>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Dynamic Variable Inputs */}
-      {selectedTemplateId !== "custom" && selectedTemplateId !== "car_template_default" && templateVariables.length > 0 && (
+      {templateType !== "custom" && selectedTemplateId !== "car_template_default" && templateVariables.length > 0 && (
         <div className="space-y-3">
           <Label className="text-right text-sm block">ערכי משתנים</Label>
           <div className="grid gap-3">
@@ -420,8 +456,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         </div>
       )}
 
-      {/* Custom Message Input or Default Template Display */}
-      {selectedTemplateId === "custom" && (
+      {/* Custom Message Input */}
+      {templateType === "custom" && (
         <div>
           <Label className="text-right text-sm">הודעה מותאמת אישית</Label>
           <Textarea
