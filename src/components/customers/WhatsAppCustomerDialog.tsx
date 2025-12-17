@@ -244,8 +244,8 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
                 </SelectTrigger>
                 <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
                   {leadTemplates.map(template => (
-                    <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer">
-                      <div className="flex flex-col items-end">
+                    <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
+                      <div className="flex flex-col items-end w-full">
                         <span className="font-medium">{template.name}</span>
                         {template.description && (
                           <span className="text-xs text-muted-foreground">{template.description}</span>
@@ -273,8 +273,8 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
                 </SelectTrigger>
                 <SelectContent align="end" className="max-h-[300px] overflow-y-auto bg-background z-[9999]" dir="rtl">
                   {carTemplates.map(template => (
-                    <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer">
-                      <div className="flex flex-col items-end">
+                    <SelectItem key={template.id} value={template.id} className="text-right cursor-pointer pl-8 pr-2 flex-row-reverse">
+                      <div className="flex flex-col items-end w-full">
                         <span className="font-medium">{template.name}</span>
                         {template.description && (
                           <span className="text-xs text-muted-foreground">{template.description}</span>
@@ -322,12 +322,12 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
                       }
                     }}
                   >
-                    <SelectTrigger className="text-right">
+                    <SelectTrigger className="text-right" dir="rtl">
                       <SelectValue placeholder="בחר קריאה לפעולה" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent align="end" dir="rtl" className="bg-background z-[9999]">
                       {ctaOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value} className="text-right">
+                        <SelectItem key={option.value} value={option.value} className="text-right pl-8 pr-2 flex-row-reverse">
                           {option.label}
                         </SelectItem>
                       ))}

@@ -418,3 +418,18 @@ button, input, select, textarea {
     }
   }
 }
+
+/* RTL Select Dropdown Styles */
+[dir="rtl"] [data-radix-select-content] [role="option"],
+[data-radix-select-content][dir="rtl"] [role="option"] {
+  padding-left: 2rem;
+  padding-right: 0.5rem;
+  text-align: right;
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] [data-radix-select-content] [role="option"] > span:first-child,
+[data-radix-select-content][dir="rtl"] [role="option"] > span:first-child {
+  left: 0.5rem;
+  right: auto;
+}
