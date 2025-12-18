@@ -85,8 +85,19 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const templateVariables = templateContent.match(/\{\{([^}]+)\}\}/g)?.map((v: string) => v.replace(/\{\{|\}\}/g, '')) || [];
   const hasCta = templateVariables.includes('CTA');
 
-  // Variable labels for numbered parameters
+  // Variable labels for numbered parameters - context-dependent based on template
   const getVariableLabel = (variable: string): string => {
+    // For lead templates (like potential_customer)
+    if (templateType === 'lead' && selectedTemplate?.facebookTemplateName === 'potential_customer') {
+      const leadLabels: Record<string, string> = {
+        '1': 'שם הליד',
+        '2': 'מקור הפנייה',
+        '3': 'קריאה לפעולה (CTA)',
+      };
+      return leadLabels[variable] || variable;
+    }
+    
+    // For car templates
     const labels: Record<string, string> = {
       '1': 'שם הרכב',
       '2': 'מחיר',
@@ -112,26 +123,48 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
 
   // Check if variable is a CTA field
   const isCtaVariable = (variable: string): boolean => {
+    // For potential_customer template, {{3}} is CTA
+    if (selectedTemplate?.facebookTemplateName === 'potential_customer') {
+      return variable === '3';
+    }
     return variable === 'CTA' || variable === '7';
   };
 
   // Initialize variable values when template changes
   useEffect(() => {
     if (templateVariables.length > 0 && selectedTemplate) {
+      const selectedLead = leads?.find(lead => lead.id === selectedLeadId);
       const clientName = activeTab === "lead" 
-        ? (leads?.find(lead => lead.id === selectedLeadId)?.name as string || "לקוח יקר")
+        ? (selectedLead?.name || "לקוח יקר")
         : (manualName || "לקוח יקר");
+      const leadSource = selectedLead?.source || 'ידני';
       
       const carName = `${car.make} ${car.model} ${car.year}`;
       const userPhone = profile?.phone || '';
       
       const initialValues: Record<string, string> = {};
+      
+      // Check if this is potential_customer template (lead template with numbered params)
+      const isPotentialCustomer = selectedTemplate.facebookTemplateName === 'potential_customer';
+      
       templateVariables.forEach((variable: string) => {
         // Keep existing value if already set, otherwise use default
         const existingValue = variableValues[variable];
         
+        if (isPotentialCustomer) {
+          // potential_customer: {{1}}=שם, {{2}}=מקור, {{3}}=CTA
+          if (variable === '1') {
+            initialValues[variable] = existingValue || clientName;
+          } else if (variable === '2') {
+            initialValues[variable] = existingValue || leadSource;
+          } else if (variable === '3') {
+            initialValues[variable] = existingValue || 'לקבוע פגישה';
+          } else {
+            initialValues[variable] = existingValue || '';
+          }
+        }
         // Numbered parameters for car_template
-        if (variable === '1') {
+        else if (variable === '1') {
           initialValues[variable] = existingValue || carName;
         } else if (variable === '2') {
           initialValues[variable] = existingValue || car.price?.toLocaleString() || '';
