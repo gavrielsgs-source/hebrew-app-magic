@@ -263,15 +263,15 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       if (selectedTemplate?.facebookTemplateName === 'car_template') {
         // תבנית רכב מאושרת - שליחה ללא תמונה (התבנית בפייסבוק לא כוללת הדר עם תמונה)
         
-        // Build parameters in correct order (1-7)
+        // Build parameters in correct order (1-7), use UNDEFINED for missing values
         const parameters = [
-          variableValues['1'] || `${car.make} ${car.model} ${car.year}`,
-          variableValues['2'] || car.price.toLocaleString(),
-          variableValues['3'] || car.fuel_type || 'לא צוין',
-          variableValues['4'] || car.kilometers.toLocaleString(),
-          variableValues['5'] || car.transmission || 'לא צוין',
-          variableValues['6'] || userPhone,
-          variableValues['7'] || 'לקבוע פגישה'
+          variableValues['1']?.trim() || `${car.make} ${car.model} ${car.year}` || 'UNDEFINED',
+          variableValues['2']?.trim() || car.price?.toLocaleString() || 'UNDEFINED',
+          variableValues['3']?.trim() || car.fuel_type || 'UNDEFINED',
+          variableValues['4']?.trim() || car.kilometers?.toLocaleString() || 'UNDEFINED',
+          variableValues['5']?.trim() || car.transmission || 'UNDEFINED',
+          variableValues['6']?.trim() || userPhone || 'UNDEFINED',
+          variableValues['7']?.trim() || 'לקבוע פגישה'
         ];
 
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
@@ -291,12 +291,21 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
       } else if (selectedTemplate?.facebookTemplateName) {
+        // Build ordered parameters array (sort by numeric key, use UNDEFINED for empty values)
+        const orderedParameters = Object.keys(variableValues)
+          .sort((a, b) => {
+            const numA = parseInt(a) || 999;
+            const numB = parseInt(b) || 999;
+            return numA - numB;
+          })
+          .map(key => variableValues[key]?.trim() || 'UNDEFINED');
+
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
             type: 'template',
             to: formattedNumber,
             templateName: selectedTemplate.facebookTemplateName,
-            parameters: Object.values(variableValues).filter(v => v)
+            parameters: orderedParameters
           }
         });
 
