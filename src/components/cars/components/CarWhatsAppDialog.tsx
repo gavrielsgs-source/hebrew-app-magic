@@ -291,20 +291,13 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         toast.success(`ההודעה נשלחה (${status})`);
         onClose();
       } else if (selectedTemplate?.facebookTemplateName) {
-        const requestBody: any = {
-          type: 'template',
-          to: formattedNumber,
-          templateName: selectedTemplate.facebookTemplateName,
-          parameters: Object.values(variableValues).filter(v => v)
-        };
-        
-        // הוסף תמונה רק לתבניות שתומכות בהדר תמונה (לפי השדה מה-DB)
-        if (carImageUrl && selectedTemplate.supportsImageHeader) {
-          requestBody.imageUrl = carImageUrl;
-        }
-        
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
-          body: requestBody
+          body: {
+            type: 'template',
+            to: formattedNumber,
+            templateName: selectedTemplate.facebookTemplateName,
+            parameters: Object.values(variableValues).filter(v => v)
+          }
         });
 
         if (error) {
