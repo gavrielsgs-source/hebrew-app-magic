@@ -86,15 +86,58 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
   const templateVariables = selectedTemplate?.templateContent
     ?.match(/\{\{([^}]+)\}\}/g)
     ?.map((v: string) => v.replace(/\{\{|\}\}/g, '')) || [];
-  const hasCta = templateVariables.includes('CTA');
+  
+  // Check if variable is CTA - handle potential_customer template
+  const isCtaVariable = (variable: string): boolean => {
+    if (selectedTemplate?.facebookTemplateName === 'potential_customer') {
+      return variable === '3';
+    }
+    return variable === 'CTA';
+  };
+  
+  const hasCta = templateVariables.some(v => isCtaVariable(v));
+
+  // Get variable label based on template type
+  const getVariableLabel = (variable: string): string => {
+    if (selectedTemplate?.facebookTemplateName === 'potential_customer') {
+      const labels: Record<string, string> = {
+        '1': 'שם הלקוח',
+        '2': 'מקור הפנייה',
+        '3': 'קריאה לפעולה (CTA)',
+      };
+      return labels[variable] || variable;
+    }
+    // Default labels
+    const labels: Record<string, string> = {
+      'leadName': 'שם הליד',
+      'customerName': 'שם הלקוח',
+      'clientName': 'שם הלקוח',
+      'CTA': 'קריאה לפעולה',
+    };
+    return labels[variable] || variable;
+  };
 
   // Initialize variable values when template changes
   useEffect(() => {
     if (selectedTemplate?.templateContent) {
+      const isPotentialCustomer = selectedTemplate.facebookTemplateName === 'potential_customer';
       const initialValues: Record<string, string> = {};
+      
       templateVariables.forEach((variable: string) => {
         const existingValue = variableValues[variable];
-        if (variable === 'leadName' || variable === 'customerName' || variable === 'name' || variable === 'clientName') {
+        
+        if (isPotentialCustomer) {
+          // potential_customer: {{1}}=שם, {{2}}=מקור, {{3}}=CTA
+          if (variable === '1') {
+            initialValues[variable] = existingValue || customer.full_name || '';
+          } else if (variable === '2') {
+            initialValues[variable] = existingValue || customer.source || 'ידני';
+          } else if (variable === '3') {
+            initialValues[variable] = existingValue || selectedCta;
+          } else {
+            initialValues[variable] = existingValue || '';
+          }
+        } else if (variable === 'leadName' || variable === 'customerName' || variable === 'name' || variable === 'clientName') {
           initialValues[variable] = existingValue || customer.full_name || '';
         } else if (variable === 'CTA') {
           initialValues[variable] = existingValue || selectedCta;
@@ -104,7 +147,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       });
       setVariableValues(initialValues);
     }
-  }, [selectedTemplateId, selectedTemplate, customer.full_name]);
+  }, [selectedTemplateId, selectedTemplate, customer.full_name, customer.source]);
 
   // Get current CTA
   const getCurrentCta = () => {
@@ -320,15 +363,15 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
           <Label className="text-right text-sm block">ערכי משתנים</Label>
           <div className="grid gap-3">
             {templateVariables.map((variable: string) => (
-              variable === 'CTA' ? (
+              isCtaVariable(variable) ? (
                 <div key={variable} className="space-y-2">
-                  <Label htmlFor={variable} className="text-right text-sm">קריאה לפעולה (CTA)</Label>
+                  <Label htmlFor={variable} className="text-right text-sm">{getVariableLabel(variable)}</Label>
                   <Select 
                     value={selectedCta} 
                     onValueChange={(value) => {
                       setSelectedCta(value);
                       if (value !== 'custom') {
-                        setVariableValues(prev => ({ ...prev, CTA: value }));
+                        setVariableValues(prev => ({ ...prev, [variable]: value }));
                       }
                     }}
                   >
@@ -349,7 +392,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
                       value={customCta}
                       onChange={(e) => {
                         setCustomCta(e.target.value);
-                        setVariableValues(prev => ({ ...prev, CTA: e.target.value }));
+                        setVariableValues(prev => ({ ...prev, [variable]: e.target.value }));
                       }}
                       className="text-right"
                     />
@@ -357,7 +400,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
                 </div>
               ) : (
                 <div key={variable}>
-                  <Label htmlFor={variable} className="text-right text-sm">{variable}</Label>
+                  <Label htmlFor={variable} className="text-right text-sm">{getVariableLabel(variable)}</Label>
                   <Input
                     id={variable}
                     value={variableValues[variable] || ''}
