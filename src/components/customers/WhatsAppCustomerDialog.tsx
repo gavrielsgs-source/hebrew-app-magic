@@ -158,13 +158,22 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       setIsSending(true);
 
       if (selectedTemplate?.facebookTemplateName) {
+        // Build ordered parameters array (sort by numeric key, use UNDEFINED for empty values)
+        const orderedParameters = Object.keys(variableValues)
+          .sort((a, b) => {
+            const numA = parseInt(a) || 999;
+            const numB = parseInt(b) || 999;
+            return numA - numB;
+          })
+          .map(key => variableValues[key]?.trim() || 'UNDEFINED');
+
         // Send as approved template
         const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
           body: {
             type: 'template',
             to: formattedNumber,
             templateName: selectedTemplate.facebookTemplateName,
-            parameters: Object.values(variableValues).filter(v => v)
+            parameters: orderedParameters
           }
         });
 
