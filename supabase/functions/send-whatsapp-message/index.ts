@@ -4,8 +4,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // Trim and sanitize the token to remove any newlines or whitespace
 const WHATSAPP_TOKEN = Deno.env.get("WHATSAPP_TOKEN")?.trim().replace(/[\r\n]/g, '');
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0";
-const PHONE_NUMBER_ID = "867489066452280";
-const WABA_ID = "4320549034895129";
+const PHONE_NUMBER_ID = "866181846587737";
+const WABA_ID = "1261428512533752";
 
 console.log("🔑 WhatsApp token configured:", WHATSAPP_TOKEN ? "Yes" : "No");
 console.log("🔑 Token length:", WHATSAPP_TOKEN?.length || 0);
