@@ -92,8 +92,6 @@ const DropdownMenuContent = React.forwardRef<
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-3 data-[side=left]:slide-in-from-right-3",
         "data-[side=right]:slide-in-from-left-3 data-[side=top]:slide-in-from-bottom-3",
-        // RTL text alignment
-        "text-right [direction:rtl]",
         className
       )}
       role="menu"
@@ -113,16 +111,14 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     className={cn(
       // Base styles - modern item design
-      "relative flex cursor-pointer select-none items-center gap-3",
-      "rounded-xl px-3 py-2.5 text-sm font-medium",
+      "relative flex cursor-pointer select-none items-center justify-end gap-3",
+      "rounded-xl px-3 py-2.5 text-sm font-medium text-right",
       // States
       "outline-none transition-all duration-150",
       "focus:bg-accent focus:text-accent-foreground",
       "hover:bg-accent/70",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      // RTL support - text aligned right
-      "flex-row-reverse text-right",
-      inset && "pr-8",
+      inset && "pl-8",
       className
     )}
     role="menuitem"

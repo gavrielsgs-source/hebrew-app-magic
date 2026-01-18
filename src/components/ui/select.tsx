@@ -83,12 +83,11 @@ SelectScrollDownButton.displayName =
 
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & { dir?: "ltr" | "rtl" }
->(({ className, children, position = "popper", dir = "rtl", ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
+>(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
-      dir={dir}
       className={cn(
         // Base styles - modern card design
         "relative z-[100] max-h-[320px] min-w-[12rem] overflow-hidden",
@@ -103,8 +102,6 @@ const SelectContent = React.forwardRef<
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-3 data-[side=left]:slide-in-from-right-3",
         "data-[side=right]:slide-in-from-left-3 data-[side=top]:slide-in-from-bottom-3",
-        // RTL text alignment
-        "text-right",
         // Position adjustments
         position === "popper" &&
           "data-[side=bottom]:translate-y-2 data-[side=left]:-translate-x-2 data-[side=right]:translate-x-2 data-[side=top]:-translate-y-2",
@@ -154,8 +151,8 @@ const SelectItem = React.forwardRef<
     ref={ref}
     className={cn(
       // Base styles - modern item design
-      "relative flex w-full cursor-pointer select-none items-center",
-      "rounded-xl py-3 px-4 text-sm font-medium",
+      "relative flex w-full cursor-pointer select-none items-center justify-end",
+      "rounded-xl py-3 pl-4 pr-10 text-sm font-medium text-right",
       // States
       "outline-none transition-all duration-150",
       "focus:bg-accent focus:text-accent-foreground",
@@ -164,21 +161,18 @@ const SelectItem = React.forwardRef<
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       // Selected state
       "data-[state=checked]:bg-primary/10 data-[state=checked]:text-primary data-[state=checked]:font-semibold",
-      // RTL support - text aligned right, check icon on left
-      "flex-row-reverse text-right",
-      "gap-3",
       className
     )}
     role="option"
     {...props}
   >
-    <SelectPrimitive.ItemText className="flex-1 text-right">{children}</SelectPrimitive.ItemText>
-    
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary opacity-0 data-[state=checked]:opacity-100 transition-opacity">
+    <span className="absolute left-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
       <SelectPrimitive.ItemIndicator>
         <Check className="h-3.5 w-3.5" strokeWidth={3} />
       </SelectPrimitive.ItemIndicator>
     </span>
+
+    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ))
 SelectItem.displayName = SelectPrimitive.Item.displayName
