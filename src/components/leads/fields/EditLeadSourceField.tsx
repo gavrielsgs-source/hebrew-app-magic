@@ -12,19 +12,19 @@ export function EditLeadSourceField({ control }: Props) {
       name="source"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-lg font-semibold">מקור</FormLabel>
+          <FormLabel className="text-base font-semibold">מקור</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
-              <SelectTrigger className="h-12 text-lg rounded-xl border-2 hover:border-primary/50 transition-colors">
+              <SelectTrigger aria-label="בחר מקור ליד">
                 <SelectValue placeholder="בחר מקור" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent className="bg-white rounded-2xl shadow-2xl border-2 z-50" dir="rtl">
-              <SelectItem value="ידני" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">ידני</SelectItem>
-              <SelectItem value="פייסבוק" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">פייסבוק</SelectItem>
-              <SelectItem value="וואטסאפ" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">וואטסאפ</SelectItem>
-              <SelectItem value="אינסטגרם" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">אינסטגרם</SelectItem>
-              <SelectItem value="אחר" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">אחר</SelectItem>
+            <SelectContent dir="rtl" align="end">
+              <SelectItem value="ידני">ידני</SelectItem>
+              <SelectItem value="פייסבוק">פייסבוק</SelectItem>
+              <SelectItem value="וואטסאפ">וואטסאפ</SelectItem>
+              <SelectItem value="אינסטגרם">אינסטגרם</SelectItem>
+              <SelectItem value="אחר">אחר</SelectItem>
             </SelectContent>
           </Select>
           <FormMessage />

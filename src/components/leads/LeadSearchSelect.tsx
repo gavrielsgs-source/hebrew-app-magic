@@ -38,52 +38,47 @@ export function LeadSearchSelect({
 
   return (
     <Select onValueChange={onValueChange} value={value}>
-      <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all text-right [&>span]:w-full [&>span]:text-right">
+      <SelectTrigger aria-label={placeholder}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent 
         dir="rtl"
-        side="bottom"
-        align="end" 
-        avoidCollisions={false}
-        sideOffset={6}
-        className="rounded-xl border-2 w-[var(--radix-select-trigger-width)] min-w-[250px] z-[1000]"
+        align="end"
       >
-        <div className="sticky top-0 bg-background border-b p-2 z-50">
+        <div className="sticky top-0 bg-popover border-b border-border/50 p-3 z-50">
           <div className="relative">
-            <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="חפש לפי שם, טלפון או אימייל..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-8 text-right"
+              className="pr-10 text-right rounded-xl"
               dir="rtl"
+              aria-label="חפש לקוח"
             />
           </div>
         </div>
         
         {includeNoneOption && (
-          <SelectItem value="no-lead" className="text-center">
+          <SelectItem value="no-lead">
             ללא שיוך ללקוח
           </SelectItem>
         )}
         
         {filteredLeads?.length === 0 && searchQuery ? (
-          <div className="p-2 text-center text-muted-foreground text-sm">
+          <div className="p-4 text-center text-muted-foreground text-sm" role="status">
             לא נמצאו לקוחות תואמים
           </div>
         ) : (
           filteredLeads?.map((lead) => (
-            <SelectItem key={lead.id} value={lead.id} className="text-center">
-              <div className="flex flex-col text-center w-full items-center">
+            <SelectItem key={lead.id} value={lead.id}>
+              <div className="flex flex-col text-right w-full">
                 <span className="font-medium">
                   {lead.name}
                 </span>
                 <div className="text-xs text-muted-foreground">
-                  <div className="flex flex-col text-center items-center">
-                    {lead.phone && <span>טלפון: {lead.phone}</span>}
-                    {lead.email && <span>אימייל: {lead.email}</span>}
-                  </div>
+                  {lead.phone && <span>טלפון: {lead.phone}</span>}
+                  {lead.email && <span className="mr-2">• {lead.email}</span>}
                 </div>
               </div>
             </SelectItem>
