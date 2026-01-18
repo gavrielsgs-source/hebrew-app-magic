@@ -442,8 +442,73 @@ export type Database = {
           },
         ]
       }
+      customer_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string
+          document_id: string | null
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          purchase_id: string | null
+          reference: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_id: string
+          document_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          purchase_id?: string | null
+          reference?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string
+          document_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          purchase_id?: string | null
+          reference?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_payments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payments_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_payments_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "customer_vehicle_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_vehicle_purchases: {
         Row: {
+          amount_paid: number | null
           car_id: string
           created_at: string
           customer_id: string
@@ -452,6 +517,7 @@ export type Database = {
           purchase_price: number | null
         }
         Insert: {
+          amount_paid?: number | null
           car_id: string
           created_at?: string
           customer_id: string
@@ -460,6 +526,7 @@ export type Database = {
           purchase_price?: number | null
         }
         Update: {
+          amount_paid?: number | null
           car_id?: string
           created_at?: string
           customer_id?: string

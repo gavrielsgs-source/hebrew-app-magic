@@ -8,6 +8,7 @@ import { useCustomer } from "@/hooks/customers";
 import { CustomerBasicInfo } from "@/components/customers/CustomerBasicInfo";
 import { CustomerNotes } from "@/components/customers/CustomerNotes";
 import { CustomerCredit } from "@/components/customers/CustomerCredit";
+import { CustomerPaymentsHistory } from "@/components/customers/CustomerPaymentsHistory";
 import { CustomerVehicles } from "@/components/customers/CustomerVehicles";
 import { CustomerDocuments } from "@/components/customers/CustomerDocuments";
 import { EditCustomerDialog } from "@/components/customers/EditCustomerDialog";
@@ -133,7 +134,7 @@ export default function CustomerProfile() {
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-br from-green-100/50 to-emerald-100/50 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative">
-                <CustomerCredit customer={customer} />
+                <CustomerCredit customerId={customer.id} />
               </div>
             </div>
           </div>
@@ -146,6 +147,14 @@ export default function CustomerProfile() {
                 <CustomerVehicles customerId={customer.id} />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Payment History Section */}
+        <div className="mb-10 relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 to-indigo-100/50 rounded-3xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
+            <CustomerPaymentsHistory customerId={customer.id} />
           </div>
         </div>
 

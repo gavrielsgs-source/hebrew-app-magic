@@ -17,3 +17,9 @@ export {
   useUpdateCustomerDocumentStatus 
 } from './use-customer-documents';
 export { useCustomerRelatedDocuments } from './use-customer-related-documents';
+export { 
+  useCustomerPayments, 
+  useAddCustomerPayment, 
+  useDeleteCustomerPayment, 
+  useCustomerBalance 
+} from './use-customer-payments';

@@ -33,6 +33,7 @@ export interface CustomerVehiclePurchase {
   car_id: string;
   purchase_price?: number;
   purchase_date?: string;
+  amount_paid?: number;
   created_at: string;
   car?: {
     make: string;
@@ -78,6 +79,28 @@ export interface CustomerDocumentReturn {
   file_path: string;
   uploaded_at: string;
   created_at: string;
+}
+
+export interface CustomerPayment {
+  id: string;
+  customer_id: string;
+  purchase_id?: string;
+  amount: number;
+  payment_date: string;
+  payment_method: 'cash' | 'credit' | 'transfer' | 'check';
+  reference?: string;
+  notes?: string;
+  document_id?: string;
+  user_id: string;
+  created_at: string;
+  purchase?: CustomerVehiclePurchase;
+}
+
+export interface CustomerBalance {
+  totalPurchases: number;
+  totalPayments: number;
+  outstandingBalance: number;
+  paymentPercentage: number;
 }
 
 export type CreateCustomerData = Omit<Customer, 'id' | 'user_id' | 'customer_number' | 'created_at' | 'updated_at'>;
