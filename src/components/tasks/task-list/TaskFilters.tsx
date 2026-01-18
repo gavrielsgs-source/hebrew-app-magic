@@ -45,7 +45,10 @@ export function TaskFilters({
             סטטוס
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent 
+          align="end"
+          className="w-44 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+        >
           {allStatuses.map(status => (
             <DropdownMenuCheckboxItem
               key={status}
@@ -57,6 +60,7 @@ export function TaskFilters({
                   onStatusFilterChange(statusFilter.filter(s => s !== status));
                 }
               }}
+              className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
             >
               {status === 'pending' ? 'ממתין' : 
                status === 'in_progress' ? 'בביצוע' : 
@@ -74,7 +78,10 @@ export function TaskFilters({
             סוג
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent 
+          align="end"
+          className="w-44 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+        >
           {allTypes.map(type => (
             <DropdownMenuCheckboxItem
               key={type}
@@ -86,6 +93,7 @@ export function TaskFilters({
                   onTypeFilterChange(typeFilter.filter(t => t !== type));
                 }
               }}
+              className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
             >
               {getTaskTypeLabel(type)}
             </DropdownMenuCheckboxItem>

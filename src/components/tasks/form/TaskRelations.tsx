@@ -37,24 +37,23 @@ export function TaskRelations() {
             <FormLabel>ליד קשור (אופציונלי)</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger className="text-right [&>span]:w-full [&>span]:text-right">
+                <SelectTrigger className="text-right rounded-xl [&>span]:w-full [&>span]:text-right">
                   <SelectValue placeholder="בחר ליד" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent 
-                dir="rtl" 
                 side="bottom" 
                 align="end" 
                 avoidCollisions={false} 
                 sideOffset={6}
-                className="z-50 min-w-[var(--radix-select-trigger-width)] bg-background"
+                className="z-50 min-w-[var(--radix-select-trigger-width)] rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
               >
-                <SelectItem value="none" className="text-center">
+                <SelectItem value="none" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">
                   ללא שיוך לליד
                 </SelectItem>
                 {leads?.map((lead) => (
-                  <SelectItem key={lead.id as string} value={lead.id as string} className="text-center">
-                    <div className="flex flex-col text-center w-full items-center">
+                  <SelectItem key={lead.id as string} value={lead.id as string} className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">
+                    <div className="flex flex-col text-right w-full items-end">
                       <span className="font-medium">
                         {lead.name as string}
                       </span>

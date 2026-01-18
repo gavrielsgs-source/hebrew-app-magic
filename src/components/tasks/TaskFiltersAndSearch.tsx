@@ -129,14 +129,18 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
                 )}
               </MobileButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>סינון לפי סטטוס</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent 
+              align="end" 
+              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+            >
+              <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סטטוס</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/50" />
               {statusOptions.map(option => (
                 <DropdownMenuCheckboxItem
                   key={option.value}
                   checked={statusFilters.includes(option.value)}
                   onCheckedChange={() => handleFilterChange(option.value, statusFilters, setStatusFilters)}
+                  className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
                 >
                   {option.label}
                 </DropdownMenuCheckboxItem>
@@ -156,14 +160,18 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
                 )}
               </MobileButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>סינון לפי עדיפות</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent 
+              align="end" 
+              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+            >
+              <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי עדיפות</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/50" />
               {priorityOptions.map(option => (
                 <DropdownMenuCheckboxItem
                   key={option.value}
                   checked={priorityFilters.includes(option.value)}
                   onCheckedChange={() => handleFilterChange(option.value, priorityFilters, setPriorityFilters)}
+                  className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
                 >
                   {option.label}
                 </DropdownMenuCheckboxItem>
@@ -183,14 +191,18 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
                 )}
               </MobileButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>סינון לפי סוג</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent 
+              align="end" 
+              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+            >
+              <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סוג</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/50" />
               {typeOptions.map(option => (
                 <DropdownMenuCheckboxItem
                   key={option.value}
                   checked={typeFilters.includes(option.value)}
                   onCheckedChange={() => handleFilterChange(option.value, typeFilters, setTypeFilters)}
+                  className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
                 >
                   {option.label}
                 </DropdownMenuCheckboxItem>
@@ -243,14 +255,18 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>סינון לפי סטטוס</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent 
+              align="end" 
+              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+            >
+              <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סטטוס</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/50" />
               {statusOptions.map(option => (
                 <DropdownMenuCheckboxItem
                   key={option.value}
                   checked={statusFilters.includes(option.value)}
                   onCheckedChange={() => handleFilterChange(option.value, statusFilters, setStatusFilters)}
+                  className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
                 >
                   {option.label}
                 </DropdownMenuCheckboxItem>
@@ -270,14 +286,18 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>סינון לפי עדיפות</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent 
+              align="end" 
+              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+            >
+              <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי עדיפות</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/50" />
               {priorityOptions.map(option => (
                 <DropdownMenuCheckboxItem
                   key={option.value}
                   checked={priorityFilters.includes(option.value)}
                   onCheckedChange={() => handleFilterChange(option.value, priorityFilters, setPriorityFilters)}
+                  className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
                 >
                   {option.label}
                 </DropdownMenuCheckboxItem>
@@ -297,14 +317,18 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>סינון לפי סוג</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent 
+              align="end" 
+              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+            >
+              <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סוג</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border/50" />
               {typeOptions.map(option => (
                 <DropdownMenuCheckboxItem
                   key={option.value}
                   checked={typeFilters.includes(option.value)}
                   onCheckedChange={() => handleFilterChange(option.value, typeFilters, setTypeFilters)}
+                  className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5"
                 >
                   {option.label}
                 </DropdownMenuCheckboxItem>

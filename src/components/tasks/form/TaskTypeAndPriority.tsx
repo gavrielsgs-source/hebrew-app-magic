@@ -17,15 +17,18 @@ export function TaskTypeAndPriority() {
             <FormLabel>סוג</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="text-right rounded-xl [&>span]:w-full [&>span]:text-right">
                   <SelectValue placeholder="בחר סוג" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
-                <SelectItem value="task">משימה</SelectItem>
-                <SelectItem value="call">שיחת טלפון</SelectItem>
-                <SelectItem value="meeting">פגישה</SelectItem>
-                <SelectItem value="follow_up">מעקב</SelectItem>
+              <SelectContent 
+                align="end"
+                className="rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              >
+                <SelectItem value="task" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">משימה</SelectItem>
+                <SelectItem value="call" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">שיחת טלפון</SelectItem>
+                <SelectItem value="meeting" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">פגישה</SelectItem>
+                <SelectItem value="follow_up" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">מעקב</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -41,14 +44,17 @@ export function TaskTypeAndPriority() {
             <FormLabel>עדיפות</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="text-right rounded-xl [&>span]:w-full [&>span]:text-right">
                   <SelectValue placeholder="בחר עדיפות" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
-                <SelectItem value="low">נמוכה</SelectItem>
-                <SelectItem value="medium">בינונית</SelectItem>
-                <SelectItem value="high">גבוהה</SelectItem>
+              <SelectContent 
+                align="end"
+                className="rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              >
+                <SelectItem value="low" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">נמוכה</SelectItem>
+                <SelectItem value="medium" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">בינונית</SelectItem>
+                <SelectItem value="high" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">גבוהה</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
