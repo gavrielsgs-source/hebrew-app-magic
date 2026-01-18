@@ -124,22 +124,22 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
               <SelectTrigger className="h-8 w-28 border-0 focus:ring-0 bg-transparent">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent align="end" className="bg-white border border-gray-200 shadow-lg text-right">
-                <SelectItem value="available" className="justify-end text-right hover:bg-green-50">
+              <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
+                <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
                   <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
                     זמין
                   </span>
                 </SelectItem>
-                <SelectItem value="reserved" className="justify-end text-right hover:bg-yellow-50">
+                <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
                   <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
                     שמור
                   </span>
                 </SelectItem>
-                <SelectItem value="sold" className="justify-end text-right hover:bg-gray-50">
+                <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
                   <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
                     נמכר
                   </span>
                 </SelectItem>
@@ -176,22 +176,22 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
         <SelectTrigger className="w-full">
           <SelectValue placeholder="בחר סטטוס" />
         </SelectTrigger>
-        <SelectContent align="end" className="bg-white border border-gray-200 shadow-lg text-right">
-          <SelectItem value="available" className="justify-end text-right hover:bg-green-50">
+        <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
+          <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
             <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
               זמין
             </span>
           </SelectItem>
-          <SelectItem value="reserved" className="justify-end text-right hover:bg-yellow-50">
+          <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
             <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
               שמור
             </span>
           </SelectItem>
-          <SelectItem value="sold" className="justify-end text-right hover:bg-gray-50">
+          <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
             <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+              <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
               נמכר
             </span>
           </SelectItem>
