@@ -17,20 +17,20 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
   const { data: sales = [], isLoading: salesLoading } = useCustomerVehicleSales(customerId);
 
   return (
-    <Card className="shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/95 to-orange-50/95 backdrop-blur-md hover:shadow-3xl transition-all duration-500">
-      <CardHeader className="pb-6">
-        <div className="flex items-center gap-4">
+    <Card className="shadow-lg rounded-2xl border-0 bg-gradient-to-br from-white/95 to-orange-50/95 backdrop-blur-md hover:shadow-xl transition-all duration-300">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl blur-sm"></div>
-            <div className="relative bg-gradient-to-br from-orange-500/10 to-red-500/10 p-4 rounded-2xl">
-              <Car className="h-8 w-8 text-orange-600" />
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-xl blur-sm"></div>
+            <div className="relative bg-gradient-to-br from-orange-500/10 to-red-500/10 p-3 rounded-xl">
+              <Car className="h-5 w-5 text-orange-600" />
             </div>
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
+            <CardTitle className="text-base font-semibold text-slate-800">
               רכבים ועסקאות
             </CardTitle>
-            <CardDescription className="text-xl text-slate-600">
+            <CardDescription className="text-sm text-slate-600">
               מעקב אחר כל רכישות ומכירות הרכבים
             </CardDescription>
           </div>
@@ -38,13 +38,13 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="purchases" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-2xl p-1 shadow-inner">
-            <TabsTrigger value="sales" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 flex items-center gap-2 text-lg">
-              <TrendingDown className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-xl p-1 shadow-inner">
+            <TabsTrigger value="sales" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 flex items-center gap-1.5 text-sm">
+              <TrendingDown className="h-3.5 w-3.5" />
               נרכשו מהלקוח
             </TabsTrigger>
-            <TabsTrigger value="purchases" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 flex items-center gap-2 text-lg">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger value="purchases" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 flex items-center gap-1.5 text-sm">
+              <TrendingUp className="h-3.5 w-3.5" />
               נמכרו ללקוח
             </TabsTrigger>
           </TabsList>
@@ -91,9 +91,9 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
                   const isFullyPaid = remaining <= 0;
 
                   return (
-                    <div key={purchase.id} className="border rounded-xl p-4 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-md transition-all">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium text-lg">
+                    <div key={purchase.id} className="border rounded-lg p-3 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-sm">
                           {purchase.car?.make} {purchase.car?.model} {purchase.car?.year}
                         </h4>
                         <Badge variant={isFullyPaid ? "default" : "secondary"} className={isFullyPaid ? "bg-green-600 shadow-sm" : "bg-amber-500 shadow-sm"}>
@@ -101,36 +101,36 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
                         </Badge>
                       </div>
                       {purchase.car?.license_number && (
-                        <p className="text-sm text-slate-600 mb-2">
+                        <p className="text-xs text-slate-600 mb-2">
                           מספר רישוי: {purchase.car.license_number}
                         </p>
                       )}
-                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
+                      <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <DollarSign className="h-3.5 w-3.5" />
                           <span>מחיר: ₪{purchasePrice.toLocaleString()}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" />
                           <span>{new Date(purchase.purchase_date || purchase.created_at).toLocaleDateString('he-IL')}</span>
                         </div>
                       </div>
                       
                       {/* Payment Progress */}
                       {purchasePrice > 0 && (
-                        <div className="mt-3 p-3 bg-slate-50 rounded-lg">
-                          <div className="flex items-center justify-between text-sm mb-2">
-                            <div className="flex items-center gap-2">
-                              <Wallet className="h-4 w-4 text-slate-500" />
+                        <div className="mt-2 p-2 bg-slate-50 rounded-lg">
+                          <div className="flex items-center justify-between text-xs mb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Wallet className="h-3.5 w-3.5 text-slate-500" />
                               <span className="text-slate-600">שולם: ₪{amountPaid.toLocaleString()}</span>
                             </div>
                             <span className={`font-medium ${isFullyPaid ? 'text-green-600' : 'text-amber-600'}`}>
                               {Math.round(paymentPercentage)}%
                             </span>
                           </div>
-                          <Progress value={paymentPercentage} className="h-2 mb-2" />
+                          <Progress value={paymentPercentage} className="h-1.5 mb-1.5" />
                           <div className="flex items-center justify-between">
-                            <span className={`text-sm ${isFullyPaid ? 'text-green-600' : 'text-amber-600'}`}>
+                            <span className={`text-xs ${isFullyPaid ? 'text-green-600' : 'text-amber-600'}`}>
                               {isFullyPaid ? '✓ שולם במלואו' : `נותר: ₪${remaining.toLocaleString()}`}
                             </span>
                             {!isFullyPaid && (
@@ -138,7 +138,7 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
                                 customerId={customerId}
                                 preselectedPurchaseId={purchase.id}
                                 trigger={
-                                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                                  <Button variant="outline" size="sm" className="h-6 text-xs px-2">
                                     <Plus className="h-3 w-3 ml-1" />
                                     הוסף תשלום
                                   </Button>
@@ -190,25 +190,25 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
             ) : (
               <div className="space-y-3">
                 {sales.map((sale) => (
-                  <div key={sale.id} className="border rounded-lg p-4 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-lg">
+                  <div key={sale.id} className="border rounded-lg p-3 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-sm">
                         {sale.car?.make} {sale.car?.model} {sale.car?.year}
                       </h4>
-                      <Badge variant="secondary" className="shadow-sm">נרכש</Badge>
+                      <Badge variant="secondary" className="shadow-sm text-xs">נרכש</Badge>
                     </div>
                     {sale.car?.license_number && (
-                      <p className="text-sm text-slate-600 mb-2">
+                      <p className="text-xs text-slate-600 mb-2">
                         מספר רישוי: {sale.car.license_number}
                       </p>
                     )}
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4" />
+                    <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <DollarSign className="h-3.5 w-3.5" />
                         <span>₪{sale.sale_price?.toLocaleString() || 'לא צוין'}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5" />
                         <span>{new Date(sale.sale_date || sale.created_at).toLocaleDateString('he-IL')}</span>
                       </div>
                     </div>

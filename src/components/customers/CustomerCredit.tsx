@@ -26,21 +26,21 @@ export function CustomerCredit({ customerId }: CustomerCreditProps) {
   const isFullyPaid = totalPurchases > 0 && outstandingBalance <= 0;
 
   return (
-    <Card className="shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/95 to-emerald-50/95 backdrop-blur-md hover:shadow-3xl transition-all duration-500">
-      <CardHeader className="pb-4">
+    <Card className="shadow-lg rounded-2xl border-0 bg-gradient-to-br from-white/95 to-emerald-50/95 backdrop-blur-md hover:shadow-xl transition-all duration-300">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-2xl blur-sm"></div>
-              <div className="relative bg-gradient-to-br from-emerald-500/10 to-green-500/10 p-4 rounded-2xl">
-                <Wallet className="h-8 w-8 text-emerald-600" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-xl blur-sm"></div>
+              <div className="relative bg-gradient-to-br from-emerald-500/10 to-green-500/10 p-3 rounded-xl">
+                <Wallet className="h-5 w-5 text-emerald-600" />
               </div>
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold text-slate-800 mb-1">
+              <CardTitle className="text-base font-semibold text-slate-800">
                 מצב תשלומים
               </CardTitle>
-              <CardDescription className="text-lg text-slate-600">
+              <CardDescription className="text-sm text-slate-600">
                 סיכום יתרות ותשלומים
               </CardDescription>
             </div>
@@ -49,8 +49,8 @@ export function CustomerCredit({ customerId }: CustomerCreditProps) {
             <AddPaymentDialog 
               customerId={customerId}
               trigger={
-                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">
-                  <Plus className="h-4 w-4" />
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors text-sm">
+                  <Plus className="h-3.5 w-3.5" />
                   <span className="font-medium">הוסף תשלום</span>
                 </button>
               }
@@ -58,40 +58,40 @@ export function CustomerCredit({ customerId }: CustomerCreditProps) {
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           {/* Total Purchases */}
-          <div className="bg-slate-50 rounded-2xl p-4 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Coins className="h-5 w-5 text-slate-500" />
-              <span className="text-sm font-medium text-slate-600">סה"כ עסקאות</span>
+          <div className="bg-slate-50 rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <Coins className="h-4 w-4 text-slate-500" />
+              <span className="text-xs font-medium text-slate-600">סה"כ עסקאות</span>
             </div>
-            <p className="text-2xl font-bold text-slate-800">
+            <p className="text-lg font-bold text-slate-800">
               ₪{totalPurchases.toLocaleString()}
             </p>
           </div>
 
           {/* Total Payments */}
-          <div className="bg-emerald-50 rounded-2xl p-4 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <TrendingUp className="h-5 w-5 text-emerald-500" />
-              <span className="text-sm font-medium text-emerald-700">סה"כ תשלומים</span>
+          <div className="bg-emerald-50 rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <span className="text-xs font-medium text-emerald-700">סה"כ תשלומים</span>
             </div>
-            <p className="text-2xl font-bold text-emerald-600">
+            <p className="text-lg font-bold text-emerald-600">
               ₪{totalPayments.toLocaleString()}
             </p>
           </div>
 
           {/* Outstanding Balance */}
-          <div className={`rounded-2xl p-4 text-center ${hasDebt ? 'bg-amber-50' : 'bg-green-50'}`}>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <TrendingDown className={`h-5 w-5 ${hasDebt ? 'text-amber-500' : 'text-green-500'}`} />
-              <span className={`text-sm font-medium ${hasDebt ? 'text-amber-700' : 'text-green-700'}`}>
+          <div className={`rounded-xl p-3 text-center ${hasDebt ? 'bg-amber-50' : 'bg-green-50'}`}>
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <TrendingDown className={`h-4 w-4 ${hasDebt ? 'text-amber-500' : 'text-green-500'}`} />
+              <span className={`text-xs font-medium ${hasDebt ? 'text-amber-700' : 'text-green-700'}`}>
                 יתרת חוב
               </span>
             </div>
-            <p className={`text-2xl font-bold ${hasDebt ? 'text-amber-600' : 'text-green-600'}`}>
+            <p className={`text-lg font-bold ${hasDebt ? 'text-amber-600' : 'text-green-600'}`}>
               ₪{Math.abs(outstandingBalance).toLocaleString()}
             </p>
           </div>
@@ -99,8 +99,8 @@ export function CustomerCredit({ customerId }: CustomerCreditProps) {
 
         {/* Progress Bar */}
         {totalPurchases > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-slate-600 font-medium">התקדמות תשלום</span>
               <span className={`font-bold ${isFullyPaid ? 'text-green-600' : 'text-amber-600'}`}>
                 {Math.round(paymentPercentage)}%
@@ -108,9 +108,9 @@ export function CustomerCredit({ customerId }: CustomerCreditProps) {
             </div>
             <Progress 
               value={paymentPercentage} 
-              className="h-3 rounded-full"
+              className="h-2 rounded-full"
             />
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-xs text-muted-foreground">
               {isFullyPaid ? (
                 <span className="text-green-600 font-medium">✓ שולם במלואו</span>
               ) : hasDebt ? (
@@ -123,9 +123,9 @@ export function CustomerCredit({ customerId }: CustomerCreditProps) {
         )}
 
         {totalPurchases === 0 && (
-          <div className="text-center py-6 bg-slate-50 rounded-2xl">
-            <Coins className="h-10 w-10 mx-auto text-slate-300 mb-3" />
-            <p className="text-muted-foreground">
+          <div className="text-center py-4 bg-slate-50 rounded-xl">
+            <Coins className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+            <p className="text-sm text-muted-foreground">
               אין עסקאות רשומות עדיין
             </p>
           </div>

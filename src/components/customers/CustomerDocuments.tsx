@@ -429,6 +429,13 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                             variant="outline" 
                             size={isMobile ? "default" : "lg"}
                             className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-8'} hover:bg-blue-50 hover:border-blue-300`}
+                            onClick={() => {
+                              if (doc.url) {
+                                window.open(doc.url, '_blank');
+                              } else {
+                                toast.error('אין קישור למסמך');
+                              }
+                            }}
                           >
                             <Eye className="h-5 w-5 ml-2" />
                             צפה במסמך
@@ -482,7 +489,24 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                       הועלה ב-{new Date(docReturn.uploaded_at).toLocaleDateString('he-IL')}
                     </p>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          if (docReturn.file_path) {
+                            supabase.storage
+                              .from('customer-documents')
+                              .createSignedUrl(docReturn.file_path, 3600)
+                              .then(({ data, error }) => {
+                                if (data?.signedUrl) {
+                                  window.open(data.signedUrl, '_blank');
+                                } else {
+                                  toast.error('שגיאה בפתיחת המסמך');
+                                }
+                              });
+                          }
+                        }}
+                      >
                         <Eye className="h-4 w-4 ml-2" />
                         צפה במסמך
                       </Button>
