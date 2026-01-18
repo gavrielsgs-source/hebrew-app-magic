@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { MobileTaskCalendar } from "./MobileTaskCalendar";
@@ -13,6 +14,7 @@ import { AddTaskDialog } from "./AddTaskDialog";
 import { type Task } from "@/types/task";
 import { toast } from "sonner";
 import { addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } from "date-fns";
+import { Keyboard, X } from "lucide-react";
 
 interface TaskCalendarProps {
   tasks: Task[];
@@ -89,14 +91,14 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Calendar View - Now takes more space */}
         <div className="xl:col-span-3">
-          <Card className="shadow-sm border-gray-100">
-            <CardHeader className="pb-4">
+          <Card className="shadow-lg border-2 border-border/50 rounded-2xl overflow-hidden">
+            <CardHeader className="pb-4 bg-gradient-to-l from-primary/5 to-transparent">
               <CalendarHeader 
                 viewMode={viewMode} 
                 onViewModeChange={setViewMode} 
               />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               {viewMode === "week" ? (
                 <WeekView
                   tasks={tasks}
@@ -143,28 +145,30 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
 
       {/* Keyboard shortcuts help overlay */}
       {showKeyboardHelp && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="relative">
             <KeyboardShortcutsHelp />
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setShowKeyboardHelp(false)}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-gray-600 text-white rounded-full flex items-center justify-center text-sm hover:bg-gray-700 transition-colors"
+              className="absolute -top-3 -right-3 h-8 w-8 bg-card text-foreground rounded-full shadow-lg hover:bg-muted transition-colors"
             >
-              ×
-            </button>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       )}
 
       {/* Keyboard shortcut hint */}
       <div className="fixed bottom-4 right-4 z-40">
-        <button
+        <Button
           onClick={() => setShowKeyboardHelp(true)}
-          className="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-lg"
+          className="bg-primary text-primary-foreground px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/90 transition-all duration-200 flex items-center gap-2 shadow-lg"
         >
-          <span>?</span>
+          <Keyboard className="h-4 w-4" />
           <span>קיצורי מקלדת</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

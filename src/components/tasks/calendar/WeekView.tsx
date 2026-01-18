@@ -1,10 +1,9 @@
 
 import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday, isPast } from "date-fns";
 import { he } from "date-fns/locale";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, CalendarDays, GripVertical } from "lucide-react";
 import { type Task } from "@/types/task";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -47,17 +46,17 @@ export function WeekView({
   };
 
   const getTaskTypeColor = (task: Task) => {
-    const baseColors = {
-      call: "bg-blue-100 border-blue-300 text-blue-800",
-      meeting: "bg-green-100 border-green-300 text-green-800", 
-      follow_up: "bg-purple-100 border-purple-300 text-purple-800",
-      task: "bg-gray-100 border-gray-300 text-gray-800"
+    const priorityColors = {
+      high: "bg-red-50 border-red-300 text-red-800",
+      medium: "bg-amber-50 border-amber-300 text-amber-800",
+      low: "bg-emerald-50 border-emerald-300 text-emerald-800"
     };
 
-    const priorityColors = {
-      high: "bg-red-100 border-red-400 text-red-900",
-      medium: "bg-yellow-100 border-yellow-400 text-yellow-900",
-      low: "bg-green-100 border-green-400 text-green-900"
+    const baseColors = {
+      call: "bg-blue-50 border-blue-300 text-blue-800",
+      meeting: "bg-emerald-50 border-emerald-300 text-emerald-800", 
+      follow_up: "bg-violet-50 border-violet-300 text-violet-800",
+      task: "bg-slate-50 border-slate-300 text-slate-800"
     };
 
     // Priority overrides type for visual importance
@@ -73,8 +72,8 @@ export function WeekView({
     if (!task.due_date) return "";
     
     const taskDate = new Date(task.due_date);
-    if (isPast(taskDate) && !isSameDay(taskDate, new Date())) return "border-r-4 border-r-red-500";
-    if (isToday(taskDate)) return "border-r-4 border-r-yellow-500";
+    if (isPast(taskDate) && !isSameDay(taskDate, new Date())) return "border-r-4 border-r-red-400";
+    if (isToday(taskDate)) return "border-r-4 border-r-amber-400";
     
     return "";
   };
@@ -92,7 +91,6 @@ export function WeekView({
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only clear if we're leaving the entire day container
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setDragOverDate(null);
     }
@@ -103,7 +101,6 @@ export function WeekView({
     setDragOverDate(null);
     
     if (draggedTask && onTaskDateChange) {
-      // Update the task's due date to the new date but keep the same time
       const originalDate = new Date(draggedTask.due_date || new Date());
       const newDateTime = new Date(date);
       newDateTime.setHours(originalDate.getHours());
@@ -126,14 +123,14 @@ export function WeekView({
     const isDragOver = dragOverDate && isSameDay(dragOverDate, date);
 
     return (
-      <div key={date.toString()} className="flex-1 min-h-[200px]">
+      <div key={date.toString()} className="flex-1 min-h-[220px]">
         <div 
           className={cn(
-            "p-3 border border-gray-200 h-full cursor-pointer transition-all duration-200",
-            isSelectedDate && "bg-blue-50 border-blue-300",
-            isTodayDate && "bg-yellow-50 border-yellow-300",
-            isDragOver && "bg-green-50 border-green-300 border-2",
-            "hover:bg-gray-50"
+            "p-3 border-2 h-full cursor-pointer transition-all duration-200 rounded-xl",
+            isSelectedDate && "bg-primary/5 border-primary/50",
+            isTodayDate && !isSelectedDate && "bg-amber-50/50 border-amber-300/50",
+            isDragOver && "bg-emerald-50 border-emerald-400 border-dashed",
+            !isSelectedDate && !isTodayDate && !isDragOver && "border-border/50 hover:border-border hover:bg-muted/30"
           )}
           onClick={() => onSelectedDateChange(date)}
           onDragOver={(e) => handleDragOver(e, date)}
@@ -141,25 +138,29 @@ export function WeekView({
           onDrop={(e) => handleDrop(e, date)}
         >
           {/* Day header */}
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <div className={cn(
-              "text-sm font-medium",
-              isTodayDate && "text-blue-600 font-bold"
+              "text-sm font-semibold",
+              isTodayDate && "text-primary"
             )}>
               {format(date, 'EEEE', { locale: he })}
             </div>
             <div className={cn(
-              "text-lg font-bold",
-              isTodayDate && "bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm"
+              "text-lg font-bold w-9 h-9 flex items-center justify-center rounded-xl transition-all",
+              isTodayDate && "bg-primary text-primary-foreground shadow-md",
+              isSelectedDate && !isTodayDate && "bg-primary/10 text-primary"
             )}>
               {format(date, 'd')}
             </div>
           </div>
 
           {/* Tasks for this day */}
-          <div className="space-y-1">
+          <div className="space-y-2">
             {dayTasks.length === 0 ? (
-              <div className="text-xs text-gray-400 text-center py-4">
+              <div className={cn(
+                "text-xs text-center py-6 rounded-lg",
+                isDragOver ? "text-emerald-600 bg-emerald-50 font-medium" : "text-muted-foreground"
+              )}>
                 {isDragOver ? "שחרר כאן" : "אין משימות"}
               </div>
             ) : (
@@ -170,7 +171,7 @@ export function WeekView({
                   onDragStart={(e) => handleDragStart(e, task)}
                   onDragEnd={handleDragEnd}
                   className={cn(
-                    "p-2 rounded border text-xs cursor-pointer hover:shadow-sm transition-all",
+                    "p-2.5 rounded-lg border-2 text-xs cursor-pointer hover:shadow-md transition-all duration-200 group",
                     getTaskTypeColor(task),
                     getTaskStatusIndicator(task),
                     onTaskDateChange && "cursor-move",
@@ -181,26 +182,33 @@ export function WeekView({
                     onTaskClick(task);
                   }}
                 >
-                  <div className="font-medium truncate mb-1">{task.title}</div>
-                  {task.due_date && (
-                    <div className="flex items-center gap-1 text-xs opacity-75">
-                      <Clock className="h-3 w-3" />
-                      {format(new Date(task.due_date), 'HH:mm')}
+                  <div className="flex items-start gap-1.5">
+                    {onTaskDateChange && (
+                      <GripVertical className="h-3 w-3 opacity-0 group-hover:opacity-50 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold truncate mb-1">{task.title}</div>
+                      {task.due_date && (
+                        <div className="flex items-center gap-1 text-xs opacity-75">
+                          <Clock className="h-3 w-3" />
+                          {format(new Date(task.due_date), 'HH:mm')}
+                        </div>
+                      )}
+                      <div className="mt-1.5">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 rounded-md border">
+                          {task.type === 'call' ? 'שיחה' : 
+                           task.type === 'meeting' ? 'פגישה' : 
+                           task.type === 'follow_up' ? 'מעקב' : 'משימה'}
+                        </Badge>
+                      </div>
                     </div>
-                  )}
-                  <div className="mt-1">
-                    <Badge variant="outline" className="text-xs px-1 py-0">
-                      {task.type === 'call' ? 'שיחה' : 
-                       task.type === 'meeting' ? 'פגישה' : 
-                       task.type === 'follow_up' ? 'מעקב' : 'משימה'}
-                    </Badge>
                   </div>
                 </div>
               ))
             )}
             
             {dayTasks.length > 4 && (
-              <div className="text-xs text-center text-gray-500 py-1 bg-gray-100 rounded">
+              <div className="text-xs text-center py-1.5 bg-muted/50 rounded-lg font-medium text-muted-foreground">
                 +{dayTasks.length - 4} עוד
               </div>
             )}
@@ -211,79 +219,78 @@ export function WeekView({
   };
 
   return (
-    <Card className="shadow-sm">
-      <CardContent className="p-4">
-        {/* Enhanced week header with navigation */}
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateWeek('prev')}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            
-            <h3 className="text-lg font-bold text-[#2F3C7E] min-w-[280px] text-center">
-              {format(weekStart, 'd MMMM', { locale: he })} - {format(weekEnd, 'd MMMM yyyy', { locale: he })}
-            </h3>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateWeek('next')}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </div>
-
+    <div className="space-y-4">
+      {/* Enhanced week header with navigation */}
+      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border-2 border-border/30">
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
-            size="sm"
-            onClick={goToCurrentWeek}
-            className="flex items-center gap-1 text-[#2F3C7E] border-[#2F3C7E] hover:bg-[#2F3C7E] hover:text-white"
+            size="icon"
+            onClick={() => navigateWeek('prev')}
+            className="h-9 w-9 rounded-xl border-2"
           >
-            <CalendarDays className="h-4 w-4" />
-            השבוע
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          <h3 className="text-lg font-bold text-foreground min-w-[280px] text-center">
+            {format(weekStart, 'd MMMM', { locale: he })} - {format(weekEnd, 'd MMMM yyyy', { locale: he })}
+          </h3>
+          
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigateWeek('next')}
+            className="h-9 w-9 rounded-xl border-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Week grid */}
-        <div className="flex gap-1 overflow-x-auto">
-          {Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).map(renderDay)}
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={goToCurrentWeek}
+          className="flex items-center gap-2 rounded-xl border-2 font-semibold h-9 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-200"
+        >
+          <CalendarDays className="h-4 w-4" />
+          השבוע
+        </Button>
+      </div>
 
-        {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-3 justify-center text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-red-100 border border-red-400 rounded"></div>
-            <span>עדיפות גבוהה</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-yellow-100 border border-yellow-400 rounded"></div>
-            <span>עדיפות בינונית</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
-            <span>שיחת טלפון</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-            <span>פגישה</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></div>
-            <span>מעקב</span>
-          </div>
-          {onTaskDateChange && (
-            <div className="flex items-center gap-1 text-blue-600">
-              <span>💡 ניתן לגרור משימות בין תאריכים</span>
-            </div>
-          )}
+      {/* Week grid */}
+      <div className="flex gap-2 overflow-x-auto">
+        {Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).map(renderDay)}
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-4 justify-center text-xs p-4 bg-muted/20 rounded-xl border border-border/30">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3.5 h-3.5 bg-red-50 border-2 border-red-300 rounded-md"></div>
+          <span className="text-muted-foreground">עדיפות גבוהה</span>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3.5 h-3.5 bg-amber-50 border-2 border-amber-300 rounded-md"></div>
+          <span className="text-muted-foreground">עדיפות בינונית</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3.5 h-3.5 bg-blue-50 border-2 border-blue-300 rounded-md"></div>
+          <span className="text-muted-foreground">שיחת טלפון</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3.5 h-3.5 bg-emerald-50 border-2 border-emerald-300 rounded-md"></div>
+          <span className="text-muted-foreground">פגישה</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3.5 h-3.5 bg-violet-50 border-2 border-violet-300 rounded-md"></div>
+          <span className="text-muted-foreground">מעקב</span>
+        </div>
+        {onTaskDateChange && (
+          <div className="flex items-center gap-1.5 text-primary font-medium">
+            <span>💡</span>
+            <span>ניתן לגרור משימות בין תאריכים</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { type Task } from "@/types/task";
 import { MobileTaskCalendarCard } from "./MobileTaskCalendarCard";
 import { MobileTaskCalendarEmpty } from "./MobileTaskCalendarEmpty";
+import { CalendarDays, Clock } from "lucide-react";
 
 interface MobileTaskCalendarSectionProps {
   viewMode: "today" | "upcoming";
@@ -22,13 +23,22 @@ export function MobileTaskCalendarSection({
   return (
     <div className="space-y-4" dir="rtl">
       {/* Clean section header */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <h2 className="text-lg font-bold text-[#2F3C7E] mb-1 text-right">
-          {viewMode === "today" ? "משימות להיום" : "משימות קרובות"}
-        </h2>
-        <p className="text-sm text-gray-600 text-right">
+      <div className="bg-card rounded-2xl p-5 shadow-lg border-2 border-border/50">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2.5 bg-primary/10 rounded-xl">
+            {viewMode === "today" ? (
+              <Clock className="h-5 w-5 text-primary" />
+            ) : (
+              <CalendarDays className="h-5 w-5 text-primary" />
+            )}
+          </div>
+          <h2 className="text-lg font-bold text-foreground">
+            {viewMode === "today" ? "משימות להיום" : "משימות קרובות"}
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground text-right mr-12">
           {viewMode === "today" 
-            ? `${format(new Date(), "dd/MM/yyyy")} - ${tasks.length} משימות`
+            ? `${format(new Date(), "dd/MM/yyyy")} • ${tasks.length} משימות`
             : `${tasks.length} משימות עתידיות`
           }
         </p>
