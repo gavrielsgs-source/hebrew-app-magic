@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, Edit2, Trash2, Phone, Users, MessageCircle, Car } from "lucide-react";
+import { Eye, Edit2, Trash2, Phone, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Table,
@@ -21,9 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
-import { WhatsAppCustomerDialog } from "./WhatsAppCustomerDialog";
 import { EditCustomerDialog } from "./EditCustomerDialog";
 import type { Customer } from "@/types/customer";
 
@@ -34,8 +32,6 @@ interface CustomersTableProps {
 
 export function CustomersTable({ customers, onDeleteCustomer }: CustomersTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
 
   const handleDelete = async (customerId: string) => {
     setDeletingId(customerId);
@@ -220,20 +216,6 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                       </Link>
                     </Button>
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-11 px-4 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 hover:text-green-600 rounded-xl transition-all duration-300 border-2 border-green-200 hover:border-green-400 shadow-sm hover:shadow-md"
-                      onClick={() => {
-                        setSelectedCustomer(customer);
-                        setIsWhatsappOpen(true);
-                      }}
-                      disabled={!customer.phone}
-                    >
-                      <MessageCircle className="h-4 w-4 ml-2" />
-                      <span className="font-medium">וואטסאפ</span>
-                    </Button>
-                    
                     <EditCustomerDialog 
                       customer={customer}
                       trigger={
@@ -288,21 +270,6 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
         </Table>
         </div>
       </Card>
-      
-      {/* WhatsApp Dialog */}
-      <Dialog open={isWhatsappOpen} onOpenChange={setIsWhatsappOpen}>
-        <DialogContent className="w-[95%] sm:w-[600px] overflow-y-auto max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>שליחת הודעה בוואטסאפ ללקוח</DialogTitle>
-          </DialogHeader>
-          {selectedCustomer && (
-            <WhatsAppCustomerDialog 
-              customer={selectedCustomer} 
-              onClose={() => setIsWhatsappOpen(false)} 
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
