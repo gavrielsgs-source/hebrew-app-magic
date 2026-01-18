@@ -132,7 +132,7 @@ export function FullAnalytics() {
         </Card>
       </div>
 
-      <SmartInsights data={currentPeriodData} />
+      <SmartInsights />
 
       <Tabs defaultValue="leads" className="space-y-4">
         <TabsList>
