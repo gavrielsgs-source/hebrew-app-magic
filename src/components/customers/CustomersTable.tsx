@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, Edit2, Trash2, Phone, Users, MessageCircle } from "lucide-react";
+import { Eye, Edit2, Trash2, Phone, Users, MessageCircle, Car } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Table,
@@ -24,6 +24,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
 import { WhatsAppCustomerDialog } from "./WhatsAppCustomerDialog";
+import { EditCustomerDialog } from "./EditCustomerDialog";
 import type { Customer } from "@/types/customer";
 
 interface CustomersTableProps {
@@ -233,17 +234,19 @@ export function CustomersTable({ customers, onDeleteCustomer }: CustomersTablePr
                       <span className="font-medium">וואטסאפ</span>
                     </Button>
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-11 px-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-600 rounded-xl transition-all duration-300 border-2 border-blue-200 hover:border-blue-400 shadow-sm hover:shadow-md"
-                      onClick={() => {
-                        console.log('Edit customer:', customer.id);
-                      }}
-                    >
-                      <Edit2 className="h-4 w-4 ml-2" />
-                      <span className="font-medium">עריכה</span>
-                    </Button>
+                    <EditCustomerDialog 
+                      customer={customer}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-11 px-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-600 rounded-xl transition-all duration-300 border-2 border-blue-200 hover:border-blue-400 shadow-sm hover:shadow-md"
+                        >
+                          <Edit2 className="h-4 w-4 ml-2" />
+                          <span className="font-medium">עריכה</span>
+                        </Button>
+                      }
+                    />
                     
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
