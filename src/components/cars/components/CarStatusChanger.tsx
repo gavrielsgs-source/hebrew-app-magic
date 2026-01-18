@@ -124,20 +124,20 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
               <SelectTrigger className="h-8 w-28 border-0 focus:ring-0 bg-transparent">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent dir="rtl" className="bg-white border border-gray-200 shadow-lg">
-                <SelectItem value="available" className="text-right hover:bg-green-50">
+              <SelectContent align="end" className="bg-white border border-gray-200 shadow-lg text-right">
+                <SelectItem value="available" className="justify-end text-right hover:bg-green-50">
                   <span className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     זמין
                   </span>
                 </SelectItem>
-                <SelectItem value="reserved" className="text-right hover:bg-yellow-50">
+                <SelectItem value="reserved" className="justify-end text-right hover:bg-yellow-50">
                   <span className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                     שמור
                   </span>
                 </SelectItem>
-                <SelectItem value="sold" className="text-right hover:bg-gray-50">
+                <SelectItem value="sold" className="justify-end text-right hover:bg-gray-50">
                   <span className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
                     נמכר
@@ -176,20 +176,20 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
         <SelectTrigger className="w-full">
           <SelectValue placeholder="בחר סטטוס" />
         </SelectTrigger>
-        <SelectContent dir="rtl" className="bg-white border border-gray-200 shadow-lg">
-          <SelectItem value="available" className="text-right hover:bg-green-50">
+        <SelectContent align="end" className="bg-white border border-gray-200 shadow-lg text-right">
+          <SelectItem value="available" className="justify-end text-right hover:bg-green-50">
             <span className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               זמין
             </span>
           </SelectItem>
-          <SelectItem value="reserved" className="text-right hover:bg-yellow-50">
+          <SelectItem value="reserved" className="justify-end text-right hover:bg-yellow-50">
             <span className="flex items-center gap-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
               שמור
             </span>
           </SelectItem>
-          <SelectItem value="sold" className="text-right hover:bg-gray-50">
+          <SelectItem value="sold" className="justify-end text-right hover:bg-gray-50">
             <span className="flex items-center gap-2">
               <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
               נמכר
