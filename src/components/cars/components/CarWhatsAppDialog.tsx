@@ -37,9 +37,19 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
   const [leadTemplates, setLeadTemplates] = useState<any[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [variableValues, setVariableValues] = useState<Record<string, string>>({});
+  const [leadSearchQuery, setLeadSearchQuery] = useState("");
   const { leads } = useLeads();
   const { profile } = useProfile();
   const { data: dbTemplates } = useWhatsappTemplates();
+  
+  // Filter leads based on search query
+  const filteredLeads = leads?.filter(lead => {
+    if (!leadSearchQuery.trim()) return true;
+    const searchLower = leadSearchQuery.toLowerCase();
+    const name = (lead.name as string || '').toLowerCase();
+    const phone = (lead.phone as string || '').toLowerCase();
+    return name.includes(searchLower) || phone.includes(searchLower);
+  });
 
   // Use DB templates as source of truth
   useEffect(() => {
@@ -396,25 +406,38 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
 
         <TabsContent value="lead" className="space-y-3">
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <div>
+            <div className="space-y-2">
               <Label className="text-right text-sm">בחר לקוח</Label>
+              <Input
+                value={leadSearchQuery}
+                onChange={(e) => setLeadSearchQuery(e.target.value)}
+                placeholder="חפש לקוח לפי שם או טלפון..."
+                className="text-right mb-2"
+                dir="rtl"
+              />
               <Select value={selectedLeadId} onValueChange={handleLeadSelect}>
                 <SelectTrigger className="text-right">
                   <SelectValue placeholder="בחר לקוח" />
                 </SelectTrigger>
                 <SelectContent 
                   align="end" 
-                  className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[200px] p-1"
+                  className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[250px] p-1 max-h-[300px]"
                 >
-                  {leads?.map(lead => (
-                    <SelectItem 
-                      key={lead.id as string} 
-                      value={lead.id as string}
-                      className="justify-end text-right rounded-lg cursor-pointer transition-colors"
-                    >
-                      {lead.name as string} {lead.phone ? `(${lead.phone as string})` : ''}
-                    </SelectItem>
-                  ))}
+                  {filteredLeads?.length === 0 ? (
+                    <div className="p-3 text-center text-sm text-muted-foreground">
+                      לא נמצאו לקוחות
+                    </div>
+                  ) : (
+                    filteredLeads?.map(lead => (
+                      <SelectItem 
+                        key={lead.id as string} 
+                        value={lead.id as string}
+                        className="justify-end text-right rounded-lg cursor-pointer transition-colors"
+                      >
+                        {lead.name as string} {lead.phone ? `(${lead.phone as string})` : ''}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
