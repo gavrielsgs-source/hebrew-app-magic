@@ -28,6 +28,7 @@ import { generateTaxInvoicePDF } from '@/utils/tax-invoice-pdf-generator';
 import { useTaxInvoice } from '@/hooks/tax-invoice/use-tax-invoice';
 import type { TaxInvoiceData, InvoiceItem } from '@/types/tax-invoice';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
+import { useAddCustomerVehiclePurchase } from '@/hooks/customers/use-customer-vehicles';
 
 const invoiceItemSchema = z.object({
   id: z.string(),
@@ -92,6 +93,7 @@ export default function TaxInvoice() {
   const { profile } = useProfile();
   const { createTaxInvoice } = useTaxInvoice();
   const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
+  const addPurchase = useAddCustomerVehiclePurchase();
 
   const form = useForm<TaxInvoiceFormData>({
     resolver: zodResolver(taxInvoiceSchema),
@@ -275,6 +277,36 @@ export default function TaxInvoice() {
       const savedInvoice = await createTaxInvoice(invoiceData);
       setIsSaved(true);
       
+      // Determine entity type and ID for document linking
+      let entityType: 'customer' | 'lead' | undefined;
+      let entityId: string | undefined;
+      
+      if (selectedEntity?.type === 'customer') {
+        entityType = 'customer';
+        entityId = selectedEntity.id;
+      } else if (data.leadId && data.leadId !== 'no-lead') {
+        entityType = 'lead';
+        entityId = data.leadId;
+      }
+      
+      // Sync car sale to customer if both car and customer are selected
+      if (data.carId && data.carId !== 'no-car' && selectedEntity?.type === 'customer') {
+        try {
+          await addPurchase.mutateAsync({
+            customerId: selectedEntity.id,
+            carId: data.carId,
+            purchasePrice: totalAmount,
+            purchaseDate: format(data.date, 'yyyy-MM-dd')
+          });
+          toast({
+            title: "רכב שויך ללקוח",
+            description: "הרכב נוסף לרשימת הרכבים של הלקוח",
+          });
+        } catch (error) {
+          console.error('Error syncing car to customer:', error);
+        }
+      }
+      
       // Generate PDF as Blob and upload to cloud
       const pdfBlob = await generateTaxInvoicePDF(savedInvoice, true) as Blob;
       const url = await uploadDocument({
@@ -282,8 +314,8 @@ export default function TaxInvoice() {
         documentType: 'tax_invoice',
         documentNumber: savedInvoice.invoiceNumber,
         customerName: savedInvoice.customer.name,
-        entityType: data.leadId && data.leadId !== 'no-lead' ? 'lead' : undefined,
-        entityId: data.leadId && data.leadId !== 'no-lead' ? data.leadId : undefined
+        entityType,
+        entityId
       });
       
       setDocumentUrl(url);
