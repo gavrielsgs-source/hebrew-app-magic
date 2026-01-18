@@ -264,12 +264,16 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                 {[...documents, ...attachedDocs.map(doc => ({
                   id: doc.id,
                   title: doc.name,
-                  document_number: `DOC-${doc.id.slice(0, 8)}`,
-                  type: doc.type,
-                  amount: 0,
+                  document_number: doc.entity_type === 'tax_invoice' 
+                    ? doc.name.replace('חשבונית מס ', '') 
+                    : `DOC-${doc.id.slice(0, 8)}`,
+                  type: doc.type === 'tax_invoice' ? 'חשבונית מס' : doc.type,
+                  amount: doc.amount || 0,
                   date: doc.created_at,
                   created_at: doc.created_at,
-                  status: 'attached' as const
+                  status: 'attached' as const,
+                  url: doc.url,
+                  entity_type: doc.entity_type
                 }))].map((doc) => (
                   <div key={doc.id} className="border-2 border-slate-200 rounded-2xl p-6 bg-gradient-to-bl from-white via-slate-50/30 to-blue-50/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
                     <div className="flex items-start justify-between mb-4">
