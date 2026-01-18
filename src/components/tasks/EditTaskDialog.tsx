@@ -25,7 +25,7 @@ export function EditTaskDialog({ task, children, open: controlledOpen, onOpenCha
   };
 
   const trigger = children || (
-    <Button variant="outline" size="sm" className="rounded-xl">
+    <Button variant="outline" size="sm" className="rounded-xl border-2 font-semibold hover:bg-primary/10 transition-all duration-200">
       <Edit className="h-4 w-4 ml-2" />
       עריכה
     </Button>
@@ -38,10 +38,10 @@ export function EditTaskDialog({ task, children, open: controlledOpen, onOpenCha
           {trigger}
         </DialogTrigger>
       )}
-      <DialogContent>
+      <DialogContent className="sm:max-w-[480px] rounded-2xl border-2 shadow-xl">
         <DialogHeader>
-          <DialogTitle>עריכת משימה</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl font-bold text-right">עריכת משימה</DialogTitle>
+          <DialogDescription className="text-right text-muted-foreground">
             ערוך את פרטי המשימה
           </DialogDescription>
         </DialogHeader>
