@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useCreateCustomer } from "@/hooks/customers";
 import type { CreateCustomerData } from "@/types/customer";
 
@@ -23,17 +22,13 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
     country: 'ישראל',
     source: 'ידני',
   });
-  const [sendWelcomeMessage, setSendWelcomeMessage] = useState(true);
 
   const createCustomer = useCreateCustomer();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createCustomer.mutateAsync({ 
-        customerData: formData, 
-        sendWelcomeMessage 
-      });
+      await createCustomer.mutateAsync({ customerData: formData });
       onOpenChange(false);
       setFormData({
         full_name: '',
@@ -43,7 +38,6 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
         country: 'ישראל',
         source: 'ידני',
       });
-      setSendWelcomeMessage(true);
     } catch (error) {
       console.error('Error creating customer:', error);
     }
@@ -176,24 +170,6 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
             </div>
           </div>
 
-          <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/50">
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <Checkbox
-                id="send_welcome"
-                checked={sendWelcomeMessage}
-                onCheckedChange={(checked) => setSendWelcomeMessage(checked as boolean)}
-              />
-              <Label 
-                htmlFor="send_welcome" 
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                שלח הודעת ברכה בוואטסאפ ללקוח החדש
-              </Label>
-            </div>
-            <p className="text-xs text-muted-foreground mr-6">
-              הודעת הברכה תישלח רק אם מספר הטלפון של הלקוח תקין
-            </p>
-          </div>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
