@@ -120,46 +120,7 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
         : 'border-gray-200 bg-white dark:bg-card'
     }`}>
       <CardHeader className="pb-4 p-6">
-        <div className="flex items-start justify-between w-full" dir="rtl">
-          {/* כותרת ותיאור - צד ימין */}
-          <div className="text-right flex-1">
-            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-end mb-2 flex-wrap">
-              {isDefaultTemplate && (
-                <Badge 
-                  variant="outline" 
-                  className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary border-primary/30"
-                >
-                  ברירת מחדל
-                </Badge>
-              )}
-              <Badge 
-                variant={template.type === 'car' ? 'default' : 'secondary'} 
-                className={`text-xs font-medium px-3 py-1.5 rounded-full border-2 ${
-                  template.type === 'car' 
-                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700' 
-                    : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'
-                }`}
-              >
-                {template.type === 'car' ? (
-                  <>
-                    <Car className="h-3 w-3 ml-1" />
-                    רכב
-                  </>
-                ) : (
-                  <>
-                    <User className="h-3 w-3 ml-1" />
-                    לקוח
-                  </>
-                )}
-              </Badge>
-              <FileText className="h-5 w-5 text-gray-400" />
-              <span className="text-gray-800 dark:text-gray-100">{template.name}</span>
-            </CardTitle>
-            <CardDescription className="text-right text-gray-600 leading-relaxed">
-              {template.description}
-            </CardDescription>
-          </div>
-          
+        <div className="flex items-start justify-between w-full">
           {/* כפתורי פעולה - צד שמאל */}
           <div className="flex gap-2">
             {isDefaultTemplate ? (
@@ -187,24 +148,6 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
                     <TooltipTrigger asChild>
                       <Button 
                         variant="ghost" 
-                        size="icon" 
-                        onClick={() => onEdit(template)}
-                        className="h-9 w-9 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-transparent hover:border-blue-200"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>ערוך תבנית</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
                         size="icon"
                         onClick={() => onDelete(template.id)}
                         className="h-9 w-9 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-transparent hover:border-red-200"
@@ -217,8 +160,65 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => onEdit(template)}
+                        className="h-9 w-9 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-transparent hover:border-blue-200"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>ערוך תבנית</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </>
             )}
+          </div>
+          
+          {/* כותרת ותיאור - צד ימין */}
+          <div className="text-right flex-1">
+            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-end mb-2 flex-wrap-reverse">
+              <span className="text-gray-800 dark:text-gray-100">{template.name}</span>
+              <FileText className="h-5 w-5 text-gray-400" />
+              <Badge 
+                variant={template.type === 'car' ? 'default' : 'secondary'} 
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border-2 ${
+                  template.type === 'car' 
+                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700' 
+                    : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600'
+                }`}
+              >
+                {template.type === 'car' ? (
+                  <>
+                    <Car className="h-3 w-3 ml-1" />
+                    רכב
+                  </>
+                ) : (
+                  <>
+                    <User className="h-3 w-3 ml-1" />
+                    לקוח
+                  </>
+                )}
+              </Badge>
+              {isDefaultTemplate && (
+                <Badge 
+                  variant="outline" 
+                  className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary border-primary/30"
+                >
+                  ברירת מחדל
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription className="text-right text-gray-600 leading-relaxed">
+              {template.description}
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
