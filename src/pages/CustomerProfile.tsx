@@ -56,33 +56,33 @@ export default function CustomerProfile() {
       <div className="max-w-7xl mx-auto p-6">
         {/* Enhanced Header with Premium Styling */}
         <div className="mb-8">
-          <div className="flex items-center gap-6 mb-6">
+          <div className="flex items-center gap-4 mb-4">
             <Link to="/customers">
-              <Button variant="ghost" size="lg" className="rounded-2xl bg-white/70 backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20">
-                <ArrowRight className="h-5 w-5 ml-2" />
-                <span className="text-lg font-medium">חזור לרשימת הלקוחות</span>
+              <Button variant="ghost" size="sm" className="rounded-xl bg-white/70 backdrop-blur-md shadow-md hover:shadow-lg transition-all duration-300 border border-white/20">
+                <ArrowRight className="h-4 w-4 ml-1" />
+                <span className="text-sm font-medium">חזור לרשימת הלקוחות</span>
               </Button>
             </Link>
-            <Separator orientation="vertical" className="h-10 bg-gradient-to-b from-slate-300 to-slate-400" />
-            <div className="flex items-center gap-4">
+            <Separator orientation="vertical" className="h-8 bg-gradient-to-b from-slate-300 to-slate-400" />
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-3xl blur-sm"></div>
-                <div className="relative bg-gradient-to-br from-primary/15 to-secondary/15 p-4 rounded-3xl shadow-lg">
-                  <User className="h-10 w-10 text-primary" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-sm"></div>
+                <div className="relative bg-gradient-to-br from-primary/15 to-secondary/15 p-3 rounded-2xl shadow-md">
+                  <User className="h-6 w-6 text-primary" />
                 </div>
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                   {customer.full_name}
                 </h1>
-                <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center gap-2 mt-1">
                   <Badge 
                     variant={customer.status === 'active' ? 'default' : 'secondary'}
-                    className="text-base px-5 py-2 rounded-full shadow-md"
+                    className="text-xs px-3 py-1 rounded-full shadow-sm"
                   >
                     {customer.status === 'active' ? 'פעיל' : 'לא פעיל'}
                   </Badge>
-                  <span className="text-slate-600 text-xl font-medium">לקוח #{customer.customer_number}</span>
+                  <span className="text-slate-600 text-sm font-medium">לקוח #{customer.customer_number}</span>
                 </div>
               </div>
             </div>
@@ -93,21 +93,21 @@ export default function CustomerProfile() {
         </div>
 
         {/* Enhanced Customer Overview Card */}
-        <Card className="mb-10 shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md hover:shadow-3xl transition-all duration-500">
-          <CardHeader className="pb-6">
-            <div className="flex items-center gap-4">
+        <Card className="mb-6 shadow-xl rounded-2xl border-0 bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md hover:shadow-2xl transition-all duration-500">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-primary/10 rounded-2xl blur-sm"></div>
-                <div className="relative bg-gradient-to-br from-primary/20 to-primary/5 p-4 rounded-2xl">
-                  <Sparkles className="h-8 w-8 text-primary" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-primary/10 rounded-xl blur-sm"></div>
+                <div className="relative bg-gradient-to-br from-primary/20 to-primary/5 p-2.5 rounded-xl">
+                  <Sparkles className="h-5 w-5 text-primary" />
                 </div>
               </div>
               <div>
-                <CardTitle className="text-3xl font-bold text-slate-800 mb-2">
+                <CardTitle className="text-base font-bold text-slate-800 mb-1">
                   מידע בסיסי על הלקוח
                 </CardTitle>
-                <CardDescription className="text-xl text-slate-600 flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
+                <CardDescription className="text-sm text-slate-600 flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5" />
                   הצטרף ב-{new Date(customer.join_date || customer.created_at).toLocaleDateString('he-IL')} • לקוח מאז {Math.ceil((Date.now() - new Date(customer.join_date || customer.created_at).getTime()) / (1000 * 60 * 60 * 24))} ימים
                 </CardDescription>
               </div>

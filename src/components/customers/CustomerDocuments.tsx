@@ -192,20 +192,20 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   };
 
   return (
-    <Card className="shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/95 to-slate-50/95 backdrop-blur-md hover:shadow-3xl transition-all duration-500">
-      <CardHeader className="pb-6">
-        <div className="flex items-center gap-4">
+    <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-white/95 to-slate-50/95 backdrop-blur-md hover:shadow-2xl transition-all duration-500">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl blur-sm"></div>
-            <div className="relative bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-4 rounded-2xl">
-              <FileText className="h-8 w-8 text-blue-600" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl blur-sm"></div>
+            <div className="relative bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-2.5 rounded-xl">
+              <FileText className="h-5 w-5 text-blue-600" />
             </div>
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
+            <CardTitle className="text-base font-bold text-slate-800 mb-0.5">
               מסמכים דיגיטליים
             </CardTitle>
-            <CardDescription className="text-xl text-slate-600">
+            <CardDescription className="text-sm text-slate-600">
               ניהול חכם ומתקדם של כל המסמכים והחוזים
             </CardDescription>
           </div>
@@ -213,20 +213,20 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="documents" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-2xl p-1 shadow-inner">
-            <TabsTrigger value="returns" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 text-lg">
+          <TabsList className="grid w-full grid-cols-2 bg-slate-100/50 rounded-xl p-1 shadow-inner">
+            <TabsTrigger value="returns" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 text-sm">
               מסמכים שהוחזרו
             </TabsTrigger>
-            <TabsTrigger value="documents" className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 text-lg">
+            <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200 text-sm">
               מסמכים
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="documents" className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
+          <TabsContent value="documents" className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Select>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-32 text-sm h-8">
                     <SelectValue placeholder="סוג מסמך" />
                   </SelectTrigger>
                   <SelectContent>
@@ -237,26 +237,26 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                     <SelectItem value="other">אחר</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 ml-2" />
+                <Button variant="outline" size="sm" className="h-8 text-sm">
+                  <Filter className="h-3.5 w-3.5 ml-1" />
                   סינון
                 </Button>
               </div>
             </div>
             
             {documentsLoading ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-32 bg-muted rounded-lg"></div>
+                    <div className="h-24 bg-muted rounded-lg"></div>
                   </div>
                 ))}
               </div>
             ) : documents.length === 0 && attachedDocs.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">אין מסמכים עדיין</h3>
-                <p className="mb-4">מסמכים שנוצרים למען הלקוח יופיעו כאן</p>
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                <h3 className="text-sm font-medium mb-1">אין מסמכים עדיין</h3>
+                <p className="text-xs mb-3">מסמכים שנוצרים למען הלקוח יופיעו כאן</p>
               </div>
             ) : (
               <div className="space-y-4" dir="rtl">
@@ -275,24 +275,24 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                   url: doc.url,
                   entity_type: doc.entity_type
                 }))].map((doc) => (
-                  <div key={doc.id} className="border-2 border-slate-200 rounded-2xl p-6 bg-gradient-to-bl from-white via-slate-50/30 to-blue-50/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-                    <div className="flex items-start justify-between mb-4">
+                  <div key={doc.id} className="border border-slate-200 rounded-xl p-4 bg-gradient-to-bl from-white via-slate-50/30 to-blue-50/20 shadow-md hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="text-right flex-1">
-                        <h4 className="font-bold text-xl text-slate-800 mb-2">{doc.title}</h4>
-                        <div className="space-y-1">
-                          <p className="text-lg text-slate-600 flex items-center gap-2">
+                        <h4 className="font-bold text-sm text-slate-800 mb-1">{doc.title}</h4>
+                        <div className="space-y-0.5">
+                          <p className="text-xs text-slate-600 flex items-center gap-1.5">
                             <span className="font-semibold">מספר מסמך:</span>
-                            <span className="font-mono bg-slate-100 px-2 py-1 rounded">{doc.document_number}</span>
+                            <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs">{doc.document_number}</span>
                           </p>
-                          <p className="text-lg text-slate-600">
+                          <p className="text-xs text-slate-600">
                             <span className="font-semibold">סוג:</span> {doc.type}
                           </p>
                         </div>
                       </div>
-                      <div className="mr-4">
+                      <div className="mr-3">
                         {doc.status === 'attached' ? (
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 shadow-sm text-base px-3 py-1">
-                            <FileText className="h-4 w-4 ml-1" />
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 shadow-sm text-xs px-2 py-0.5">
+                            <FileText className="h-3 w-3 ml-1" />
                             מצורף
                           </Badge>
                         ) : (
@@ -301,7 +301,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg text-slate-700 mb-6 bg-white/50 p-4 rounded-xl border border-slate-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-700 mb-4 bg-white/50 p-3 rounded-lg border border-slate-100">
                       <div className="text-right">
                         <span className="font-bold text-slate-800">סכום: </span>
                         <span className="font-semibold text-green-700">
@@ -316,7 +316,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                       </div>
                     </div>
                     
-                    <div className={`pt-4 border-t-2 border-slate-100 ${isMobile ? 'space-y-3' : 'flex items-center justify-between'}`}>
+                    <div className={`pt-3 border-t border-slate-100 ${isMobile ? 'space-y-2' : 'flex items-center justify-between'}`}>
                       {doc.status !== 'attached' ? (
                         <>
                           <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 flex-wrap`}>
@@ -325,29 +325,29 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                               documentTitle={doc.title}
                               documentType={doc.type}
                               trigger={
-                                <Button variant="outline" size={isMobile ? "default" : "lg"} className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-blue-50 hover:border-blue-300`}>
-                                  <Eye className="h-5 w-5 ml-2" />
+                                <Button variant="outline" size="sm" className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-3'} hover:bg-blue-50 hover:border-blue-300`}>
+                                  <Eye className="h-3.5 w-3.5 ml-1" />
                                   תצוגה מקדימה
                                 </Button>
                               }
                             />
                             <Button 
                               variant="outline" 
-                              size={isMobile ? "default" : "lg"}
-                              className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
+                              size="sm"
+                              className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-3'} hover:bg-green-50 hover:border-green-300`}
                               onClick={() => handleDownloadPDF(doc)}
                             >
-                              <Download className="h-5 w-5 ml-2" />
+                              <Download className="h-3.5 w-3.5 ml-1" />
                               הורד PDF
                             </Button>
                             <Button 
                               variant="outline" 
-                              size={isMobile ? "default" : "lg"}
-                              className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-6'} hover:bg-green-50 hover:border-green-300`}
+                              size="sm"
+                              className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-3'} hover:bg-green-50 hover:border-green-300`}
                               onClick={() => handleSendToWhatsApp(doc)}
                               disabled={updateDocumentStatus.isPending || !customer?.phone}
                             >
-                              <Send className="h-5 w-5 ml-2" />
+                              <Send className="h-3.5 w-3.5 ml-1" />
                               שלח לוואטסאפ
                             </Button>
                             {!isMobile && (
@@ -356,20 +356,20 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                                   customerId={customerId}
                                   documentId={doc.id}
                                   trigger={
-                                    <Button variant="outline" size="lg" className="rounded-xl text-base px-6 hover:bg-purple-50 hover:border-purple-300">
-                                      <Upload className="h-5 w-5 ml-2" />
+                                    <Button variant="outline" size="sm" className="rounded-lg text-xs px-3 hover:bg-purple-50 hover:border-purple-300">
+                                      <Upload className="h-3.5 w-3.5 ml-1" />
                                       העלה מסמך חתום
                                     </Button>
                                   }
                                 />
                                 <Button 
                                   variant="outline" 
-                                  size="lg" 
-                                  className="rounded-xl text-base px-6 hover:bg-emerald-50 hover:border-emerald-300"
+                                  size="sm" 
+                                  className="rounded-lg text-xs px-3 hover:bg-emerald-50 hover:border-emerald-300"
                                   onClick={() => handleStatusUpdate(doc.id, 'signed')}
                                   disabled={updateDocumentStatus.isPending}
                                 >
-                                  <CheckCircle className="h-5 w-5 ml-2" />
+                                  <CheckCircle className="h-3.5 w-3.5 ml-1" />
                                   סמן כחתום
                                 </Button>
                               </>
@@ -381,54 +381,54 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                                 customerId={customerId}
                                 documentId={doc.id}
                                 trigger={
-                                  <Button variant="outline" size="default" className="rounded-xl w-full justify-start hover:bg-purple-50 hover:border-purple-300">
-                                    <Upload className="h-5 w-5 ml-2" />
+                                  <Button variant="outline" size="sm" className="rounded-lg w-full justify-start text-xs hover:bg-purple-50 hover:border-purple-300">
+                                    <Upload className="h-3.5 w-3.5 ml-1" />
                                     העלה מסמך חתום
                                   </Button>
                                 }
                               />
                               <Button 
                                 variant="outline" 
-                                size="default"
-                                className="rounded-xl w-full justify-start hover:bg-emerald-50 hover:border-emerald-300"
+                                size="sm"
+                                className="rounded-lg w-full justify-start text-xs hover:bg-emerald-50 hover:border-emerald-300"
                                 onClick={() => handleStatusUpdate(doc.id, 'signed')}
                                 disabled={updateDocumentStatus.isPending}
                               >
-                                <CheckCircle className="h-5 w-5 ml-2" />
+                                <CheckCircle className="h-3.5 w-3.5 ml-1" />
                                 סמן כחתום
                               </Button>
                               <Button 
                                 variant="outline" 
-                                size="default"
-                                className="text-destructive rounded-xl w-full justify-start hover:bg-red-50 hover:border-red-300"
+                                size="sm"
+                                className="text-destructive rounded-lg w-full justify-start text-xs hover:bg-red-50 hover:border-red-300"
                                 onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
                                 disabled={updateDocumentStatus.isPending}
                               >
-                                <X className="h-5 w-5 ml-2" />
+                                <X className="h-3.5 w-3.5 ml-1" />
                                 בטל
                               </Button>
                             </div>
                           ) : (
-                            <div className="flex gap-3">
+                            <div className="flex gap-2">
                               <Button 
                                 variant="outline" 
-                                size="lg" 
-                                className="text-destructive rounded-xl text-base px-6 hover:bg-red-50 hover:border-red-300"
+                                size="sm" 
+                                className="text-destructive rounded-lg text-xs px-3 hover:bg-red-50 hover:border-red-300"
                                 onClick={() => handleStatusUpdate(doc.id, 'cancelled')}
                                 disabled={updateDocumentStatus.isPending}
                               >
-                                <X className="h-5 w-5 ml-2" />
+                                <X className="h-3.5 w-3.5 ml-1" />
                                 בטל
                               </Button>
                             </div>
                           )}
                         </>
                       ) : (
-                        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-3 w-full ${isMobile ? '' : 'justify-center'}`}>
+                        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 w-full ${isMobile ? '' : 'justify-center'}`}>
                           <Button 
                             variant="outline" 
-                            size={isMobile ? "default" : "lg"}
-                            className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-8'} hover:bg-blue-50 hover:border-blue-300`}
+                            size="sm"
+                            className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-4'} hover:bg-blue-50 hover:border-blue-300`}
                             onClick={() => {
                               if (doc.url) {
                                 window.open(doc.url, '_blank');
@@ -437,16 +437,16 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                               }
                             }}
                           >
-                            <Eye className="h-5 w-5 ml-2" />
+                            <Eye className="h-3.5 w-3.5 ml-1" />
                             צפה במסמך
                           </Button>
                           <Button 
                             variant="outline" 
-                            size={isMobile ? "default" : "lg"}
-                            className={`rounded-xl ${isMobile ? 'w-full justify-start' : 'text-base px-8'} hover:bg-green-50 hover:border-green-300`}
+                            size="sm"
+                            className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-4'} hover:bg-green-50 hover:border-green-300`}
                             onClick={() => handleDownloadPDF(doc)}
                           >
-                            <Download className="h-5 w-5 ml-2" />
+                            <Download className="h-3.5 w-3.5 ml-1" />
                             הורד PDF
                           </Button>
                         </div>
@@ -458,40 +458,41 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
             )}
           </TabsContent>
           
-          <TabsContent value="returns" className="space-y-4">
+          <TabsContent value="returns" className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">מסמכים שהלקוח שלח חזרה ({documentReturns.length})</h3>
+              <h3 className="text-xs font-medium">מסמכים שהלקוח שלח חזרה ({documentReturns.length})</h3>
             </div>
             
             {returnsLoading ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {[...Array(2)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-24 bg-muted rounded-lg"></div>
+                    <div className="h-20 bg-muted rounded-lg"></div>
                   </div>
                 ))}
               </div>
             ) : documentReturns.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">אין מסמכים שהוחזרו</h3>
-                <p>מסמכים שהלקוח יעלה יופיעו כאן</p>
+              <div className="text-center py-8 text-muted-foreground">
+                <Upload className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                <h3 className="text-sm font-medium mb-1">אין מסמכים שהוחזרו</h3>
+                <p className="text-xs">מסמכים שהלקוח יעלה יופיעו כאן</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {documentReturns.map((docReturn) => (
-                  <div key={docReturn.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">מסמך שהוחזר</h4>
-                      <Badge variant="default" className="bg-green-600">הועלה</Badge>
+                  <div key={docReturn.id} className="border rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <h4 className="font-medium text-sm">מסמך שהוחזר</h4>
+                      <Badge variant="default" className="bg-green-600 text-xs">הועלה</Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3">
+                    <p className="text-xs text-muted-foreground mb-2">
                       הועלה ב-{new Date(docReturn.uploaded_at).toLocaleDateString('he-IL')}
                     </p>
                     <div className="flex gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
+                        className="text-xs"
                         onClick={() => {
                           if (docReturn.file_path) {
                             supabase.storage
@@ -507,7 +508,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                           }
                         }}
                       >
-                        <Eye className="h-4 w-4 ml-2" />
+                        <Eye className="h-3.5 w-3.5 ml-1" />
                         צפה במסמך
                       </Button>
                     </div>
