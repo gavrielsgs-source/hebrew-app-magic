@@ -25,7 +25,7 @@ interface CarWhatsAppDialogProps {
 }
 
 export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState("lead");
   const [templateType, setTemplateType] = useState<"car" | "lead" | "custom">("car");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [manualName, setManualName] = useState("");
@@ -384,13 +384,13 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       {/* Recipient Selection Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full grid grid-cols-2">
-          <TabsTrigger value="manual" className="flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            הזנה ידנית
-          </TabsTrigger>
           <TabsTrigger value="lead" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             בחר לקוח
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            הזנה ידנית
           </TabsTrigger>
         </TabsList>
 
@@ -402,9 +402,16 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
                 <SelectTrigger className="text-right">
                   <SelectValue placeholder="בחר לקוח" />
                 </SelectTrigger>
-                <SelectContent align="end">
+                <SelectContent 
+                  align="end" 
+                  className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[200px] p-1"
+                >
                   {leads?.map(lead => (
-                    <SelectItem key={lead.id as string} value={lead.id as string}>
+                    <SelectItem 
+                      key={lead.id as string} 
+                      value={lead.id as string}
+                      className="justify-end text-right rounded-lg cursor-pointer transition-colors"
+                    >
                       {lead.name as string} {lead.phone ? `(${lead.phone as string})` : ''}
                     </SelectItem>
                   ))}
@@ -464,14 +471,14 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
         }
       }} className="w-full">
         <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger value="car" className="text-sm">
-            רכבים ({carTemplates.length})
+          <TabsTrigger value="custom" className="text-sm">
+            הודעה מותאמת
           </TabsTrigger>
           <TabsTrigger value="lead" className="text-sm">
             לקוחות ({leadTemplates.length})
           </TabsTrigger>
-          <TabsTrigger value="custom" className="text-sm">
-            הודעה מותאמת
+          <TabsTrigger value="car" className="text-sm">
+            רכבים ({carTemplates.length})
           </TabsTrigger>
         </TabsList>
       </Tabs>
