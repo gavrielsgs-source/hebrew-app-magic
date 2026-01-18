@@ -120,12 +120,18 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
         : 'border-gray-200 bg-white dark:bg-card'
     }`}>
       <CardHeader className="pb-4 p-6">
-        <div className="flex items-start justify-between w-full">
-          {/* כותרת ותיאור - צד שמאל */}
-          <div className="text-left order-1 flex-1">
-            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-start mb-2 flex-wrap">
-              <span className="text-gray-800 dark:text-gray-100">{template.name}</span>
-              <FileText className="h-5 w-5 text-gray-400" />
+        <div className="flex items-start justify-between w-full" dir="rtl">
+          {/* כותרת ותיאור - צד ימין */}
+          <div className="text-right flex-1">
+            <CardTitle className="text-lg font-bold flex items-center gap-3 justify-end mb-2 flex-wrap">
+              {isDefaultTemplate && (
+                <Badge 
+                  variant="outline" 
+                  className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary border-primary/30"
+                >
+                  ברירת מחדל
+                </Badge>
+              )}
               <Badge 
                 variant={template.type === 'car' ? 'default' : 'secondary'} 
                 className={`text-xs font-medium px-3 py-1.5 rounded-full border-2 ${
@@ -136,32 +142,26 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps) 
               >
                 {template.type === 'car' ? (
                   <>
+                    <Car className="h-3 w-3 ml-1" />
                     רכב
-                    <Car className="h-3 w-3 mr-1" />
                   </>
                 ) : (
                   <>
+                    <User className="h-3 w-3 ml-1" />
                     לקוח
-                    <User className="h-3 w-3 mr-1" />
                   </>
                 )}
               </Badge>
-              {isDefaultTemplate && (
-                <Badge 
-                  variant="outline" 
-                  className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary border-primary/30"
-                >
-                  ברירת מחדל
-                </Badge>
-              )}
+              <FileText className="h-5 w-5 text-gray-400" />
+              <span className="text-gray-800 dark:text-gray-100">{template.name}</span>
             </CardTitle>
-            <CardDescription className="text-left text-gray-600 leading-relaxed">
+            <CardDescription className="text-right text-gray-600 leading-relaxed">
               {template.description}
             </CardDescription>
           </div>
           
-          {/* כפתורי פעולה - צד ימין */}
-          <div className="flex gap-2 order-2">
+          {/* כפתורי פעולה - צד שמאל */}
+          <div className="flex gap-2">
             {isDefaultTemplate ? (
               <TooltipProvider>
                 <Tooltip>

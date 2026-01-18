@@ -8,7 +8,7 @@ import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useToast } from "@/hooks/use-toast";
-import { Download } from "lucide-react";
+
 import { 
   useWhatsappTemplates,
   useCreateWhatsappTemplate,
@@ -189,16 +189,6 @@ export default function Templates() {
         <div className="p-4 space-y-4">
           <TemplateHeader onNewTemplate={() => {}} />
           
-          <div className="flex gap-2 mb-6">
-            <Button
-              variant="outline"
-              onClick={exportToExcel}
-              className="flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              ייצוא לאקסל
-            </Button>
-          </div>
 
           <div className="space-y-6">
             {leadTemplates.length > 0 && (
@@ -262,16 +252,6 @@ export default function Templates() {
           <CardContent>
             <TemplateHeader onNewTemplate={() => {}} />
             
-            <div className="flex gap-2 mb-6">
-              <Button
-                variant="outline"
-                onClick={exportToExcel}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                ייצוא לאקסל
-              </Button>
-            </div>
 
             <div className="space-y-6">
               {leadTemplates.length > 0 && (
