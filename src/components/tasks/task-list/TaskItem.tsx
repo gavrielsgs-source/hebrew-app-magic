@@ -29,36 +29,36 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
   };
 
   const getTaskTypeIcon = (taskType: string | null | undefined) => {
-    if (!taskType) return <UserRound className="h-4 w-4" />;
+    if (!taskType) return <UserRound className="h-3.5 w-3.5" />;
     
     switch(taskType.toLowerCase()) {
-      case 'call': return <UserRound className="h-4 w-4" />;
-      case 'meeting': return <UserRound className="h-4 w-4" />;
-      case 'follow_up': return <Calendar className="h-4 w-4" />;
-      case 'test': return <Calendar className="h-4 w-4" />;
+      case 'call': return <UserRound className="h-3.5 w-3.5" />;
+      case 'meeting': return <UserRound className="h-3.5 w-3.5" />;
+      case 'follow_up': return <Calendar className="h-3.5 w-3.5" />;
+      case 'test': return <Calendar className="h-3.5 w-3.5" />;
       case 'task': 
-      default: return <UserRound className="h-4 w-4" />;
+      default: return <UserRound className="h-3.5 w-3.5" />;
     }
   };
 
   const getTaskPriorityColor = (priority: string | null | undefined) => {
-    if (!priority) return "bg-gray-100 text-gray-700 border-gray-200";
+    if (!priority) return "bg-slate-50 text-slate-700 border-slate-200";
     
     switch(priority) {
-      case 'high': return "bg-red-100 text-red-700 border-red-200";
-      case 'medium': return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case 'low': return "bg-green-100 text-green-700 border-green-200";
-      default: return "bg-gray-100 text-gray-700 border-gray-200";
+      case 'high': return "bg-red-50 text-red-700 border-red-200";
+      case 'medium': return "bg-amber-50 text-amber-700 border-amber-200";
+      case 'low': return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      default: return "bg-slate-50 text-slate-700 border-slate-200";
     }
   };
 
   const getStatusColor = (status: string | null | undefined) => {
     switch(status) {
-      case 'completed': return "bg-green-100 text-green-700 border-green-200";
-      case 'in_progress': return "bg-blue-100 text-blue-700 border-blue-200";
-      case 'cancelled': return "bg-red-100 text-red-700 border-red-200";
+      case 'completed': return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case 'in_progress': return "bg-blue-50 text-blue-700 border-blue-200";
+      case 'cancelled': return "bg-red-50 text-red-700 border-red-200";
       case 'pending':
-      default: return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      default: return "bg-amber-50 text-amber-700 border-amber-200";
     }
   };
   
@@ -77,8 +77,8 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
   return (
     <div 
       className={cn(
-        "hover:bg-blue-50/50 transition-colors border-b border-gray-50 p-4",
-        task.status === 'completed' && "bg-gray-50/80"
+        "group hover:bg-primary/5 transition-all duration-200 p-4",
+        task.status === 'completed' && "bg-muted/30"
       )}
     >
       <div className="grid grid-cols-9 gap-4 items-center text-right">
@@ -87,13 +87,13 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           <Checkbox 
             checked={task.status === 'completed'} 
             onCheckedChange={(checked) => onStatusChange(task.id, checked as boolean)}
-            className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+            className="h-5 w-5 rounded-lg data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 transition-all duration-200"
           />
         </div>
         
         {/* Title Cell */}
         <div className={cn(
-          "text-right font-medium text-[#2F3C7E]",
+          "text-right font-semibold text-foreground",
           task.status === 'completed' && "line-through text-muted-foreground"
         )}>
           {task.title}
@@ -101,7 +101,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         
         {/* Type Cell */}
         <div className="flex justify-end">
-          <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="flex items-center gap-1.5 bg-blue-50 text-blue-700 border-blue-200 rounded-lg font-medium">
             {getTaskTypeIcon(task.type)}
             {getTaskTypeLabel(task.type)}
           </Badge>
@@ -109,7 +109,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         
         {/* Priority Cell */}
         <div className="flex justify-end">
-          <Badge className={`${getTaskPriorityColor(task.priority)} border font-medium`}>
+          <Badge className={`${getTaskPriorityColor(task.priority)} border font-semibold rounded-lg`}>
             {task.priority === 'high' ? 'גבוהה' : 
              task.priority === 'medium' ? 'בינונית' : 
              task.priority === 'low' ? 'נמוכה' : 
@@ -121,17 +121,17 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         <div className="text-right">
           {task.due_date ? (
             <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg">
+                <span className="text-sm font-medium text-foreground">
                   {safeFormatDate(task.due_date, 'dd/MM/yyyy')}
                 </span>
-                <Calendar className="h-3 w-3 text-gray-500" />
+                <Calendar className="h-3 w-3 text-muted-foreground" />
               </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-600">
+              <div className="flex items-center gap-1.5 bg-muted/40 px-2 py-0.5 rounded-lg">
+                <span className="text-xs text-muted-foreground font-medium">
                   {safeFormatDate(task.due_date, 'HH:mm')}
                 </span>
-                <Clock className="h-3 w-3 text-gray-500" />
+                <Clock className="h-3 w-3 text-muted-foreground" />
               </div>
             </div>
           ) : (
@@ -141,7 +141,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         
         {/* Status Cell */}
         <div className="flex justify-end">
-          <Badge className={`${getStatusColor(task.status)} border font-medium`}>
+          <Badge className={`${getStatusColor(task.status)} border font-semibold rounded-lg`}>
             {task.status === 'pending' ? 'ממתין' : 
              task.status === 'in_progress' ? 'בביצוע' : 
              task.status === 'completed' ? 'הושלם' : 
@@ -152,26 +152,26 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
         {/* Related To Cell */}
         <div className="flex flex-col gap-1 items-end">
           {task.car_id && (
-            <Badge variant="secondary" className="flex items-center gap-1 bg-purple-100 text-purple-700 border-purple-200">
-              <span className="text-xs">{task.cars?.make} {task.cars?.model}</span>
+            <Badge variant="secondary" className="flex items-center gap-1 bg-violet-50 text-violet-700 border border-violet-200 rounded-lg">
+              <span className="text-xs font-medium">{task.cars?.make} {task.cars?.model}</span>
               <Car className="h-3 w-3" />
             </Badge>
           )}
           {task.lead_id && (
-            <Badge variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-700 border-blue-200">
-              <span className="text-xs">{task.leads?.name}</span>
+            <Badge variant="secondary" className="flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg">
+              <span className="text-xs font-medium">{task.leads?.name}</span>
               <UserRound className="h-3 w-3" />
             </Badge>
           )}
         </div>
         
         {/* Actions Cell */}
-        <div className="flex justify-center gap-1">
+        <div className="flex justify-center gap-2">
           <EditTaskDialog task={task}>
             <Button 
               variant="ghost" 
               size="icon"
-              className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+              className="h-9 w-9 rounded-xl hover:bg-blue-100 hover:text-blue-600 transition-all duration-200"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -179,7 +179,7 @@ export function TaskItem({ task, onStatusChange, onDelete }: TaskItemProps) {
           <Button 
             variant="ghost" 
             size="icon"
-            className="h-8 w-8 hover:bg-red-100 hover:text-red-600 transition-colors"
+            className="h-9 w-9 rounded-xl hover:bg-red-100 hover:text-red-600 transition-all duration-200"
             onClick={() => onDelete(task.id)}
           >
             <Trash2 className="h-4 w-4" />

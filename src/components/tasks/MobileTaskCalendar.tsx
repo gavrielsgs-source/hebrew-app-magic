@@ -65,46 +65,33 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
   const upcomingTasks = getUpcomingTasks();
 
   return (
-    <div className="space-y-6 pb-safe min-h-screen" dir="rtl">
-      {/* Clean header with view mode toggle */}
-      <div className="px-4 pt-4 space-y-4">
-        {/* Clean header */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h1 className="text-lg font-semibold text-[#2F3C7E] mb-1 text-right">
-            יומן משימות
-          </h1>
-          <p className="text-sm text-gray-600 text-right">
-            {todayTasks.length + upcomingTasks.length} משימות פעילות
-          </p>
-        </div>
-
-        {/* Clean View Mode Toggle */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setViewMode("today")}
-            className={`flex-1 h-10 text-sm font-medium rounded-lg transition-all border-2 ${
-              viewMode === "today"
-                ? "bg-[#2F3C7E] text-white border-[#2F3C7E] shadow"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#2F3C7E] hover:text-[#2F3C7E] bg-white"
-            }`}
-          >
-            היום ({todayTasks.length})
-          </button>
-          <button
-            onClick={() => setViewMode("upcoming")}
-            className={`flex-1 h-10 text-sm font-medium rounded-lg transition-all border-2 ${
-              viewMode === "upcoming"
-                ? "bg-[#2F3C7E] text-white border-[#2F3C7E] shadow"
-                : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#2F3C7E] hover:text-[#2F3C7E] bg-white"
-            }`}
-          >
-            קרובים ({upcomingTasks.length})
-          </button>
-        </div>
+    <div className="space-y-6 pb-safe" dir="rtl">
+      {/* View Mode Toggle - No duplicate header */}
+      <div className="flex gap-3 p-1.5 bg-muted/50 rounded-2xl border-2 border-border/30">
+        <button
+          onClick={() => setViewMode("today")}
+          className={`flex-1 h-11 text-sm font-semibold rounded-xl transition-all duration-200 ${
+            viewMode === "today"
+              ? "bg-primary text-primary-foreground shadow-lg"
+              : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/80"
+          }`}
+        >
+          היום ({todayTasks.length})
+        </button>
+        <button
+          onClick={() => setViewMode("upcoming")}
+          className={`flex-1 h-11 text-sm font-semibold rounded-xl transition-all duration-200 ${
+            viewMode === "upcoming"
+              ? "bg-primary text-primary-foreground shadow-lg"
+              : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/80"
+          }`}
+        >
+          קרובים ({upcomingTasks.length})
+        </button>
       </div>
 
       {/* Main content section */}
-      <div className="px-4">
+      <div>
         <MobileTaskCalendarSection
           viewMode={viewMode}
           tasks={viewMode === "today" ? todayTasks : upcomingTasks}

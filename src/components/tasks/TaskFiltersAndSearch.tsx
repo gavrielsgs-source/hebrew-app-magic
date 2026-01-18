@@ -105,12 +105,12 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
       <div className="space-y-4 mb-6">
         {/* Mobile Search */}
         <div className="relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="חיפוש משימות..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10 text-right"
+            className="pr-11 text-right rounded-xl h-12 border-2 text-base bg-card"
             dir="rtl"
           />
         </div>
@@ -119,11 +119,11 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
         <div className="flex gap-2 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <MobileButton variant="outline" size="sm" className="relative">
+              <MobileButton variant="outline" size="sm" className="relative rounded-xl border-2 font-medium">
                 <Filter className="h-4 w-4 ml-1" />
                 סטטוס
                 {statusFilters.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-blue-500">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
                     {statusFilters.length}
                   </Badge>
                 )}
@@ -150,11 +150,11 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <MobileButton variant="outline" size="sm" className="relative">
+              <MobileButton variant="outline" size="sm" className="relative rounded-xl border-2 font-medium">
                 <Filter className="h-4 w-4 ml-1" />
                 עדיפות
                 {priorityFilters.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-blue-500">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
                     {priorityFilters.length}
                   </Badge>
                 )}
@@ -181,11 +181,11 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <MobileButton variant="outline" size="sm" className="relative">
+              <MobileButton variant="outline" size="sm" className="relative rounded-xl border-2 font-medium">
                 <Filter className="h-4 w-4 ml-1" />
                 סוג
                 {typeFilters.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-blue-500">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
                     {typeFilters.length}
                   </Badge>
                 )}
@@ -215,7 +215,7 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
               variant="outline" 
               size="sm"
               onClick={clearAllFilters}
-              className="text-red-600 border-red-200 hover:bg-red-50"
+              className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-xl border-2 font-medium"
             >
               <X className="h-4 w-4 ml-1" />
               נקה
@@ -231,12 +231,12 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         {/* Desktop Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="חיפוש משימות..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10 text-right"
+            className="pr-11 text-right rounded-xl h-11 border-2 bg-card"
             dir="rtl"
           />
         </div>
@@ -245,11 +245,11 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
         <div className="flex gap-2 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="relative">
-                <Filter className="h-4 w-4 ml-1" />
+              <Button variant="outline" size="sm" className="relative rounded-xl border-2 font-medium h-10">
+                <Filter className="h-4 w-4 ml-1.5" />
                 סטטוס
                 {statusFilters.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-blue-500">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
                     {statusFilters.length}
                   </Badge>
                 )}
@@ -276,11 +276,11 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="relative">
-                <Filter className="h-4 w-4 ml-1" />
+              <Button variant="outline" size="sm" className="relative rounded-xl border-2 font-medium h-10">
+                <Filter className="h-4 w-4 ml-1.5" />
                 עדיפות
                 {priorityFilters.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-blue-500">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
                     {priorityFilters.length}
                   </Badge>
                 )}
@@ -307,11 +307,11 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="relative">
-                <Filter className="h-4 w-4 ml-1" />
+              <Button variant="outline" size="sm" className="relative rounded-xl border-2 font-medium h-10">
+                <Filter className="h-4 w-4 ml-1.5" />
                 סוג
                 {typeFilters.length > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-blue-500">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
                     {typeFilters.length}
                   </Badge>
                 )}
@@ -341,9 +341,9 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
               variant="outline" 
               size="sm"
               onClick={clearAllFilters}
-              className="text-red-600 border-red-200 hover:bg-red-50"
+              className="text-destructive border-destructive/30 hover:bg-destructive/10 rounded-xl border-2 font-medium h-10"
             >
-              <X className="h-4 w-4 ml-1" />
+              <X className="h-4 w-4 ml-1.5" />
               נקה סינון ({activeFiltersCount})
             </Button>
           )}
