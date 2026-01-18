@@ -47,14 +47,13 @@ export function CarSearchSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent 
-        dir="rtl"
         side="bottom"
         align="end" 
         avoidCollisions={false}
         sideOffset={6}
-        className="rounded-xl border-2 text-right z-[1000] w-[var(--radix-select-trigger-width)] min-w-[250px]"
+        className="rounded-xl border-2 bg-popover shadow-lg z-[1000] w-[var(--radix-select-trigger-width)] min-w-[250px]"
       >
-        <div className="sticky top-0 bg-background border-b p-2 z-50">
+        <div className="sticky top-0 bg-popover border-b p-2 z-50">
           <div className="relative">
             <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -67,25 +66,25 @@ export function CarSearchSelect({
           </div>
         </div>
         
-{includeNoneOption && (
-  <SelectItem value={noneValue} className="text-center">
-    ללא שיוך לרכב
-  </SelectItem>
-)}
+        {includeNoneOption && (
+          <SelectItem value={noneValue} className="justify-end text-right">
+            ללא שיוך לרכב
+          </SelectItem>
+        )}
         
         {filteredCars?.length === 0 && searchQuery ? (
-          <div className="p-2 text-center text-muted-foreground text-sm">
+          <div className="p-2 text-right text-muted-foreground text-sm">
             לא נמצאו רכבים תואמים
           </div>
         ) : (
           filteredCars?.map((car) => (
-            <SelectItem key={car.id as string} value={car.id as string} className="text-center">
-              <div className="flex flex-col text-center w-full items-center">
+            <SelectItem key={car.id as string} value={car.id as string} className="justify-end text-right">
+              <div className="flex flex-col text-right w-full items-end">
                 <span className="font-medium">
                   {car.make as string} {car.model as string} ({car.year as number})
                 </span>
                 <div className="text-xs text-muted-foreground">
-                  <div className="flex flex-col text-center items-center">
+                  <div className="flex flex-col text-right items-end">
                     {car.license_number && <span>רכב: {car.license_number}</span>}
                     {car.chassis_number && <span>שלדה: {car.chassis_number}</span>}
                   </div>
