@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
@@ -14,9 +13,6 @@ import { CarAdditionalDetails } from "./details/CarAdditionalDetails";
 import { CarTestDate } from "./details/CarTestDate";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CarExpensesTab } from "@/components/car-expenses";
-import { Info, DollarSign } from "lucide-react";
 
 interface CarDetailsProps {
   car: Car;
@@ -31,7 +27,9 @@ export function CarDetails({ car }: CarDetailsProps) {
     const fetchImages = async () => {
       try {
         setLoadingImages(true);
+        console.log("Fetching images for car:", car.id);
         const imageUrls = await getCarImages(car.id);
+        console.log("Fetched images:", imageUrls);
         setImages(imageUrls);
       } catch (error) {
         console.error("Error fetching car images:", error);
@@ -66,59 +64,40 @@ export function CarDetails({ car }: CarDetailsProps) {
         </SwipeDialog>
       </div>
       
-      <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="details" className="flex items-center gap-2">
-            <Info className="h-4 w-4" />
-            פרטי רכב
-          </TabsTrigger>
-          <TabsTrigger value="expenses" className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            הוצאות
-          </TabsTrigger>
-        </TabsList>
+      <CarImagesCarousel 
+        images={images} 
+        loadingImages={loadingImages} 
+        carMake={car.make} 
+        carModel={car.model} 
+      />
+      
+      <CarHeader 
+        make={car.make} 
+        model={car.model} 
+        year={car.year}
+        price={car.price}
+        status={car.status}
+      />
 
-        <TabsContent value="details" className="space-y-6 mt-6">
-          <CarImagesCarousel 
-            images={images} 
-            loadingImages={loadingImages} 
-            carMake={car.make} 
-            carModel={car.model} 
-          />
-          
-          <CarHeader 
-            make={car.make} 
-            model={car.model} 
-            year={car.year}
-            price={car.price}
-            status={car.status}
-          />
-
-          <Separator />
-          
-          <CarSpecifications
-            kilometers={car.kilometers}
-            year={car.year}
-            transmission={car.transmission}
-            fuelType={car.fuel_type}
-          />
-          
-          <CarDescription description={car.description} />
-          
-          <CarAdditionalDetails
-            exteriorColor={car.exterior_color}
-            interiorColor={car.interior_color}
-            engineSize={car.engine_size}
-            registrationYear={car.registration_year}
-          />
-          
-          <CarTestDate lastTestDate={car.last_test_date} />
-        </TabsContent>
-
-        <TabsContent value="expenses" className="mt-6">
-          <CarExpensesTab carId={car.id} />
-        </TabsContent>
-      </Tabs>
+      <Separator />
+      
+      <CarSpecifications
+        kilometers={car.kilometers}
+        year={car.year}
+        transmission={car.transmission}
+        fuelType={car.fuel_type}
+      />
+      
+      <CarDescription description={car.description} />
+      
+      <CarAdditionalDetails
+        exteriorColor={car.exterior_color}
+        interiorColor={car.interior_color}
+        engineSize={car.engine_size}
+        registrationYear={car.registration_year}
+      />
+      
+      <CarTestDate lastTestDate={car.last_test_date} />
     </div>
   );
 }
