@@ -120,9 +120,9 @@ export function CarFormBase({
                       <SelectValue placeholder="בחר סוכנות" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent align="end" className="text-right">
                     {agencies.map((agency) => (
-                      <SelectItem key={agency.id} value={agency.id}>
+                      <SelectItem key={agency.id} value={agency.id} className="justify-end text-right">
                         {agency.name}
                       </SelectItem>
                     ))}
@@ -233,14 +233,14 @@ export function CarFormBase({
                 <FormLabel>תיבת הילוכים</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="text-right" dir="rtl">
+                    <SelectTrigger className="text-right">
                       <SelectValue placeholder="בחר תיבת הילוכים" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-background z-50" dir="rtl">
-                    <SelectItem value="manual" className="text-right">ידני</SelectItem>
-                    <SelectItem value="automatic" className="text-right">אוטומט</SelectItem>
-                    <SelectItem value="robotics" className="text-right">רובוטי</SelectItem>
+                  <SelectContent align="end" className="bg-background z-50 text-right">
+                    <SelectItem value="manual" className="justify-end text-right">ידני</SelectItem>
+                    <SelectItem value="automatic" className="justify-end text-right">אוטומט</SelectItem>
+                    <SelectItem value="robotics" className="justify-end text-right">רובוטי</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -255,16 +255,16 @@ export function CarFormBase({
                 <FormLabel>סוג דלק</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="text-right" dir="rtl">
+                    <SelectTrigger className="text-right">
                       <SelectValue placeholder="בחר סוג דלק" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-background z-50" dir="rtl">
-                    <SelectItem value="gasoline" className="text-right">בנזין</SelectItem>
-                    <SelectItem value="diesel" className="text-right">דיזל</SelectItem>
-                    <SelectItem value="hybrid" className="text-right">היברידי</SelectItem>
-                    <SelectItem value="electric" className="text-right">חשמלי</SelectItem>
-                    <SelectItem value="plugin_hybrid" className="text-right">פלאג אין</SelectItem>
+                  <SelectContent align="end" className="bg-background z-50 text-right">
+                    <SelectItem value="gasoline" className="justify-end text-right">בנזין</SelectItem>
+                    <SelectItem value="diesel" className="justify-end text-right">דיזל</SelectItem>
+                    <SelectItem value="hybrid" className="justify-end text-right">היברידי</SelectItem>
+                    <SelectItem value="electric" className="justify-end text-right">חשמלי</SelectItem>
+                    <SelectItem value="plugin_hybrid" className="justify-end text-right">פלאג אין</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
