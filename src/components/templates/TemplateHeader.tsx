@@ -1,6 +1,6 @@
 
-import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, MessageSquare } from "lucide-react";
+import { Plus, MessageSquare } from "lucide-react";
+import { StandardPageHeader } from "@/components/common/StandardPageHeader";
 
 interface TemplateHeaderProps {
   onNewTemplate: () => void;
@@ -10,50 +10,19 @@ interface TemplateHeaderProps {
 
 export function TemplateHeader({ 
   onNewTemplate, 
-  onResetDefaults,
   canAddTemplate = true 
 }: TemplateHeaderProps) {
   return (
-    <div className="bg-brand-gradient rounded-lg p-6 mb-8 text-white">
-      <div className="flex flex-col sm:flex-row justify-between items-center">
-        {/* כותרת ותיאור - צד שמאל */}
-        <div className="text-right order-1 sm:order-1">
-          <div className="flex items-center justify-end gap-3 mb-2">
-            <h1 className="text-3xl font-bold">תבניות הודעה</h1>
-            <MessageSquare className="h-8 w-8" />
-          </div>
-          <p className="text-white/90 text-lg">
-            נהל והתאם אישית תבניות הודעות לשליחה ללקוחות
-          </p>
-          <p className="text-white/70 text-sm mt-1">
-            צור תבניות מותאמות אישית עם משתנים דינמיים לפרטי הרכב
-          </p>
-        </div>
-        
-        {/* כפתורי פעולה - צד ימין */}
-        <div className="flex gap-3 order-2 sm:order-2">
-          {onResetDefaults && (
-            <Button
-              variant="outline"
-              size="default"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 flex items-center gap-2"
-              onClick={onResetDefaults}
-            >
-              <RefreshCw className="h-4 w-4" />
-              אפס לברירת מחדל
-            </Button>
-          )}
-          <Button
-            size="default"
-            className="bg-white text-brand-primary hover:bg-white/90 flex items-center gap-2 font-semibold"
-            onClick={onNewTemplate}
-            disabled={!canAddTemplate}
-          >
-            <Plus className="h-4 w-4" />
-            תבנית חדשה
-          </Button>
-        </div>
-      </div>
-    </div>
+    <StandardPageHeader
+      title="תבניות הודעה"
+      subtitle="נהל והתאם אישית תבניות הודעות לשליחה ללקוחות"
+      icon={MessageSquare}
+      actionButton={{
+        label: "תבנית חדשה",
+        onClick: onNewTemplate,
+        icon: Plus,
+        className: !canAddTemplate ? "opacity-50 cursor-not-allowed" : undefined
+      }}
+    />
   );
 }
