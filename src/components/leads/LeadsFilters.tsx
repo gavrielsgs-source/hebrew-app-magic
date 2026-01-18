@@ -63,12 +63,12 @@ export function LeadsFilters({
             >
               <SelectValue placeholder="סטטוס" />
             </SelectTrigger>
-            <SelectContent dir="rtl" align="end">
-              <SelectItem value="all">כל הסטטוסים</SelectItem>
-              <SelectItem value="new">חדש</SelectItem>
-              <SelectItem value="in_progress">בטיפול</SelectItem>
-              <SelectItem value="waiting">בהמתנה</SelectItem>
-              <SelectItem value="closed">סגור</SelectItem>
+            <SelectContent align="end" className="text-right">
+              <SelectItem value="all" className="justify-end text-right">כל הסטטוסים</SelectItem>
+              <SelectItem value="new" className="justify-end text-right">חדש</SelectItem>
+              <SelectItem value="in_progress" className="justify-end text-right">בטיפול</SelectItem>
+              <SelectItem value="waiting" className="justify-end text-right">בהמתנה</SelectItem>
+              <SelectItem value="closed" className="justify-end text-right">סגור</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -83,13 +83,13 @@ export function LeadsFilters({
             >
               <SelectValue placeholder="מקור" />
             </SelectTrigger>
-            <SelectContent dir="rtl" align="end">
-              <SelectItem value="all">כל המקורות</SelectItem>
-              <SelectItem value="ידני">ידני</SelectItem>
-              <SelectItem value="פייסבוק">פייסבוק</SelectItem>
-              <SelectItem value="אתר">אתר</SelectItem>
-              <SelectItem value="המלצה">המלצה</SelectItem>
-              <SelectItem value="טלפון">טלפון</SelectItem>
+            <SelectContent align="end" className="text-right">
+              <SelectItem value="all" className="justify-end text-right">כל המקורות</SelectItem>
+              <SelectItem value="ידני" className="justify-end text-right">ידני</SelectItem>
+              <SelectItem value="פייסבוק" className="justify-end text-right">פייסבוק</SelectItem>
+              <SelectItem value="אתר" className="justify-end text-right">אתר</SelectItem>
+              <SelectItem value="המלצה" className="justify-end text-right">המלצה</SelectItem>
+              <SelectItem value="טלפון" className="justify-end text-right">טלפון</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -104,11 +104,11 @@ export function LeadsFilters({
             >
               <SelectValue placeholder="מיון לפי" />
             </SelectTrigger>
-            <SelectContent dir="rtl" align="end">
-              <SelectItem value="created_at">תאריך יצירה</SelectItem>
-              <SelectItem value="name">שם</SelectItem>
-              <SelectItem value="status">סטטוס</SelectItem>
-              <SelectItem value="source">מקור</SelectItem>
+            <SelectContent align="end" className="text-right">
+              <SelectItem value="created_at" className="justify-end text-right">תאריך יצירה</SelectItem>
+              <SelectItem value="name" className="justify-end text-right">שם</SelectItem>
+              <SelectItem value="status" className="justify-end text-right">סטטוס</SelectItem>
+              <SelectItem value="source" className="justify-end text-right">מקור</SelectItem>
             </SelectContent>
           </Select>
         </div>
