@@ -67,14 +67,14 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
           {getStatusText(lead.status)}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent dir="rtl" align="end">
-        <SelectItem value="new">חדש</SelectItem>
-        <SelectItem value="in_treatment">בטיפול</SelectItem>
-        <SelectItem value="waiting">ממתין</SelectItem>
-        <SelectItem value="meeting_scheduled">נקבעה פגישה</SelectItem>
-        <SelectItem value="follow_up">לעקוב</SelectItem>
-        <SelectItem value="handled">טופל</SelectItem>
-        <SelectItem value="not_relevant">לא רלוונטי</SelectItem>
+      <SelectContent align="end" className="text-right">
+        <SelectItem value="new" className="justify-end text-right">חדש</SelectItem>
+        <SelectItem value="in_treatment" className="justify-end text-right">בטיפול</SelectItem>
+        <SelectItem value="waiting" className="justify-end text-right">ממתין</SelectItem>
+        <SelectItem value="meeting_scheduled" className="justify-end text-right">נקבעה פגישה</SelectItem>
+        <SelectItem value="follow_up" className="justify-end text-right">לעקוב</SelectItem>
+        <SelectItem value="handled" className="justify-end text-right">טופל</SelectItem>
+        <SelectItem value="not_relevant" className="justify-end text-right">לא רלוונטי</SelectItem>
       </SelectContent>
     </Select>
   );
