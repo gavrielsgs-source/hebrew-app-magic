@@ -51,21 +51,21 @@ export function CustomerPaymentsHistory({ customerId }: CustomerPaymentsHistoryP
   };
 
   return (
-    <Card className="shadow-2xl rounded-3xl border-0 bg-gradient-to-br from-white/95 to-blue-50/95 backdrop-blur-md">
-      <CardHeader className="pb-4">
+    <Card className="shadow-lg rounded-2xl border-0 bg-gradient-to-br from-white/95 to-blue-50/95 backdrop-blur-md">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl blur-sm"></div>
-              <div className="relative bg-gradient-to-br from-blue-500/10 to-indigo-500/10 p-4 rounded-2xl">
-                <Receipt className="h-8 w-8 text-blue-600" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl blur-sm"></div>
+              <div className="relative bg-gradient-to-br from-blue-500/10 to-indigo-500/10 p-3 rounded-xl">
+                <Receipt className="h-5 w-5 text-blue-600" />
               </div>
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold text-slate-800 mb-1">
+              <CardTitle className="text-base font-semibold text-slate-800">
                 היסטוריית תשלומים
               </CardTitle>
-              <CardDescription className="text-lg text-slate-600">
+              <CardDescription className="text-sm text-slate-600">
                 {payments?.length || 0} תשלומים נרשמו
               </CardDescription>
             </div>
@@ -75,14 +75,14 @@ export function CustomerPaymentsHistory({ customerId }: CustomerPaymentsHistoryP
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">טוען...</div>
+          <div className="text-center py-6 text-sm text-muted-foreground">טוען...</div>
         ) : !payments || payments.length === 0 ? (
-          <div className="text-center py-12 bg-slate-50 rounded-2xl">
-            <Receipt className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-            <p className="text-lg text-muted-foreground">
+          <div className="text-center py-8 bg-slate-50 rounded-xl">
+            <Receipt className="h-8 w-8 mx-auto text-slate-300 mb-3" />
+            <p className="text-sm text-muted-foreground">
               אין תשלומים רשומים
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               הוסף תשלום ראשון כדי להתחיל לעקוב
             </p>
           </div>
