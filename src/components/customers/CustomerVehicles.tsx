@@ -1,9 +1,11 @@
-import { Car, Plus, Calendar, DollarSign, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
+import { Car, Plus, Calendar, DollarSign, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddVehicleDialog } from "./AddVehicleDialog";
+import { AddPaymentDialog } from "./AddPaymentDialog";
 import { useCustomerVehiclePurchases, useCustomerVehicleSales } from "@/hooks/customers";
 
 interface CustomerVehiclesProps {
@@ -81,31 +83,74 @@ export function CustomerVehicles({ customerId }: CustomerVehiclesProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                {purchases.map((purchase) => (
-                  <div key={purchase.id} className="border rounded-lg p-4 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-lg">
-                        {purchase.car?.make} {purchase.car?.model} {purchase.car?.year}
-                      </h4>
-                      <Badge variant="default" className="bg-green-600 shadow-sm">נמכר</Badge>
-                    </div>
-                    {purchase.car?.license_number && (
-                      <p className="text-sm text-slate-600 mb-2">
-                        מספר רישוי: {purchase.car.license_number}
-                      </p>
-                    )}
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4" />
-                        <span>₪{purchase.purchase_price?.toLocaleString() || 'לא צוין'}</span>
+                {purchases.map((purchase) => {
+                  const purchasePrice = purchase.purchase_price || 0;
+                  const amountPaid = purchase.amount_paid || 0;
+                  const remaining = purchasePrice - amountPaid;
+                  const paymentPercentage = purchasePrice > 0 ? Math.min(100, (amountPaid / purchasePrice) * 100) : 0;
+                  const isFullyPaid = remaining <= 0;
+
+                  return (
+                    <div key={purchase.id} className="border rounded-xl p-4 bg-gradient-to-r from-white to-slate-50/50 shadow-sm hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-lg">
+                          {purchase.car?.make} {purchase.car?.model} {purchase.car?.year}
+                        </h4>
+                        <Badge variant={isFullyPaid ? "default" : "secondary"} className={isFullyPaid ? "bg-green-600 shadow-sm" : "bg-amber-500 shadow-sm"}>
+                          {isFullyPaid ? 'שולם במלואו' : 'בתשלום'}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>{new Date(purchase.purchase_date || purchase.created_at).toLocaleDateString('he-IL')}</span>
+                      {purchase.car?.license_number && (
+                        <p className="text-sm text-slate-600 mb-2">
+                          מספר רישוי: {purchase.car.license_number}
+                        </p>
+                      )}
+                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          <span>מחיר: ₪{purchasePrice.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>{new Date(purchase.purchase_date || purchase.created_at).toLocaleDateString('he-IL')}</span>
+                        </div>
                       </div>
+                      
+                      {/* Payment Progress */}
+                      {purchasePrice > 0 && (
+                        <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+                          <div className="flex items-center justify-between text-sm mb-2">
+                            <div className="flex items-center gap-2">
+                              <Wallet className="h-4 w-4 text-slate-500" />
+                              <span className="text-slate-600">שולם: ₪{amountPaid.toLocaleString()}</span>
+                            </div>
+                            <span className={`font-medium ${isFullyPaid ? 'text-green-600' : 'text-amber-600'}`}>
+                              {Math.round(paymentPercentage)}%
+                            </span>
+                          </div>
+                          <Progress value={paymentPercentage} className="h-2 mb-2" />
+                          <div className="flex items-center justify-between">
+                            <span className={`text-sm ${isFullyPaid ? 'text-green-600' : 'text-amber-600'}`}>
+                              {isFullyPaid ? '✓ שולם במלואו' : `נותר: ₪${remaining.toLocaleString()}`}
+                            </span>
+                            {!isFullyPaid && (
+                              <AddPaymentDialog 
+                                customerId={customerId}
+                                preselectedPurchaseId={purchase.id}
+                                trigger={
+                                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                                    <Plus className="h-3 w-3 ml-1" />
+                                    הוסף תשלום
+                                  </Button>
+                                }
+                              />
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </TabsContent>

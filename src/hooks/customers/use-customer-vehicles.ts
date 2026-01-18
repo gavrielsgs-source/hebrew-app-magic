@@ -9,6 +9,7 @@ export interface CustomerVehiclePurchase {
   car_id: string;
   purchase_price?: number;
   purchase_date?: string;
+  amount_paid?: number;
   created_at: string;
   car?: {
     id: string;
