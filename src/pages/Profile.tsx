@@ -9,13 +9,14 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Shield, Mail, User, Eye, Phone, Building, ChevronRight, MapPin, Calendar, Save, Users, Bell, Briefcase } from "lucide-react";
+import { Shield, Mail, User, Eye, Phone, Building, ChevronRight, MapPin, Calendar, Save, Users, Bell, Briefcase, Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useRoles } from "@/hooks/use-roles";
 import { useCompanies } from "@/hooks/use-companies";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/contexts/subscription-context";
+import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
 
 export default function Profile() {
   const { profile, updateProfile, isLoading } = useProfile();
@@ -304,13 +305,20 @@ export default function Profile() {
         {/* Tabs Section */}
         <Tabs defaultValue="profile" className="space-y-6">
           <div className="bg-white rounded-xl border border-gray-200 p-2">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-50">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-50">
               <TabsTrigger 
                 value="profile" 
                 className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm flex items-center justify-center"
               >
                 <User className="h-4 w-4 mr-2" />
                 פרטים אישיים
+              </TabsTrigger>
+              <TabsTrigger 
+                value="inventory"
+                className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm flex items-center justify-center"
+              >
+                <Globe className="h-4 w-4 mr-2" />
+                דף מלאי
               </TabsTrigger>
               <TabsTrigger 
                 value="notifications"
@@ -429,6 +437,10 @@ export default function Profile() {
                 </form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <InventorySettingsTab />
           </TabsContent>
 
           <TabsContent value="notifications">

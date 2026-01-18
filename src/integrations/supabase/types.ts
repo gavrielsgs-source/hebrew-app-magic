@@ -955,6 +955,9 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           id: string
+          inventory_enabled: boolean | null
+          inventory_settings: Json | null
+          inventory_slug: string | null
           notification_preferences: Json | null
           phone: string | null
           position: string | null
@@ -968,6 +971,9 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id: string
+          inventory_enabled?: boolean | null
+          inventory_settings?: Json | null
+          inventory_slug?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           position?: string | null
@@ -981,6 +987,9 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id?: string
+          inventory_enabled?: boolean | null
+          inventory_settings?: Json | null
+          inventory_slug?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           position?: string | null

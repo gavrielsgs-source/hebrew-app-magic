@@ -61,6 +61,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Invoices from "./pages/Invoices";
 import AccountantReports from "./pages/AccountantReports";
+import PublicInventory from "./pages/PublicInventory";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -101,6 +102,7 @@ const App = () => {
                     <Route path="/auth" element={<AuthRoute />} />
                     <Route path="/signup-trial" element={<SignupTrial />} />
                     <Route path="/trial-signup" element={<TrialSignup />} />
+                    <Route path="/inventory/:slug" element={<PublicInventory />} />
                     <Route path="/accept-invitation" element={<AcceptInvitation />} />
                     <Route path="/welcome" element={
                       <ProtectedRoute requireSubscriptionCheck={false}>
