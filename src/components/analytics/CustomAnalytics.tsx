@@ -196,7 +196,7 @@ export function CustomAnalytics() {
         </Card>
       </div>
 
-      <SmartInsights data={currentPeriodData} />
+      <SmartInsights />
 
       <Tabs defaultValue="advanced" className="space-y-4">
         <TabsList>

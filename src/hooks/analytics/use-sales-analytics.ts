@@ -16,13 +16,15 @@ export function useSalesAnalytics(dateRange: { from: Date; to: Date }) {
         const fromDate = format(dateRange.from, "yyyy-MM-dd");
         const toDate = format(dateRange.to, "yyyy-MM-dd");
         
-        const { data: leads, error: leadsError } = await supabase
-          .from("leads")
-          .select("*, cars(*)")
-          .gte("created_at", fromDate)
-          .lte("created_at", toDate);
+        // שליפת רכבים שנמכרו - זה מבוסס על סטטוס הרכב ולא הליד
+        const { data: soldCars, error: carsError } = await supabase
+          .from("cars")
+          .select("*")
+          .eq("status", "sold")
+          .gte("updated_at", fromDate)
+          .lte("updated_at", toDate);
 
-        if (leadsError) throw leadsError;
+        if (carsError) throw carsError;
         
         // Only fetch current user's profile for security
         const { data: currentUser } = await supabase.auth.getUser();
@@ -36,17 +38,15 @@ export function useSalesAnalytics(dateRange: { from: Date; to: Date }) {
           
         if (profileError) throw profileError;
         
-        const safeLeads = leads || [];
+        const safeCars = soldCars || [];
         
         // חישוב מכירות של המשתמש הנוכחי בלבד (אבטחה)
-        const userLeads = safeLeads.filter(l => (l as any).user_id === currentUser.user.id);
-        const userSales = userLeads.filter(l => (l as any).status === "closed").length;
-        const userAmount = userLeads
-          .filter(l => (l as any).status === "closed" && (l as any).cars && (l as any).cars.price)
-          .reduce((sum: number, l: any) => {
-            const carPrice = l.cars?.price;
-            return sum + (typeof carPrice === 'number' ? carPrice : 0);
-          }, 0);
+        const userCars = safeCars.filter(car => car.user_id === currentUser.user.id);
+        const userSales = userCars.length;
+        const userAmount = userCars.reduce((sum, car) => {
+          const carPrice = car.price;
+          return sum + (typeof carPrice === 'number' ? carPrice : 0);
+        }, 0);
         
         const salesByAgent = [{
           agent: userProfile?.full_name || "אני",
@@ -54,19 +54,19 @@ export function useSalesAnalytics(dateRange: { from: Date; to: Date }) {
           amount: userAmount,
         }].filter(agent => agent.sales > 0);
         
-        // חישוב מכירות לאורך זמן - קיבוץ חודשי
+        // חישוב מכירות לאורך זמן - קיבוץ חודשי לפי תאריך עדכון הרכב
         const salesByMonth: Record<string, { sales: number; amount: number }> = {};
         
-        userLeads.filter(l => (l as any).status === "closed").forEach((lead: any) => {
-          const createdAt = lead.created_at;
-          if (typeof createdAt === 'string') {
-            const date = new Date(createdAt);
+        userCars.forEach((car) => {
+          const updatedAt = car.updated_at;
+          if (typeof updatedAt === 'string') {
+            const date = new Date(updatedAt);
             const monthKey = format(date, 'yyyy-MM');
             if (!salesByMonth[monthKey]) {
               salesByMonth[monthKey] = { sales: 0, amount: 0 };
             }
             salesByMonth[monthKey].sales += 1;
-            const carPrice = lead.cars?.price;
+            const carPrice = car.price;
             salesByMonth[monthKey].amount += (typeof carPrice === 'number' ? carPrice : 0);
           }
         });

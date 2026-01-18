@@ -91,7 +91,7 @@ export default function Dashboard() {
 
           <DashboardDetailedTables />
 
-          <SmartInsights data={salesData} />
+          <SmartInsights />
         </div>
       </div>
     </div>
