@@ -96,67 +96,42 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
 
   if (compact) {
     return (
-      <div className="flex items-center gap-2">
-        {!isChanging ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsChanging(true)}
-            className="h-auto p-0 hover:bg-transparent"
-            disabled={isLoading}
-          >
-            <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full transition-all duration-200 cursor-pointer hover:shadow-md`}>
-              <span className="ml-1">{getStatusText(car.status)}</span>
-              {isLoading ? (
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              ) : (
-                <ChevronDown className="h-3 w-3 mr-1" />
-              )}
-            </Badge>
-          </Button>
-        ) : (
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-2 shadow-lg">
-            <Select 
-              value={car.status || 'available'} 
-              onValueChange={handleStatusChange}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="h-8 w-28 border-0 focus:ring-0 bg-transparent">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
-                <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
-                  <span className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
-                    זמין
-                  </span>
-                </SelectItem>
-                <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
-                  <span className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
-                    שמור
-                  </span>
-                </SelectItem>
-                <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
-                  <span className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
-                    נמכר
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-              className="h-8 w-8 p-0 hover:bg-gray-100"
-              disabled={isLoading}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-      </div>
+      <Select 
+        value={car.status || 'available'} 
+        onValueChange={handleStatusChange}
+        disabled={isLoading}
+      >
+        <SelectTrigger 
+          className={`${getStatusColor(car.status)} font-medium px-4 py-2 rounded-full border-2 border-transparent transition-all duration-200 cursor-pointer hover:shadow-md h-auto w-auto inline-flex items-center gap-1 focus:ring-2 focus:ring-primary/30 focus:ring-offset-2`}
+        >
+          {isLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin ml-1" />
+          ) : null}
+          <SelectValue>
+            {getStatusText(car.status)}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
+          <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
+            <span className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
+              זמין
+            </span>
+          </SelectItem>
+          <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
+            <span className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
+              שמור
+            </span>
+          </SelectItem>
+          <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
+            <span className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
+              נמכר
+            </span>
+          </SelectItem>
+        </SelectContent>
+      </Select>
     );
   }
 
