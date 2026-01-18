@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X, Search, SortAsc, SortDesc } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface LeadsFiltersProps {
   searchTerm: string;
@@ -37,92 +36,117 @@ export function LeadsFilters({
   activeFiltersCount
 }: LeadsFiltersProps) {
   return (
-    <div className="flex flex-col gap-4 mb-6">
-      {/* Search Bar */}
+    <div className="flex flex-col gap-4 mb-6" role="search" aria-label="סינון לידים">
+      {/* Search Bar - Modern design */}
       <div className="relative">
-        <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" aria-hidden="true" />
         <Input
           placeholder="חיפוש לקוחות לפי שם, טלפון או אימייל..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-4 pr-10 text-right"
+          className="pl-4 pr-12 py-3 h-12 text-base rounded-xl border-2 focus:border-primary transition-all shadow-sm hover:shadow-md"
           dir="rtl"
+          aria-label="חיפוש לקוחות"
+          type="search"
         />
       </div>
 
-      {/* Filters and Sort */}
+      {/* Filters and Sort - Modern cards */}
       <div className="flex flex-wrap gap-3 items-center">
         {/* Status Filter */}
-        <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-          <SelectTrigger className="w-[140px]" dir="rtl">
-            <SelectValue placeholder="סטטוס" />
-          </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="all">כל הסטטוסים</SelectItem>
-            <SelectItem value="new">חדש</SelectItem>
-            <SelectItem value="in_progress">בטיפול</SelectItem>
-            <SelectItem value="waiting">בהמתנה</SelectItem>
-            <SelectItem value="closed">סגור</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-1">
+          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+            <SelectTrigger 
+              className="w-[160px]" 
+              dir="rtl"
+              aria-label="סינון לפי סטטוס"
+            >
+              <SelectValue placeholder="סטטוס" />
+            </SelectTrigger>
+            <SelectContent dir="rtl" align="end">
+              <SelectItem value="all">כל הסטטוסים</SelectItem>
+              <SelectItem value="new">חדש</SelectItem>
+              <SelectItem value="in_progress">בטיפול</SelectItem>
+              <SelectItem value="waiting">בהמתנה</SelectItem>
+              <SelectItem value="closed">סגור</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Source Filter */}
-        <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
-          <SelectTrigger className="w-[140px]" dir="rtl">
-            <SelectValue placeholder="מקור" />
-          </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="all">כל המקורות</SelectItem>
-            <SelectItem value="ידני">ידני</SelectItem>
-            <SelectItem value="פייסבוק">פייסבוק</SelectItem>
-            <SelectItem value="אתר">אתר</SelectItem>
-            <SelectItem value="המלצה">המלצה</SelectItem>
-            <SelectItem value="טלפון">טלפון</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-1">
+          <Select value={sourceFilter} onValueChange={onSourceFilterChange}>
+            <SelectTrigger 
+              className="w-[160px]" 
+              dir="rtl"
+              aria-label="סינון לפי מקור"
+            >
+              <SelectValue placeholder="מקור" />
+            </SelectTrigger>
+            <SelectContent dir="rtl" align="end">
+              <SelectItem value="all">כל המקורות</SelectItem>
+              <SelectItem value="ידני">ידני</SelectItem>
+              <SelectItem value="פייסבוק">פייסבוק</SelectItem>
+              <SelectItem value="אתר">אתר</SelectItem>
+              <SelectItem value="המלצה">המלצה</SelectItem>
+              <SelectItem value="טלפון">טלפון</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Sort Options */}
-        <Select value={sortBy} onValueChange={onSortByChange}>
-          <SelectTrigger className="w-[140px]" dir="rtl">
-            <SelectValue placeholder="מיון לפי" />
-          </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="created_at">תאריך יצירה</SelectItem>
-            <SelectItem value="name">שם</SelectItem>
-            <SelectItem value="status">סטטוס</SelectItem>
-            <SelectItem value="source">מקור</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-1">
+          <Select value={sortBy} onValueChange={onSortByChange}>
+            <SelectTrigger 
+              className="w-[160px]" 
+              dir="rtl"
+              aria-label="מיון לפי"
+            >
+              <SelectValue placeholder="מיון לפי" />
+            </SelectTrigger>
+            <SelectContent dir="rtl" align="end">
+              <SelectItem value="created_at">תאריך יצירה</SelectItem>
+              <SelectItem value="name">שם</SelectItem>
+              <SelectItem value="status">סטטוס</SelectItem>
+              <SelectItem value="source">מקור</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Sort Order */}
+        {/* Sort Order Button - Modern design */}
         <Button
           variant="outline"
-          size="sm"
+          size="default"
           onClick={() => onSortOrderChange(sortOrder === "asc" ? "desc" : "asc")}
-          className="flex items-center gap-1"
+          className="flex items-center gap-2 h-11 px-4 rounded-xl border-2 hover:border-primary/50 hover:bg-accent/50 transition-all shadow-sm hover:shadow-md"
+          aria-label={sortOrder === "asc" ? "סדר יורד" : "סדר עולה"}
         >
           {sortOrder === "asc" ? (
-            <SortAsc className="h-4 w-4" />
+            <SortAsc className="h-4 w-4" aria-hidden="true" />
           ) : (
-            <SortDesc className="h-4 w-4" />
+            <SortDesc className="h-4 w-4" aria-hidden="true" />
           )}
-          {sortOrder === "asc" ? "עולה" : "יורד"}
+          <span className="font-medium">{sortOrder === "asc" ? "עולה" : "יורד"}</span>
         </Button>
 
-        {/* Active Filters Badge */}
+        {/* Active Filters Badge - Modern style */}
         {activeFiltersCount > 0 && (
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Filter className="h-3 w-3" />
+          <div className="flex items-center gap-3 mr-auto">
+            <Badge 
+              variant="secondary" 
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl bg-primary/10 text-primary border-0"
+            >
+              <Filter className="h-4 w-4" aria-hidden="true" />
               {activeFiltersCount} פילטרים פעילים
             </Badge>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClearFilters}
-              className="text-red-600 hover:text-red-700"
+              className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 rounded-xl gap-1.5 font-medium"
+              aria-label="נקה את כל הפילטרים"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
               נקה הכל
             </Button>
           </div>

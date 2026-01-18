@@ -15,14 +15,14 @@ export function EditLeadAssignedField({ control, salesAgents }: Props) {
       name="assigned_to"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>איש מכירות מטפל</FormLabel>
+          <FormLabel className="text-base font-semibold">איש מכירות מטפל</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger aria-label="בחר איש מכירות מטפל">
                 <SelectValue placeholder="בחר סוכן מכירות" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent dir="rtl" align="end">
               <SelectItem value="unassigned">לא משויך</SelectItem>
               {salesAgents.map((agent: any) => (
                 <SelectItem key={agent.id} value={agent.id}>

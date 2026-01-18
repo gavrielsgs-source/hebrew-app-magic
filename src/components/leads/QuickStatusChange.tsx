@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { useUpdateLead } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { getStatusBadgeColor, getStatusText } from "./grid/utils/lead-status";
@@ -60,19 +59,22 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
       onValueChange={handleStatusChange}
       disabled={isChanging}
     >
-      <SelectTrigger className={`leads-status-badge border-0 p-0 h-auto cursor-pointer ${getStatusBadgeColor(lead.status)} inline-flex items-center rounded-2xl px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2`}>
+      <SelectTrigger 
+        className={`leads-status-badge border-2 border-transparent p-0 h-auto cursor-pointer ${getStatusBadgeColor(lead.status)} inline-flex items-center rounded-2xl px-4 py-2.5 text-sm font-semibold shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2`}
+        aria-label={`סטטוס: ${getStatusText(lead.status)}. לחץ לשינוי`}
+      >
         <SelectValue>
           {getStatusText(lead.status)}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="bg-white rounded-2xl shadow-2xl border-2 z-50" dir="rtl">
-        <SelectItem value="new" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">חדש</SelectItem>
-        <SelectItem value="in_treatment" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">בטיפול</SelectItem>
-        <SelectItem value="waiting" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">ממתין</SelectItem>
-        <SelectItem value="meeting_scheduled" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">נקבעה פגישה</SelectItem>
-        <SelectItem value="follow_up" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">לעקוב</SelectItem>
-        <SelectItem value="handled" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">טופל</SelectItem>
-        <SelectItem value="not_relevant" className="text-lg p-4 rounded-xl hover:bg-slate-50 cursor-pointer text-right">לא רלוונטי</SelectItem>
+      <SelectContent dir="rtl" align="end">
+        <SelectItem value="new">חדש</SelectItem>
+        <SelectItem value="in_treatment">בטיפול</SelectItem>
+        <SelectItem value="waiting">ממתין</SelectItem>
+        <SelectItem value="meeting_scheduled">נקבעה פגישה</SelectItem>
+        <SelectItem value="follow_up">לעקוב</SelectItem>
+        <SelectItem value="handled">טופל</SelectItem>
+        <SelectItem value="not_relevant">לא רלוונטי</SelectItem>
       </SelectContent>
     </Select>
   );
