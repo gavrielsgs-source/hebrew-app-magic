@@ -124,7 +124,7 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
               <SelectTrigger className="h-8 w-28 border-0 focus:ring-0 bg-transparent">
                 <SelectValue />
               </SelectTrigger>
-                <SelectContent align="end" className="text-right">
+              <SelectContent align="end" className="bg-white border border-gray-200 shadow-lg text-right">
                 <SelectItem value="available" className="justify-end text-right hover:bg-green-50">
                   <span className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -176,7 +176,7 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
         <SelectTrigger className="w-full">
           <SelectValue placeholder="בחר סטטוס" />
         </SelectTrigger>
-        <SelectContent align="end" className="text-right">
+        <SelectContent align="end" className="bg-white border border-gray-200 shadow-lg text-right">
           <SelectItem value="available" className="justify-end text-right hover:bg-green-50">
             <span className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
