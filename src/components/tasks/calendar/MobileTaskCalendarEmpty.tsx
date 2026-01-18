@@ -1,6 +1,6 @@
 
 import { MobileCard } from "@/components/mobile/MobileCard";
-import { Calendar } from "lucide-react";
+import { Calendar, CheckCircle2 } from "lucide-react";
 
 interface MobileTaskCalendarEmptyProps {
   viewMode: "today" | "upcoming";
@@ -9,13 +9,19 @@ interface MobileTaskCalendarEmptyProps {
 export function MobileTaskCalendarEmpty({ viewMode }: MobileTaskCalendarEmptyProps) {
   return (
     <div dir="rtl">
-      <MobileCard className="py-20 text-center mobile-gradient-card mx-4 rounded-3xl">
-        <Calendar className="h-20 w-20 mx-auto mb-6 text-gray-300" />
-        <h3 className="text-2xl font-bold mb-4 text-gray-600 text-right">
+      <MobileCard className="py-16 text-center rounded-2xl border-2 border-dashed border-muted-foreground/20 bg-muted/20">
+        <div className="p-5 bg-muted/50 rounded-full w-fit mx-auto mb-5">
+          {viewMode === "today" ? (
+            <CheckCircle2 className="h-16 w-16 text-muted-foreground/40" />
+          ) : (
+            <Calendar className="h-16 w-16 text-muted-foreground/40" />
+          )}
+        </div>
+        <h3 className="text-xl font-bold mb-3 text-foreground">
           {viewMode === "today" ? "אין משימות להיום" : "אין משימות עתידיות"}
         </h3>
-        <p className="text-xl text-gray-500 text-right">
-          {viewMode === "today" ? "תיהנה מיום פנוי! 🎉" : "הכל נראה שקט לעת עתה"}
+        <p className="text-base text-muted-foreground">
+          {viewMode === "today" ? "תיהנה מיום פנוי! 🎉" : "הכל נראה שקט לעת עתה ✨"}
         </p>
       </MobileCard>
     </div>
