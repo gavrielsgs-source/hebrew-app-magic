@@ -15,16 +15,19 @@ export function AddLeadSourceField({ control }: Props) {
           <FormLabel className="text-base font-semibold">מקור</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
-              <SelectTrigger aria-label="בחר מקור ליד">
+              <SelectTrigger aria-label="בחר מקור ליד" className="rounded-xl text-right">
                 <SelectValue placeholder="בחר מקור" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent dir="rtl" align="end">
-              <SelectItem value="ידני">ידני</SelectItem>
-              <SelectItem value="פייסבוק">פייסבוק</SelectItem>
-              <SelectItem value="וואטסאפ">וואטסאפ</SelectItem>
-              <SelectItem value="אינסטגרם">אינסטגרם</SelectItem>
-              <SelectItem value="אחר">אחר</SelectItem>
+            <SelectContent 
+              align="end" 
+              className="rounded-xl bg-popover border shadow-lg z-50"
+            >
+              <SelectItem value="ידני" className="justify-end text-right">ידני</SelectItem>
+              <SelectItem value="פייסבוק" className="justify-end text-right">פייסבוק</SelectItem>
+              <SelectItem value="וואטסאפ" className="justify-end text-right">וואטסאפ</SelectItem>
+              <SelectItem value="אינסטגרם" className="justify-end text-right">אינסטגרם</SelectItem>
+              <SelectItem value="אחר" className="justify-end text-right">אחר</SelectItem>
             </SelectContent>
           </Select>
           <FormMessage />
