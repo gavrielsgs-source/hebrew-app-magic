@@ -92,8 +92,8 @@ const DropdownMenuContent = React.forwardRef<
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-3 data-[side=left]:slide-in-from-right-3",
         "data-[side=right]:slide-in-from-left-3 data-[side=top]:slide-in-from-bottom-3",
-        // RTL support
-        "rtl:text-right",
+        // RTL text alignment
+        "text-right [direction:rtl]",
         className
       )}
       role="menu"
@@ -120,9 +120,9 @@ const DropdownMenuItem = React.forwardRef<
       "focus:bg-accent focus:text-accent-foreground",
       "hover:bg-accent/70",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      // RTL support
-      "rtl:flex-row-reverse rtl:text-right",
-      inset && "ltr:pl-8 rtl:pr-8",
+      // RTL support - text aligned right
+      "flex-row-reverse text-right",
+      inset && "pr-8",
       className
     )}
     role="menuitem"
