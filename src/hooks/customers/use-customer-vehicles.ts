@@ -104,6 +104,20 @@ export function useAddCustomerVehiclePurchase() {
       purchasePrice?: number;
       purchaseDate?: string;
     }) => {
+      // Check for existing record to prevent duplicates
+      const { data: existing } = await supabase
+        .from('customer_vehicle_purchases')
+        .select('id')
+        .eq('customer_id', data.customerId)
+        .eq('car_id', data.carId)
+        .maybeSingle();
+
+      if (existing) {
+        // Already exists, return existing record
+        console.log('Vehicle purchase record already exists, skipping creation');
+        return existing;
+      }
+
       const { data: result, error } = await supabase
         .from('customer_vehicle_purchases')
         .insert({

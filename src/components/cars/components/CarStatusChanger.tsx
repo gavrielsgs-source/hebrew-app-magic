@@ -1,12 +1,11 @@
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Car } from "@/types/car";
 import { useUpdateCar } from "@/hooks/cars/use-update-car";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Check, X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { SellCarDialog } from "../SellCarDialog";
 
 interface CarStatusChangerProps {
   car: Car;
@@ -14,8 +13,8 @@ interface CarStatusChangerProps {
 }
 
 export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps) {
-  const [isChanging, setIsChanging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSellDialog, setShowSellDialog] = useState(false);
   const updateCar = useUpdateCar();
 
   const getStatusColor = (status: string | null) => {
@@ -46,10 +45,16 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
 
   const handleStatusChange = async (newStatus: string) => {
     if (newStatus === car.status) {
-      setIsChanging(false);
       return;
     }
 
+    // If changing to "sold", open the sell dialog
+    if (newStatus === 'sold') {
+      setShowSellDialog(true);
+      return;
+    }
+
+    // For other statuses, update directly
     setIsLoading(true);
     try {
       await updateCar.mutateAsync({
@@ -81,7 +86,6 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
       });
 
       toast.success("סטטוס הרכב עודכן בהצלחה");
-      setIsChanging(false);
     } catch (error) {
       console.error("Error updating car status:", error);
       toast.error("שגיאה בעדכון סטטוס הרכב");
@@ -90,88 +94,104 @@ export function CarStatusChanger({ car, compact = false }: CarStatusChangerProps
     }
   };
 
-  const handleCancel = () => {
-    setIsChanging(false);
+  const handleSellDialogClose = () => {
+    setShowSellDialog(false);
   };
 
   if (compact) {
     return (
-      <Select 
-        value={car.status || 'available'} 
-        onValueChange={handleStatusChange}
-        disabled={isLoading}
-      >
-        <SelectTrigger 
-          className={`${getStatusColor(car.status)} font-medium px-4 py-2 rounded-full border-2 border-transparent transition-all duration-200 cursor-pointer hover:shadow-md h-auto w-auto inline-flex items-center gap-1 focus:ring-2 focus:ring-primary/30 focus:ring-offset-2`}
+      <>
+        <Select 
+          value={car.status || 'available'} 
+          onValueChange={handleStatusChange}
+          disabled={isLoading}
         >
-          {isLoading ? (
-            <Loader2 className="h-3 w-3 animate-spin ml-1" />
-          ) : null}
-          <SelectValue>
-            {getStatusText(car.status)}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
-          <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
-            <span className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
-              זמין
-            </span>
-          </SelectItem>
-          <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
-            <span className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
-              שמור
-            </span>
-          </SelectItem>
-          <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
-            <span className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
-              נמכר
-            </span>
-          </SelectItem>
-        </SelectContent>
-      </Select>
+          <SelectTrigger 
+            className={`${getStatusColor(car.status)} font-medium px-4 py-2 rounded-full border-2 border-transparent transition-all duration-200 cursor-pointer hover:shadow-md h-auto w-auto inline-flex items-center gap-1 focus:ring-2 focus:ring-primary/30 focus:ring-offset-2`}
+          >
+            {isLoading ? (
+              <Loader2 className="h-3 w-3 animate-spin ml-1" />
+            ) : null}
+            <SelectValue>
+              {getStatusText(car.status)}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
+            <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
+              <span className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
+                זמין
+              </span>
+            </SelectItem>
+            <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
+              <span className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
+                שמור
+              </span>
+            </SelectItem>
+            <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
+              <span className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
+                נמכר
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        <SellCarDialog 
+          car={car} 
+          isOpen={showSellDialog} 
+          onClose={handleSellDialogClose} 
+        />
+      </>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">סטטוס:</span>
-        <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full`}>
-          {getStatusText(car.status)}
-        </Badge>
+    <>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700">סטטוס:</span>
+          <Badge className={`${getStatusColor(car.status)} font-medium px-3 py-1 rounded-full`}>
+            {getStatusText(car.status)}
+          </Badge>
+        </div>
+        <Select 
+          value={car.status || 'available'} 
+          onValueChange={handleStatusChange}
+          disabled={isLoading}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="בחר סטטוס" />
+          </SelectTrigger>
+          <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
+            <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
+              <span className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
+                זמין
+              </span>
+            </SelectItem>
+            <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
+              <span className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
+                שמור
+              </span>
+            </SelectItem>
+            <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
+              <span className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
+                נמכר
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      <Select 
-        value={car.status || 'available'} 
-        onValueChange={handleStatusChange}
-        disabled={isLoading}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="בחר סטטוס" />
-        </SelectTrigger>
-        <SelectContent align="end" className="bg-background border border-border/50 shadow-xl rounded-xl text-right min-w-[140px] p-1">
-          <SelectItem value="available" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-green-50">
-            <span className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-sm"></div>
-              זמין
-            </span>
-          </SelectItem>
-          <SelectItem value="reserved" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-yellow-50">
-            <span className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full shadow-sm"></div>
-              שמור
-            </span>
-          </SelectItem>
-          <SelectItem value="sold" className="justify-end text-right rounded-lg cursor-pointer transition-colors hover:bg-gray-100">
-            <span className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-gray-500 rounded-full shadow-sm"></div>
-              נמכר
-            </span>
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+
+      <SellCarDialog 
+        car={car} 
+        isOpen={showSellDialog} 
+        onClose={handleSellDialogClose} 
+      />
+    </>
   );
 }
