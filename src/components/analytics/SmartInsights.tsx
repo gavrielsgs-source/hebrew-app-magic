@@ -26,9 +26,9 @@ export function SmartInsights() {
     return (
       <Card className={`${isMobile ? 'my-4' : ''} rounded-2xl shadow-sm`}>
         <CardHeader className="pb-3 text-right">
-          <CardTitle className="text-lg font-medium flex items-center justify-end gap-2">
-            תובנות חכמות
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
             <span>📊</span>
+            תובנות חכמות
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -46,9 +46,9 @@ export function SmartInsights() {
     return (
       <Card className={`${isMobile ? 'my-4' : ''} rounded-2xl shadow-sm`}>
         <CardHeader className="pb-3 text-right">
-          <CardTitle className="text-lg font-medium flex items-center justify-end gap-2">
-            תובנות חכמות
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
             <span>📊</span>
+            תובנות חכמות
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -70,10 +70,10 @@ export function SmartInsights() {
   return (
     <Card className={`${isMobile ? 'my-4' : ''} rounded-2xl shadow-sm`}>
       <CardHeader className="pb-3 text-right">
-        <CardTitle className="text-lg font-medium flex items-center justify-end gap-2">
-          תובנות חכמות
-          <span>📊</span>
-        </CardTitle>
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
+            <span>📊</span>
+            תובנות חכמות
+          </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">

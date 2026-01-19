@@ -48,8 +48,8 @@ export function BasicAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* כותרת */}
-      <div className="flex justify-end">
+      {/* כותרת - בצד ימין */}
+      <div className="flex justify-start">
         <div className="text-right">
           <h2 className="text-xl font-bold">ניתוח בסיסי</h2>
           <p className="text-sm text-muted-foreground">30 הימים האחרונים</p>
@@ -57,10 +57,10 @@ export function BasicAnalytics() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">לידים חדשים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">לידים חדשים</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentData.totalLeads}</div>
@@ -68,10 +68,10 @@ export function BasicAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">רכבים פעילים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <Car className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">רכבים פעילים</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentData.totalCars}</div>
@@ -79,10 +79,10 @@ export function BasicAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">עסקאות</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">עסקאות</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentData.totalSales}</div>
@@ -90,10 +90,10 @@ export function BasicAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">שיעור המרה</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">שיעור המרה</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentData.conversionRate.toFixed(1)}%</div>
