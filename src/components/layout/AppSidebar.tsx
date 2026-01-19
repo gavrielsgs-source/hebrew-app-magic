@@ -203,6 +203,26 @@ export function AppSidebar() {
                       <span>כל המסמכים</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+                  
+                  {/* כל סוגי המסמכים */}
+                  {DOCUMENT_TYPES.map((doc) => {
+                    const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
+                    return (
+                      <SidebarMenuSubItem key={doc.id}>
+                        <SidebarMenuSubButton
+                          onClick={() => {
+                            navigate(`/document-production/${doc.id}`);
+                            setDocProductionOpen(false);
+                          }}
+                          isActive={pathname === `/document-production/${doc.id}`}
+                          className="text-gray-300 hover:text-white"
+                        >
+                          <IconComponent className="h-4 w-4" />
+                          <span>{doc.name}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
                 </SidebarMenuSub>
               )}
             </SidebarMenuItem>
