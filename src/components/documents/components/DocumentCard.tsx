@@ -58,49 +58,64 @@ export function DocumentCard({
 
   const getDocumentTypeColor = (type: string) => {
     switch (type) {
-      case 'contract': return 'bg-blue-50 border-blue-200';
-      case 'insurance': return 'bg-green-50 border-green-200';
-      case 'license': return 'bg-yellow-50 border-yellow-200';
-      case 'invoice': return 'bg-purple-50 border-purple-200';
-      case 'id': return 'bg-orange-50 border-orange-200';
-      default: return 'bg-gray-50 border-gray-200';
+      case 'contract': return 'bg-blue-50/80 border-blue-200/50 dark:bg-blue-950/30 dark:border-blue-800/30';
+      case 'insurance': return 'bg-green-50/80 border-green-200/50 dark:bg-green-950/30 dark:border-green-800/30';
+      case 'license': return 'bg-yellow-50/80 border-yellow-200/50 dark:bg-yellow-950/30 dark:border-yellow-800/30';
+      case 'invoice': return 'bg-purple-50/80 border-purple-200/50 dark:bg-purple-950/30 dark:border-purple-800/30';
+      case 'id': return 'bg-orange-50/80 border-orange-200/50 dark:bg-orange-950/30 dark:border-orange-800/30';
+      default: return 'bg-muted/50 border-muted-foreground/10';
     }
   };
 
   return (
-    <div className={`border rounded-lg p-4 h-24 flex items-center justify-between transition-all hover:shadow-md ${
-      isTemplate ? 'border-yellow-300 bg-yellow-50' : getDocumentTypeColor(document.type)
+    <div className={`border rounded-2xl p-4 h-24 flex items-center justify-between transition-all hover:shadow-md hover:scale-[1.01] ${
+      isTemplate ? 'border-yellow-300/50 bg-yellow-50/80 dark:bg-yellow-950/30' : getDocumentTypeColor(document.type)
     }`}>
       <div className={`flex items-center gap-2 ${isMobile ? 'gap-1' : 'gap-2'}`}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size={isMobile ? "sm" : "sm"} className="h-8 w-8 p-0">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl hover:bg-background/80">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => window.open(document.url, '_blank')}>
+          <DropdownMenuContent 
+            align="start" 
+            className="rounded-xl bg-popover shadow-lg border z-50 min-w-[160px]"
+          >
+            <DropdownMenuItem 
+              onClick={() => window.open(document.url, '_blank')}
+              className="text-right justify-end rounded-lg"
+            >
               צפייה
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDownload}>
-              <Download className="w-4 h-4 ml-2" />
+            <DropdownMenuItem 
+              onClick={handleDownload}
+              className="text-right justify-end rounded-lg"
+            >
               הורדה
+              <Download className="w-4 h-4 mr-2" />
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSendWhatsApp(document)}>
-              <MessageCircle className="w-4 h-4 ml-2" />
+            <DropdownMenuItem 
+              onClick={() => onSendWhatsApp(document)}
+              className="text-right justify-end rounded-lg"
+            >
               שליחה בוואטסאפ
+              <MessageCircle className="w-4 h-4 mr-2" />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onToggleTemplate(document.id, !isTemplate)}>
+            <DropdownMenuItem 
+              onClick={() => onToggleTemplate(document.id, !isTemplate)}
+              className="text-right justify-end rounded-lg"
+            >
               {isTemplate ? (
                 <>
-                  <StarOff className="w-4 h-4 ml-2" />
                   הסרה מתבניות
+                  <StarOff className="w-4 h-4 mr-2" />
                 </>
               ) : (
                 <>
-                  <Star className="w-4 h-4 ml-2" />
                   שמירה כתבנית
+                  <Star className="w-4 h-4 mr-2" />
                 </>
               )}
             </DropdownMenuItem>
@@ -108,7 +123,7 @@ export function DocumentCard({
             <DropdownMenuItem 
               onClick={() => onDelete(document.id)}
               disabled={isDeleting}
-              className="text-red-600"
+              className="text-red-600 text-right justify-end rounded-lg"
             >
               מחיקה
             </DropdownMenuItem>

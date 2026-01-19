@@ -125,7 +125,7 @@ export function DocumentsManager({ entityId, entityType, filterTemplates = false
           onTypeFilterChange={setDocumentTypeFilter}
         />
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0">
           <UploadDocumentDialog
             isOpen={isDialogOpen}
             onOpenChange={setIsDialogOpen}
@@ -149,13 +149,13 @@ export function DocumentsManager({ entityId, entityType, filterTemplates = false
           <p className="text-muted-foreground">טוען מסמכים...</p>
         </div>
       ) : filteredDocuments?.length === 0 ? (
-        <div className="text-center border rounded-lg p-8">
+        <div className="text-center rounded-2xl p-8 bg-muted/30">
           <p className="text-muted-foreground mb-2">לא נמצאו מסמכים</p>
           <p className="text-sm text-muted-foreground">העלה מסמכים חדשים באמצעות כפתור "העלאת מסמך"</p>
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
-          <div className={`grid gap-4 p-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+        <div className="rounded-2xl overflow-hidden">
+          <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
             {filteredDocuments?.map((document) => (
               <DocumentCard
                 key={document.id}
