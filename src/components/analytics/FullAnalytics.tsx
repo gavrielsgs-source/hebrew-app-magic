@@ -80,7 +80,7 @@ export function FullAnalytics() {
   return (
     <div className="space-y-6">
       {/* כותרת - בצד ימין */}
-      <div className="flex justify-start">
+      <div className="flex justify-end">
         <div className="text-right">
           <h2 className="text-xl font-bold">ניתוח מתקדם</h2>
           <p className="text-sm text-muted-foreground">30 הימים האחרונים</p>

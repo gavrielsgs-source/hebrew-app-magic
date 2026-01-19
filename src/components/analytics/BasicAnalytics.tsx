@@ -16,7 +16,7 @@ export function BasicAnalytics() {
     return (
       <div className="space-y-6">
         {/* כותרת */}
-        <div className="flex justify-end">
+        <div className="flex justify-start">
           <div className="text-right">
             <h2 className="text-xl font-bold">ניתוח בסיסי</h2>
             <p className="text-sm text-muted-foreground">30 הימים האחרונים</p>
@@ -49,7 +49,7 @@ export function BasicAnalytics() {
   return (
     <div className="space-y-6">
       {/* כותרת - בצד ימין */}
-      <div className="flex justify-start">
+      <div className="flex justify-end">
         <div className="text-right">
           <h2 className="text-xl font-bold">ניתוח בסיסי</h2>
           <p className="text-sm text-muted-foreground">30 הימים האחרונים</p>

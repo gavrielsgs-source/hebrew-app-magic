@@ -23,7 +23,7 @@ export function CustomAnalytics() {
     return (
       <div className="space-y-6">
         {/* כותרת */}
-        <div className="flex flex-row-reverse justify-between items-center">
+        <div className="flex justify-between items-center">
           <div className="text-right">
             <h2 className="text-xl font-bold">אנליטיקה מותאמת אישית</h2>
             <p className="text-sm text-muted-foreground">דוחות מתקדמים ותחזיות</p>
@@ -125,23 +125,23 @@ export function CustomAnalytics() {
     <div className="space-y-6">
       {/* Header with custom controls */}
       <div className="flex justify-between items-center">
+        <div className="text-right">
+          <h2 className="text-xl font-bold">אנליטיקה מותאמת אישית</h2>
+          <p className="text-sm text-muted-foreground">דוחות מתקדמים ותחזיות</p>
+        </div>
         <div className="flex gap-2">
-          <Button size="sm" className="rounded-xl" onClick={handleExportData}>
-            <Download className="h-4 w-4 ml-2" />
-            ייצוא נתונים
+          <Button variant="outline" size="sm" className="rounded-xl">
+            <Filter className="h-4 w-4 ml-2" />
+            מסנן מתקדם
           </Button>
           <Button variant="outline" size="sm" className="rounded-xl">
             <Settings className="h-4 w-4 ml-2" />
             הגדרות דוח
           </Button>
-          <Button variant="outline" size="sm" className="rounded-xl">
-            <Filter className="h-4 w-4 ml-2" />
-            מסנן מתקדם
+          <Button size="sm" className="rounded-xl" onClick={handleExportData}>
+            <Download className="h-4 w-4 ml-2" />
+            ייצוא נתונים
           </Button>
-        </div>
-        <div className="text-right">
-          <h2 className="text-xl font-bold">אנליטיקה מותאמת אישית</h2>
-          <p className="text-sm text-muted-foreground">דוחות מתקדמים ותחזיות</p>
         </div>
       </div>
 
