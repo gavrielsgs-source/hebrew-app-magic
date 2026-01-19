@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, TrendingUp, Users, Car } from "lucide-react";
+import { TrendingUp, Users, Car, CheckCircle } from "lucide-react";
 import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
 import { SmartInsights } from "./SmartInsights";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -29,11 +29,11 @@ export function FullAnalytics() {
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">טוען...</CardTitle>
+            <Card key={i} className="rounded-2xl shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-end space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-right">טוען...</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-right">
                 <div className="text-2xl font-bold">--</div>
               </CardContent>
             </Card>
@@ -70,60 +70,70 @@ export function FullAnalytics() {
 
   const sourceData = currentPeriodData.leadsBySource;
 
+  // חישוב אחוזי שינוי
+  const getChangePercent = (current: number, previous: number) => {
+    if (!previous) return '0%';
+    const change = ((current - previous) / previous * 100).toFixed(1);
+    return `${change}%`;
+  };
+
   return (
     <div className="space-y-6">
+      {/* כותרת */}
+      <div className="flex justify-end">
+        <div className="text-right">
+          <h2 className="text-xl font-bold">ניתוח מתקדם</h2>
+          <p className="text-sm text-muted-foreground">30 הימים האחרונים</p>
+        </div>
+      </div>
+
+      {/* כרטיסי מדדים */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">לידים חדשים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">לידים חדשים</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalLeads}</div>
             <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalLeads ? 
-                `${(((currentPeriodData.totalLeads - previousPeriodData.totalLeads) / previousPeriodData.totalLeads) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
+              {getChangePercent(currentPeriodData.totalLeads, previousPeriodData.totalLeads)} מהתקופה הקודמת
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">רכבים פעילים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">רכבים פעילים</CardTitle>
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalCars}</div>
             <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalCars ? 
-                `${(((currentPeriodData.totalCars - previousPeriodData.totalCars) / previousPeriodData.totalCars) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
+              {getChangePercent(currentPeriodData.totalCars, previousPeriodData.totalCars)} מהתקופה הקודמת
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">משימות שהושלמו</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">עסקאות שנסגרו</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalSales}</div>
             <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalSales ? 
-                `${(((currentPeriodData.totalSales - previousPeriodData.totalSales) / previousPeriodData.totalSales) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
+              {getChangePercent(currentPeriodData.totalSales, previousPeriodData.totalSales)} מהתקופה הקודמת
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">שיעור המרה</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">שיעור המרה</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.conversionRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               מלידים לעסקאות סגורות
@@ -135,15 +145,15 @@ export function FullAnalytics() {
       <SmartInsights />
 
       <Tabs defaultValue="leads" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="leads">לידים</TabsTrigger>
-          <TabsTrigger value="sales">מכירות</TabsTrigger>
-          <TabsTrigger value="sources">מקורות</TabsTrigger>
+        <TabsList className="rounded-xl bg-muted/50 p-1">
+          <TabsTrigger value="leads" className="rounded-lg">לידים</TabsTrigger>
+          <TabsTrigger value="sales" className="rounded-lg">מכירות</TabsTrigger>
+          <TabsTrigger value="sources" className="rounded-lg">מקורות</TabsTrigger>
         </TabsList>
         
         <TabsContent value="leads" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="text-right">
               <CardTitle>מגמת לידים לאורך זמן</CardTitle>
               <CardDescription>התפתחות הלידים בחודשים האחרונים</CardDescription>
             </CardHeader>
@@ -177,8 +187,8 @@ export function FullAnalytics() {
         </TabsContent>
         
         <TabsContent value="sales" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="text-right">
               <CardTitle>ביצועי מכירות</CardTitle>
               <CardDescription>השוואה בין לידים למכירות</CardDescription>
             </CardHeader>
@@ -202,8 +212,8 @@ export function FullAnalytics() {
                     <XAxis dataKey="month" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="leads" fill="var(--color-leads)" />
-                    <Bar dataKey="sales" fill="var(--color-sales)" />
+                    <Bar dataKey="leads" fill="var(--color-leads)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="sales" fill="var(--color-sales)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -212,8 +222,8 @@ export function FullAnalytics() {
         </TabsContent>
         
         <TabsContent value="sources" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="text-right">
               <CardTitle>מקורות לידים</CardTitle>
               <CardDescription>פילוח לידים לפי מקור</CardDescription>
             </CardHeader>
@@ -233,7 +243,7 @@ export function FullAnalytics() {
                     <XAxis dataKey="source" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="count" fill="var(--color-count)" />
+                    <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
