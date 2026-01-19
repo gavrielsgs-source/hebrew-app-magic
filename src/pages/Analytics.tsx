@@ -1,5 +1,6 @@
-
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
+import { StandardPageHeader } from "@/components/common/StandardPageHeader";
+import { BarChart3 } from "lucide-react";
 import { useEffect } from "react";
 
 export default function Analytics() {
@@ -8,16 +9,9 @@ export default function Analytics() {
     document.documentElement.dir = "rtl";
     document.documentElement.lang = "he";
     
-    // Add inline style to fix SmartInsights alignment
+    // Add inline style to fix chart alignment
     const style = document.createElement('style');
     style.innerHTML = `
-      .analytics-card .card-description,
-      .analytics-card .card-title,
-      .analytics-card p,
-      .analytics-card div {
-        text-align: right !important;
-      }
-      
       [dir="rtl"] .recharts-wrapper .recharts-cartesian-axis-ticks text {
         text-anchor: end;
       }
@@ -36,12 +30,11 @@ export default function Analytics() {
   
   return (
     <div className="container py-4 md:py-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-right">אנליטיקה</h1>
-        <p className="text-muted-foreground text-right mt-2">
-          נתונים ותובנות עיסקיות מתקדמות
-        </p>
-      </div>
+      <StandardPageHeader
+        title="אנליטיקה"
+        subtitle="נתונים ותובנות עיסקיות מתקדמות"
+        icon={BarChart3}
+      />
       <AnalyticsDashboard />
     </div>
   );

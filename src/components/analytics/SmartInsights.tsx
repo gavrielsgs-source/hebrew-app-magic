@@ -24,16 +24,17 @@ export function SmartInsights() {
   
   if (isLoading) {
     return (
-      <Card className={`${isMobile ? 'my-4' : ''} analytics-card`}>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-right text-lg font-medium flex items-center gap-2">
-            📊 תובנות חכמות
+      <Card className={`${isMobile ? 'my-4' : ''} rounded-2xl shadow-sm`}>
+        <CardHeader className="pb-3 text-right">
+          <CardTitle className="text-lg font-medium flex items-center justify-end gap-2">
+            תובנות חכמות
+            <span>📊</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-20 w-full" />
+              <Skeleton key={i} className="h-20 w-full rounded-xl" />
             ))}
           </div>
         </CardContent>
@@ -43,10 +44,11 @@ export function SmartInsights() {
   
   if (!data) {
     return (
-      <Card className={`${isMobile ? 'my-4' : ''} analytics-card`}>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-right text-lg font-medium flex items-center gap-2">
-            📊 תובנות חכמות
+      <Card className={`${isMobile ? 'my-4' : ''} rounded-2xl shadow-sm`}>
+        <CardHeader className="pb-3 text-right">
+          <CardTitle className="text-lg font-medium flex items-center justify-end gap-2">
+            תובנות חכמות
+            <span>📊</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -66,10 +68,11 @@ export function SmartInsights() {
   ];
 
   return (
-    <Card className={`${isMobile ? 'my-4' : ''} analytics-card`}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-right text-lg font-medium flex items-center gap-2">
-          📊 תובנות חכמות
+    <Card className={`${isMobile ? 'my-4' : ''} rounded-2xl shadow-sm`}>
+      <CardHeader className="pb-3 text-right">
+        <CardTitle className="text-lg font-medium flex items-center justify-end gap-2">
+          תובנות חכמות
+          <span>📊</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

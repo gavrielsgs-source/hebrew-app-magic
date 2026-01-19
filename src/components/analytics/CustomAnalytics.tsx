@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, TrendingUp, Users, Car, Download, Filter, Settings } from "lucide-react";
+import { TrendingUp, Users, Car, CheckCircle, Download, Filter, Settings } from "lucide-react";
 import { useDateRangeAnalytics } from "@/hooks/analytics/use-date-range-analytics";
 import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
 import { SmartInsights } from "./SmartInsights";
@@ -22,13 +22,27 @@ export function CustomAnalytics() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        {/* כותרת */}
+        <div className="flex flex-row-reverse justify-between items-center">
+          <div className="text-right">
+            <h2 className="text-xl font-bold">אנליטיקה מותאמת אישית</h2>
+            <p className="text-sm text-muted-foreground">דוחות מתקדמים ותחזיות</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="rounded-xl">
+              <Filter className="h-4 w-4 ml-2" />
+              מסנן מתקדם
+            </Button>
+          </div>
+        </div>
+        
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">טוען...</CardTitle>
+            <Card key={i} className="rounded-2xl shadow-sm">
+              <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-right">טוען...</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="text-right">
                 <div className="text-2xl font-bold">--</div>
               </CardContent>
             </Card>
@@ -95,6 +109,13 @@ export function CustomAnalytics() {
     predicted: Math.round(avgLeads * (1 + (0.12 + index * 0.02)))
   }));
 
+  // חישוב אחוזי שינוי
+  const getChangePercent = (current: number, previous: number) => {
+    if (!previous) return '0%';
+    const change = ((current - previous) / previous * 100).toFixed(1);
+    return `${change}%`;
+  };
+
   const handleExportData = () => {
     console.log('Exporting analytics data...');
     // Implementation for data export
@@ -103,39 +124,37 @@ export function CustomAnalytics() {
   return (
     <div className="space-y-6">
       {/* Header with custom controls */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">אנליטיקה מותאמת אישית</h2>
-          <p className="text-muted-foreground">דוחות מתקדמים ותחזיות</p>
+      <div className="flex flex-row-reverse justify-between items-center">
+        <div className="text-right">
+          <h2 className="text-xl font-bold">אנליטיקה מותאמת אישית</h2>
+          <p className="text-sm text-muted-foreground">דוחות מתקדמים ותחזיות</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" className="rounded-xl">
+            <Filter className="h-4 w-4 ml-2" />
             מסנן מתקדם
           </Button>
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" className="rounded-xl">
+            <Settings className="h-4 w-4 ml-2" />
             הגדרות דוח
           </Button>
-          <Button size="sm" onClick={handleExportData}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button size="sm" className="rounded-xl" onClick={handleExportData}>
+            <Download className="h-4 w-4 ml-2" />
             ייצוא נתונים
           </Button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">לידים חדשים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">לידים חדשים</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalLeads}</div>
             <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalLeads ? 
-                `${(((currentPeriodData.totalLeads - previousPeriodData.totalLeads) / previousPeriodData.totalLeads) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
+              {getChangePercent(currentPeriodData.totalLeads, previousPeriodData.totalLeads)} מהתקופה הקודמת
             </p>
             <div className="mt-2 text-xs text-green-600">
               תחזית: +15% בחודש הבא
@@ -143,17 +162,15 @@ export function CustomAnalytics() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">רכבים פעילים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">רכבים פעילים</CardTitle>
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalCars}</div>
             <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalCars ? 
-                `${(((currentPeriodData.totalCars - previousPeriodData.totalCars) / previousPeriodData.totalCars) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
+              {getChangePercent(currentPeriodData.totalCars, previousPeriodData.totalCars)} מהתקופה הקודמת
             </p>
             <div className="mt-2 text-xs text-blue-600">
               ROI: ₪8.5 לכל ₪1 השקעה
@@ -161,17 +178,15 @@ export function CustomAnalytics() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">משימות שהושלמו</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">עסקאות שנסגרו</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalSales}</div>
             <p className="text-xs text-muted-foreground">
-              {previousPeriodData.totalSales ? 
-                `${(((currentPeriodData.totalSales - previousPeriodData.totalSales) / previousPeriodData.totalSales) * 100).toFixed(1)}%` : 
-                '0%'} מהתקופה הקודמת
+              {getChangePercent(currentPeriodData.totalSales, previousPeriodData.totalSales)} מהתקופה הקודמת
             </p>
             <div className="mt-2 text-xs text-orange-600">
               עלות לעסקה: ₪1,247
@@ -179,12 +194,12 @@ export function CustomAnalytics() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">שיעור המרה</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-right">שיעור המרה</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.conversionRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               מלידים לעסקאות סגורות
@@ -199,17 +214,17 @@ export function CustomAnalytics() {
       <SmartInsights />
 
       <Tabs defaultValue="advanced" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="advanced">ניתוח מתקדם</TabsTrigger>
-          <TabsTrigger value="predictions">תחזיות</TabsTrigger>
-          <TabsTrigger value="roi">ROI ורווחיות</TabsTrigger>
-          <TabsTrigger value="custom">דוח מותאם</TabsTrigger>
+        <TabsList className="rounded-xl bg-muted/50 p-1">
+          <TabsTrigger value="advanced" className="rounded-lg">ניתוח מתקדם</TabsTrigger>
+          <TabsTrigger value="predictions" className="rounded-lg">תחזיות</TabsTrigger>
+          <TabsTrigger value="roi" className="rounded-lg">ROI ורווחיות</TabsTrigger>
+          <TabsTrigger value="custom" className="rounded-lg">דוח מותאם</TabsTrigger>
         </TabsList>
         
         <TabsContent value="advanced" className="space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader className="text-right">
                 <CardTitle>מגמות מתקדמות</CardTitle>
                 <CardDescription>ניתוח עמוק של ביצועים</CardDescription>
               </CardHeader>
@@ -236,8 +251,8 @@ export function CustomAnalytics() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader className="text-right">
                 <CardTitle>פילוח מקורות לידים</CardTitle>
                 <CardDescription>התפלגות לפי ערוצי רכישה</CardDescription>
               </CardHeader>
@@ -272,15 +287,15 @@ export function CustomAnalytics() {
         </TabsContent>
 
         <TabsContent value="predictions" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="text-right">
               <CardTitle>תחזיות AI</CardTitle>
               <CardDescription>תחזיות מבוססות בינה מלאכותית לשלושת החודשים הבאים</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3 mb-6">
                 {predictionData.map((item, index) => (
-                  <div key={index} className="text-center p-4 bg-muted/50 rounded-lg">
+                  <div key={index} className="text-center p-4 bg-muted/50 rounded-xl">
                     <div className="text-lg font-semibold">{item.month}</div>
                     <div className="text-2xl font-bold text-blue-600">{item.predicted}</div>
                     <div className="text-sm text-muted-foreground">לידים צפויים</div>
@@ -295,8 +310,8 @@ export function CustomAnalytics() {
         </TabsContent>
 
         <TabsContent value="roi" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="text-right">
               <CardTitle>ניתוח רווחיות</CardTitle>
               <CardDescription>השוואת השקעות לתשואות</CardDescription>
             </CardHeader>
@@ -314,8 +329,8 @@ export function CustomAnalytics() {
                     <XAxis dataKey="month" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="revenue" fill="var(--color-revenue)" />
-                    <Bar dataKey="cost" fill="var(--color-cost)" />
+                    <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="cost" fill="var(--color-cost)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -324,8 +339,8 @@ export function CustomAnalytics() {
         </TabsContent>
 
         <TabsContent value="custom" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="text-right">
               <CardTitle>דוח מותאם אישית</CardTitle>
               <CardDescription>צור דוח לפי הצרכים הספציפיים שלך</CardDescription>
             </CardHeader>
@@ -334,8 +349,8 @@ export function CustomAnalytics() {
                 <p className="mb-4 text-muted-foreground">
                   כאן תוכל ליצור דוחות מותאמים אישית עם המדדים החשובים לך
                 </p>
-                <Button>
-                  <Settings className="h-4 w-4 mr-2" />
+                <Button className="rounded-xl">
+                  <Settings className="h-4 w-4 ml-2" />
                   בנה דוח מותאם
                 </Button>
               </div>
