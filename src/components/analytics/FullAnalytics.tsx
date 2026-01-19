@@ -79,8 +79,8 @@ export function FullAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* כותרת */}
-      <div className="flex justify-end">
+      {/* כותרת - בצד ימין */}
+      <div className="flex justify-start">
         <div className="text-right">
           <h2 className="text-xl font-bold">ניתוח מתקדם</h2>
           <p className="text-sm text-muted-foreground">30 הימים האחרונים</p>
@@ -89,10 +89,10 @@ export function FullAnalytics() {
 
       {/* כרטיסי מדדים */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">לידים חדשים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">לידים חדשים</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalLeads}</div>
@@ -102,10 +102,10 @@ export function FullAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">רכבים פעילים</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <Car className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">רכבים פעילים</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalCars}</div>
@@ -115,10 +115,10 @@ export function FullAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">עסקאות שנסגרו</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">עסקאות שנסגרו</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.totalSales}</div>
@@ -128,10 +128,10 @@ export function FullAnalytics() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row-reverse items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-right">שיעור המרה</CardTitle>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="flex items-center justify-between space-y-0 pb-2">
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">שיעור המרה</CardTitle>
           </CardHeader>
           <CardContent className="text-right">
             <div className="text-2xl font-bold">{currentPeriodData.conversionRate.toFixed(1)}%</div>
@@ -145,11 +145,13 @@ export function FullAnalytics() {
       <SmartInsights />
 
       <Tabs defaultValue="leads" className="space-y-4">
-        <TabsList className="rounded-xl bg-muted/50 p-1">
-          <TabsTrigger value="leads" className="rounded-lg">לידים</TabsTrigger>
-          <TabsTrigger value="sales" className="rounded-lg">מכירות</TabsTrigger>
-          <TabsTrigger value="sources" className="rounded-lg">מקורות</TabsTrigger>
-        </TabsList>
+        <div className="flex justify-end">
+          <TabsList className="rounded-xl bg-muted/50 p-1">
+            <TabsTrigger value="sources" className="rounded-lg">מקורות</TabsTrigger>
+            <TabsTrigger value="sales" className="rounded-lg">מכירות</TabsTrigger>
+            <TabsTrigger value="leads" className="rounded-lg">לידים</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="leads" className="space-y-4">
           <Card className="rounded-2xl shadow-sm">
