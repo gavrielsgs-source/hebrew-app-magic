@@ -168,20 +168,9 @@ export function AppSidebar() {
             </SidebarMenuItem>
             
             <SidebarMenuItem>
-              <button
-                onClick={() => navigate("/documents")}
-                data-active={pathname === "/documents"}
-                className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
-              >
-                <FileText className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">מסמכים</span>
-              </button>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => setDocProductionOpen(!docProductionOpen)}
-                data-active={pathname.startsWith("/document-production")}
+                data-active={pathname.startsWith("/document-production") || pathname === "/documents"}
                 className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
               >
                 <Sparkles className="h-5 w-5" />
@@ -200,24 +189,20 @@ export function AppSidebar() {
               
               {docProductionOpen && (
                 <SidebarMenuSub className="px-1">
-                  {DOCUMENT_TYPES.map((doc) => {
-                    const IconComponent = iconMap[doc.icon as keyof typeof iconMap];
-                    return (
-                      <SidebarMenuSubItem key={doc.id}>
-                        <SidebarMenuSubButton
-                          onClick={() => {
-                            navigate(`/document-production/${doc.id}`);
-                            setDocProductionOpen(false);
-                          }}
-                          isActive={pathname === `/document-production/${doc.id}`}
-                          className="text-gray-300 hover:text-white"
-                        >
-                          <IconComponent className="h-4 w-4" />
-                          <span>{doc.name}</span>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    );
-                  })}
+                  {/* כל המסמכים */}
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => {
+                        navigate("/documents");
+                        setDocProductionOpen(false);
+                      }}
+                      isActive={pathname === "/documents"}
+                      className="text-gray-300 hover:text-white"
+                    >
+                      <FileText className="h-4 w-4" />
+                      <span>כל המסמכים</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
                 </SidebarMenuSub>
               )}
             </SidebarMenuItem>
