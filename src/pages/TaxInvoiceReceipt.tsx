@@ -1406,9 +1406,9 @@ export default function TaxInvoiceReceipt() {
             </div>
 
             {/* Right Column - Summary Card */}
-            <div className="space-y-6">
+            <div className="sticky top-6 space-y-6">
               {/* Financial Summary Card */}
-              <Card className="border-0 shadow-xl rounded-2xl overflow-hidden sticky top-6">
+              <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
                 <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-6 text-white">
                   <div className="flex items-center justify-between mb-4">
                     <Download className="h-8 w-8 opacity-80" />
