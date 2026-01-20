@@ -452,260 +452,264 @@ export default function TaxInvoiceReceipt() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Header Information */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
-              <CardTitle className="text-right text-xl">מידע כללי</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="text-right">תאריך</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Header Information */}
+              <Card className="border-2 shadow-lg rounded-2xl">
+                <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+                  <CardTitle className="text-right text-xl">מידע כללי</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-right">תאריך</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-right font-normal justify-start rounded-xl",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="ml-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "PPP", { locale: he })
+                                  ) : (
+                                    <span>בחר תאריך</span>
+                                  )}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="end">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date > new Date() || date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                                locale={he}
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">סוג</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="rounded-xl">
+                                <SelectValue placeholder="בחר סוג" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent align="end" className="z-50 bg-popover text-right">
+                              <SelectItem value="primary">ראשוני</SelectItem>
+                              <SelectItem value="secondary">משני</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="language"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">שפה</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="rounded-xl">
+                                <SelectValue placeholder="בחר שפה" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent align="end" className="z-50 bg-popover text-right">
+                              <SelectItem value="hebrew">עברית</SelectItem>
+                              <SelectItem value="english">אנגלית</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="currency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">מטבע</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="rounded-xl">
+                                <SelectValue placeholder="בחר מטבע" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent align="end" className="z-50 bg-popover text-right">
+                              <SelectItem value="ILS">שקלים (₪)</SelectItem>
+                              <SelectItem value="USD">דולר ($)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">כותרת</FormLabel>
                           <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-3 text-right font-normal justify-start",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="ml-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: he })
-                              ) : (
-                                <span>בחר תאריך</span>
-                              )}
-                            </Button>
+                            <Input {...field} placeholder="חשבונית מס קבלה" className="text-right rounded-xl" />
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                            locale={he}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">סוג</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="בחר סוג" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right">
-                          <SelectItem value="primary">ראשוני</SelectItem>
-                          <SelectItem value="secondary">משני</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="leadId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">קשור ללקוח (אופציונלי)</FormLabel>
+                          <FormControl>
+                            <CustomerAndLeadSearchSelect
+                              value={selectedEntity}
+                              onValueChange={handleEntitySelect}
+                              placeholder="בחר לקוח או ליד מהרשימה"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="language"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">שפה</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="בחר שפה" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right">
-                          <SelectItem value="hebrew">עברית</SelectItem>
-                          <SelectItem value="english">אנגלית</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    <FormField
+                      control={form.control}
+                      name="customerType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">סוג לקוח</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="rounded-xl">
+                                <SelectValue placeholder="בחר סוג לקוח" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent align="end" className="z-50 bg-popover text-right">
+                              <SelectItem value="new">לקוח חדש</SelectItem>
+                              <SelectItem value="existing">לקוח קיים</SelectItem>
+                              <SelectItem value="individual">פרטי</SelectItem>
+                              <SelectItem value="business">עסקי</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">מטבע</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="בחר מטבע" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right">
-                          <SelectItem value="ILS">שקלים (₪)</SelectItem>
-                          <SelectItem value="USD">דולר ($)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Customer Information */}
+              <Card className="border-2 shadow-lg rounded-2xl">
+                <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+                  <CardTitle className="text-right text-xl">פרטי לקוח</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="customerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">שם הלקוח</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="שם מלא" className="text-right rounded-xl" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">כותרת</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="חשבונית מס קבלה" className="text-right" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    <FormField
+                      control={form.control}
+                      name="customerPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">טלפון</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="050-1234567" className="text-right rounded-xl" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="leadId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">קשור ללקוח (אופציונלי)</FormLabel>
-                      <FormControl>
-                        <CustomerAndLeadSearchSelect
-                          value={selectedEntity}
-                          onValueChange={handleEntitySelect}
-                          placeholder="בחר לקוח או ליד מהרשימה"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="customerAddress"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">כתובת</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="רחוב עיר" className="text-right rounded-xl" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="customerType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">סוג לקוח</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="בחר סוג לקוח" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent align="end" dir="rtl" className="z-50 bg-popover text-right">
-                          <SelectItem value="new">לקוח חדש</SelectItem>
-                          <SelectItem value="existing">לקוח קיים</SelectItem>
-                          <SelectItem value="individual">פרטי</SelectItem>
-                          <SelectItem value="business">עסקי</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
+                    <FormField
+                      control={form.control}
+                      name="customerHp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">ח.פ / ת.ז</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="123456789" className="text-right rounded-xl" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Customer Information */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
-              <CardTitle className="text-right text-xl">פרטי לקוח</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="customerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">שם הלקוח</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="שם מלא" className="text-right" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="customerPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">טלפון</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="050-1234567" className="text-right" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="customerAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">כתובת</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="רחוב עיר" className="text-right" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="customerHp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">ח.פ / ת.ז</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="123456789" className="text-right" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Items */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
-              <CardTitle className="text-right text-xl">הוספת פריטים</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
+              {/* Items */}
+              <Card className="border-2 shadow-lg rounded-2xl">
+                <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+                  <CardTitle className="text-right text-xl">הוספת פריטים</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
                 {itemFields.map((field, index) => (
-                  <div key={field.id} className="border-2 border-primary/20 rounded-xl p-5 space-y-4 hover:border-primary/40 transition-colors bg-gradient-to-br from-background to-primary/5">
+                  <div key={field.id} className="border-2 border-primary/20 rounded-2xl p-5 space-y-4 hover:border-primary/40 transition-colors bg-gradient-to-br from-background to-primary/5">
                     <div className="flex justify-between items-center">
                       <Button
                         type="button"
@@ -727,7 +731,7 @@ export default function TaxInvoiceReceipt() {
                           <FormItem className="md:col-span-2">
                             <FormLabel className="text-right">תיאור</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="תיאור הפריט" className="text-right" />
+                              <Input {...field} placeholder="תיאור הפריט" className="text-right rounded-xl" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -746,7 +750,7 @@ export default function TaxInvoiceReceipt() {
                                 step="0.01"
                                 {...field}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                className="text-right"
+                                className="text-right rounded-xl"
                               />
                             </FormControl>
                             <FormMessage />
@@ -785,7 +789,7 @@ export default function TaxInvoiceReceipt() {
                                 step="0.01"
                                 {...field}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                className="text-right"
+                                className="text-right rounded-xl"
                               />
                             </FormControl>
                             <FormMessage />
@@ -805,7 +809,7 @@ export default function TaxInvoiceReceipt() {
                                 step="0.01"
                                 {...field}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                className="text-right"
+                                className="text-right rounded-xl"
                               />
                             </FormControl>
                             <FormMessage />
@@ -824,7 +828,7 @@ export default function TaxInvoiceReceipt() {
                                 {...field}
                                 value={field.value?.toFixed(2) || '0.00'}
                                 disabled
-                                className="text-right bg-muted"
+                                className="text-right bg-muted rounded-xl"
                               />
                             </FormControl>
                           </FormItem>
@@ -849,7 +853,7 @@ export default function TaxInvoiceReceipt() {
                       includeVat: true
                     })
                   }
-                  className="w-full"
+                  className="w-full rounded-xl"
                 >
                   <Plus className="h-4 w-4 ml-2" />
                   הוסף פריט
@@ -858,15 +862,15 @@ export default function TaxInvoiceReceipt() {
             </CardContent>
           </Card>
 
-          {/* Payments */}
-          <Card className="border-2 shadow-lg">
+              {/* Payments */}
+              <Card className="border-2 shadow-lg rounded-2xl">
             <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
               <CardTitle className="text-right text-xl">אמצעי תשלום</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {paymentFields.map((field, index) => (
-                  <div key={field.id} className="border-2 border-primary/20 rounded-xl p-5 space-y-4 hover:border-primary/40 transition-colors bg-gradient-to-br from-background to-primary/5">
+                  <div key={field.id} className="border-2 border-primary/20 rounded-2xl p-5 space-y-4 hover:border-primary/40 transition-colors bg-gradient-to-br from-background to-primary/5">
                     <div className="flex justify-between items-center">
                       <Button
                         type="button"
@@ -888,7 +892,7 @@ export default function TaxInvoiceReceipt() {
                             <FormLabel className="text-right">סוג תשלום</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="rounded-xl">
                                   <SelectValue placeholder="בחר סוג תשלום" />
                                 </SelectTrigger>
                               </FormControl>
@@ -917,7 +921,7 @@ export default function TaxInvoiceReceipt() {
                                 step="0.01"
                                 {...field}
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                className="text-right"
+                                className="text-right rounded-xl"
                               />
                             </FormControl>
                             <FormMessage />
@@ -937,7 +941,7 @@ export default function TaxInvoiceReceipt() {
                                   <Button
                                     variant="outline"
                                     className={cn(
-                                      "w-full pl-3 text-right font-normal justify-start",
+                                      "w-full pl-3 text-right font-normal justify-start rounded-xl",
                                       !field.value && "text-muted-foreground"
                                     )}
                                   >
@@ -957,6 +961,7 @@ export default function TaxInvoiceReceipt() {
                                   onSelect={field.onChange}
                                   initialFocus
                                   locale={he}
+                                  className={cn("p-3 pointer-events-auto")}
                                 />
                               </PopoverContent>
                             </Popover>
@@ -972,7 +977,7 @@ export default function TaxInvoiceReceipt() {
                           <FormItem>
                             <FormLabel className="text-right">אסמכתא</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="מספר המחאה / 4 ספרות אחרונות" className="text-right" />
+                              <Input {...field} placeholder="מספר המחאה / 4 ספרות אחרונות" className="text-right rounded-xl" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -994,7 +999,7 @@ export default function TaxInvoiceReceipt() {
                       reference: ''
                     })
                   }
-                  className="w-full"
+                  className="w-full rounded-xl"
                 >
                   <Plus className="h-4 w-4 ml-2" />
                   הוסף תשלום
@@ -1003,175 +1008,186 @@ export default function TaxInvoiceReceipt() {
             </CardContent>
           </Card>
 
-          {/* Additional Details */}
-          <Card className="border-2 shadow-lg">
-            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
-              <CardTitle className="text-right text-xl">פרטים נוספים</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="issueNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">מס' הקצאה</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="מספר הקצאה" className="text-right" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="generalDiscount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-right">הנחה כללית</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          className="text-right"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="lastPaymentDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="text-right">תאריך אחרון לתשלום</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+              {/* Additional Details */}
+              <Card className="border-2 shadow-lg rounded-2xl">
+                <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
+                  <CardTitle className="text-right text-xl">פרטים נוספים</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="issueNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">מס' הקצאה</FormLabel>
                           <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-3 text-right font-normal justify-start",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="ml-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: he })
-                              ) : (
-                                <span>בחר תאריך</span>
-                              )}
-                            </Button>
+                            <Input {...field} placeholder="מספר הקצאה" className="text-right rounded-xl" />
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                            locale={he}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="generalDiscount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">הנחה כללית</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              className="text-right rounded-xl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="lastPaymentDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-right">תאריך אחרון לתשלום</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-right font-normal justify-start rounded-xl",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="ml-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "PPP", { locale: he })
+                                  ) : (
+                                    <span>בחר תאריך</span>
+                                  )}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="end">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                initialFocus
+                                locale={he}
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-right">הערות</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="הערות נוספות..."
+                            className="text-right min-h-[100px] rounded-xl"
                           />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column - Summary Card */}
+            <div className="space-y-6">
+              {/* Financial Summary Card */}
+              <Card className="border-0 shadow-xl rounded-2xl overflow-hidden sticky top-6">
+                <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-6 text-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <Download className="h-8 w-8 opacity-80" />
+                    <h3 className="text-xl font-bold">סה"כ לתשלום</h3>
+                  </div>
+                  
+                  <div className="text-4xl font-bold text-center py-6">
+                    {watchedFields.currency === 'ILS' ? '₪' : '$'} {financialSummary.totalAmount.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-white/20 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.subtotal.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
+                      <span>סה"כ לפני מע"מ</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.itemsWithoutVat.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
+                      <span>פריטים ללא מע"מ</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.generalDiscount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
+                      <span>הנחה כללית</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.vatAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
+                      <span>מע"מ (17%)</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button
+                  type="submit"
+                  disabled={isGenerating || isCreating}
+                  className="w-full h-14 text-lg font-bold rounded-xl bg-green-600 hover:bg-green-700"
+                >
+                  {isGenerating || isCreating ? (
+                    <>טוען...</>
+                  ) : (
+                    <>
+                      <Download className="ml-2 h-5 w-5" />
+                      הפק מסמך
+                    </>
                   )}
-                />
-              </div>
+                </Button>
 
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-right">הערות</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="הערות נוספות..."
-                        className="text-right min-h-[100px]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDownloadPDF}
+                    className="h-12 rounded-xl"
+                  >
+                    <Download className="ml-2 h-4 w-4" />
+                    הורד PDF
+                  </Button>
 
-          {/* Financial Summary */}
-          <Card className="border-2 shadow-xl">
-            <CardHeader className="bg-gradient-to-l from-primary/5 to-transparent border-b">
-              <CardTitle className="text-right text-xl">הוספת תשלומים</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground p-8 rounded-2xl space-y-3 shadow-lg">
-                <div className="flex justify-between text-sm">
-                  <span>{financialSummary.subtotal.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                  <span>סה"כ לפני מע"מ:</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>{financialSummary.itemsWithoutVat.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                  <span>סה"כ פריטים ללא מע"מ:</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>{financialSummary.generalDiscount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                  <span>הנחה כללית:</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>{financialSummary.amountAfterDiscount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                  <span>סכום אחרי הנחה:</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>{financialSummary.vatAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                  <span>סה"כ מע"מ (17%):</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold border-t border-primary-foreground/30 pt-3">
-                  <span>{financialSummary.totalAmount.toFixed(2)} {watchedFields.currency === 'ILS' ? '₪' : '$'}</span>
-                  <span>סה"כ:</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleWhatsAppSend}
+                    disabled={!watchedFields.customerPhone}
+                    className="h-12 rounded-xl"
+                  >
+                    <MessageCircle className="ml-2 h-4 w-4" />
+                    וואטסאפ
+                  </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-end sticky bottom-4 bg-background/80 backdrop-blur-sm p-4 rounded-2xl border-2 shadow-xl">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleWhatsAppSend}
-              className="gap-2 rounded-xl border-2 hover:border-green-500 hover:text-green-500"
-              size="lg"
-            >
-              <MessageCircle className="h-5 w-5" />
-              שליחה לוואטסאפ
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleDownloadPDF}
-              className="gap-2 rounded-xl border-2 hover:border-blue-500 hover:text-blue-500"
-              size="lg"
-            >
-              <Download className="h-5 w-5" />
-              הורדה כ-PDF
-            </Button>
-
-            <Button 
-              type="submit" 
-              disabled={isCreating || isGenerating} 
-              className="gap-2 rounded-xl shadow-lg"
-              size="lg"
-            >
-              {isCreating || isGenerating ? 'מכין מסמך...' : 'הכן מסמך'}
-            </Button>
+            </div>
           </div>
         </form>
       </Form>
