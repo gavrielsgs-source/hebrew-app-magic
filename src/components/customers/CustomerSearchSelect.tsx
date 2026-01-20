@@ -44,7 +44,7 @@ export function CustomerSearchSelect({
   return (
     <Select onValueChange={onValueChange} value={value}>
       <FormControl>
-        <SelectTrigger dir="rtl" className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all text-right [&>span]:w-full [&>span]:text-right">
+        <SelectTrigger dir="rtl" className="h-12 rounded-xl border-2 border-slate-200 focus:border-brand-primary transition-all text-right overflow-hidden [&>span]:w-full [&>span]:text-right [&>span]:truncate">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
       </FormControl>
