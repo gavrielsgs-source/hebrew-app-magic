@@ -1,7 +1,6 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Car, CheckSquare } from "lucide-react";
+import { AlertTriangle, Car, CheckSquare, Zap } from "lucide-react";
 
 interface DashboardActionCardsProps {
   dashboardData: {
@@ -13,124 +12,106 @@ interface DashboardActionCardsProps {
 }
 
 export function DashboardActionCards({ dashboardData, handleActionClick }: DashboardActionCardsProps) {
+  const actionCards = [
+    {
+      title: "לידים שלא טופלו",
+      count: dashboardData?.untreatedLeads?.length || 0,
+      description: "לידים מחכים למענה מעל 24 שעות",
+      icon: AlertTriangle,
+      route: "/leads",
+      buttonText: "טפל עכשיו",
+      activeColorClass: "border-red-300 bg-gradient-to-br from-red-50 to-red-100/50",
+      inactiveColorClass: "border-muted bg-muted/30",
+      iconBgClass: "bg-red-600",
+      valueColorClass: "text-red-600",
+      buttonClass: "bg-red-600 hover:bg-red-700 text-white",
+    },
+    {
+      title: "רכבים לפרסום",
+      count: dashboardData?.pendingCars?.length || 0,
+      description: "רכבים מוכנים לפרסום",
+      icon: Car,
+      route: "/cars",
+      buttonText: "פרסם רכבים",
+      activeColorClass: "border-orange-300 bg-gradient-to-br from-orange-50 to-orange-100/50",
+      inactiveColorClass: "border-muted bg-muted/30",
+      iconBgClass: "bg-orange-600",
+      valueColorClass: "text-orange-600",
+      buttonClass: "bg-orange-600 hover:bg-orange-700 text-white",
+    },
+    {
+      title: "משימות היום",
+      count: dashboardData?.todayTasks?.length || 0,
+      description: "משימות מתוכננות להיום",
+      icon: CheckSquare,
+      route: "/tasks",
+      buttonText: "צפה במשימות",
+      activeColorClass: "border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100/50",
+      inactiveColorClass: "border-muted bg-muted/30",
+      iconBgClass: "bg-blue-600",
+      valueColorClass: "text-blue-600",
+      buttonClass: "bg-blue-600 hover:bg-blue-700 text-white",
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">מה צריך לטפל עכשיו?</h2>
-        <p className="text-gray-600">משימות חשובות שדורשות תשומת לב מיידית</p>
-      </div>
+      <Card className="shadow-lg rounded-2xl border-0 overflow-hidden">
+        <div className="bg-gradient-to-l from-primary/10 to-transparent p-4 border-b">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-primary/20 rounded-xl flex items-center justify-center">
+              <Zap className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-right">
+              <h2 className="text-lg font-bold text-foreground">מה צריך לטפל עכשיו?</h2>
+              <p className="text-sm text-muted-foreground">משימות חשובות שדורשות תשומת לב מיידית</p>
+            </div>
+          </div>
+        </div>
+      </Card>
       
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Urgent Leads Card */}
-        <Card 
-          className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-            (dashboardData?.untreatedLeads?.length || 0) > 0 
-              ? 'bg-red-50 border-red-200 hover:bg-red-100' 
-              : 'bg-gray-50 border-gray-200'
-          }`}
-          onClick={() => handleActionClick('/leads')}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">לידים שלא טופלו</h3>
-              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="h-4 w-4 text-white" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              {dashboardData?.untreatedLeads?.length || 0} לידים מחכים למענה מעל 24 שעות
-            </p>
-            <div className="flex items-center justify-between">
-              <Button 
-                size="sm" 
-                className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleActionClick('/leads');
-                }}
-              >
-                טפל עכשיו
-              </Button>
-              <span className="text-2xl font-bold text-red-600">
-                {dashboardData?.untreatedLeads?.length || 0}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Pending Cars Card */}
-        <Card 
-          className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-            (dashboardData?.pendingCars?.length || 0) > 0 
-              ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' 
-              : 'bg-gray-50 border-gray-200'
-          }`}
-          onClick={() => handleActionClick('/cars')}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">רכבים לפרסום</h3>
-              <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                <Car className="h-4 w-4 text-white" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              {dashboardData?.pendingCars?.length || 0} רכבים מוכנים לפרסום
-            </p>
-            <div className="flex items-center justify-between">
-              <Button 
-                size="sm" 
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleActionClick('/cars');
-                }}
-              >
-                פרסם רכבים
-              </Button>
-              <span className="text-2xl font-bold text-orange-600">
-                {dashboardData?.pendingCars?.length || 0}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Today Tasks Card */}
-        <Card 
-          className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-            (dashboardData?.todayTasks?.length || 0) > 0 
-              ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
-              : 'bg-gray-50 border-gray-200'
-          }`}
-          onClick={() => handleActionClick('/tasks')}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">משימות היום</h3>
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <CheckSquare className="h-4 w-4 text-white" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              {dashboardData?.todayTasks?.length || 0} משימות מתוכננות להיום
-            </p>
-            <div className="flex items-center justify-between">
-              <Button 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleActionClick('/tasks');
-                }}
-              >
-                צפה במשימות
-              </Button>
-              <span className="text-2xl font-bold text-blue-600">
-                {dashboardData?.todayTasks?.length || 0}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        {actionCards.map((card) => {
+          const Icon = card.icon;
+          const isActive = card.count > 0;
+          
+          return (
+            <Card
+              key={card.title}
+              className={`cursor-pointer transition-all duration-300 hover:shadow-xl rounded-2xl border-2 ${
+                isActive ? card.activeColorClass : card.inactiveColorClass
+              }`}
+              onClick={() => handleActionClick(card.route)}
+            >
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">{card.title}</h3>
+                  <div className={`w-10 h-10 ${card.iconBgClass} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {card.count} {card.description}
+                </p>
+                <div className="flex items-center justify-between">
+                  <Button
+                    size="sm"
+                    className={`${card.buttonClass} rounded-xl h-9`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleActionClick(card.route);
+                    }}
+                  >
+                    {card.buttonText}
+                  </Button>
+                  <span className={`text-2xl font-bold ${card.valueColorClass}`}>
+                    {card.count}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
