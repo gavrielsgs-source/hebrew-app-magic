@@ -575,36 +575,36 @@ export default function PriceQuote() {
                 <h3 className="text-lg font-bold text-center mb-4">סיכום כספי</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="font-semibold">{formatPrice(subtotal)}</span>
                     <span>סכום חלקי</span>
+                    <span className="font-semibold">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-semibold">-{formatPrice(totalDiscount)}</span>
                     <span>הנחות</span>
+                    <span className="font-semibold">-{formatPrice(totalDiscount)}</span>
                   </div>
                   
                   <div className="flex items-center justify-between py-2 px-3 bg-white/20 rounded-xl my-2">
+                    <Label htmlFor="includeVAT-mobile" className="text-white cursor-pointer">
+                      {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
+                    </Label>
                     <Switch
                       id="includeVAT-mobile"
                       checked={form.watch("includeVAT")}
                       onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
                     />
-                    <Label htmlFor="includeVAT-mobile" className="text-white cursor-pointer">
-                      {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
-                    </Label>
                   </div>
 
                   {includeVAT && (
                     <div className="flex justify-between">
-                      <span className="font-semibold">{formatPrice(vat)}</span>
                       <span>מע״מ (18%)</span>
+                      <span className="font-semibold">{formatPrice(vat)}</span>
                     </div>
                   )}
                   
                   <div className="border-t border-white/30 pt-3 mt-3">
                     <div className="flex justify-between text-xl font-bold">
-                      <span>{formatPrice(total)}</span>
                       <span>סה"כ לתשלום</span>
+                      <span>{formatPrice(total)}</span>
                     </div>
                   </div>
                 </div>
@@ -1010,37 +1010,37 @@ export default function PriceQuote() {
                 <CardContent className="space-y-4 pt-6">
                   <div className="space-y-3 text-right">
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold">{formatPrice(subtotal)}</span>
                       <span className="text-muted-foreground">סכום חלקי:</span>
+                      <span className="text-lg font-semibold">{formatPrice(subtotal)}</span>
                     </div>
                     <div className="flex justify-between items-center text-destructive">
-                      <span className="text-lg font-semibold">-{formatPrice(totalDiscount)}</span>
                       <span>סה"כ הנחות:</span>
+                      <span className="text-lg font-semibold">-{formatPrice(totalDiscount)}</span>
                     </div>
                     
                     <div className="flex items-center justify-between p-3 bg-background rounded-xl border">
+                      <Label htmlFor="includeVAT-desktop" className="text-base font-medium cursor-pointer">
+                        {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
+                      </Label>
                       <Switch
                         id="includeVAT-desktop"
                         checked={form.watch("includeVAT")}
                         onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
                       />
-                      <Label htmlFor="includeVAT-desktop" className="text-base font-medium cursor-pointer">
-                        {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
-                      </Label>
                     </div>
 
                     {includeVAT && (
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-semibold">{formatPrice(vat)}</span>
                         <span className="text-muted-foreground">מע״מ (18%):</span>
+                        <span className="text-lg font-semibold">{formatPrice(vat)}</span>
                       </div>
                     )}
                     
                     <Separator />
                     
                     <div className="flex justify-between items-center text-2xl font-bold text-purple-700">
-                      <span>{formatPrice(total)}</span>
                       <span>סה"כ לתשלום:</span>
+                      <span>{formatPrice(total)}</span>
                     </div>
                   </div>
                 </CardContent>

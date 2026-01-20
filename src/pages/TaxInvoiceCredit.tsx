@@ -522,12 +522,12 @@ export default function TaxInvoiceCredit() {
                   {selectedInvoice && (
                     <div className="mt-3 pt-3 border-t border-white/20 space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span>₪{financialSummary.creditAmount.toFixed(2)}</span>
                         <span>לפני מע"מ</span>
+                        <span>₪{financialSummary.creditAmount.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>₪{financialSummary.vatAmount.toFixed(2)}</span>
                         <span>מע"מ</span>
+                        <span>₪{financialSummary.vatAmount.toFixed(2)}</span>
                       </div>
                     </div>
                   )}
@@ -910,12 +910,12 @@ export default function TaxInvoiceCredit() {
                   {selectedInvoice && (
                     <div className="mt-4 pt-4 border-t border-white/20 space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span>₪{financialSummary.creditAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                         <span>סכום לפני מע"מ</span>
+                        <span>₪{financialSummary.creditAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>₪{financialSummary.vatAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                         <span>מע"מ (18%)</span>
+                        <span>₪{financialSummary.vatAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
                   )}
