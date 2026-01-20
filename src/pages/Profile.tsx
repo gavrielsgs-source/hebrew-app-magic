@@ -1,6 +1,6 @@
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,23 +9,15 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Shield, Mail, User, Eye, Phone, Building, ChevronRight, MapPin, Calendar, Save, Users, Bell, Briefcase, Globe } from "lucide-react";
+import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
-import { useRoles } from "@/hooks/use-roles";
-import { useCompanies } from "@/hooks/use-companies";
-import { useNavigate } from "react-router-dom";
-import { useSubscription } from "@/contexts/subscription-context";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
 
 export default function Profile() {
   const { profile, updateProfile, isLoading } = useProfile();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const { isAdmin, isCompanyOwner } = useRoles();
-  const { companies, isLoading: companiesLoading } = useCompanies();
-  const navigate = useNavigate();
-  const { subscription } = useSubscription();
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -66,167 +58,168 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
-            <User className="h-8 w-8 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center mx-auto animate-pulse">
+            <User className="h-8 w-8 text-primary-foreground" />
           </div>
-          <div className="space-y-2 text-right">
-            <div className="text-xl font-semibold text-gray-900">טוען פרופיל...</div>
-            <div className="text-sm text-gray-600">אנא המתן רגע</div>
+          <div className="space-y-2">
+            <div className="text-xl font-semibold text-foreground">טוען פרופיל...</div>
+            <div className="text-sm text-muted-foreground">אנא המתן רגע</div>
           </div>
         </div>
       </div>
     );
   }
 
+  // Mobile View
   if (isMobile) {
     return (
-      <MobileContainer className="bg-gray-50" withPadding={false}>
+      <MobileContainer className="bg-background" withPadding={false}>
         <div className="space-y-4 p-4" dir="rtl">
           {/* Header Section */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <Avatar className="h-16 w-16 border-4 border-white shadow-lg">
+          <Card className="shadow-lg rounded-2xl border-0 overflow-hidden">
+            <div className="bg-gradient-to-l from-primary to-primary/80 p-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16 border-4 border-white/20 shadow-lg">
                   <AvatarImage src={profile?.avatar_url || ""} />
-                  <AvatarFallback className="bg-white text-blue-600 text-2xl font-bold">
+                  <AvatarFallback className="bg-white text-primary text-2xl font-bold">
                     {formData.full_name?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="text-white text-right w-full">
-                  <h1 className="text-2xl font-bold mb-2">
+                <div className="text-primary-foreground text-right flex-1">
+                  <h1 className="text-xl font-bold mb-1">
                     {formData.full_name || "שם המשתמש"}
                   </h1>
-                  <p className="text-blue-200 text-base">
+                  <p className="text-primary-foreground/80 text-sm">
                     {formData.position || "תפקיד לא צוין"} 
                     {formData.company_name && ` ב${formData.company_name}`}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Tabs Section */}
           <Tabs defaultValue="profile" className="space-y-4">
-            <div className="bg-white rounded-xl border border-gray-200 p-2">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-50" dir="rtl">
-                <TabsTrigger 
-                  value="profile" 
-                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm flex items-center justify-center text-right"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  פרטים אישיים
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="notifications"
-                  className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm flex items-center justify-center text-right"
-                >
-                  <Bell className="h-4 w-4 mr-2" />
-                  התראות
-                </TabsTrigger>
-              </TabsList>
-            </div>
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardContent className="p-2">
+                <TabsList className="grid w-full grid-cols-2 bg-muted/50 rounded-xl h-12">
+                  <TabsTrigger 
+                    value="profile" 
+                    className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    פרטים אישיים
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="notifications"
+                    className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <Bell className="h-4 w-4" />
+                    התראות
+                  </TabsTrigger>
+                </TabsList>
+              </CardContent>
+            </Card>
 
-            <TabsContent value="profile">
-              <Card className="border-gray-200 shadow-sm">
-                <CardHeader className="bg-gray-50 border-b border-gray-200 text-right">
-                  <CardTitle className="text-lg text-gray-900 flex items-center justify-start gap-3">
-                    <User className="h-5 w-5 text-blue-600" />
-                    <span>עריכת פרטים אישיים</span>
+            <TabsContent value="profile" className="space-y-4">
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
+                  <CardTitle className="text-right text-lg flex items-center gap-2">
+                    <User className="h-5 w-5 text-primary" />
+                    עריכת פרטים אישיים
                   </CardTitle>
-                  <CardDescription className="text-gray-600 text-right">
+                  <p className="text-sm text-muted-foreground text-right">
                     עדכן את הפרטים האישיים שלך כאן. המידע ישמר באופן מאובטח במערכת.
-                  </CardDescription>
+                  </p>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 gap-6">
-                      <div className="space-y-3">
-                        <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                          <User className="h-4 w-4 text-blue-600" />
-                          <span>שם מלא</span>
-                        </Label>
-                        <Input
-                          id="full_name"
-                          value={formData.full_name}
-                          onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                          placeholder="הכנס שם מלא"
-                          className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
-                          dir="rtl"
-                        />
-                      </div>
-
-                      <div className="space-y-3">
-                        <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                          <Phone className="h-4 w-4 text-blue-600" />
-                          <span>מספר טלפון</span>
-                        </Label>
-                        <Input
-                          id="phone"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="הכנס מספר טלפון"
-                          className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
-                          dir="rtl"
-                        />
-                      </div>
-
-                      <div className="space-y-3">
-                        <Label htmlFor="company_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                          <Building className="h-4 w-4 text-blue-600" />
-                          <span>שם החברה</span>
-                        </Label>
-                        <Input
-                          id="company_name"
-                          value={formData.company_name}
-                          onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                          placeholder="הכנס שם חברה"
-                          className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
-                          dir="rtl"
-                        />
-                      </div>
-
-                    <div className="space-y-3">
-                      <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                        <Briefcase className="h-4 w-4 text-blue-600" />
-                        <span>תפקיד</span>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Full Name */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        שם מלא
+                        <User className="h-4 w-4 text-primary" />
                       </Label>
                       <Input
-                        id="position"
-                        value={formData.position}
-                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                        placeholder="הכנס תפקיד"
-                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
+                        value={formData.full_name}
+                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                        placeholder="הכנס שם מלא"
+                        className="h-12 rounded-xl border-2 text-right"
                         dir="rtl"
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <Label htmlFor="accountant_email" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                        <span>מייל רואה חשבון</span>
+                    {/* Phone */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        מספר טלפון
+                        <Phone className="h-4 w-4 text-primary" />
                       </Label>
                       <Input
-                        id="accountant_email"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="הכנס מספר טלפון"
+                        className="h-12 rounded-xl border-2 text-right"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Company Name */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        שם החברה
+                        <Building className="h-4 w-4 text-primary" />
+                      </Label>
+                      <Input
+                        value={formData.company_name}
+                        onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                        placeholder="הכנס שם חברה"
+                        className="h-12 rounded-xl border-2 text-right"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Position */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        תפקיד
+                        <Briefcase className="h-4 w-4 text-primary" />
+                      </Label>
+                      <Input
+                        value={formData.position}
+                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                        placeholder="הכנס תפקיד"
+                        className="h-12 rounded-xl border-2 text-right"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Accountant Email */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        מייל רואה חשבון
+                        <Mail className="h-4 w-4 text-primary" />
+                      </Label>
+                      <Input
                         type="email"
                         value={formData.accountant_email}
                         onChange={(e) => setFormData({ ...formData, accountant_email: e.target.value })}
                         placeholder="accountant@example.com"
-                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-left"
+                        className="h-12 rounded-xl border-2 text-left"
                         dir="ltr"
                       />
-                      <p className="text-xs text-gray-500 text-right">
+                      <p className="text-xs text-muted-foreground text-right">
                         כתובת המייל לשליחת דוחות חודשיים
                       </p>
                     </div>
-                  </div>
 
-                    <div className="pt-6 border-t border-gray-200 flex justify-start">
+                    <div className="pt-4">
                       <Button 
                         type="submit" 
                         disabled={updateProfile.isPending}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white h-12 px-6 rounded-lg font-medium transition-all duration-200 flex items-center gap-3 w-full"
+                        className="w-full h-12 rounded-xl bg-gradient-to-l from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium transition-all duration-200 flex items-center justify-center gap-2"
                       >
                         <Save className="h-4 w-4" />
                         {updateProfile.isPending ? "שומר שינויים..." : "שמור שינויים"}
@@ -238,11 +231,11 @@ export default function Profile() {
             </TabsContent>
 
             <TabsContent value="notifications">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                <div className="p-4" dir="rtl">
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardContent className="p-4">
                   <MobileNotificationSettings />
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
@@ -250,185 +243,162 @@ export default function Profile() {
     );
   }
 
-  // Desktop view - keep existing desktop code but with fixed color references
+  // Desktop View
   return (
-    <div className="min-h-screen bg-gray-50 p-6" dir="rtl">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-6" dir="rtl">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
-            <div className="flex items-center space-x-6 space-x-reverse">
-              <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+        <Card className="shadow-lg rounded-2xl border-0 overflow-hidden">
+          <div className="bg-gradient-to-l from-primary to-primary/80 p-8">
+            <div className="flex items-center gap-6">
+              <Avatar className="h-24 w-24 border-4 border-white/20 shadow-xl">
                 <AvatarImage src={profile?.avatar_url || ""} />
-                <AvatarFallback className="bg-white text-blue-600 text-2xl font-bold">
+                <AvatarFallback className="bg-white text-primary text-3xl font-bold">
                   {formData.full_name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="text-white text-right">
+              <div className="text-primary-foreground text-right flex-1">
                 <h1 className="text-3xl font-bold mb-2">
                   {formData.full_name || "שם המשתמש"}
                 </h1>
-                <p className="text-blue-200 text-lg">
+                <p className="text-primary-foreground/80 text-lg">
                   {formData.position || "תפקיד לא צוין"} 
                   {formData.company_name && ` ב${formData.company_name}`}
                 </p>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Quick Access to Access Management */}
-        {!companiesLoading && companies.length > 0 && (
-          <div className="bg-card rounded-xl border shadow-sm">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Shield className="h-6 w-6 text-primary" />
-                  <h3 className="text-xl font-semibold text-foreground">ניהול הרשאות</h3>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/companies")}
-                  className="text-primary border-primary/20 hover:bg-primary/10"
-                >
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                  נהל הרשאות
-                </Button>
-              </div>
-              <div className="text-muted-foreground">
-                יש לך {companies.length} {companies.length === 1 ? 'קבוצת הרשאות רשומה' : 'קבוצות הרשאות רשומות'} במערכת
-              </div>
-            </div>
-          </div>
-        )}
+        </Card>
 
         {/* Tabs Section */}
         <Tabs defaultValue="profile" className="space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-2">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-50">
-              <TabsTrigger 
-                value="profile" 
-                className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm flex items-center justify-center"
-              >
-                <User className="h-4 w-4 mr-2" />
-                פרטים אישיים
-              </TabsTrigger>
-              <TabsTrigger 
-                value="inventory"
-                className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm flex items-center justify-center"
-              >
-                <Globe className="h-4 w-4 mr-2" />
-                דף מלאי
-              </TabsTrigger>
-              <TabsTrigger 
-                value="notifications"
-                className="data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm flex items-center justify-center"
-              >
-                <Bell className="h-4 w-4 mr-2" />
-                התראות
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <Card className="shadow-lg rounded-2xl border-2">
+            <CardContent className="p-2">
+              <TabsList className="grid w-full grid-cols-3 bg-muted/50 rounded-xl h-14">
+                <TabsTrigger 
+                  value="profile" 
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
+                >
+                  <User className="h-5 w-5" />
+                  פרטים אישיים
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="inventory"
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
+                >
+                  <Globe className="h-5 w-5" />
+                  דף מלאי
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="notifications"
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
+                >
+                  <Bell className="h-5 w-5" />
+                  התראות
+                </TabsTrigger>
+              </TabsList>
+            </CardContent>
+          </Card>
 
           <TabsContent value="profile">
-            <Card className="border-gray-200 shadow-sm">
-              <CardHeader className="bg-gray-50 border-b border-gray-200 text-right">
-                <CardTitle className="text-xl text-gray-900 flex items-center justify-start gap-3">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <span>עריכת פרטים אישיים</span>
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
+                <CardTitle className="text-right text-xl flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  עריכת פרטים אישיים
                 </CardTitle>
-                <CardDescription className="text-gray-600 text-right">
+                <p className="text-sm text-muted-foreground text-right">
                   עדכן את הפרטים האישיים שלך כאן. המידע ישמר באופן מאובטח במערכת.
-                </CardDescription>
+                </p>
               </CardHeader>
-              <CardContent className="p-8">
+              <CardContent className="p-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                        <User className="h-4 w-4 text-blue-600" />
-                        <span>שם מלא</span>
+                    {/* Full Name */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        שם מלא
+                        <User className="h-4 w-4 text-primary" />
                       </Label>
                       <Input
-                        id="full_name"
                         value={formData.full_name}
                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                         placeholder="הכנס שם מלא"
-                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
+                        className="h-12 rounded-xl border-2 text-right"
                         dir="rtl"
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                        <Phone className="h-4 w-4 text-blue-600" />
-                        <span>מספר טלפון</span>
+                    {/* Phone */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        מספר טלפון
+                        <Phone className="h-4 w-4 text-primary" />
                       </Label>
                       <Input
-                        id="phone"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="הכנס מספר טלפון"
-                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
+                        className="h-12 rounded-xl border-2 text-right"
                         dir="rtl"
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <Label htmlFor="company_name" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                        <Building className="h-4 w-4 text-blue-600" />
-                        <span>שם החברה</span>
+                    {/* Company Name */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        שם החברה
+                        <Building className="h-4 w-4 text-primary" />
                       </Label>
                       <Input
-                        id="company_name"
                         value={formData.company_name}
                         onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
                         placeholder="הכנס שם חברה"
-                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
+                        className="h-12 rounded-xl border-2 text-right"
                         dir="rtl"
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <Label htmlFor="position" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                        <Briefcase className="h-4 w-4 text-blue-600" />
-                        <span>תפקיד</span>
+                    {/* Position */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        תפקיד
+                        <Briefcase className="h-4 w-4 text-primary" />
                       </Label>
                       <Input
-                        id="position"
                         value={formData.position}
                         onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                         placeholder="הכנס תפקיד"
-                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-right"
+                        className="h-12 rounded-xl border-2 text-right"
                         dir="rtl"
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <Label htmlFor="accountant_email" className="text-sm font-medium text-gray-700 flex items-center justify-start gap-2">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                        <span>מייל רואה חשבון</span>
+                    {/* Accountant Email - Full width */}
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        מייל רואה חשבון
+                        <Mail className="h-4 w-4 text-primary" />
                       </Label>
                       <Input
-                        id="accountant_email"
                         type="email"
                         value={formData.accountant_email}
                         onChange={(e) => setFormData({ ...formData, accountant_email: e.target.value })}
                         placeholder="accountant@example.com"
-                        className="h-12 border-gray-300 focus:border-blue-600 focus:ring-blue-600 text-left"
+                        className="h-12 rounded-xl border-2 text-left max-w-md"
                         dir="ltr"
                       />
-                      <p className="text-xs text-gray-500 text-right">
+                      <p className="text-xs text-muted-foreground text-right">
                         כתובת המייל לשליחת דוחות חודשיים
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-gray-200 flex justify-start">
+                  <div className="pt-6 border-t flex justify-end">
                     <Button 
                       type="submit" 
                       disabled={updateProfile.isPending}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white h-12 px-8 rounded-lg font-medium transition-all duration-200 flex items-center gap-3"
+                      className="h-12 px-8 rounded-xl bg-gradient-to-l from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium transition-all duration-200 flex items-center gap-2"
                     >
                       <Save className="h-4 w-4" />
                       {updateProfile.isPending ? "שומר שינויים..." : "שמור שינויים"}
@@ -444,9 +414,9 @@ export default function Profile() {
           </TabsContent>
 
           <TabsContent value="notifications">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <Card className="shadow-lg rounded-2xl border-2">
               <NotificationSettings />
-            </div>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
