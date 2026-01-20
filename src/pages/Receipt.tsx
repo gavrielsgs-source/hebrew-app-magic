@@ -440,8 +440,6 @@ export default function Receipt() {
       <MobileContainer>
         <MobileDocumentHeader 
           title="קבלה"
-          subtitle="צור קבלה חדשה"
-          backPath="/document-production"
         />
         
         <div className="px-4 pb-56 space-y-4">
@@ -526,7 +524,7 @@ export default function Receipt() {
                     <div className="flex gap-2 mt-1">
                       <div className="flex-1">
                         <CustomerAndLeadSearchSelect
-                          onSelect={handleEntitySelect}
+                          onValueChange={handleEntitySelect}
                           placeholder="התחל להקליד את שם הלקוח המבוקש..."
                         />
                       </div>
@@ -786,7 +784,7 @@ export default function Receipt() {
                     <div className="flex gap-2 mt-2">
                       <div className="flex-1">
                         <CustomerAndLeadSearchSelect
-                          onSelect={handleEntitySelect}
+                          onValueChange={handleEntitySelect}
                           placeholder="התחל להקליד את שם הלקוח המבוקש..."
                         />
                       </div>
