@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface UploadProductionDocumentParams {
   pdfBlob: Blob;
-  documentType: 'price_quote' | 'tax_invoice' | 'tax_invoice_receipt' | 'sales_agreement';
+  documentType: 'price_quote' | 'tax_invoice' | 'tax_invoice_receipt' | 'sales_agreement' | 'receipt' | 'tax_invoice_credit';
   documentNumber: string;
   customerName: string;
   entityType?: string;
