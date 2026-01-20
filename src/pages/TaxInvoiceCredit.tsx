@@ -535,7 +535,7 @@ export default function TaxInvoiceCredit() {
               </Card>
 
               {/* Fixed Action Buttons */}
-              <div className="fixed bottom-20 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
+              <div className="fixed bottom-28 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
                 <div className="space-y-1.5 max-w-md mx-auto">
                   <Button
                     type="submit"

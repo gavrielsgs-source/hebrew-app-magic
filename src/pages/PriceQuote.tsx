@@ -612,7 +612,7 @@ export default function PriceQuote() {
             </Card>
 
             {/* Action Buttons - Fixed at Bottom */}
-            <div className="fixed bottom-20 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
+            <div className="fixed bottom-28 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
               <div className="space-y-1.5 max-w-md mx-auto">
                 <Button type="submit" className="w-full h-11 rounded-xl text-base font-bold" disabled={isCreating}>
                   {isCreating ? "שומר..." : "שמור הצעת מחיר"}
