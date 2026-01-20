@@ -183,11 +183,90 @@ export function CustomerAndLeadSearchSelect({
           {TriggerButton}
         </DrawerTrigger>
         <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader className="text-right">
+          <DrawerHeader className="text-right pb-2">
             <DrawerTitle>בחר לקוח או ליד</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-6">
-            {CommandContent}
+          <div className="px-4 pb-6 overflow-hidden">
+            <Command className="rounded-xl border">
+              <CommandInput placeholder="חפש לקוח או ליד..." className="text-right h-12" />
+              <CommandList className="max-h-[50vh]">
+                <CommandEmpty>לא נמצאו תוצאות</CommandEmpty>
+                {customers.length > 0 && (
+                  <CommandGroup heading="לקוחות">
+                    {customers.map((customer) => (
+                      <CommandItem
+                        key={`customer-${customer.id}`}
+                        value={`${customer.full_name} ${customer.phone || ''}`}
+                        onSelect={() => {
+                          onValueChange({
+                            type: 'customer',
+                            id: customer.id,
+                            data: customer,
+                          });
+                          setOpen(false);
+                        }}
+                        className="text-right"
+                      >
+                        <Check
+                          className={cn(
+                            "ml-2 h-4 w-4",
+                            value?.type === 'customer' && value?.id === customer.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        <User className="h-4 w-4 mr-2" />
+                        <div className="flex flex-col">
+                          <span>{customer.full_name}</span>
+                          {customer.phone && (
+                            <span className="text-sm text-muted-foreground">
+                              {customer.phone}
+                            </span>
+                          )}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+                {leads.length > 0 && (
+                  <CommandGroup heading="לידים">
+                    {leads.map((lead) => (
+                      <CommandItem
+                        key={`lead-${lead.id}`}
+                        value={`${lead.name} ${lead.phone || ''}`}
+                        onSelect={() => {
+                          onValueChange({
+                            type: 'lead',
+                            id: lead.id,
+                            data: lead,
+                          });
+                          setOpen(false);
+                        }}
+                        className="text-right"
+                      >
+                        <Check
+                          className={cn(
+                            "ml-2 h-4 w-4",
+                            value?.type === 'lead' && value?.id === lead.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        <div className="flex flex-col">
+                          <span>{lead.name}</span>
+                          {lead.phone && (
+                            <span className="text-sm text-muted-foreground">
+                              {lead.phone}
+                            </span>
+                          )}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </Command>
           </div>
         </DrawerContent>
       </Drawer>
