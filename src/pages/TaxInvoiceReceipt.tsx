@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Plus, Trash2, Download, MessageCircle } from 'lucide-react';
+import { CalendarIcon, Plus, Trash2, Download, MessageCircle, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,10 @@ import type { TaxInvoiceReceiptData, TaxInvoiceReceiptItem, PaymentMethod } from
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
 import { useAddCustomerVehiclePurchase } from '@/hooks/customers/use-customer-vehicles';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileContainer } from '@/components/mobile/MobileContainer';
+import { MobileDocumentHeader } from '@/components/mobile/MobileDocumentHeader';
+import { Label } from '@/components/ui/label';
 
 const receiptItemSchema = z.object({
   id: z.string(),
@@ -95,6 +99,8 @@ export default function TaxInvoiceReceipt() {
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
+  
+  const isMobile = useIsMobile();
   const { leads = [] } = useLeads();
   const { data: customers = [] } = useCustomers();
   const { cars = [] } = useCars();
@@ -431,6 +437,293 @@ export default function TaxInvoiceReceipt() {
     window.open(whatsappUrl, '_blank');
   };
 
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <MobileContainer withPadding={false} withBottomNav={true}>
+        <MobileDocumentHeader 
+          title="חשבונית מס קבלה" 
+          icon={<FileText className="h-5 w-5" />}
+        />
+        
+        {isSaved && (
+          <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-green-700">נשמר בענן</span>
+          </div>
+        )}
+        
+        <div className="p-4 space-y-4 pb-32">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* General Info */}
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-3">
+                  <CardTitle className="text-right text-lg">מידע כללי</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">תאריך</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button variant="outline" className="w-full h-11 text-right font-normal justify-start rounded-xl text-sm">
+                                  {field.value ? format(field.value, "dd/MM/yy", { locale: he }) : "בחר"}
+                                  <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                            </PopoverContent>
+                          </Popover>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">כותרת</FormLabel>
+                          <FormControl>
+                            <Input {...field} className="text-right rounded-xl h-11 text-sm" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Customer Selection */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">לקוח</Label>
+                    <CustomerAndLeadSearchSelect
+                      onValueChange={handleEntitySelect}
+                      placeholder="חפש לקוח..."
+                    />
+                  </div>
+
+                  {/* Customer Details */}
+                  <div className="space-y-3">
+                    <Input
+                      value={watchedFields.customerName}
+                      onChange={(e) => form.setValue('customerName', e.target.value)}
+                      className="text-right h-11 rounded-xl"
+                      placeholder="שם הלקוח"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        value={watchedFields.customerPhone}
+                        onChange={(e) => form.setValue('customerPhone', e.target.value)}
+                        className="text-right h-10 rounded-xl"
+                        placeholder="טלפון"
+                      />
+                      <Input
+                        value={watchedFields.customerHp}
+                        onChange={(e) => form.setValue('customerHp', e.target.value)}
+                        className="text-right h-10 rounded-xl"
+                        placeholder="ח.פ/ת.ז"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Car Selection */}
+                  <FormField
+                    control={form.control}
+                    name="carId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">רכב (אופציונלי)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="text-right rounded-xl h-11">
+                              <SelectValue placeholder="בחר רכב" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="no-car">ללא רכב</SelectItem>
+                            {cars.map((car) => (
+                              <SelectItem key={car.id} value={car.id}>
+                                {car.make} {car.model} ({car.year})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Items */}
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-3">
+                  <div className="flex items-center justify-between">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => appendItem({
+                        id: crypto.randomUUID(),
+                        description: '',
+                        quantity: 1,
+                        unitPrice: 0,
+                        vatRate: 17,
+                        discount: 0,
+                        total: 0,
+                        includeVat: true
+                      })}
+                      className="h-8 rounded-xl"
+                    >
+                      <Plus className="h-4 w-4 ml-1" />
+                      הוסף
+                    </Button>
+                    <CardTitle className="text-lg">פריטים</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-4">
+                  {itemFields.map((field, index) => (
+                    <Card key={field.id} className="p-3 bg-muted/30 rounded-xl border">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeItem(index)}
+                            disabled={itemFields.length === 1}
+                            className="h-7 px-2 rounded-lg"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                          <span className="font-medium text-sm">פריט {index + 1}</span>
+                        </div>
+
+                        <Input
+                          {...form.register(`items.${index}.description`)}
+                          className="text-right h-10 rounded-xl"
+                          placeholder="תיאור"
+                        />
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs">מחיר</Label>
+                            <Input
+                              type="number"
+                              {...form.register(`items.${index}.unitPrice`, { valueAsNumber: true })}
+                              className="text-right h-9 rounded-xl text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">כמות</Label>
+                            <Input
+                              type="number"
+                              {...form.register(`items.${index}.quantity`, { valueAsNumber: true })}
+                              className="text-right h-9 rounded-xl text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">הנחה</Label>
+                            <Input
+                              type="number"
+                              {...form.register(`items.${index}.discount`, { valueAsNumber: true })}
+                              className="text-right h-9 rounded-xl text-sm"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-2 bg-primary/5 rounded-xl">
+                          <span className="font-bold text-primary text-sm">
+                            ₪{(watchedFields.items?.[index]?.total || 0).toFixed(2)}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Label className="text-xs">כולל מע"מ</Label>
+                            <Switch
+                              checked={watchedFields.items?.[index]?.includeVat}
+                              onCheckedChange={(checked) => form.setValue(`items.${index}.includeVat`, checked)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Notes */}
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardHeader className="bg-gradient-to-l from-slate-50 to-transparent border-b pb-3">
+                  <CardTitle className="text-right text-lg">הערות</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Textarea {...field} placeholder="הערות..." className="text-right rounded-xl min-h-[60px]" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Summary Card */}
+              <Card className="shadow-xl rounded-2xl border-0 overflow-hidden">
+                <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-5 text-white">
+                  <h3 className="text-lg font-bold text-center mb-3">סה"כ לתשלום</h3>
+                  <div className="text-3xl font-bold text-center">
+                    ₪ {financialSummary.totalAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-white/20 space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>₪{financialSummary.subtotal.toFixed(2)}</span>
+                      <span>סכום חלקי</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>₪{financialSummary.vatAmount.toFixed(2)}</span>
+                      <span>מע"מ</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Fixed Action Buttons */}
+              <div className="fixed bottom-16 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t shadow-lg z-50">
+                <div className="space-y-2 max-w-md mx-auto">
+                  <Button
+                    type="submit"
+                    disabled={isGenerating || isCreating || isUploading}
+                    className="w-full h-12 rounded-xl text-base font-bold bg-green-600 hover:bg-green-700"
+                  >
+                    {isGenerating || isCreating ? "טוען..." : "הפק חשבונית"}
+                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button type="button" variant="outline" onClick={handleDownloadPDF} className="h-10 rounded-xl">
+                      <Download className="mr-1 h-4 w-4" />
+                      PDF
+                    </Button>
+                    <Button type="button" onClick={handleWhatsAppSend} disabled={!watchedFields.customerPhone} className="h-10 rounded-xl bg-green-600">
+                      <MessageCircle className="mr-1 h-4 w-4" />
+                      וואטסאפ
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </MobileContainer>
+    );
+  }
+
+  // Desktop Layout
   return (
     <div className="container mx-auto py-6 px-4 max-w-7xl">
       <div className="mb-8 text-right">

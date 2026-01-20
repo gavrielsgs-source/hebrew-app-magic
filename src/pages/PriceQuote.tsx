@@ -348,357 +348,309 @@ export default function PriceQuote() {
         
         {/* Save Status Indicator */}
         {isSaved && (
-          <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+          <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium text-green-700">נשמר בענן</span>
           </div>
         )}
         
-        <div className="p-4 space-y-6">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-right flex items-center gap-2 text-lg">
-                <Calculator className="h-5 w-5" />
-                הצעת מחיר
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {/* Quote Details - Mobile */}
-                <div className="space-y-4">
+        <div className="p-4 space-y-4 pb-32">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Quote Details - Mobile */}
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b pb-3">
+                <CardTitle className="text-right flex items-center gap-2 text-lg justify-end">
+                  <span>פרטי הצעה</span>
+                  <Calculator className="h-5 w-5 text-purple-600" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="date">תאריך</Label>
+                    <Label htmlFor="date" className="text-sm">תאריך</Label>
                     <Input
                       id="date"
                       type="date"
                       {...form.register("date")}
-                      className="text-right h-12"
+                      className="text-right h-11 rounded-xl"
                     />
                   </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="validUntil">תוקף עד</Label>
+                    <Label htmlFor="validUntil" className="text-sm">תוקף עד</Label>
                     <Input
                       id="validUntil"
                       type="date"
                       {...form.register("validUntil")}
-                      className="text-right h-12"
+                      className="text-right h-11 rounded-xl"
                     />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                <Separator />
+            {/* Customer Information - Mobile */}
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b pb-3">
+                <CardTitle className="text-right text-lg">פרטי הלקוח</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={useExisting ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setUseExisting(true)}
+                    className="flex-1 h-10 rounded-xl"
+                  >
+                    לקוח קיים
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={!useExisting ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setUseExisting(false);
+                      setSelectedEntity(null);
+                      form.setValue("leadId", undefined);
+                      form.setValue("customerId", undefined);
+                    }}
+                    className="flex-1 h-10 flex items-center gap-2 rounded-xl"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    חדש
+                  </Button>
+                </div>
 
-                {/* Customer Information - Mobile */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-right">פרטי הלקוח</h3>
+                {useExisting && (
+                  <CustomerAndLeadSearchSelect
+                    value={selectedEntity}
+                    onValueChange={handleEntitySelect}
+                    placeholder="חפש לקוח או ליד..."
+                  />
+                )}
 
-                  <div className="flex gap-2 mb-4">
-                    <Button
-                      type="button"
-                      variant={useExisting ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setUseExisting(true)}
-                      className="flex-1 h-10"
-                    >
-                      בחר לקוח קיים
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={!useExisting ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setUseExisting(false);
-                        setSelectedEntity(null);
-                        // Clear IDs when switching to new customer
-                        form.setValue("leadId", undefined);
-                        form.setValue("customerId", undefined);
-                      }}
-                      className="flex-1 h-10 flex items-center gap-2"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      לקוח חדש
-                    </Button>
+                <div className="space-y-3">
+                  <Input
+                    {...form.register("customer.fullName")}
+                    className="text-right h-11 rounded-xl"
+                    placeholder="שם מלא"
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      {...form.register("customer.phone")}
+                      className="text-right h-11 rounded-xl"
+                      placeholder="טלפון"
+                    />
+                    <Input
+                      type="email"
+                      {...form.register("customer.email")}
+                      className="text-right h-11 rounded-xl"
+                      placeholder="אימייל"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      {...form.register("customer.city")}
+                      className="text-right h-11 rounded-xl"
+                      placeholder="עיר"
+                    />
+                    <Input
+                      {...form.register("customer.address")}
+                      className="text-right h-11 rounded-xl"
+                      placeholder="כתובת"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Items - Mobile */}
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b pb-3">
+                <div className="flex items-center justify-between">
+                  <Button type="button" onClick={addItem} size="sm" className="flex items-center gap-1 rounded-xl h-9">
+                    <Plus className="h-4 w-4" />
+                    הוסף
+                  </Button>
+                  <CardTitle className="text-lg">פריטים</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-4">
+                {fields.map((field, index) => (
+                  <Card key={field.id} className="p-3 bg-muted/30 rounded-xl border">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => remove(index)}
+                          disabled={fields.length === 1}
+                          className="h-8 px-2 rounded-lg"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <span className="font-medium text-sm">פריט {index + 1}</span>
+                      </div>
+
+                      <Textarea
+                        {...form.register(`items.${index}.description`)}
+                        className="text-right min-h-[60px] rounded-xl"
+                        placeholder="תיאור הפריט..."
+                      />
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">מחיר</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...form.register(`items.${index}.unitPrice`, { 
+                              valueAsNumber: true,
+                              onChange: (e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)
+                            })}
+                            className="text-right h-10 rounded-xl text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">כמות</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            {...form.register(`items.${index}.quantity`, { 
+                              valueAsNumber: true,
+                              onChange: (e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)
+                            })}
+                            className="text-right h-10 rounded-xl text-sm"
+                            placeholder="1"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">הנחה</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...form.register(`items.${index}.discount`, { 
+                              valueAsNumber: true,
+                              onChange: (e) => handleItemChange(index, 'discount', parseFloat(e.target.value) || 0)
+                            })}
+                            className="text-right h-10 rounded-xl text-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="p-2 bg-purple-50 rounded-xl text-center">
+                        <span className="font-bold text-purple-700">סה"כ: {formatPrice(watchedItems[index]?.totalPrice || 0)}</span>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Additional Details - Mobile */}
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b pb-3">
+                <CardTitle className="text-right text-lg">פרטים נוספים</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-4">
+                <Textarea
+                  {...form.register("terms")}
+                  className="text-right min-h-[80px] rounded-xl"
+                  placeholder="תנאים כלליים..."
+                />
+                <Textarea
+                  {...form.register("notes")}
+                  className="text-right min-h-[60px] rounded-xl"
+                  placeholder="הערות נוספות..."
+                />
+              </CardContent>
+            </Card>
+
+            {/* Financial Summary - Mobile */}
+            <Card className="shadow-xl rounded-2xl border-0 overflow-hidden">
+              <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-purple-400 p-5 text-white">
+                <h3 className="text-lg font-bold text-center mb-4">סיכום כספי</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">{formatPrice(subtotal)}</span>
+                    <span>סכום חלקי</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold">-{formatPrice(totalDiscount)}</span>
+                    <span>הנחות</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 px-3 bg-white/20 rounded-xl my-2">
+                    <Switch
+                      id="includeVAT-mobile"
+                      checked={form.watch("includeVAT")}
+                      onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
+                    />
+                    <Label htmlFor="includeVAT-mobile" className="text-white cursor-pointer">
+                      {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
+                    </Label>
                   </div>
 
-                  {useExisting && (
-                    <div className="space-y-2">
-                      <Label htmlFor="entity">בחר לקוח או ליד</Label>
-                      <CustomerAndLeadSearchSelect
-                        value={selectedEntity}
-                        onValueChange={handleEntitySelect}
-                        placeholder="חפש לקוח או ליד..."
-                      />
+                  {includeVAT && (
+                    <div className="flex justify-between">
+                      <span className="font-semibold">{formatPrice(vat)}</span>
+                      <span>מע״מ (18%)</span>
                     </div>
                   )}
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName">שם מלא</Label>
-                      <Input
-                        id="fullName"
-                        {...form.register("customer.fullName")}
-                        className="text-right h-12"
-                        placeholder="שם מלא"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">טלפון</Label>
-                      <Input
-                        id="phone"
-                        {...form.register("customer.phone")}
-                        className="text-right h-12"
-                        placeholder="050-1234567"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">אימייל</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        {...form.register("customer.email")}
-                        className="text-right h-12"
-                        placeholder="email@example.com"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="city">עיר</Label>
-                      <Input
-                        id="city"
-                        {...form.register("customer.city")}
-                        className="text-right h-12"
-                        placeholder="תל אביב"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="address">כתובת</Label>
-                      <Input
-                        id="address"
-                        {...form.register("customer.address")}
-                        className="text-right h-12"
-                        placeholder="רחוב הרצל 1"
-                      />
+                  
+                  <div className="border-t border-white/30 pt-3 mt-3">
+                    <div className="flex justify-between text-xl font-bold">
+                      <span>{formatPrice(total)}</span>
+                      <span>סה"כ לתשלום</span>
                     </div>
                   </div>
                 </div>
+              </div>
+            </Card>
 
-                <Separator />
-
-                {/* Items - Mobile */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Button type="button" onClick={addItem} size="sm" className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      הוסף פריט
-                    </Button>
-                    <h3 className="text-lg font-semibold">פריטים</h3>
-                  </div>
-
-                  <div className="space-y-4">
-                    {fields.map((field, index) => (
-                      <Card key={field.id} className="p-4 bg-muted/30">
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => remove(index)}
-                              disabled={fields.length === 1}
-                              className="flex items-center gap-2"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              מחק
-                            </Button>
-                            <span className="font-medium">פריט {index + 1}</span>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>תיאור הפריט</Label>
-                            <Textarea
-                              {...form.register(`items.${index}.description`)}
-                              className="text-right min-h-[80px]"
-                              placeholder="תיאור הפריט..."
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-2">
-                              <Label>מחיר יחידה</Label>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                {...form.register(`items.${index}.unitPrice`, { 
-                                  valueAsNumber: true,
-                                  onChange: (e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)
-                                })}
-                                className="text-right h-12"
-                                placeholder="0.00"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label>כמות</Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                {...form.register(`items.${index}.quantity`, { 
-                                  valueAsNumber: true,
-                                  onChange: (e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)
-                                })}
-                                className="text-right h-12"
-                                placeholder="1"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>הנחה</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              {...form.register(`items.${index}.discount`, { 
-                                valueAsNumber: true,
-                                onChange: (e) => handleItemChange(index, 'discount', parseFloat(e.target.value) || 0)
-                              })}
-                              className="text-right h-12"
-                              placeholder="0.00"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>הערות</Label>
-                            <Input
-                              {...form.register(`items.${index}.notes`)}
-                              className="text-right h-12"
-                              placeholder="הערות לפריט"
-                            />
-                          </div>
-
-                          <div className="p-3 bg-primary/10 rounded text-center">
-                            <span className="font-bold text-lg">סה"כ: {formatPrice(watchedItems[index]?.totalPrice || 0)}</span>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Additional Details - Mobile */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-right">פרטים נוספים</h3>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="terms">תנאים כלליים</Label>
-                    <Textarea
-                      id="terms"
-                      {...form.register("terms")}
-                      className="text-right min-h-[100px]"
-                      placeholder="תנאי תשלום, תנאי אחריות וכו'..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">הערות</Label>
-                    <Textarea
-                      id="notes"
-                      {...form.register("notes")}
-                      className="text-right min-h-[80px]"
-                      placeholder="הערות נוספות להצעה..."
-                    />
-                  </div>
-                </div>
-
-                {/* Financial Summary - Mobile */}
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="pt-6">
-                    <div className="space-y-3 text-right">
-                      <div className="flex justify-between items-center text-lg">
-                        <span className="font-semibold">{formatPrice(subtotal)}</span>
-                        <span>סכום חלקי:</span>
-                      </div>
-                      <div className="flex justify-between items-center text-destructive">
-                        <span className="font-semibold">-{formatPrice(totalDiscount)}</span>
-                        <span>סה"כ הנחות:</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
-                        <Switch
-                          id="includeVAT-mobile"
-                          checked={form.watch("includeVAT")}
-                          onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
-                        />
-                        <Label htmlFor="includeVAT-mobile" className="text-base font-medium cursor-pointer">
-                          {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
-                        </Label>
-                      </div>
-
-                      {includeVAT && (
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold">{formatPrice(vat)}</span>
-                          <span>מע״מ (18%):</span>
-                        </div>
-                      )}
-                      <Separator />
-                      <div className="flex justify-between items-center text-xl font-bold text-primary">
-                        <span>{formatPrice(total)}</span>
-                        <span>סה"כ לתשלום:</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Button type="submit" className="w-full h-12" disabled={isCreating}>
+            {/* Action Buttons - Fixed at Bottom */}
+            <div className="fixed bottom-16 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t shadow-lg z-50">
+              <div className="space-y-2 max-w-md mx-auto">
+                <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold" disabled={isCreating}>
                   {isCreating ? "שומר..." : "שמור הצעת מחיר"}
                 </Button>
-              </form>
-
-              {showPreview && savedQuoteData && (
-                <div className="mt-6 p-4 border rounded-lg bg-background">
-                  <h3 className="text-lg font-semibold text-right mb-4">תצוגה מקדימה</h3>
-                  <div className="space-y-4 text-right text-sm">
-                    <div>
-                      <strong>מספר הצעה:</strong> {savedQuoteData.quoteNumber}
-                    </div>
-                    <div>
-                      <strong>תאריך:</strong> {new Date(savedQuoteData.date).toLocaleDateString('he-IL')}
-                    </div>
-                    <div>
-                      <strong>לקוח:</strong> {savedQuoteData.customer.fullName}
-                    </div>
-                    <div>
-                      <strong>סה"כ:</strong> {formatPrice(savedQuoteData.financial.total)}
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleDownloadPDF}
+                    variant="outline"
+                    className="h-10 rounded-xl"
+                  >
+                    <Download className="mr-1 h-4 w-4" />
+                    PDF
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleWhatsAppSend}
+                    className="h-10 bg-green-600 hover:bg-green-700 rounded-xl"
+                  >
+                    <MessageCircle className="mr-1 h-4 w-4" />
+                    וואטסאפ
+                  </Button>
                 </div>
-              )}
-
-              <div className="space-y-3">
-                <Button
-                  onClick={handleDownloadPDF}
-                  variant="outline"
-                  className="w-full h-12"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  הורד PDF
-                </Button>
-                <Button
-                  onClick={handleWhatsAppSend}
-                  variant="default"
-                  className="w-full h-12 bg-green-600 hover:bg-green-700"
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  שלח בוואטסאפ
-                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </form>
+
+          {/* Preview */}
+          {showPreview && savedQuoteData && (
+            <Card className="rounded-2xl border-2 mt-4">
+              <CardContent className="p-4 text-right text-sm space-y-2">
+                <div className="font-bold text-lg mb-2">תצוגה מקדימה</div>
+                <div><strong>מספר:</strong> {savedQuoteData.quoteNumber}</div>
+                <div><strong>לקוח:</strong> {savedQuoteData.customer.fullName}</div>
+                <div className="text-lg font-bold text-purple-600">{formatPrice(savedQuoteData.financial.total)}</div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </MobileContainer>
     );
