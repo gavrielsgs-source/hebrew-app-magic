@@ -2,11 +2,11 @@
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { useNavigate } from "react-router-dom";
 import { MobileContainer } from "./MobileContainer";
-import { MobileHeader } from "./MobileHeader";
 import { MobileCard } from "./MobileCard";
 import { MobileGrid } from "./MobileGrid";
 import { MobileButton } from "./MobileButton";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { 
   Plus, 
   Calendar, 
@@ -14,7 +14,8 @@ import {
   Users,
   CheckSquare,
   MessageCircle,
-  ArrowLeft
+  ArrowLeft,
+  LayoutDashboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +29,7 @@ export function MobileDashboard() {
         <MobileGrid spacing="lg">
           {[1, 2, 3, 4].map((i) => (
             <MobileCard key={i} className="animate-pulse">
-              <div className="h-20 bg-gray-200 rounded-2xl"></div>
+              <div className="h-20 bg-muted rounded-2xl"></div>
             </MobileCard>
           ))}
         </MobileGrid>
@@ -41,7 +42,8 @@ export function MobileDashboard() {
       title: "לידים להיום",
       value: dashboardData?.untreatedLeads?.length || 0,
       icon: Users,
-      color: "text-red-500",
+      colorClass: "text-red-600",
+      bgClass: "bg-red-100",
       urgent: (dashboardData?.untreatedLeads?.length || 0) > 0,
       action: () => navigate("/leads")
     },
@@ -49,7 +51,8 @@ export function MobileDashboard() {
       title: "משימות היום",
       value: dashboardData?.todayTasks?.length || 0,
       icon: CheckSquare,
-      color: "text-carslead-purple",
+      colorClass: "text-primary",
+      bgClass: "bg-primary/10",
       urgent: false,
       action: () => navigate("/tasks")
     },
@@ -57,7 +60,8 @@ export function MobileDashboard() {
       title: "רכבים לפרסום",
       value: dashboardData?.pendingCars?.length || 0,
       icon: Car,
-      color: "text-orange-500",
+      colorClass: "text-orange-600",
+      bgClass: "bg-orange-100",
       urgent: false,
       action: () => navigate("/cars")
     },
@@ -65,7 +69,8 @@ export function MobileDashboard() {
       title: "סה״כ רכבים",
       value: dashboardData?.totalCarsCount || 0,
       icon: Car,
-      color: "text-gray-600",
+      colorClass: "text-muted-foreground",
+      bgClass: "bg-muted",
       urgent: false,
       action: () => navigate("/cars")
     }
@@ -97,57 +102,65 @@ export function MobileDashboard() {
 
   return (
     <MobileContainer withPadding={false}>
-      {/* Clean main header with white background */}
-      <div className="bg-white shadow-sm mx-4 mt-4 p-6 rounded-3xl border border-gray-100">
-        <h1 className="text-xl font-bold text-gray-900 mb-2 text-right">
-          שלום! מה נעשה היום?
-        </h1>
-        <p className="text-base text-gray-600 text-right">
-          הכל מוכן לעוד יום מוצלח של מכירות
-        </p>
-      </div>
+      {/* Modern gradient header */}
+      <Card className="shadow-lg rounded-2xl border-0 overflow-hidden mx-4 mt-4">
+        <div className="bg-gradient-to-l from-primary to-primary/80 p-5">
+          <div className="flex items-center justify-between">
+            <div className="text-primary-foreground text-right flex-1">
+              <h1 className="text-xl font-bold mb-1">
+                שלום! מה נעשה היום?
+              </h1>
+              <p className="text-primary-foreground/80 text-sm">
+                הכל מוכן לעוד יום מוצלח של מכירות
+              </p>
+            </div>
+            <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center">
+              <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
+            </div>
+          </div>
+        </div>
+      </Card>
 
-      <div className="px-4 space-y-8 mt-6">
-        {/* Quick Stats - Clean white cards */}
+      <div className="px-4 space-y-6 mt-6">
+        {/* Quick Stats - Modern cards */}
         <div>
-          <h2 className="text-xl font-bold text-carslead-purple mb-4 text-right">מבט מהיר</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <h2 className="text-lg font-bold text-foreground mb-4 text-right">מבט מהיר</h2>
+          <div className="grid grid-cols-2 gap-3">
             {quickStats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <MobileCard 
+                <Card 
                   key={index}
                   className={cn(
-                    "cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 bg-white shadow-md hover:shadow-lg border border-gray-100",
-                    stat.urgent ? "ring-2 ring-red-200" : ""
+                    "cursor-pointer transition-all duration-300 hover:shadow-xl active:scale-95 bg-card shadow-lg border-2 rounded-2xl",
+                    stat.urgent ? "ring-2 ring-red-300 border-red-200" : "border-border"
                   )}
-                  contentClassName="p-4"
                 >
-                  <button onClick={stat.action} className="w-full">
+                  <button onClick={stat.action} className="w-full p-4">
                     <div className="flex items-center justify-between">
                       <div className="text-right">
-                        <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                        <p className="text-sm text-gray-600 font-semibold">{stat.title}</p>
+                        <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{stat.title}</p>
                       </div>
-                      <div className="p-3 rounded-2xl bg-gray-50 border border-gray-200">
-                        <Icon className={cn("h-6 w-6", stat.color)} />
+                      <div className={cn("p-2.5 rounded-xl", stat.bgClass)}>
+                        <Icon className={cn("h-5 w-5", stat.colorClass)} />
                       </div>
                     </div>
                     {stat.urgent && stat.value > 0 && (
-                      <Badge className="mt-3 bg-red-500 text-white border-0 shadow-md">
+                      <Badge className="mt-2 bg-red-600 text-white border-0 shadow-md text-xs">
                         דחוף!
                       </Badge>
                     )}
                   </button>
-                </MobileCard>
+                </Card>
               );
             })}
           </div>
         </div>
 
-        {/* Quick Actions - One primary, rest outlined */}
+        {/* Quick Actions - Modern styling */}
         <div>
-          <h2 className="text-xl font-bold text-carslead-purple mb-6 text-right">פעולות מהירות</h2>
+          <h2 className="text-lg font-bold text-foreground mb-4 text-right">פעולות מהירות</h2>
           <MobileGrid spacing="md">
             {quickActions.map((action, index) => {
               const Icon = action.icon;
@@ -157,25 +170,25 @@ export function MobileDashboard() {
                   variant={action.variant}
                   size="xl"
                   onClick={action.action}
-                  icon={<Icon className="h-6 w-6" />}
+                  icon={<Icon className="h-5 w-5" />}
                   className={cn(
-                    "h-20 flex-col gap-2 shadow-md border border-gray-200",
+                    "h-20 flex-col gap-1.5 shadow-lg rounded-2xl",
                     action.variant === "primary" 
-                      ? "bg-gradient-to-r from-[#2F3C7E] to-[#4CAF50] text-white border-0" 
-                      : "bg-white text-gray-700 hover:bg-gray-50"
+                      ? "bg-gradient-to-l from-primary to-primary/80 text-primary-foreground border-0 hover:opacity-90" 
+                      : "bg-card text-foreground border-2 border-border hover:bg-muted/50"
                   )}
                 >
-                  <span className="font-bold">{action.title}</span>
-                  <span className="text-sm opacity-90">{action.subtitle}</span>
+                  <span className="font-bold text-sm">{action.title}</span>
+                  <span className="text-xs opacity-80">{action.subtitle}</span>
                 </MobileButton>
               );
             })}
           </MobileGrid>
         </div>
 
-        {/* Today's Tasks Preview - Clean white cards */}
+        {/* Today's Tasks Preview - Modern cards */}
         {dashboardData?.todayTasks && dashboardData.todayTasks.length > 0 && (
-          <div>
+          <div className="pb-4">
             <div className="flex items-center justify-between mb-4">
               <MobileButton 
                 variant="outline" 
@@ -183,29 +196,29 @@ export function MobileDashboard() {
                 onClick={() => navigate("/tasks")}
                 fullWidth={false}
                 icon={<ArrowLeft className="h-4 w-4" />}
-                className="border-carslead-purple text-carslead-purple hover:bg-carslead-purple hover:text-white bg-white"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-card rounded-xl"
               >
                 צפה בהכל
               </MobileButton>
-              <h2 className="text-xl font-bold text-carslead-purple">משימות להיום</h2>
+              <h2 className="text-lg font-bold text-foreground">משימות להיום</h2>
             </div>
             
             <MobileGrid spacing="sm">
               {dashboardData.todayTasks.slice(0, 3).map((task) => (
-                <MobileCard key={task.id as string} className="bg-white border border-gray-100 shadow-md">
+                <Card key={task.id as string} className="bg-card border-2 shadow-lg rounded-2xl p-4">
                   <div className="flex items-center justify-between">
                     <MobileButton
                       variant="outline"
                       size="sm"
                       onClick={() => navigate("/tasks")}
                       fullWidth={false}
-                      className="border-carslead-purple text-carslead-purple hover:bg-carslead-purple hover:text-white bg-white"
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-card rounded-xl"
                     >
                       פתח
                     </MobileButton>
                     <div className="text-right flex-1 mr-3">
-                      <h4 className="font-semibold text-gray-900">{task.title as string}</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-semibold text-foreground text-sm">{task.title as string}</h4>
+                      <p className="text-xs text-muted-foreground">
                         {task.due_date ? new Date(task.due_date as string).toLocaleTimeString('he-IL', { 
                           hour: '2-digit', 
                           minute: '2-digit' 
@@ -213,7 +226,7 @@ export function MobileDashboard() {
                       </p>
                     </div>
                   </div>
-                </MobileCard>
+                </Card>
               ))}
             </MobileGrid>
           </div>
