@@ -695,7 +695,7 @@ export default function TaxInvoiceReceipt() {
               </Card>
 
               {/* Fixed Action Buttons */}
-              <div className="fixed bottom-0 left-0 right-0 p-4 pb-20 bg-background/95 backdrop-blur-sm border-t shadow-lg z-50">
+              <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t shadow-lg z-50">
                 <div className="space-y-2 max-w-md mx-auto">
                   <Button
                     type="submit"
