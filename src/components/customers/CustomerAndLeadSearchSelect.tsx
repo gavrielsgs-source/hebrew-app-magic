@@ -56,13 +56,18 @@ export function CustomerAndLeadSearchSelect({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-right h-12"
+          className="w-full justify-between text-right h-12 rounded-xl"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(!open);
+          }}
         >
           {selectedOption ? (
             <div className="flex items-center gap-2">
@@ -84,7 +89,12 @@ export function CustomerAndLeadSearchSelect({
           <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[95vw] sm:w-full max-w-md p-0 z-[100]" align="start" sideOffset={8}>
+      <PopoverContent 
+        className="w-[95vw] sm:w-full max-w-md p-0 z-[9999] bg-background border shadow-lg rounded-xl pointer-events-auto" 
+        align="start" 
+        sideOffset={8}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Command>
           <CommandInput placeholder="חפש לקוח או ליד..." className="text-right h-12" />
           <CommandList className="max-h-[300px]">
