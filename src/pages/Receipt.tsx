@@ -390,36 +390,36 @@ export default function Receipt() {
       <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-500 p-5 text-white">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span>₪ {totals.cash.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ מזומן</span>
+            <span>₪ {totals.cash.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between">
-            <span>₪ {totals.check.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ המחאות</span>
+            <span>₪ {totals.check.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between">
-            <span>₪ {totals.creditCard.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ כרטיסי אשראי</span>
+            <span>₪ {totals.creditCard.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between">
-            <span>₪ {totals.bankTransfer.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ העברות בנקאיות</span>
+            <span>₪ {totals.bankTransfer.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between">
-            <span>₪ {totals.other.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ אחר</span>
+            <span>₪ {totals.other.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between">
-            <span>₪ {totals.taxDeduction.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ ניכוי מס במקור</span>
+            <span>₪ {totals.taxDeduction.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between">
-            <span>₪ {totals.vehicle.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ רכבים</span>
+            <span>₪ {totals.vehicle.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between">
-            <span>₪ {totals.totalWithTaxDeduction.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
             <span>סה"כ כולל ניכוי מס במקור</span>
+            <span>₪ {totals.totalWithTaxDeduction.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
           </div>
         </div>
         <div className="mt-4 pt-4 border-t border-white/30">

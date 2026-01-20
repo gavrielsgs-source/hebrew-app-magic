@@ -683,12 +683,12 @@ export default function TaxInvoiceReceipt() {
                   </div>
                   <div className="mt-3 pt-3 border-t border-white/20 space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span>₪{financialSummary.subtotal.toFixed(2)}</span>
                       <span>סכום חלקי</span>
+                      <span>₪{financialSummary.subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>₪{financialSummary.vatAmount.toFixed(2)}</span>
                       <span>מע"מ</span>
+                      <span>₪{financialSummary.vatAmount.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -1421,20 +1421,20 @@ export default function TaxInvoiceReceipt() {
 
                   <div className="mt-4 pt-4 border-t border-white/20 space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.subtotal.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                       <span>סה"כ לפני מע"מ</span>
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.subtotal.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.itemsWithoutVat.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                       <span>פריטים ללא מע"מ</span>
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.itemsWithoutVat.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.generalDiscount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                       <span>הנחה כללית</span>
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.generalDiscount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.vatAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                       <span>מע"מ (17%)</span>
+                      <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.vatAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
