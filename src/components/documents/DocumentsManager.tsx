@@ -116,7 +116,7 @@ export function DocumentsManager({ entityId, entityType, filterTemplates = false
   }
   
   return (
-    <div className="space-y-4" dir="rtl">
+    <div className="space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <DocumentFilters
           searchQuery={searchQuery}
