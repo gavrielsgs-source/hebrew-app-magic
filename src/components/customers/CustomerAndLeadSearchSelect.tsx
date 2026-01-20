@@ -69,24 +69,24 @@ export function CustomerAndLeadSearchSelect({
       variant="outline"
       role="combobox"
       aria-expanded={open}
-      className="w-full justify-between text-right h-12 rounded-xl"
+      className="w-full justify-between text-right h-12 rounded-xl overflow-hidden"
     >
       {selectedOption ? (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
           {selectedOption.type === 'customer' ? (
-            <User className="h-4 w-4" />
+            <User className="h-4 w-4 shrink-0" />
           ) : (
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="h-4 w-4 shrink-0" />
           )}
-          <span>{selectedOption.label}</span>
+          <span className="truncate">{selectedOption.label}</span>
           {selectedOption.phone && (
-            <span className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-sm truncate">
               ({selectedOption.phone})
             </span>
           )}
         </div>
       ) : (
-        placeholder
+        <span className="truncate">{placeholder}</span>
       )}
       <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
     </Button>
