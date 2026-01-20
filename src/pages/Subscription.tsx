@@ -1,19 +1,18 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Crown, Star, Zap, Check, X } from "lucide-react";
+import { ArrowLeft, Crown, Star, Zap, LogOut, CreditCard, TrendingUp } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useTasks } from "@/hooks/use-tasks";
 import { UsageBar } from "@/components/subscription/UsageBar";
+import { MobileContainer } from "@/components/mobile/MobileContainer";
 
 const subscriptionTiers = [
   {
@@ -116,85 +115,252 @@ export default function Subscription() {
 
   const currentTier = getSubscriptionTier();
 
-  // שימוש בנתונים אמיתיים
   const currentUsage = {
     leads: leads?.length || 0,
     cars: cars?.length || 0,
     tasks: tasks?.length || 0
   };
 
-  return (
-    <div className={`container mx-auto py-10 px-4 ${isMobile ? 'pb-24' : ''}`}>
-      <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'} mb-8`}>
-        <div>
-          <h1 className={`font-bold ${isMobile ? 'text-2xl' : 'text-3xl'}`}>ניהול מנוי</h1>
-          <p className={`text-muted-foreground mt-2 ${isMobile ? 'text-sm' : ''}`}>
-            בדוק את פרטי המנוי שלך ושדרג במידת הצורך
-          </p>
+  // Mobile View
+  if (isMobile) {
+    return (
+      <MobileContainer className="bg-background" withPadding={false}>
+        <div className="space-y-4 p-4 pb-24" dir="rtl">
+          {/* Header */}
+          <Card className="shadow-lg rounded-2xl border-0 overflow-hidden">
+            <div className="bg-gradient-to-l from-primary to-primary/80 p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-primary-foreground text-right">
+                  <h1 className="text-xl font-bold mb-1">ניהול מנוי</h1>
+                  <p className="text-primary-foreground/80 text-sm">
+                    בדוק את פרטי המנוי שלך
+                  </p>
+                </div>
+                <div className="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center">
+                  <CreditCard className="h-7 w-7 text-primary-foreground" />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Current Plan Card */}
+          <Card className="shadow-lg rounded-2xl border-2">
+            <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-right text-lg flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-yellow-500" />
+                  {currentTier.name === "חינם" ? "חבילה בסיסית" : `חבילת ${currentTier.name}`}
+                </CardTitle>
+                {currentTier.mostPopular && (
+                  <Badge className="bg-primary/10 text-primary border-primary/20">מומלץ</Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground text-right">
+                {currentTier.description}
+              </p>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              {/* Features */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Zap className="h-4 w-4 text-primary" />
+                  תכונות עיקריות:
+                </div>
+                <ul className="space-y-2 pr-6">
+                  {currentTier.features.map((feature, index) => (
+                    <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Usage Card */}
+          <Card className="shadow-lg rounded-2xl border-2">
+            <CardHeader className="bg-gradient-to-l from-green-500/10 to-transparent border-b pb-4">
+              <CardTitle className="text-right text-lg flex items-center gap-2">
+                <Star className="h-5 w-5 text-green-500" />
+                שימוש נוכחי
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              <UsageBar 
+                used={currentUsage.leads}
+                limit={subscription.leadLimit || 0}
+                label="לקוחות פוטנציאליים"
+              />
+              <UsageBar 
+                used={currentUsage.cars}
+                limit={subscription.carLimit || 0}
+                label="רכבים במלאי"
+              />
+              <UsageBar 
+                used={currentUsage.tasks}
+                limit={subscription.taskLimit || 0}
+                label="משימות"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="space-y-3">
+            {currentTier.id !== "enterprise" && (
+              <Button 
+                onClick={() => navigate("/subscription/upgrade")}
+                className="w-full h-12 rounded-xl bg-gradient-to-l from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium"
+              >
+                <TrendingUp className="h-4 w-4 ml-2" />
+                שדרג מנוי
+                <ArrowLeft className="h-4 w-4 mr-2" />
+              </Button>
+            )}
+            <Button 
+              variant="outline" 
+              onClick={handleSignOut}
+              className="w-full h-12 rounded-xl border-2"
+            >
+              <LogOut className="h-4 w-4 ml-2" />
+              התנתקות
+            </Button>
+          </div>
         </div>
-        <Button variant="outline" onClick={handleSignOut} className={isMobile ? 'self-start' : ''}>
-          התנתקות
-        </Button>
-      </div>
+      </MobileContainer>
+    );
+  }
 
-      <Card className="mb-8">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">
-              {currentTier.name === "חינם" ? "חבילה בסיסית" : `חבילת ${currentTier.name}`}
-              {currentTier.mostPopular && <Badge className="ml-2">מומלץ</Badge>}
-            </CardTitle>
-            {currentTier.name !== "חינם" && <Crown className="h-4 w-4 text-yellow-500" />}
+  // Desktop View
+  return (
+    <div className="min-h-screen bg-background p-6" dir="rtl">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <Card className="shadow-lg rounded-2xl border-0 overflow-hidden">
+          <div className="bg-gradient-to-l from-primary to-primary/80 p-8">
+            <div className="flex items-center justify-between">
+              <div className="text-primary-foreground text-right">
+                <h1 className="text-3xl font-bold mb-2">ניהול מנוי</h1>
+                <p className="text-primary-foreground/80 text-lg">
+                  בדוק את פרטי המנוי שלך ושדרג במידת הצורך
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                  <CreditCard className="h-8 w-8 text-primary-foreground" />
+                </div>
+              </div>
+            </div>
           </div>
-          <CardDescription>{currentTier.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          <div className="flex items-center">
-            <Zap className="h-4 w-4 mr-2 text-blue-500" />
-            תכונות עיקריות:
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Current Plan Card */}
+          <div className="lg:col-span-2">
+            <Card className="shadow-lg rounded-2xl border-2 h-full">
+              <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-right text-xl flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-yellow-500" />
+                    {currentTier.name === "חינם" ? "חבילה בסיסית" : `חבילת ${currentTier.name}`}
+                  </CardTitle>
+                  {currentTier.mostPopular && (
+                    <Badge className="bg-primary/10 text-primary border-primary/20">מומלץ</Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground text-right">
+                  {currentTier.description}
+                </p>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {/* Features */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 font-medium text-foreground">
+                    <Zap className="h-5 w-5 text-primary" />
+                    תכונות עיקריות:
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pr-7">
+                    {currentTier.features.map((feature, index) => (
+                      <div key={index} className="text-sm text-muted-foreground flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Usage */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 font-medium text-foreground">
+                    <Star className="h-5 w-5 text-green-500" />
+                    שימוש נוכחי:
+                  </div>
+                  <div className="space-y-4 pr-7">
+                    <UsageBar 
+                      used={currentUsage.leads}
+                      limit={subscription.leadLimit || 0}
+                      label="לקוחות פוטנציאליים"
+                    />
+                    <UsageBar 
+                      used={currentUsage.cars}
+                      limit={subscription.carLimit || 0}
+                      label="רכבים במלאי"
+                    />
+                    <UsageBar 
+                      used={currentUsage.tasks}
+                      limit={subscription.taskLimit || 0}
+                      label="משימות"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <ul className="list-disc pl-5 space-y-1">
-            {currentTier.features.map((feature, index) => (
-              <li key={index} className="text-sm">
-                {feature}
-              </li>
-            ))}
-          </ul>
-          
-          <div className="flex items-center">
-            <Star className="h-4 w-4 mr-2 text-green-500" />
-            שימוש נוכחי:
-          </div>
+
+          {/* Actions Sidebar */}
           <div className="space-y-4">
-            <UsageBar 
-              used={currentUsage.leads}
-              limit={subscription.leadLimit || 0}
-              label="לקוחות פוטנציאליים"
-            />
-            <UsageBar 
-              used={currentUsage.cars}
-              limit={subscription.carLimit || 0}
-              label="רכבים במלאי"
-            />
-            <UsageBar 
-              used={currentUsage.tasks}
-              limit={subscription.taskLimit || 0}
-              label="משימות"
-            />
-          </div>
-        </CardContent>
-      </Card>
+            <Card className="shadow-lg rounded-2xl border-2 bg-gradient-to-b from-primary/5 to-transparent">
+              <CardContent className="p-6 space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-foreground mb-1">
+                    {currentTier.price}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {currentTier.price !== "חינם" ? "לחודש" : ""}
+                  </div>
+                </div>
 
-      <div className="text-center">
-        {currentTier.id === "enterprise" ? (
-          <p className="text-sm text-muted-foreground">
-            יצרנו איתך קשר לגבי תוכנית האנטרפרייז שלך.
-          </p>
-        ) : (
-          <Button onClick={() => navigate("/subscription/upgrade")}>
-            שדרג מנוי <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        )}
+                {currentTier.id !== "enterprise" ? (
+                  <Button 
+                    onClick={() => navigate("/subscription/upgrade")}
+                    className="w-full h-12 rounded-xl bg-gradient-to-l from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium"
+                  >
+                    <TrendingUp className="h-4 w-4 ml-2" />
+                    שדרג מנוי
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                  </Button>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center">
+                    יצרנו איתך קשר לגבי תוכנית האנטרפרייז שלך.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardContent className="p-6">
+                <Button 
+                  variant="outline" 
+                  onClick={handleSignOut}
+                  className="w-full h-12 rounded-xl border-2"
+                >
+                  <LogOut className="h-4 w-4 ml-2" />
+                  התנתקות
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
