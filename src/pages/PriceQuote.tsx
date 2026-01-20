@@ -612,9 +612,9 @@ export default function PriceQuote() {
             </Card>
 
             {/* Action Buttons - Fixed at Bottom */}
-            <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t shadow-lg z-50">
-              <div className="space-y-2 max-w-md mx-auto">
-                <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold" disabled={isCreating}>
+            <div className="fixed bottom-20 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
+              <div className="space-y-1.5 max-w-md mx-auto">
+                <Button type="submit" className="w-full h-11 rounded-xl text-base font-bold" disabled={isCreating}>
                   {isCreating ? "שומר..." : "שמור הצעת מחיר"}
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
@@ -622,7 +622,7 @@ export default function PriceQuote() {
                     type="button"
                     onClick={handleDownloadPDF}
                     variant="outline"
-                    className="h-10 rounded-xl"
+                    className="h-9 rounded-xl"
                   >
                     <Download className="mr-1 h-4 w-4" />
                     PDF
@@ -630,7 +630,7 @@ export default function PriceQuote() {
                   <Button
                     type="button"
                     onClick={handleWhatsAppSend}
-                    className="h-10 bg-green-600 hover:bg-green-700 rounded-xl"
+                    className="h-9 bg-green-600 hover:bg-green-700 rounded-xl"
                   >
                     <MessageCircle className="mr-1 h-4 w-4" />
                     וואטסאפ

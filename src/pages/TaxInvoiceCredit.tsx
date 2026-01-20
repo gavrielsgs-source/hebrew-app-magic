@@ -535,21 +535,21 @@ export default function TaxInvoiceCredit() {
               </Card>
 
               {/* Fixed Action Buttons */}
-              <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t shadow-lg z-50">
-                <div className="space-y-2 max-w-md mx-auto">
+              <div className="fixed bottom-20 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
+                <div className="space-y-1.5 max-w-md mx-auto">
                   <Button
                     type="submit"
                     disabled={isGenerating || isCreating || isUploading || !selectedInvoice}
-                    className="w-full h-12 rounded-xl text-base font-bold bg-green-600 hover:bg-green-700"
+                    className="w-full h-11 rounded-xl text-base font-bold bg-green-600 hover:bg-green-700"
                   >
                     {isGenerating || isCreating ? "טוען..." : "הפק מסמך"}
                   </Button>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button type="button" variant="outline" onClick={handleDownloadPDF} disabled={!selectedInvoice} className="h-10 rounded-xl">
+                    <Button type="button" variant="outline" onClick={handleDownloadPDF} disabled={!selectedInvoice} className="h-9 rounded-xl">
                       <Download className="mr-1 h-4 w-4" />
                       PDF
                     </Button>
-                    <Button type="button" onClick={handleWhatsAppSend} disabled={!watchedFields.customerPhone} className="h-10 rounded-xl bg-green-600">
+                    <Button type="button" onClick={handleWhatsAppSend} disabled={!watchedFields.customerPhone} className="h-9 rounded-xl bg-green-600">
                       <MessageCircle className="mr-1 h-4 w-4" />
                       וואטסאפ
                     </Button>
