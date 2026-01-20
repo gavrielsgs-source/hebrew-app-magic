@@ -706,128 +706,138 @@ export default function PriceQuote() {
 
   // Desktop Layout
   return (
-    <div className="w-full max-w-none">
-      <div className="space-y-6 p-6">
-        
-        {/* Save Status Indicator */}
-        {isSaved && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-green-700">הצעת המחיר נשמרה בענן</span>
-          </div>
-        )}
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-right flex items-center gap-2">
-              <Calculator className="h-6 w-6" />
-              הצעת מחיר
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Quote Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="date">תאריך</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-between text-right font-normal",
-                          !form.watch("date") && "text-muted-foreground"
-                        )}
-                      >
-                        <span>{form.watch("date") ? new Date(form.watch("date")).toLocaleDateString('he-IL') : "בחר תאריך"}</span>
-                        <CalendarIcon className="h-4 w-4 opacity-60" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                      <Calendar
-                        mode="single"
-                        selected={form.watch("date") ? new Date(form.watch("date")) : undefined}
-                        onSelect={(date) => {
-                          if (date) {
-                            form.setValue("date", date.toISOString().split('T')[0]);
-                          }
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {form.formState.errors.date && (
-                    <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
-                  )}
-                </div>
+    <div className="container mx-auto py-6 px-4 max-w-7xl">
+      <div className="mb-8 text-right">
+        <h1 className="text-4xl font-bold bg-gradient-to-l from-purple-600 to-purple-400 bg-clip-text text-transparent mb-2">
+          הצעת מחיר
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          צור הצעת מחיר מפורטת ללקוח
+        </p>
+      </div>
+      
+      {/* Save Status Indicator */}
+      {isSaved && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-green-700">הצעת המחיר נשמרה בענן</span>
+        </div>
+      )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="validUntil">תוקף עד</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-between text-right font-normal",
-                          !form.watch("validUntil") && "text-muted-foreground"
-                        )}
-                      >
-                        <span>{form.watch("validUntil") ? new Date(form.watch("validUntil")).toLocaleDateString('he-IL') : "בחר תאריך"}</span>
-                        <CalendarIcon className="h-4 w-4 opacity-60" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                      <Calendar
-                        mode="single"
-                        selected={form.watch("validUntil") ? new Date(form.watch("validUntil")) : undefined}
-                        onSelect={(date) => {
-                          if (date) {
-                            form.setValue("validUntil", date.toISOString().split('T')[0]);
-                          }
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {form.formState.errors.validUntil && (
-                    <p className="text-sm text-destructive">{form.formState.errors.validUntil.message}</p>
-                  )}
-                </div>
-
-              </div>
-
-              <Separator />
-
-              {/* Customer Information */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={useExisting ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setUseExisting(true)}
-                    >
-                      בחר לקוח קיים
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={!useExisting ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setUseExisting(false);
-                        setSelectedEntity(null);
-                        // Clear IDs when switching to new customer
-                        form.setValue("leadId", undefined);
-                        form.setValue("customerId", undefined);
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      לקוח חדש
-                    </Button>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Form */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quote Details */}
+            <Card className="border-2 shadow-lg rounded-2xl">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b">
+                <CardTitle className="text-right text-xl flex items-center gap-2 justify-end">
+                  <span>פרטי הצעה</span>
+                  <Calculator className="h-5 w-5" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date">תאריך</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-between text-right font-normal rounded-xl",
+                            !form.watch("date") && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="h-4 w-4 opacity-60" />
+                          <span>{form.watch("date") ? new Date(form.watch("date")).toLocaleDateString('he-IL') : "בחר תאריך"}</span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
+                        <Calendar
+                          mode="single"
+                          selected={form.watch("date") ? new Date(form.watch("date")) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              form.setValue("date", date.toISOString().split('T')[0]);
+                            }
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {form.formState.errors.date && (
+                      <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
+                    )}
                   </div>
-                  <h3 className="text-lg font-semibold">פרטי הלקוח</h3>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="validUntil">תוקף עד</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-between text-right font-normal rounded-xl",
+                            !form.watch("validUntil") && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="h-4 w-4 opacity-60" />
+                          <span>{form.watch("validUntil") ? new Date(form.watch("validUntil")).toLocaleDateString('he-IL') : "בחר תאריך"}</span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
+                        <Calendar
+                          mode="single"
+                          selected={form.watch("validUntil") ? new Date(form.watch("validUntil")) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              form.setValue("validUntil", date.toISOString().split('T')[0]);
+                            }
+                          }}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {form.formState.errors.validUntil && (
+                      <p className="text-sm text-destructive">{form.formState.errors.validUntil.message}</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Customer Information */}
+            <Card className="border-2 shadow-lg rounded-2xl">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b">
+                <CardTitle className="text-right text-xl">פרטי הלקוח</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="flex gap-2 mb-4">
+                  <Button
+                    type="button"
+                    variant={useExisting ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setUseExisting(true)}
+                    className="rounded-xl"
+                  >
+                    בחר לקוח קיים
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={!useExisting ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setUseExisting(false);
+                      setSelectedEntity(null);
+                      form.setValue("leadId", undefined);
+                      form.setValue("customerId", undefined);
+                    }}
+                    className="flex items-center gap-2 rounded-xl"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    לקוח חדש
+                  </Button>
                 </div>
 
                 {useExisting && (
@@ -841,13 +851,13 @@ export default function PriceQuote() {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="fullName">שם מלא</Label>
                     <Input
                       id="fullName"
                       {...form.register("customer.fullName")}
-                      className="text-right"
+                      className="text-right rounded-xl"
                       placeholder="שם מלא"
                     />
                     {form.formState.errors.customer?.fullName && (
@@ -860,7 +870,7 @@ export default function PriceQuote() {
                     <Input
                       id="phone"
                       {...form.register("customer.phone")}
-                      className="text-right"
+                      className="text-right rounded-xl"
                       placeholder="050-1234567"
                     />
                   </div>
@@ -871,7 +881,7 @@ export default function PriceQuote() {
                       id="email"
                       type="email"
                       {...form.register("customer.email")}
-                      className="text-right"
+                      className="text-right rounded-xl"
                       placeholder="email@example.com"
                     />
                   </div>
@@ -881,7 +891,7 @@ export default function PriceQuote() {
                     <Input
                       id="city"
                       {...form.register("customer.city")}
-                      className="text-right"
+                      className="text-right rounded-xl"
                       placeholder="תל אביב"
                     />
                     {form.formState.errors.customer?.city && (
@@ -889,12 +899,12 @@ export default function PriceQuote() {
                     )}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="address">כתובת</Label>
                     <Input
                       id="address"
                       {...form.register("customer.address")}
-                      className="text-right"
+                      className="text-right rounded-xl"
                       placeholder="רחוב הרצל 1"
                     />
                     {form.formState.errors.customer?.address && (
@@ -902,125 +912,125 @@ export default function PriceQuote() {
                     )}
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <Separator />
-
-              {/* Items */}
-              <div className="space-y-4">
+            {/* Items */}
+            <Card className="border-2 shadow-lg rounded-2xl">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b">
                 <div className="flex items-center justify-between">
-                  <Button type="button" onClick={addItem} className="flex items-center gap-2">
+                  <Button type="button" onClick={addItem} className="flex items-center gap-2 rounded-xl">
                     <Plus className="h-4 w-4" />
                     הוסף פריט
                   </Button>
-                  <h3 className="text-lg font-semibold">פריטים</h3>
+                  <CardTitle className="text-xl">פריטים</CardTitle>
                 </div>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                {fields.map((field, index) => (
+                  <Card key={field.id} className="p-4 rounded-xl border-2">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => remove(index)}
+                          disabled={fields.length === 1}
+                          className="flex items-center gap-2 rounded-xl"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          מחק
+                        </Button>
+                        <h4 className="font-medium">פריט {index + 1}</h4>
+                      </div>
 
-                <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <Card key={field.id} className="p-4">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => remove(index)}
-                            disabled={fields.length === 1}
-                            className="flex items-center gap-2"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            מחק פריט
-                          </Button>
-                          <h4 className="font-medium">פריט {index + 1}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>תיאור הפריט</Label>
+                          <Textarea
+                            {...form.register(`items.${index}.description`)}
+                            className="text-right rounded-xl"
+                            placeholder="תיאור הפריט..."
+                          />
+                          {form.formState.errors.items?.[index]?.description && (
+                            <p className="text-sm text-destructive">{form.formState.errors.items[index]?.description?.message}</p>
+                          )}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2 md:col-span-2">
-                            <Label>תיאור הפריט</Label>
-                            <Textarea
-                              {...form.register(`items.${index}.description`)}
-                              className="text-right"
-                              placeholder="תיאור הפריט..."
-                            />
-                            {form.formState.errors.items?.[index]?.description && (
-                              <p className="text-sm text-destructive">{form.formState.errors.items[index]?.description?.message}</p>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>מחיר יחידה</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              {...form.register(`items.${index}.unitPrice`, { 
-                                valueAsNumber: true,
-                                onChange: (e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)
-                              })}
-                              className="text-right"
-                              placeholder="0.00"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>כמות</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              {...form.register(`items.${index}.quantity`, { 
-                                valueAsNumber: true,
-                                onChange: (e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)
-                              })}
-                              className="text-right"
-                              placeholder="1"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>הנחה</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              {...form.register(`items.${index}.discount`, { 
-                                valueAsNumber: true,
-                                onChange: (e) => handleItemChange(index, 'discount', parseFloat(e.target.value) || 0)
-                              })}
-                              className="text-right"
-                              placeholder="0.00"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>הערות</Label>
-                            <Input
-                              {...form.register(`items.${index}.notes`)}
-                              className="text-right"
-                              placeholder="הערות לפריט"
-                            />
-                          </div>
+                        <div className="space-y-2">
+                          <Label>מחיר יחידה</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...form.register(`items.${index}.unitPrice`, { 
+                              valueAsNumber: true,
+                              onChange: (e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)
+                            })}
+                            className="text-right rounded-xl"
+                            placeholder="0.00"
+                          />
                         </div>
 
-                        <div className="text-right">
-                          <span className="font-bold">סה"כ פריט: {formatPrice(watchedItems[index]?.totalPrice || 0)}</span>
+                        <div className="space-y-2">
+                          <Label>כמות</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            {...form.register(`items.${index}.quantity`, { 
+                              valueAsNumber: true,
+                              onChange: (e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)
+                            })}
+                            className="text-right rounded-xl"
+                            placeholder="1"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>הנחה</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...form.register(`items.${index}.discount`, { 
+                              valueAsNumber: true,
+                              onChange: (e) => handleItemChange(index, 'discount', parseFloat(e.target.value) || 0)
+                            })}
+                            className="text-right rounded-xl"
+                            placeholder="0.00"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>הערות</Label>
+                          <Input
+                            {...form.register(`items.${index}.notes`)}
+                            className="text-right rounded-xl"
+                            placeholder="הערות לפריט"
+                          />
                         </div>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
 
-              <Separator />
+                      <div className="text-right p-3 bg-muted/50 rounded-xl">
+                        <span className="font-bold">סה"כ פריט: {formatPrice(watchedItems[index]?.totalPrice || 0)}</span>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
 
-              {/* Additional Details */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-right">פרטים נוספים</h3>
-
+            {/* Additional Details */}
+            <Card className="border-2 shadow-lg rounded-2xl">
+              <CardHeader className="bg-gradient-to-l from-purple-50 to-transparent border-b">
+                <CardTitle className="text-right text-xl">פרטים נוספים</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
                 <div className="space-y-2">
                   <Label htmlFor="terms">תנאים כלליים</Label>
                   <Textarea
                     id="terms"
                     {...form.register("terms")}
-                    className="text-right min-h-[100px]"
+                    className="text-right min-h-[100px] rounded-xl"
                     placeholder="תנאי תשלום, תנאי אחריות וכו'..."
                   />
                 </div>
@@ -1030,26 +1040,33 @@ export default function PriceQuote() {
                   <Textarea
                     id="notes"
                     {...form.register("notes")}
-                    className="text-right min-h-[80px]"
+                    className="text-right min-h-[80px] rounded-xl"
                     placeholder="הערות נוספות להצעה..."
                   />
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
-              {/* Financial Summary */}
-              <Card className="bg-primary/5 border-primary/20">
-                <CardContent className="pt-6">
-                  <div className="space-y-2 text-right">
+          {/* Right Column - Financial Summary (Sticky) */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6 space-y-6">
+              <Card className="border-2 shadow-lg rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/50">
+                <CardHeader className="bg-gradient-to-l from-purple-100 to-transparent border-b">
+                  <CardTitle className="text-right text-xl text-purple-700">סיכום כספי</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-3 text-right">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold">{formatPrice(subtotal)}</span>
-                      <span>סכום חלקי:</span>
+                      <span className="text-muted-foreground">סכום חלקי:</span>
                     </div>
                     <div className="flex justify-between items-center text-destructive">
                       <span className="text-lg font-semibold">-{formatPrice(totalDiscount)}</span>
                       <span>סה"כ הנחות:</span>
                     </div>
                     
-                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                    <div className="flex items-center justify-between p-3 bg-background rounded-xl border">
                       <Switch
                         id="includeVAT-desktop"
                         checked={form.watch("includeVAT")}
@@ -1063,11 +1080,13 @@ export default function PriceQuote() {
                     {includeVAT && (
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold">{formatPrice(vat)}</span>
-                        <span>מע״מ (18%):</span>
+                        <span className="text-muted-foreground">מע״מ (18%):</span>
                       </div>
                     )}
+                    
                     <Separator />
-                    <div className="flex justify-between items-center text-xl font-bold">
+                    
+                    <div className="flex justify-between items-center text-2xl font-bold text-purple-700">
                       <span>{formatPrice(total)}</span>
                       <span>סה"כ לתשלום:</span>
                     </div>
@@ -1075,108 +1094,111 @@ export default function PriceQuote() {
                 </CardContent>
               </Card>
 
-              <Button type="submit" className="w-full" disabled={isCreating}>
-                {isCreating ? "שומר..." : "שמור הצעת מחיר"}
-              </Button>
-            </form>
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button type="submit" className="w-full rounded-xl h-12 text-lg" disabled={isCreating}>
+                  {isCreating ? "שומר..." : "שמור הצעת מחיר"}
+                </Button>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    onClick={handleDownloadPDF}
+                    variant="outline"
+                    className="flex items-center gap-2 rounded-xl h-11"
+                  >
+                    <Download className="h-4 w-4" />
+                    הורד PDF
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleWhatsAppSend}
+                    variant="default"
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-xl h-11"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    וואטסאפ
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      {/* Preview Section */}
+      {showPreview && savedQuoteData && (
+        <Card className="mt-8 rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-right">תצוגה מקדימה - הצעת מחיר</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 text-right">
+            <div className="border-b pb-4">
+              <h2 className="text-2xl font-bold mb-2">הצעת מחיר</h2>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <strong>מספר הצעה:</strong> {savedQuoteData.quoteNumber}
+                </div>
+                <div>
+                  <strong>תאריך:</strong> {new Date(savedQuoteData.date).toLocaleDateString('he-IL')}
+                </div>
+                <div>
+                  <strong>תוקף עד:</strong> {new Date(savedQuoteData.validUntil).toLocaleDateString('he-IL')}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b pb-4">
+              <h3 className="text-lg font-semibold mb-2">פרטי הלקוח</h3>
+              <div className="space-y-1 text-sm">
+                <div><strong>שם:</strong> {savedQuoteData.customer.fullName}</div>
+                {savedQuoteData.customer.phone && <div><strong>טלפון:</strong> {savedQuoteData.customer.phone}</div>}
+                {savedQuoteData.customer.email && <div><strong>אימייל:</strong> {savedQuoteData.customer.email}</div>}
+                <div><strong>כתובת:</strong> {savedQuoteData.customer.address}, {savedQuoteData.customer.city}</div>
+              </div>
+            </div>
+
+            <div className="border-b pb-4">
+              <h3 className="text-lg font-semibold mb-2">פירוט הפריטים</h3>
+              {savedQuoteData.items.map((item, index) => (
+                <div key={index} className="bg-muted/30 p-3 rounded-xl mb-2">
+                  <div className="text-sm space-y-1">
+                    <div><strong>פריט {index + 1}:</strong> {item.description}</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>מחיר יחידה: {formatPrice(item.unitPrice)}</div>
+                      <div>כמות: {item.quantity}</div>
+                      <div>הנחה: {formatPrice(item.discount)}</div>
+                    </div>
+                    {item.notes && <div><strong>הערות:</strong> {item.notes}</div>}
+                    <div className="font-semibold">סה"כ: {formatPrice(item.totalPrice)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-lg font-bold">
+              <div className="flex justify-between">
+                <span>{formatPrice(savedQuoteData.financial.total)}</span>
+                <span>סה"כ לתשלום:</span>
+              </div>
+            </div>
+
+            {savedQuoteData.terms && (
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-2">תנאים כלליים</h3>
+                <p className="text-sm whitespace-pre-line">{savedQuoteData.terms}</p>
+              </div>
+            )}
+
+            {savedQuoteData.notes && (
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-2">הערות</h3>
+                <p className="text-sm whitespace-pre-line">{savedQuoteData.notes}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        <div className="flex gap-3 justify-center">
-          <Button
-            onClick={handleDownloadPDF}
-            variant="outline"
-            className="flex items-center gap-2"
-            size="lg"
-          >
-            <Download className="h-5 w-5" />
-            הורד PDF
-          </Button>
-          <Button
-            onClick={handleWhatsAppSend}
-            variant="default"
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-            size="lg"
-          >
-            <MessageCircle className="h-5 w-5" />
-            שלח בוואטסאפ
-          </Button>
-        </div>
-
-        {/* Preview Section */}
-        {showPreview && savedQuoteData && (
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle className="text-right">תצוגה מקדימה - הצעת מחיר</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 text-right">
-              <div className="border-b pb-4">
-                <h2 className="text-2xl font-bold mb-2">הצעת מחיר</h2>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <strong>מספר הצעה:</strong> {savedQuoteData.quoteNumber}
-                  </div>
-                  <div>
-                    <strong>תאריך:</strong> {new Date(savedQuoteData.date).toLocaleDateString('he-IL')}
-                  </div>
-                  <div>
-                    <strong>תוקף עד:</strong> {new Date(savedQuoteData.validUntil).toLocaleDateString('he-IL')}
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold mb-2">פרטי הלקוח</h3>
-                <div className="space-y-1 text-sm">
-                  <div><strong>שם:</strong> {savedQuoteData.customer.fullName}</div>
-                  {savedQuoteData.customer.phone && <div><strong>טלפון:</strong> {savedQuoteData.customer.phone}</div>}
-                  {savedQuoteData.customer.email && <div><strong>אימייל:</strong> {savedQuoteData.customer.email}</div>}
-                  <div><strong>כתובת:</strong> {savedQuoteData.customer.address}, {savedQuoteData.customer.city}</div>
-                </div>
-              </div>
-
-              <div className="border-b pb-4">
-                <h3 className="text-lg font-semibold mb-2">פירוט הפריטים</h3>
-                {savedQuoteData.items.map((item, index) => (
-                  <div key={index} className="bg-muted/30 p-3 rounded mb-2">
-                    <div className="text-sm space-y-1">
-                      <div><strong>פריט {index + 1}:</strong> {item.description}</div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div>מחיר יחידה: {formatPrice(item.unitPrice)}</div>
-                        <div>כמות: {item.quantity}</div>
-                        <div>הנחה: {formatPrice(item.discount)}</div>
-                      </div>
-                      {item.notes && <div><strong>הערות:</strong> {item.notes}</div>}
-                      <div className="font-semibold">סה"כ: {formatPrice(item.totalPrice)}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-lg font-bold">
-                <div className="flex justify-between">
-                  <span>{formatPrice(savedQuoteData.financial.total)}</span>
-                  <span>סה"כ לתשלום:</span>
-                </div>
-              </div>
-
-              {savedQuoteData.terms && (
-                <div className="border-t pt-4">
-                  <h3 className="text-lg font-semibold mb-2">תנאים כלליים</h3>
-                  <p className="text-sm whitespace-pre-line">{savedQuoteData.terms}</p>
-                </div>
-              )}
-
-              {savedQuoteData.notes && (
-                <div className="border-t pt-4">
-                  <h3 className="text-lg font-semibold mb-2">הערות</h3>
-                  <p className="text-sm whitespace-pre-line">{savedQuoteData.notes}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      )}
     </div>
   );
 }
