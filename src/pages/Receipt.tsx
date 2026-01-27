@@ -331,22 +331,109 @@ export default function Receipt() {
   const PaymentTabContent = ({ type }: { type: PaymentType }) => {
     const paymentList = payments[type];
     
+    // Bank transfer has special fields
+    if (type === 'bank_transfer') {
+      return (
+        <div className="space-y-3">
+          {/* Headers row */}
+          <div className="hidden md:grid md:grid-cols-6 gap-2 text-sm text-muted-foreground text-right px-2">
+            <span>תאריך</span>
+            <span>מספר חשבון</span>
+            <span>מספר סניף</span>
+            <span>מספר בנק</span>
+            <span>סה"כ</span>
+            <span></span>
+          </div>
+          {paymentList.map((payment, index) => (
+            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="h-10 rounded-xl min-w-[130px] justify-start">
+                    <CalendarIcon className="ml-2 h-4 w-4" />
+                    {format(payment.date, "dd MMMM yyyy", { locale: he })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-50">
+                  <Calendar
+                    mode="single"
+                    selected={payment.date}
+                    onSelect={(date) => date && updatePayment(type, index, 'date', date)}
+                    locale={he}
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={(payment as any).accountNumber || ''}
+                onChange={(e) => updatePayment(type, index, 'accountNumber' as any, e.target.value)}
+                placeholder="הזן את מספר החשבון"
+                className="flex-1 h-10 rounded-xl text-right"
+              />
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={(payment as any).branchNumber || ''}
+                onChange={(e) => updatePayment(type, index, 'branchNumber' as any, e.target.value)}
+                placeholder="הזן את מספר סניף הבנק"
+                className="flex-1 h-10 rounded-xl text-right"
+              />
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={(payment as any).bankNumber || ''}
+                onChange={(e) => updatePayment(type, index, 'bankNumber' as any, e.target.value)}
+                placeholder="הזן את מספר הבנק"
+                className="flex-1 h-10 rounded-xl text-right"
+              />
+              <Input
+                type="text"
+                inputMode="decimal"
+                value={payment.amount || ''}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  updatePayment(type, index, 'amount', parseFloat(value) || 0);
+                }}
+                placeholder="0"
+                className="w-24 h-10 rounded-xl text-right"
+              />
+              {paymentList.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removePayment(type, index)}
+                  className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="default"
+            onClick={() => addPayment(type)}
+            className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            הוסף תשלום
+          </Button>
+        </div>
+      );
+    }
+    
+    // Default layout for other payment types
     return (
       <div className="space-y-3">
         {paymentList.map((payment, index) => (
           <div key={index} className="flex items-center gap-2 p-3 bg-muted/30 rounded-xl">
-            <Input
-              type="number"
-              value={payment.amount || ''}
-              onChange={(e) => updatePayment(type, index, 'amount', parseFloat(e.target.value) || 0)}
-              placeholder="סכום"
-              className="flex-1 h-10 rounded-xl text-right"
-            />
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="h-10 rounded-xl min-w-[120px]">
+                <Button variant="outline" className="h-10 rounded-xl min-w-[130px] justify-start">
                   <CalendarIcon className="ml-2 h-4 w-4" />
-                  {format(payment.date, "dd/MM/yyyy")}
+                  {format(payment.date, "dd MMMM yyyy", { locale: he })}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 z-50">
@@ -355,10 +442,22 @@ export default function Receipt() {
                   selected={payment.date}
                   onSelect={(date) => date && updatePayment(type, index, 'date', date)}
                   locale={he}
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
-            {paymentList.length > 1 && (
+            <Input
+              type="text"
+              inputMode="decimal"
+              value={payment.amount || ''}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9.]/g, '');
+                updatePayment(type, index, 'amount', parseFloat(value) || 0);
+              }}
+              placeholder="סכום"
+              className="flex-1 h-10 rounded-xl text-right"
+            />
+            {paymentList.length > 0 && (
               <Button
                 type="button"
                 variant="ghost"
@@ -373,9 +472,9 @@ export default function Receipt() {
         ))}
         <Button
           type="button"
-          variant="outline"
+          variant="default"
           onClick={() => addPayment(type)}
-          className="w-full h-10 rounded-xl border-dashed"
+          className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90"
         >
           <Plus className="mr-2 h-4 w-4" />
           הוסף תשלום
@@ -475,48 +574,26 @@ export default function Receipt() {
                     )}
                   />
 
-                  {/* Branch & Language */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      control={form.control}
-                      name="branch"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">סניף</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-11 rounded-xl">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="סניף ראשי">סניף ראשי</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="language"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">שפה</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-11 rounded-xl">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="hebrew">שפת הלקוח</SelectItem>
-                              <SelectItem value="english">English</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  {/* Branch */}
+                  <FormField
+                    control={form.control}
+                    name="branch"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">סניף</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="h-11 rounded-xl">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="סניף ראשי">סניף ראשי</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
 
                   {/* Customer Selection */}
                   <div>
@@ -558,27 +635,6 @@ export default function Receipt() {
                     )}
                   />
 
-                  {/* Currency */}
-                  <FormField
-                    control={form.control}
-                    name="currency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">מטבע</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="h-11 rounded-xl">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="ILS">שקלים</SelectItem>
-                            <SelectItem value="USD">דולר</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
                 </CardContent>
               </Card>
 
@@ -804,53 +860,6 @@ export default function Receipt() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Language */}
-                    <FormField
-                      control={form.control}
-                      name="language"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>שפה</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-12 rounded-xl">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="hebrew">שפת הלקוח</SelectItem>
-                              <SelectItem value="english">English</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Currency */}
-                    <FormField
-                      control={form.control}
-                      name="currency"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>מטבע</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-12 rounded-xl">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="ILS">שקלים</SelectItem>
-                              <SelectItem value="USD">דולר</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
 
                   {/* Title */}
                   <FormField
