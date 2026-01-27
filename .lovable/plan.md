@@ -1,86 +1,86 @@
 
-# תיקון עמוד הקבלה - סדר טאבים ובעיית קלט
 
-## הבעיות שזוהו
+# תיקון שדות הקלט בעמוד הקבלה
 
-### בעיה 1: סדר הטאבים
-לפי התמונה שצירפת, הסדר צריך להיות (מימין לשמאל בעברית):
-- מזומן
-- המחאות
-- כרטיסי אשראי
-- העברות בנקאיות
-- אחר
-- ניכוי מס במקור
-- רכבים
+## הבעיה שזוהתה
 
-הסדר הנוכחי כבר נכון! אבל צריך לוודא שהטאב הפעיל הראשוני הוא "מזומן" (כבר מוגדר כך).
+הבעיה היא **מבנית** - הקומפוננטה `PaymentTabContent` מוגדרת **בתוך** פונקציית `Receipt()`. כל פעם שה-state משתנה (למשל כשמקלידים תו), הקומפוננטה נוצרת מחדש מאפס, וזה גורם ל:
 
-### בעיה 2: לא ניתן להקליד בשדות
-זוהתה הבעיה המרכזית - כאשר מקלידים מספר כמו "123":
-1. מקלידים "1" - הערך הופך ל-`parseFloat("1")` = `1` (number)
-2. השדה מציג את `(payment as any).amount` = `1`
-3. מקלידים "2" - אבל ה-cursor קופץ כי ה-value השתנה
+1. ה-Input מאבד focus מיידית
+2. אי אפשר להקליד יותר מתו אחד
+3. התנהגות "תקועה" של השדות
 
-**הפתרון**: לשמור את הערכים הנומריים כמחרוזות (strings) בזמן ההקלדה, ולהמיר למספרים רק בחישוב הסיכומים.
-
-## שינויים מתוכננים
-
-### 1. עדכון ה-State הראשוני
-במקום לאחסן `amount: 0` (number), נאחסן `amount: ''` (string):
-```typescript
-const [payments, setPayments] = useState<Record<PaymentType, { amount: string; date: Date; ... }[]>>({
-  cash: [{ amount: '', date: new Date() }],
-  ...
-});
+```text
+┌─────────────────────────────────────────────────────────┐
+│                     Receipt()                           │
+│                                                         │
+│   ┌──────────────────────────────────────────────────┐  │
+│   │  PaymentTabContent  <-- מוגדר בתוך Receipt!      │  │
+│   │                                                  │  │
+│   │  כל שינוי ב-state = קומפוננטה חדשה = אובד focus  │  │
+│   └──────────────────────────────────────────────────┘  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### 2. עדכון פונקציית addPayment
+## הפתרון
+
+להוציא את `PaymentTabContent` מחוץ לקומפוננטת `Receipt` ולהעביר לה את הנתונים כ-props.
+
+## שינויים נדרשים
+
+### 1. הוצאת PaymentTabContent מחוץ לקומפוננטה
+
+במקום להגדיר את הקומפוננטה בתוך `Receipt()`, נגדיר אותה מחוץ לפונקציה כקומפוננטה נפרדת:
+
 ```typescript
-const addPayment = (type: PaymentType) => {
-  setPayments(prev => ({
-    ...prev,
-    [type]: [...prev[type], { amount: '', date: new Date() }]
-  }));
+// מחוץ ל-Receipt (לפני הפונקציה)
+interface PaymentTabContentProps {
+  type: PaymentType;
+  paymentList: { amount: string; date: Date; [key: string]: any }[];
+  updatePayment: (type: PaymentType, index: number, field: string, value: any) => void;
+  removePayment: (type: PaymentType, index: number) => void;
+  addPayment: (type: PaymentType) => void;
+}
+
+const PaymentTabContent = ({ type, paymentList, updatePayment, removePayment, addPayment }: PaymentTabContentProps) => {
+  // ... הלוגיקה הקיימת
 };
 ```
 
-### 3. עדכון כל שדות הקלט
+### 2. עדכון השימוש בקומפוננטה
+
 במקום:
 ```typescript
-onChange={(e) => {
-  const value = e.target.value.replace(/[^0-9.]/g, '');
-  updatePayment(type, index, 'amount', parseFloat(value) || 0);
-}}
+<PaymentTabContent type={tab.id} />
 ```
 
-נעשה:
+נשתמש ב:
 ```typescript
-onChange={(e) => {
-  const value = e.target.value.replace(/[^0-9.]/g, '');
-  updatePayment(type, index, 'amount', value);
-}}
+<PaymentTabContent 
+  type={tab.id} 
+  paymentList={payments[tab.id]}
+  updatePayment={updatePayment}
+  removePayment={removePayment}
+  addPayment={addPayment}
+/>
 ```
 
-### 4. עדכון חישוב הסיכומים
-במקום:
-```typescript
-cash: payments.cash.reduce((sum, p) => sum + (p.amount || 0), 0),
-```
+### 3. הוצאת SummaryCard גם כן
 
-נעשה:
-```typescript
-cash: payments.cash.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
-```
+אותו הדבר עם `SummaryCard` - צריך להוציא אותה החוצה כדי למנוע re-renders מיותרים.
 
-### 5. וידוא סדר הטאבים
-הסדר במערך `PAYMENT_TABS` כבר נכון, אבל צריך לוודא שהתצוגה מותאמת ל-RTL (מימין לשמאל).
-
-## קבצים שישתנו
+## קובץ שישתנה
 - `src/pages/Receipt.tsx`
 
 ## סיכום טכני
-- שינוי הטיפוס של `amount` מ-`number` ל-`string` בכל מקום
-- עדכון כל ה-onChange handlers להעביר string במקום number
-- עדכון `calculateTotals` להמיר strings ל-numbers
-- עדכון `addPayment` ליצור תשלומים עם `amount: ''`
-- עדכון ה-value binding ל-`payment.amount` ישירות (ללא `|| ''`)
+
+| לפני | אחרי |
+|------|------|
+| PaymentTabContent מוגדר בתוך Receipt | PaymentTabContent מוגדר מחוץ ל-Receipt |
+| כל הקלדה יוצרת קומפוננטה חדשה | הקומפוננטה נשארת יציבה |
+| Input מאבד focus | Input שומר על focus |
+| אי אפשר להקליד | הקלדה חופשית |
+
+זה התיקון הנכון והסופי - הבעיה לא הייתה ב-string vs number, אלא במבנה הקומפוננטות עצמו.
+
