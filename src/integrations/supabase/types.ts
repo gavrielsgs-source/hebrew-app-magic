@@ -1018,6 +1018,9 @@ export type Database = {
         Row: {
           accountant_email: string | null
           avatar_url: string | null
+          company_address: string | null
+          company_authorized_dealer: boolean | null
+          company_hp: string | null
           company_name: string | null
           created_at: string | null
           full_name: string | null
@@ -1034,6 +1037,9 @@ export type Database = {
         Insert: {
           accountant_email?: string | null
           avatar_url?: string | null
+          company_address?: string | null
+          company_authorized_dealer?: boolean | null
+          company_hp?: string | null
           company_name?: string | null
           created_at?: string | null
           full_name?: string | null
@@ -1050,6 +1056,9 @@ export type Database = {
         Update: {
           accountant_email?: string | null
           avatar_url?: string | null
+          company_address?: string | null
+          company_authorized_dealer?: boolean | null
+          company_hp?: string | null
           company_name?: string | null
           created_at?: string | null
           full_name?: string | null
