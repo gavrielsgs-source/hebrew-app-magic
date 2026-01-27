@@ -33,6 +33,7 @@ export interface TaxInvoiceReceiptData {
     hp: string; // חשבון פעילות
     phone: string;
     authorizedDealer: boolean;
+    logoUrl?: string;
   };
 
   // Customer Information

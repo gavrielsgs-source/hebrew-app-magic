@@ -241,8 +241,13 @@ function createReceiptPDFHTML(data: ReceiptData): string {
         }
       </style>
 
-      <!-- Header -->
+      <!-- Header with Logo -->
       <div class="header">
+        ${data.company.logoUrl ? `
+          <div style="margin-bottom: 15px;">
+            <img src="${data.company.logoUrl}" alt="לוגו החברה" style="max-height: 60px; max-width: 180px; object-fit: contain;" />
+          </div>
+        ` : ''}
         <h1>קבלה</h1>
         <div class="header-info">
           <strong>מספר: ${data.receiptNumber}</strong>

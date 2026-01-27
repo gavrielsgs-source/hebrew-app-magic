@@ -1021,6 +1021,7 @@ export type Database = {
           company_address: string | null
           company_authorized_dealer: boolean | null
           company_hp: string | null
+          company_logo_url: string | null
           company_name: string | null
           created_at: string | null
           full_name: string | null
@@ -1040,6 +1041,7 @@ export type Database = {
           company_address?: string | null
           company_authorized_dealer?: boolean | null
           company_hp?: string | null
+          company_logo_url?: string | null
           company_name?: string | null
           created_at?: string | null
           full_name?: string | null
@@ -1059,6 +1061,7 @@ export type Database = {
           company_address?: string | null
           company_authorized_dealer?: boolean | null
           company_hp?: string | null
+          company_logo_url?: string | null
           company_name?: string | null
           created_at?: string | null
           full_name?: string | null

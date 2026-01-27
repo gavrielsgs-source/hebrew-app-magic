@@ -32,6 +32,7 @@ export interface ReceiptData {
     hp: string;
     phone: string;
     authorizedDealer: boolean;
+    logoUrl?: string;
   };
 
   // Customer Information

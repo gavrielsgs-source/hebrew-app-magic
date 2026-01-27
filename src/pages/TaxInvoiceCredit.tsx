@@ -174,7 +174,8 @@ export default function TaxInvoiceCredit() {
           address: data.companyAddress,
           hp: data.companyHp,
           phone: data.companyPhone,
-          authorizedDealer: data.companyAuthorizedDealer
+          authorizedDealer: data.companyAuthorizedDealer,
+          logoUrl: profile?.company_logo_url || undefined
         },
         customer: {
           name: data.customerName,
@@ -245,7 +246,8 @@ export default function TaxInvoiceCredit() {
           address: form.getValues('companyAddress'),
           hp: form.getValues('companyHp'),
           phone: form.getValues('companyPhone'),
-          authorizedDealer: form.getValues('companyAuthorizedDealer')
+          authorizedDealer: form.getValues('companyAuthorizedDealer'),
+          logoUrl: profile?.company_logo_url || undefined
         },
         customer: {
           name: form.getValues('customerName'),

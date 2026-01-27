@@ -41,8 +41,13 @@ function createTaxInvoiceCreditPDFHTML(data: TaxInvoiceCreditData): string {
 
   return `
     <div dir="rtl" style="font-family: 'Arial', sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; background: white;">
-      <!-- Header -->
+      <!-- Header with Logo -->
       <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 10px; color: white;">
+        ${data.company.logoUrl ? `
+          <div style="margin-bottom: 15px;">
+            <img src="${data.company.logoUrl}" alt="לוגו החברה" style="max-height: 60px; max-width: 180px; object-fit: contain; background: white; padding: 5px; border-radius: 5px;" />
+          </div>
+        ` : ''}
         <h1 style="margin: 0 0 10px 0; font-size: 28px;">חשבונית מס זיכוי</h1>
         <p style="margin: 0; font-size: 18px;">מספר: ${data.creditInvoiceNumber}</p>
         <p style="margin: 5px 0 0 0; font-size: 14px;">תאריך: ${formatDate(data.date)}</p>
