@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Download, MessageCircle, Plus, Trash2, Banknote, CreditCard, Building2, Car, Receipt as ReceiptIcon, FileText } from 'lucide-react';
+import { CalendarIcon, Download, MessageCircle, Banknote, CreditCard, Building2, Car, Receipt as ReceiptIcon, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,8 @@ import { Label } from '@/components/ui/label';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileContainer } from '@/components/mobile/MobileContainer';
 import { MobileDocumentHeader } from '@/components/mobile/MobileDocumentHeader';
+import { PaymentTabContent } from '@/components/receipt/PaymentTabContent';
+import { ReceiptSummaryCard } from '@/components/receipt/ReceiptSummaryCard';
 
 const paymentSchema = z.object({
   id: z.string(),
@@ -152,26 +154,26 @@ export default function Receipt() {
     }
   };
 
-  const addPayment = (type: PaymentType) => {
+  const addPayment = useCallback((type: PaymentType) => {
     setPayments(prev => ({
       ...prev,
       [type]: [...prev[type], { amount: '', date: new Date() }]
     }));
-  };
+  }, []);
 
-  const removePayment = (type: PaymentType, index: number) => {
+  const removePayment = useCallback((type: PaymentType, index: number) => {
     setPayments(prev => ({
       ...prev,
       [type]: prev[type].filter((_, i) => i !== index)
     }));
-  };
+  }, []);
 
-  const updatePayment = (type: PaymentType, index: number, field: string, value: any) => {
+  const updatePayment = useCallback((type: PaymentType, index: number, field: string, value: any) => {
     setPayments(prev => ({
       ...prev,
       [type]: prev[type].map((p, i) => i === index ? { ...p, [field]: value } : p)
     }));
-  };
+  }, []);
 
   const calculateTotals = () => {
     const totals = {
@@ -328,376 +330,6 @@ export default function Receipt() {
     window.open(whatsappUrl, '_blank');
   };
 
-  // Payment Tab Content Component
-  const PaymentTabContent = ({ type }: { type: PaymentType }) => {
-    const paymentList = payments[type];
-
-    // מזומן - Cash: Date, Amount only
-    if (type === 'cash') {
-      return (
-        <div className="space-y-3">
-          <div className="hidden md:grid md:grid-cols-3 gap-2 text-sm text-muted-foreground text-right px-2">
-            <span>תאריך</span>
-            <span>סכום</span>
-            <span></span>
-          </div>
-          {paymentList.map((payment, index) => (
-            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-10 rounded-xl min-w-[140px] justify-start">
-                    <CalendarIcon className="ml-2 h-4 w-4" />
-                    {format(payment.date, "dd/MM/yyyy", { locale: he })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50">
-                  <Calendar mode="single" selected={payment.date} onSelect={(date) => date && updatePayment(type, index, 'date', date)} locale={he} className="pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={payment.amount}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9.]/g, '');
-                  updatePayment(type, index, 'amount', value);
-                }}
-                placeholder="סכום"
-                className="flex-1 h-10 rounded-xl text-right"
-              />
-              {paymentList.length > 0 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="default" onClick={() => addPayment(type)} className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            הוסף תשלום
-          </Button>
-        </div>
-      );
-    }
-
-    // המחאות - Checks: Date, Account Number, Branch Number, Bank Number, Check Number, Total
-    if (type === 'check') {
-      return (
-        <div className="space-y-3">
-          <div className="hidden md:grid md:grid-cols-7 gap-2 text-sm text-muted-foreground text-right px-2">
-            <span>תאריך</span>
-            <span>מספר חשבון</span>
-            <span>מספר סניף</span>
-            <span>מספר בנק</span>
-            <span>מספר המחאה</span>
-            <span>סה"כ</span>
-            <span></span>
-          </div>
-          {paymentList.map((payment, index) => (
-            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-10 rounded-xl min-w-[120px] justify-start">
-                    <CalendarIcon className="ml-2 h-4 w-4" />
-                    {format(payment.date, "dd/MM/yyyy", { locale: he })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50">
-                  <Calendar mode="single" selected={payment.date} onSelect={(date) => date && updatePayment(type, index, 'date', date)} locale={he} className="pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
-              <Input type="text" inputMode="numeric" value={(payment as any).accountNumber || ''} onChange={(e) => updatePayment(type, index, 'accountNumber', e.target.value)} placeholder="מספר חשבון" className="flex-1 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="numeric" value={(payment as any).branchNumber || ''} onChange={(e) => updatePayment(type, index, 'branchNumber', e.target.value)} placeholder="מספר סניף" className="w-24 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="numeric" value={(payment as any).bankNumber || ''} onChange={(e) => updatePayment(type, index, 'bankNumber', e.target.value)} placeholder="מספר בנק" className="w-24 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="numeric" value={(payment as any).checkNumber || ''} onChange={(e) => updatePayment(type, index, 'checkNumber', e.target.value)} placeholder="מספר המחאה" className="w-28 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
-              {paymentList.length > 0 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="default" onClick={() => addPayment(type)} className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            הוסף תשלום
-          </Button>
-        </div>
-      );
-    }
-
-    // כרטיסי אשראי - Credit Cards: Date, Last 4 Digits, Expiry, Card Type, ID/HP, Installments, Total
-    if (type === 'credit_card') {
-      const cardTypes = ['Mastercard', 'Diners', 'Visa', 'American Express', 'Maestro', 'ישראכרט'];
-      const installmentOptions = Array.from({ length: 120 }, (_, i) => i + 1);
-      
-      return (
-        <div className="space-y-3">
-          <div className="hidden md:grid md:grid-cols-8 gap-2 text-sm text-muted-foreground text-right px-2">
-            <span>תאריך</span>
-            <span>4 ספרות אחרונות</span>
-            <span>תוקף</span>
-            <span>סוג כרטיס</span>
-            <span>ת.ז/ח.פ</span>
-            <span>תשלומים</span>
-            <span>סה"כ</span>
-            <span></span>
-          </div>
-          {paymentList.map((payment, index) => (
-            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl flex-wrap">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-10 rounded-xl min-w-[110px] justify-start">
-                    <CalendarIcon className="ml-2 h-4 w-4" />
-                    {format(payment.date, "dd/MM/yyyy", { locale: he })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50">
-                  <Calendar mode="single" selected={payment.date} onSelect={(date) => date && updatePayment(type, index, 'date', date)} locale={he} className="pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
-              <Input type="text" inputMode="numeric" maxLength={4} value={(payment as any).lastFourDigits || ''} onChange={(e) => updatePayment(type, index, 'lastFourDigits', e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="4 ספרות" className="w-20 h-10 rounded-xl text-right" />
-              <Input type="text" value={(payment as any).expiryDate || ''} onChange={(e) => updatePayment(type, index, 'expiryDate', e.target.value)} placeholder="MM/YY" className="w-20 h-10 rounded-xl text-right" />
-              <Select value={(payment as any).cardType || ''} onValueChange={(val) => updatePayment(type, index, 'cardType', val)}>
-                <SelectTrigger className="w-32 h-10 rounded-xl">
-                  <SelectValue placeholder="סוג כרטיס" />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-background">
-                  {cardTypes.map((ct) => (
-                    <SelectItem key={ct} value={ct}>{ct}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input type="text" inputMode="numeric" value={(payment as any).idNumber || ''} onChange={(e) => updatePayment(type, index, 'idNumber', e.target.value)} placeholder="ת.ז/ח.פ" className="w-28 h-10 rounded-xl text-right" />
-              <Select value={String((payment as any).installments || '1')} onValueChange={(val) => updatePayment(type, index, 'installments', parseInt(val))}>
-                <SelectTrigger className="w-24 h-10 rounded-xl">
-                  <SelectValue placeholder="תשלומים" />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-background max-h-60">
-                  {installmentOptions.map((n) => (
-                    <SelectItem key={n} value={String(n)}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
-              {paymentList.length > 0 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="default" onClick={() => addPayment(type)} className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            הוסף תשלום
-          </Button>
-        </div>
-      );
-    }
-
-    // העברות בנקאיות - Bank Transfer: Date, Account Number, Branch Number, Bank Number, Total
-    if (type === 'bank_transfer') {
-      return (
-        <div className="space-y-3">
-          <div className="hidden md:grid md:grid-cols-6 gap-2 text-sm text-muted-foreground text-right px-2">
-            <span>תאריך</span>
-            <span>מספר חשבון</span>
-            <span>מספר סניף</span>
-            <span>מספר בנק</span>
-            <span>סה"כ</span>
-            <span></span>
-          </div>
-          {paymentList.map((payment, index) => (
-            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-10 rounded-xl min-w-[120px] justify-start">
-                    <CalendarIcon className="ml-2 h-4 w-4" />
-                    {format(payment.date, "dd/MM/yyyy", { locale: he })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50">
-                  <Calendar mode="single" selected={payment.date} onSelect={(date) => date && updatePayment(type, index, 'date', date)} locale={he} className="pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
-              <Input type="text" inputMode="numeric" value={(payment as any).accountNumber || ''} onChange={(e) => updatePayment(type, index, 'accountNumber', e.target.value)} placeholder="מספר חשבון" className="flex-1 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="numeric" value={(payment as any).branchNumber || ''} onChange={(e) => updatePayment(type, index, 'branchNumber', e.target.value)} placeholder="מספר סניף" className="w-24 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="numeric" value={(payment as any).bankNumber || ''} onChange={(e) => updatePayment(type, index, 'bankNumber', e.target.value)} placeholder="מספר בנק" className="w-24 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
-              {paymentList.length > 0 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="default" onClick={() => addPayment(type)} className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            הוסף תשלום
-          </Button>
-        </div>
-      );
-    }
-
-    // אחר - Other: Date, Payment Type (free text), Amount
-    if (type === 'other') {
-      return (
-        <div className="space-y-3">
-          <div className="hidden md:grid md:grid-cols-4 gap-2 text-sm text-muted-foreground text-right px-2">
-            <span>תאריך</span>
-            <span>סוג תשלום</span>
-            <span>סכום</span>
-            <span></span>
-          </div>
-          {paymentList.map((payment, index) => (
-            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-10 rounded-xl min-w-[120px] justify-start">
-                    <CalendarIcon className="ml-2 h-4 w-4" />
-                    {format(payment.date, "dd/MM/yyyy", { locale: he })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50">
-                  <Calendar mode="single" selected={payment.date} onSelect={(date) => date && updatePayment(type, index, 'date', date)} locale={he} className="pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
-              <Input type="text" value={(payment as any).paymentType || ''} onChange={(e) => updatePayment(type, index, 'paymentType', e.target.value)} placeholder="סוג תשלום" className="flex-1 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סכום" className="w-28 h-10 rounded-xl text-right" />
-              {paymentList.length > 0 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="default" onClick={() => addPayment(type)} className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            הוסף תשלום
-          </Button>
-        </div>
-      );
-    }
-
-    // ניכוי מס במקור - Tax Deduction: Amount only
-    if (type === 'tax_deduction') {
-      return (
-        <div className="space-y-3">
-          <div className="hidden md:grid md:grid-cols-2 gap-2 text-sm text-muted-foreground text-right px-2">
-            <span>סכום</span>
-            <span></span>
-          </div>
-          {paymentList.map((payment, index) => (
-            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סכום ניכוי מס במקור" className="flex-1 h-10 rounded-xl text-right" />
-              {paymentList.length > 0 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="default" onClick={() => addPayment(type)} className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            הוסף תשלום
-          </Button>
-        </div>
-      );
-    }
-
-    // רכבים - Vehicles: Date, Vehicle (License Plate), Total
-    if (type === 'vehicle') {
-      return (
-        <div className="space-y-3">
-          <div className="hidden md:grid md:grid-cols-4 gap-2 text-sm text-muted-foreground text-right px-2">
-            <span>תאריך</span>
-            <span>רכב (מספר רישוי)</span>
-            <span>סה"כ</span>
-            <span></span>
-          </div>
-          {paymentList.map((payment, index) => (
-            <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="h-10 rounded-xl min-w-[120px] justify-start">
-                    <CalendarIcon className="ml-2 h-4 w-4" />
-                    {format(payment.date, "dd/MM/yyyy", { locale: he })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50">
-                  <Calendar mode="single" selected={payment.date} onSelect={(date) => date && updatePayment(type, index, 'date', date)} locale={he} className="pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
-              <Input type="text" value={(payment as any).licensePlate || ''} onChange={(e) => updatePayment(type, index, 'licensePlate', e.target.value)} placeholder="מספר רישוי" className="flex-1 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-28 h-10 rounded-xl text-right" />
-              {paymentList.length > 0 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button type="button" variant="default" onClick={() => addPayment(type)} className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            הוסף תשלום
-          </Button>
-        </div>
-      );
-    }
-
-    return null;
-  };
-
-  // Summary Card Component
-  const SummaryCard = ({ className = "" }: { className?: string }) => (
-    <Card className={cn("shadow-xl rounded-2xl border-0 overflow-hidden", className)}>
-      <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-500 p-5 text-white">
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>סה"כ מזומן</span>
-            <span>₪ {totals.cash.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>סה"כ המחאות</span>
-            <span>₪ {totals.check.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>סה"כ כרטיסי אשראי</span>
-            <span>₪ {totals.creditCard.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>סה"כ העברות בנקאיות</span>
-            <span>₪ {totals.bankTransfer.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>סה"כ אחר</span>
-            <span>₪ {totals.other.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>סה"כ ניכוי מס במקור</span>
-            <span>₪ {totals.taxDeduction.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>סה"כ רכבים</span>
-            <span>₪ {totals.vehicle.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>סה"כ כולל ניכוי מס במקור</span>
-            <span>₪ {totals.totalWithTaxDeduction.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
-          </div>
-        </div>
-        <div className="mt-4 pt-4 border-t border-white/30">
-          <div className="text-center">
-            <span className="text-sm opacity-80">סה"כ שולם</span>
-            <div className="text-3xl font-bold mt-1">
-              ₪ {totals.grandTotal.toLocaleString('he-IL', { minimumFractionDigits: 2 })}
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-
   // Mobile Layout
   if (isMobile) {
     return (
@@ -725,7 +357,7 @@ export default function Receipt() {
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
-                              <Button variant="outline" className="w-full h-11 rounded-xl justify-start text-right">
+                              <Button variant="outline" className={cn("w-full h-11 rounded-xl justify-start text-right", !field.value && "text-muted-foreground")}>
                                 <CalendarIcon className="ml-2 h-4 w-4" />
                                 {field.value ? format(field.value, "dd MMMM yyyy", { locale: he }) : "בחר תאריך"}
                               </Button>
@@ -749,7 +381,7 @@ export default function Receipt() {
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="h-11 rounded-xl">
-                              <SelectValue />
+                              <SelectValue placeholder="בחר סניף" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -767,22 +399,12 @@ export default function Receipt() {
                       <div className="flex-1">
                         <CustomerAndLeadSearchSelect
                           onValueChange={handleEntitySelect}
-                          placeholder="התחל להקליד את שם הלקוח המבוקש..."
+                          placeholder="חפש לקוח..."
                         />
                       </div>
-                      <Dialog open={newCustomerDialogOpen} onOpenChange={setNewCustomerDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button type="button" className="h-11 rounded-xl bg-primary">
-                            לקוח חדש
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>הוספת לקוח חדש</DialogTitle>
-                          </DialogHeader>
-                          <p className="text-muted-foreground text-center py-4">בקרוב...</p>
-                        </DialogContent>
-                      </Dialog>
+                      <Button type="button" size="sm" onClick={() => setNewCustomerDialogOpen(true)} className="h-11 rounded-xl bg-primary">
+                        חדש
+                      </Button>
                     </div>
                   </div>
 
@@ -860,7 +482,13 @@ export default function Receipt() {
                     </TabsList>
                     {PAYMENT_TABS.map((tab) => (
                       <TabsContent key={tab.id} value={tab.id}>
-                        <PaymentTabContent type={tab.id} />
+                        <PaymentTabContent
+                          type={tab.id}
+                          paymentList={payments[tab.id]}
+                          updatePayment={updatePayment}
+                          removePayment={removePayment}
+                          addPayment={addPayment}
+                        />
                       </TabsContent>
                     ))}
                   </Tabs>
@@ -888,7 +516,7 @@ export default function Receipt() {
               </Card>
 
               {/* Summary Card */}
-              <SummaryCard />
+              <ReceiptSummaryCard totals={totals} />
 
               {/* Fixed Action Buttons */}
               <div className="fixed bottom-28 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
@@ -1101,7 +729,13 @@ export default function Receipt() {
                     </TabsList>
                     {PAYMENT_TABS.map((tab) => (
                       <TabsContent key={tab.id} value={tab.id}>
-                        <PaymentTabContent type={tab.id} />
+                        <PaymentTabContent
+                          type={tab.id}
+                          paymentList={payments[tab.id]}
+                          updatePayment={updatePayment}
+                          removePayment={removePayment}
+                          addPayment={addPayment}
+                        />
                       </TabsContent>
                     ))}
                   </Tabs>
@@ -1138,7 +772,7 @@ export default function Receipt() {
             <div className="lg:col-span-1">
               <div className="sticky top-6 space-y-6">
                 {/* Summary Card */}
-                <SummaryCard />
+                <ReceiptSummaryCard totals={totals} />
 
                 {/* Action Buttons */}
                 <div className="space-y-3">
