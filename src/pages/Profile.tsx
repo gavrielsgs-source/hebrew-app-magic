@@ -9,10 +9,11 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, MapPin, Hash, CheckCircle } from "lucide-react";
+import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, MapPin, Hash, CheckCircle, ImageIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
+import { CompanyLogoUpload } from "@/components/profile/CompanyLogoUpload";
 
 export default function Profile() {
   const { profile, updateProfile, isLoading } = useProfile();
@@ -27,6 +28,7 @@ export default function Profile() {
     company_address: "",
     company_hp: "",
     company_authorized_dealer: false,
+    company_logo_url: null as string | null,
   });
 
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function Profile() {
         company_address: profile.company_address || "",
         company_hp: profile.company_hp || "",
         company_authorized_dealer: profile.company_authorized_dealer || false,
+        company_logo_url: profile.company_logo_url || null,
       });
     }
   }, [profile]);
@@ -517,6 +520,14 @@ export default function Profile() {
                           עוסק מורשה
                         </Label>
                       </div>
+                    </div>
+
+                    {/* Company Logo */}
+                    <div className="md:col-span-2">
+                      <CompanyLogoUpload
+                        currentLogoUrl={formData.company_logo_url}
+                        onLogoChange={(url) => setFormData({ ...formData, company_logo_url: url })}
+                      />
                     </div>
                   </div>
 

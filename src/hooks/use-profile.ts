@@ -16,6 +16,7 @@ interface Profile {
   company_address: string | null;
   company_hp: string | null;
   company_authorized_dealer: boolean | null;
+  company_logo_url: string | null;
 }
 
 interface ProfileUpdate {
@@ -29,6 +30,7 @@ interface ProfileUpdate {
   company_address?: string;
   company_hp?: string;
   company_authorized_dealer?: boolean;
+  company_logo_url?: string | null;
 }
 
 export function useProfile() {
@@ -79,6 +81,7 @@ export function useProfile() {
               company_address: (newProfile as any).company_address as string | null,
               company_hp: (newProfile as any).company_hp as string | null,
               company_authorized_dealer: (newProfile as any).company_authorized_dealer as boolean | null,
+              company_logo_url: (newProfile as any).company_logo_url as string | null,
             } as Profile;
           } else {
             console.error("Error fetching profile:", error);
@@ -98,6 +101,7 @@ export function useProfile() {
           company_address: (data as any).company_address as string | null,
           company_hp: (data as any).company_hp as string | null,
           company_authorized_dealer: (data as any).company_authorized_dealer as boolean | null,
+          company_logo_url: (data as any).company_logo_url as string | null,
         } as Profile;
       } catch (error) {
         console.error("Error in profile function:", error);

@@ -11,6 +11,7 @@ export interface TaxInvoiceCreditData {
     hp: string;
     phone: string;
     authorizedDealer: boolean;
+    logoUrl?: string;
   };
 
   // Customer Information

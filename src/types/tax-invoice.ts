@@ -22,6 +22,7 @@ export interface TaxInvoiceData {
     hp: string; // חשבון פעילות
     phone: string;
     authorizedDealer: boolean;
+    logoUrl?: string;
   };
 
   // Customer Information

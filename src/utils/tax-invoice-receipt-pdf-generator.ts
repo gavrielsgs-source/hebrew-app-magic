@@ -76,6 +76,11 @@ function createTaxInvoiceReceiptPDFHTML(data: TaxInvoiceReceiptData): string {
     </head>
     <body>
       <div class="header">
+        ${data.company.logoUrl ? `
+          <div style="margin-bottom: 15px;">
+            <img src="${data.company.logoUrl}" alt="לוגו החברה" style="max-height: 60px; max-width: 180px; object-fit: contain;" />
+          </div>
+        ` : ''}
         <h1>${data.title}</h1>
         <p>מספר: ${data.invoiceNumber} | תאריך: ${new Date(data.date).toLocaleDateString('he-IL')}</p>
         <p>סוג: ${data.type === 'primary' ? 'ראשוני' : 'משני'} | מטבע: ${data.currency}</p>

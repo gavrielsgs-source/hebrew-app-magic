@@ -50,8 +50,13 @@ export async function generatePriceQuotePDF(data: PriceQuoteData, returnBlob?: b
 function createPriceQuotePDFHTML(data: PriceQuoteData): string {
   return `
     <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6;">
-      <!-- Header -->
+      <!-- Header with Logo -->
       <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 20px;">
+        ${data.company?.logoUrl ? `
+          <div style="margin-bottom: 15px;">
+            <img src="${data.company.logoUrl}" alt="לוגו החברה" style="max-height: 60px; max-width: 180px; object-fit: contain;" />
+          </div>
+        ` : ''}
         <h1 style="font-size: 28px; font-weight: bold; margin: 0 0 10px 0; color: #333;">הצעת מחיר</h1>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
           <div style="font-size: 16px;">

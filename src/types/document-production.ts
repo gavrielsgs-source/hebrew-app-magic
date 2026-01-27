@@ -118,6 +118,14 @@ export interface PriceQuoteData {
     total: number;
   };
   includeVAT?: boolean;
+  company?: {
+    name: string;
+    address: string;
+    hp: string;
+    phone: string;
+    authorizedDealer: boolean;
+    logoUrl?: string;
+  };
 }
 
 export interface DocumentFormData {
