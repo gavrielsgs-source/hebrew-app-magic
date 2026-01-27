@@ -273,8 +273,29 @@ export default function Receipt() {
 
   const handleDownloadPDF = async () => {
     try {
+      // Build payments array from current state
+      const allPayments: ReceiptPayment[] = [];
+      Object.entries(payments).forEach(([type, paymentList]) => {
+        paymentList.forEach((p, index) => {
+          const amount = parseFloat(p.amount) || 0;
+          if (amount > 0) {
+            allPayments.push({
+              id: `${type}-${index}`,
+              type: type as PaymentType,
+              amount: amount,
+              date: p.date.toISOString(),
+              reference: p.reference,
+              checkNumber: p.checkNumber,
+              lastFourDigits: p.lastFourDigits,
+              bankBranch: p.branchNumber,
+              accountNumber: p.accountNumber,
+              vehicleDetails: p.licensePlate,
+            });
+          }
+        });
+      });
+
       const dataToUse = savedReceiptData || {
-        ...form.getValues(),
         receiptNumber: 'DRAFT',
         date: form.getValues('date').toISOString(),
         branch: form.getValues('branch'),
@@ -295,7 +316,7 @@ export default function Receipt() {
           phone: form.getValues('customerPhone'),
         },
         receiptForType: form.getValues('receiptForType'),
-        payments: [],
+        payments: allPayments,
         totals,
         notes: form.getValues('notes'),
       } as ReceiptData;
