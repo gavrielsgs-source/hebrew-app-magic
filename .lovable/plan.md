@@ -1,86 +1,79 @@
 
+# תיקון עמוד הקבלה - שורות התחלתיות וסדר RTL
 
-# תיקון שדות הקלט בעמוד הקבלה
+## הבעיות שזוהו
 
-## הבעיה שזוהתה
-
-הבעיה היא **מבנית** - הקומפוננטה `PaymentTabContent` מוגדרת **בתוך** פונקציית `Receipt()`. כל פעם שה-state משתנה (למשל כשמקלידים תו), הקומפוננטה נוצרת מחדש מאפס, וזה גורם ל:
-
-1. ה-Input מאבד focus מיידית
-2. אי אפשר להקליד יותר מתו אחד
-3. התנהגות "תקועה" של השדות
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│                     Receipt()                           │
-│                                                         │
-│   ┌──────────────────────────────────────────────────┐  │
-│   │  PaymentTabContent  <-- מוגדר בתוך Receipt!      │  │
-│   │                                                  │  │
-│   │  כל שינוי ב-state = קומפוננטה חדשה = אובד focus  │  │
-│   └──────────────────────────────────────────────────┘  │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+### בעיה 1: רק מזומן מתחיל עם שורה
+בקובץ `Receipt.tsx` שורות 93-101:
+```typescript
+const [payments, setPayments] = useState({
+  cash: [{ amount: '', date: new Date() }],  // ✅ יש שורה
+  check: [],          // ❌ ריק!
+  credit_card: [],    // ❌ ריק!
+  bank_transfer: [],  // ❌ ריק!
+  other: [],          // ❌ ריק!
+  tax_deduction: [],  // ❌ ריק!
+  vehicle: [],        // ❌ ריק!
+});
 ```
 
-## הפתרון
-
-להוציא את `PaymentTabContent` מחוץ לקומפוננטת `Receipt` ולהעביר לה את הנתונים כ-props.
+### בעיה 2: סדר השדות הפוך
+כרגע השדות מוצגים משמאל לימין (LTR), אבל עבור עברית צריך מימין לשמאל (RTL).
 
 ## שינויים נדרשים
 
-### 1. הוצאת PaymentTabContent מחוץ לקומפוננטה
-
-במקום להגדיר את הקומפוננטה בתוך `Receipt()`, נגדיר אותה מחוץ לפונקציה כקומפוננטה נפרדת:
+### קובץ 1: `src/pages/Receipt.tsx`
+עדכון ה-state הראשוני כך שכל סוג תשלום יתחיל עם שורה אחת:
 
 ```typescript
-// מחוץ ל-Receipt (לפני הפונקציה)
-interface PaymentTabContentProps {
-  type: PaymentType;
-  paymentList: { amount: string; date: Date; [key: string]: any }[];
-  updatePayment: (type: PaymentType, index: number, field: string, value: any) => void;
-  removePayment: (type: PaymentType, index: number) => void;
-  addPayment: (type: PaymentType) => void;
-}
-
-const PaymentTabContent = ({ type, paymentList, updatePayment, removePayment, addPayment }: PaymentTabContentProps) => {
-  // ... הלוגיקה הקיימת
-};
+const [payments, setPayments] = useState({
+  cash: [{ amount: '', date: new Date() }],
+  check: [{ amount: '', date: new Date(), accountNumber: '', branchNumber: '', bankNumber: '', checkNumber: '' }],
+  credit_card: [{ amount: '', date: new Date(), lastFourDigits: '', expiryDate: '', cardType: '', idNumber: '', installments: 1 }],
+  bank_transfer: [{ amount: '', date: new Date(), accountNumber: '', branchNumber: '', bankNumber: '' }],
+  other: [{ amount: '', date: new Date(), paymentType: '' }],
+  tax_deduction: [{ amount: '', date: new Date() }],
+  vehicle: [{ amount: '', date: new Date(), licensePlate: '' }],
+});
 ```
 
-### 2. עדכון השימוש בקומפוננטה
+### קובץ 2: `src/components/receipt/PaymentTabContent.tsx`
+תיקון סדר RTL בכל סוגי התשלומים:
 
-במקום:
+1. שינוי שורת הכותרות ל-`flex-row-reverse` כדי שהסדר יהיה מימין לשמאל
+2. שינוי שורת השדות ל-`flex-row-reverse` 
+3. הזבל (כפתור מחיקה) יישאר בצד שמאל
+
+לדוגמא, עבור העברות בנקאיות:
 ```typescript
-<PaymentTabContent type={tab.id} />
+// כותרות - מימין לשמאל
+<div className="hidden md:flex md:flex-row-reverse gap-4 text-sm text-muted-foreground px-2">
+  <span className="min-w-[120px]">תאריך</span>
+  <span className="flex-1">מספר חשבון</span>
+  <span className="w-28">מספר סניף</span>
+  <span className="w-24">מספר בנק</span>
+  <span className="w-24">סה"כ</span>
+  <span className="w-10"></span>
+</div>
+
+// שדות - מימין לשמאל
+<div className="flex flex-row-reverse items-center gap-4 ...">
+  <Popover>...</Popover>  {/* תאריך - ראשון מימין */}
+  <Input ... />           {/* מספר חשבון */}
+  <Input ... />           {/* מספר סניף */}
+  <Input ... />           {/* מספר בנק */}
+  <Input ... />           {/* סה"כ */}
+  <Button ... />          {/* זבל - אחרון משמאל */}
+</div>
 ```
 
-נשתמש ב:
-```typescript
-<PaymentTabContent 
-  type={tab.id} 
-  paymentList={payments[tab.id]}
-  updatePayment={updatePayment}
-  removePayment={removePayment}
-  addPayment={addPayment}
-/>
-```
+## סיכום השינויים
 
-### 3. הוצאת SummaryCard גם כן
+| קובץ | שינוי |
+|------|-------|
+| `src/pages/Receipt.tsx` | עדכון state ראשוני - כל סוג תשלום מתחיל עם שורה אחת |
+| `src/components/receipt/PaymentTabContent.tsx` | הפיכת סדר השדות ל-RTL עם `flex-row-reverse` |
 
-אותו הדבר עם `SummaryCard` - צריך להוציא אותה החוצה כדי למנוע re-renders מיותרים.
-
-## קובץ שישתנה
-- `src/pages/Receipt.tsx`
-
-## סיכום טכני
-
-| לפני | אחרי |
-|------|------|
-| PaymentTabContent מוגדר בתוך Receipt | PaymentTabContent מוגדר מחוץ ל-Receipt |
-| כל הקלדה יוצרת קומפוננטה חדשה | הקומפוננטה נשארת יציבה |
-| Input מאבד focus | Input שומר על focus |
-| אי אפשר להקליד | הקלדה חופשית |
-
-זה התיקון הנכון והסופי - הבעיה לא הייתה ב-string vs number, אלא במבנה הקומפוננטות עצמו.
-
+## תוצאה צפויה
+- כל טאב יציג שורת תשלום מההתחלה (ללא צורך ללחוץ "הוסף תשלום")
+- השדות יהיו מסודרים מימין לשמאל: תאריך ← מספר חשבון ← מספר סניף ← מספר בנק ← סה"כ ← 🗑️
