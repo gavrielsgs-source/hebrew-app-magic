@@ -88,8 +88,8 @@ export default function Receipt() {
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
   const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
   const [activePaymentTab, setActivePaymentTab] = useState<PaymentType>('cash');
-  const [payments, setPayments] = useState<Record<PaymentType, { amount: number; date: Date; reference?: string }[]>>({
-    cash: [{ amount: 0, date: new Date() }],
+  const [payments, setPayments] = useState<Record<PaymentType, { amount: string; date: Date; reference?: string; [key: string]: any }[]>>({
+    cash: [{ amount: '', date: new Date() }],
     check: [],
     credit_card: [],
     bank_transfer: [],
@@ -155,7 +155,7 @@ export default function Receipt() {
   const addPayment = (type: PaymentType) => {
     setPayments(prev => ({
       ...prev,
-      [type]: [...prev[type], { amount: 0, date: new Date() }]
+      [type]: [...prev[type], { amount: '', date: new Date() }]
     }));
   };
 
@@ -175,13 +175,13 @@ export default function Receipt() {
 
   const calculateTotals = () => {
     const totals = {
-      cash: payments.cash.reduce((sum, p) => sum + (p.amount || 0), 0),
-      check: payments.check.reduce((sum, p) => sum + (p.amount || 0), 0),
-      creditCard: payments.credit_card.reduce((sum, p) => sum + (p.amount || 0), 0),
-      bankTransfer: payments.bank_transfer.reduce((sum, p) => sum + (p.amount || 0), 0),
-      other: payments.other.reduce((sum, p) => sum + (p.amount || 0), 0),
-      taxDeduction: payments.tax_deduction.reduce((sum, p) => sum + (p.amount || 0), 0),
-      vehicle: payments.vehicle.reduce((sum, p) => sum + (p.amount || 0), 0),
+      cash: payments.cash.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+      check: payments.check.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+      creditCard: payments.credit_card.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+      bankTransfer: payments.bank_transfer.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+      other: payments.other.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+      taxDeduction: payments.tax_deduction.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+      vehicle: payments.vehicle.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
       totalWithTaxDeduction: 0,
       grandTotal: 0,
     };
@@ -201,11 +201,12 @@ export default function Receipt() {
       const allPayments: ReceiptPayment[] = [];
       Object.entries(payments).forEach(([type, paymentList]) => {
         paymentList.forEach((p, index) => {
-          if (p.amount > 0) {
+          const amount = parseFloat(p.amount) || 0;
+          if (amount > 0) {
             allPayments.push({
               id: `${type}-${index}`,
               type: type as PaymentType,
-              amount: p.amount,
+              amount: amount,
               date: p.date.toISOString(),
               reference: p.reference,
             });
@@ -356,10 +357,10 @@ export default function Receipt() {
               <Input
                 type="text"
                 inputMode="decimal"
-                value={(payment as any).amount || ''}
+                value={payment.amount}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9.]/g, '');
-                  updatePayment(type, index, 'amount', parseFloat(value) || 0);
+                  updatePayment(type, index, 'amount', value);
                 }}
                 placeholder="סכום"
                 className="flex-1 h-10 rounded-xl text-right"
@@ -409,7 +410,7 @@ export default function Receipt() {
               <Input type="text" inputMode="numeric" value={(payment as any).branchNumber || ''} onChange={(e) => updatePayment(type, index, 'branchNumber', e.target.value)} placeholder="מספר סניף" className="w-24 h-10 rounded-xl text-right" />
               <Input type="text" inputMode="numeric" value={(payment as any).bankNumber || ''} onChange={(e) => updatePayment(type, index, 'bankNumber', e.target.value)} placeholder="מספר בנק" className="w-24 h-10 rounded-xl text-right" />
               <Input type="text" inputMode="numeric" value={(payment as any).checkNumber || ''} onChange={(e) => updatePayment(type, index, 'checkNumber', e.target.value)} placeholder="מספר המחאה" className="w-28 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={(payment as any).amount || ''} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', parseFloat(value) || 0); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
+              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
               {paymentList.length > 0 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
                   <Trash2 className="h-4 w-4" />
@@ -478,7 +479,7 @@ export default function Receipt() {
                   ))}
                 </SelectContent>
               </Select>
-              <Input type="text" inputMode="decimal" value={(payment as any).amount || ''} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', parseFloat(value) || 0); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
+              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
               {paymentList.length > 0 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
                   <Trash2 className="h-4 w-4" />
@@ -522,7 +523,7 @@ export default function Receipt() {
               <Input type="text" inputMode="numeric" value={(payment as any).accountNumber || ''} onChange={(e) => updatePayment(type, index, 'accountNumber', e.target.value)} placeholder="מספר חשבון" className="flex-1 h-10 rounded-xl text-right" />
               <Input type="text" inputMode="numeric" value={(payment as any).branchNumber || ''} onChange={(e) => updatePayment(type, index, 'branchNumber', e.target.value)} placeholder="מספר סניף" className="w-24 h-10 rounded-xl text-right" />
               <Input type="text" inputMode="numeric" value={(payment as any).bankNumber || ''} onChange={(e) => updatePayment(type, index, 'bankNumber', e.target.value)} placeholder="מספר בנק" className="w-24 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={(payment as any).amount || ''} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', parseFloat(value) || 0); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
+              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-24 h-10 rounded-xl text-right" />
               {paymentList.length > 0 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
                   <Trash2 className="h-4 w-4" />
@@ -562,7 +563,7 @@ export default function Receipt() {
                 </PopoverContent>
               </Popover>
               <Input type="text" value={(payment as any).paymentType || ''} onChange={(e) => updatePayment(type, index, 'paymentType', e.target.value)} placeholder="סוג תשלום" className="flex-1 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={(payment as any).amount || ''} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', parseFloat(value) || 0); }} placeholder="סכום" className="w-28 h-10 rounded-xl text-right" />
+              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סכום" className="w-28 h-10 rounded-xl text-right" />
               {paymentList.length > 0 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
                   <Trash2 className="h-4 w-4" />
@@ -588,7 +589,7 @@ export default function Receipt() {
           </div>
           {paymentList.map((payment, index) => (
             <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <Input type="text" inputMode="decimal" value={(payment as any).amount || ''} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', parseFloat(value) || 0); }} placeholder="סכום ניכוי מס במקור" className="flex-1 h-10 rounded-xl text-right" />
+              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סכום ניכוי מס במקור" className="flex-1 h-10 rounded-xl text-right" />
               {paymentList.length > 0 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
                   <Trash2 className="h-4 w-4" />
@@ -628,7 +629,7 @@ export default function Receipt() {
                 </PopoverContent>
               </Popover>
               <Input type="text" value={(payment as any).licensePlate || ''} onChange={(e) => updatePayment(type, index, 'licensePlate', e.target.value)} placeholder="מספר רישוי" className="flex-1 h-10 rounded-xl text-right" />
-              <Input type="text" inputMode="decimal" value={(payment as any).amount || ''} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', parseFloat(value) || 0); }} placeholder="סה״כ" className="w-28 h-10 rounded-xl text-right" />
+              <Input type="text" inputMode="decimal" value={payment.amount} onChange={(e) => { const value = e.target.value.replace(/[^0-9.]/g, ''); updatePayment(type, index, 'amount', value); }} placeholder="סה״כ" className="w-28 h-10 rounded-xl text-right" />
               {paymentList.length > 0 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(type, index)} className="h-10 w-10 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0">
                   <Trash2 className="h-4 w-4" />
