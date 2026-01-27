@@ -135,6 +135,9 @@ export default function Receipt() {
     if (profile) {
       form.setValue('companyName', profile.company_name || '');
       form.setValue('companyPhone', profile.phone || '');
+      form.setValue('companyAddress', profile.company_address || '');
+      form.setValue('companyHp', profile.company_hp || '');
+      form.setValue('companyAuthorizedDealer', profile.company_authorized_dealer || false);
     }
   }, [profile, form]);
 
@@ -419,6 +422,7 @@ export default function Receipt() {
                     <div className="flex gap-2 mt-1">
                       <div className="flex-1">
                         <CustomerAndLeadSearchSelect
+                          value={selectedEntity}
                           onValueChange={handleEntitySelect}
                           placeholder="חפש לקוח..."
                         />
@@ -654,6 +658,7 @@ export default function Receipt() {
                     <div className="flex gap-2 mt-2">
                       <div className="flex-1">
                         <CustomerAndLeadSearchSelect
+                          value={selectedEntity}
                           onValueChange={handleEntitySelect}
                           placeholder="התחל להקליד את שם הלקוח המבוקש..."
                         />

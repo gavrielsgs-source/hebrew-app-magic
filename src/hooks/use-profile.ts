@@ -12,6 +12,10 @@ interface Profile {
   position: string | null;
   avatar_url: string | null;
   accountant_email: string | null;
+  // Company details for documents
+  company_address: string | null;
+  company_hp: string | null;
+  company_authorized_dealer: boolean | null;
 }
 
 interface ProfileUpdate {
@@ -21,6 +25,10 @@ interface ProfileUpdate {
   position?: string;
   avatar_url?: string;
   accountant_email?: string;
+  // Company details for documents
+  company_address?: string;
+  company_hp?: string;
+  company_authorized_dealer?: boolean;
 }
 
 export function useProfile() {
@@ -67,7 +75,10 @@ export function useProfile() {
               company_name: newProfile.company_name as string | null,
               position: newProfile.position as string | null,
               avatar_url: newProfile.avatar_url as string | null,
-              accountant_email: newProfile.accountant_email as string | null
+              accountant_email: newProfile.accountant_email as string | null,
+              company_address: (newProfile as any).company_address as string | null,
+              company_hp: (newProfile as any).company_hp as string | null,
+              company_authorized_dealer: (newProfile as any).company_authorized_dealer as boolean | null,
             } as Profile;
           } else {
             console.error("Error fetching profile:", error);
@@ -83,7 +94,10 @@ export function useProfile() {
           company_name: data.company_name as string | null,
           position: data.position as string | null,
           avatar_url: data.avatar_url as string | null,
-          accountant_email: data.accountant_email as string | null
+          accountant_email: data.accountant_email as string | null,
+          company_address: (data as any).company_address as string | null,
+          company_hp: (data as any).company_hp as string | null,
+          company_authorized_dealer: (data as any).company_authorized_dealer as boolean | null,
         } as Profile;
       } catch (error) {
         console.error("Error in profile function:", error);

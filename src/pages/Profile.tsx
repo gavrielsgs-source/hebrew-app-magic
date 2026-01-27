@@ -9,7 +9,7 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe } from "lucide-react";
+import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, MapPin, Hash, CheckCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
@@ -24,6 +24,9 @@ export default function Profile() {
     company_name: "",
     position: "",
     accountant_email: "",
+    company_address: "",
+    company_hp: "",
+    company_authorized_dealer: false,
   });
 
   useEffect(() => {
@@ -34,6 +37,9 @@ export default function Profile() {
         company_name: profile.company_name || "",
         position: profile.position || "",
         accountant_email: profile.accountant_email || "",
+        company_address: profile.company_address || "",
+        company_hp: profile.company_hp || "",
+        company_authorized_dealer: profile.company_authorized_dealer || false,
       });
     }
   }, [profile]);
@@ -274,7 +280,7 @@ export default function Profile() {
         <Tabs defaultValue="profile" className="space-y-6">
           <Card className="shadow-lg rounded-2xl border-2">
             <CardContent className="p-2">
-              <TabsList className="grid w-full grid-cols-3 bg-muted/50 rounded-xl h-14 flex-row-reverse">
+              <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-xl h-14 flex-row-reverse">
                 <TabsTrigger 
                   value="notifications"
                   className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
@@ -288,6 +294,13 @@ export default function Profile() {
                 >
                   <Globe className="h-5 w-5" />
                   דף מלאי
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="company"
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
+                >
+                  <FileText className="h-5 w-5" />
+                  פרטי חברה
                 </TabsTrigger>
                 <TabsTrigger 
                   value="profile" 
@@ -402,6 +415,119 @@ export default function Profile() {
                     >
                       <Save className="h-4 w-4" />
                       {updateProfile.isPending ? "שומר שינויים..." : "שמור שינויים"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="company">
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
+                <CardTitle className="text-right text-xl flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  פרטי חברה למסמכים
+                </CardTitle>
+                <p className="text-sm text-muted-foreground text-right">
+                  פרטים אלו יופיעו בכל המסמכים שתפיק (חשבוניות, קבלות, הצעות מחיר וכו')
+                </p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Company Name */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        שם החברה
+                        <Building className="h-4 w-4 text-primary" />
+                      </Label>
+                      <Input
+                        value={formData.company_name}
+                        onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                        placeholder="הכנס שם חברה"
+                        className="h-12 rounded-xl border-2 text-right"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Company HP */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        מספר עוסק מורשה / ח.פ
+                        <Hash className="h-4 w-4 text-primary" />
+                      </Label>
+                      <Input
+                        value={formData.company_hp}
+                        onChange={(e) => setFormData({ ...formData, company_hp: e.target.value })}
+                        placeholder="הכנס מספר עוסק מורשה"
+                        className="h-12 rounded-xl border-2 text-right"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Company Address */}
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        כתובת החברה
+                        <MapPin className="h-4 w-4 text-primary" />
+                      </Label>
+                      <Input
+                        value={formData.company_address}
+                        onChange={(e) => setFormData({ ...formData, company_address: e.target.value })}
+                        placeholder="הכנס כתובת מלאה (רחוב, עיר, מיקוד)"
+                        className="h-12 rounded-xl border-2 text-right"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Company Phone */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        טלפון החברה
+                        <Phone className="h-4 w-4 text-primary" />
+                      </Label>
+                      <Input
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="הכנס מספר טלפון"
+                        className="h-12 rounded-xl border-2 text-right"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    {/* Authorized Dealer */}
+                    <div className="space-y-2 flex flex-col justify-end">
+                      <div 
+                        className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
+                          formData.company_authorized_dealer 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => setFormData({ ...formData, company_authorized_dealer: !formData.company_authorized_dealer })}
+                      >
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
+                          formData.company_authorized_dealer 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted'
+                        }`}>
+                          {formData.company_authorized_dealer && <CheckCircle className="h-4 w-4" />}
+                        </div>
+                        <Label className="text-sm font-medium text-foreground cursor-pointer">
+                          עוסק מורשה
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t flex justify-end">
+                    <Button 
+                      type="submit" 
+                      disabled={updateProfile.isPending}
+                      className="h-12 px-8 rounded-xl bg-gradient-to-l from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium transition-all duration-200 flex items-center gap-2"
+                    >
+                      <Save className="h-4 w-4" />
+                      {updateProfile.isPending ? "שומר שינויים..." : "שמור פרטי חברה"}
                     </Button>
                   </div>
                 </form>

@@ -157,6 +157,17 @@ export default function TaxInvoiceReceipt() {
   const watchedFields = form.watch();
   const selectedLead = leads.find(lead => lead.id === watchedFields.leadId);
 
+  // Update company info when profile loads
+  useEffect(() => {
+    if (profile) {
+      form.setValue('companyName', profile.company_name || '');
+      form.setValue('companyPhone', profile.phone || '');
+      form.setValue('companyAddress', profile.company_address || '');
+      form.setValue('companyHp', profile.company_hp || '');
+      form.setValue('companyAuthorizedDealer', profile.company_authorized_dealer || false);
+    }
+  }, [profile, form]);
+
   // Handle entity selection (customer or lead)
   const handleEntitySelect = (value: { type: 'customer' | 'lead'; id: string; data: any }) => {
     setSelectedEntity(value);
