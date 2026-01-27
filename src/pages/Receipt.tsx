@@ -92,12 +92,12 @@ export default function Receipt() {
   const [activePaymentTab, setActivePaymentTab] = useState<PaymentType>('cash');
   const [payments, setPayments] = useState<Record<PaymentType, { amount: string; date: Date; reference?: string; [key: string]: any }[]>>({
     cash: [{ amount: '', date: new Date() }],
-    check: [],
-    credit_card: [],
-    bank_transfer: [],
-    other: [],
-    tax_deduction: [],
-    vehicle: [],
+    check: [{ amount: '', date: new Date(), accountNumber: '', branchNumber: '', bankNumber: '', checkNumber: '' }],
+    credit_card: [{ amount: '', date: new Date(), lastFourDigits: '', expiryDate: '', cardType: '', idNumber: '', installments: 1 }],
+    bank_transfer: [{ amount: '', date: new Date(), accountNumber: '', branchNumber: '', bankNumber: '' }],
+    other: [{ amount: '', date: new Date(), paymentType: '' }],
+    tax_deduction: [{ amount: '', date: new Date() }],
+    vehicle: [{ amount: '', date: new Date(), licensePlate: '' }],
   });
   
   const isMobile = useIsMobile();
