@@ -4,25 +4,38 @@ import type { ReceiptData } from '@/types/receipt';
 export async function generateReceiptPDF(data: ReceiptData, returnBlob: boolean = false): Promise<void | Blob> {
   const element = document.createElement('div');
   element.innerHTML = createReceiptPDFHTML(data);
-  element.style.position = 'absolute';
-  element.style.left = '-9999px';
+  element.style.direction = 'rtl';
+  element.style.width = '210mm';
+  element.style.minHeight = '297mm';
+  element.style.padding = '20mm';
+  element.style.fontFamily = 'Arial, sans-serif';
+  element.style.fontSize = '12px';
+  element.style.lineHeight = '1.4';
+  element.style.color = '#000';
+  element.style.backgroundColor = '#fff';
+
   document.body.appendChild(element);
 
   const opt = {
-    margin: [10, 10, 10, 10] as [number, number, number, number],
+    margin: 0,
     filename: `קבלה-${data.receiptNumber}.pdf`,
     image: { type: 'jpeg' as const, quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true,
+      letterRendering: true,
+      allowTaint: false
+    },
     jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
   };
 
   try {
     if (returnBlob) {
-      const blob = await html2pdf().from(element).set(opt).outputPdf('blob');
+      const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
       document.body.removeChild(element);
       return blob;
     } else {
-      await html2pdf().from(element).set(opt).save();
+      await html2pdf().set(opt).from(element).save();
       document.body.removeChild(element);
     }
   } catch (error) {
@@ -53,66 +66,229 @@ function createReceiptPDFHTML(data: ReceiptData): string {
 
   const paymentRows = data.payments.map(payment => `
     <tr>
-      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0; text-align: right;">${paymentTypeLabels[payment.type] || payment.type}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0; text-align: center;">${formatDate(payment.date)}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0; text-align: center;">${payment.reference || '-'}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0; text-align: left; font-weight: bold;">${formatCurrency(payment.amount)}</td>
+      <td class="table-cell">${paymentTypeLabels[payment.type] || payment.type}</td>
+      <td class="table-cell center">${formatDate(payment.date)}</td>
+      <td class="table-cell center">${payment.reference || '-'}</td>
+      <td class="table-cell left bold">${formatCurrency(payment.amount)}</td>
     </tr>
   `).join('');
 
-  const receiptForLabel = {
+  const receiptForLabel: Record<string, string> = {
     none: 'ללא מסמך משוייך',
     tax_invoice: 'חשבונית מס',
     receipt_cancellation: 'ביטול קבלה'
   };
 
   return `
-    <div dir="rtl" style="font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; max-width: 800px; margin: 0 auto; color: #333;">
+    <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6;">
+      <style>
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 3px solid #7c3aed;
+          padding-bottom: 20px;
+        }
+        .header h1 {
+          font-size: 28px;
+          font-weight: bold;
+          margin: 0 0 10px 0;
+          color: #7c3aed;
+        }
+        .header-info {
+          font-size: 16px;
+          color: #666;
+        }
+        .info-section {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 30px;
+          gap: 20px;
+        }
+        .info-box {
+          width: 48%;
+        }
+        .info-box h3 {
+          font-size: 16px;
+          font-weight: bold;
+          margin: 0 0 10px 0;
+          color: #7c3aed;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 5px;
+        }
+        .info-box p {
+          margin: 5px 0;
+          font-size: 13px;
+        }
+        .receipt-for {
+          margin-bottom: 20px;
+          padding: 15px;
+          background: #f5f3ff;
+          border-radius: 8px;
+        }
+        .receipt-for p {
+          margin: 0;
+          font-size: 14px;
+        }
+        .receipt-for .sub {
+          margin-top: 5px;
+          font-size: 12px;
+          color: #666;
+        }
+        .table-section h3 {
+          font-size: 16px;
+          font-weight: bold;
+          margin: 0 0 15px 0;
+          color: #7c3aed;
+        }
+        .payment-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 30px;
+        }
+        .payment-table th {
+          background: #7c3aed;
+          color: white;
+          padding: 12px;
+          text-align: right;
+          font-weight: bold;
+        }
+        .payment-table th.center {
+          text-align: center;
+        }
+        .payment-table th.left {
+          text-align: left;
+        }
+        .table-cell {
+          padding: 10px 12px;
+          border-bottom: 1px solid #e0e0e0;
+          text-align: right;
+        }
+        .table-cell.center {
+          text-align: center;
+        }
+        .table-cell.left {
+          text-align: left;
+        }
+        .table-cell.bold {
+          font-weight: bold;
+        }
+        .summary-box {
+          background: linear-gradient(135deg, #7c3aed, #6d28d9);
+          color: white;
+          padding: 20px;
+          border-radius: 12px;
+          margin-bottom: 20px;
+        }
+        .summary-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 15px;
+          margin-bottom: 15px;
+        }
+        .summary-item {
+          flex: 1;
+          min-width: 100px;
+        }
+        .summary-item .label {
+          font-size: 11px;
+          opacity: 0.8;
+          margin: 0;
+        }
+        .summary-item .value {
+          font-size: 14px;
+          font-weight: bold;
+          margin: 5px 0 0 0;
+        }
+        .summary-total {
+          border-top: 1px solid rgba(255,255,255,0.3);
+          padding-top: 15px;
+          text-align: center;
+        }
+        .summary-total .label {
+          font-size: 14px;
+          opacity: 0.8;
+          margin: 0;
+        }
+        .summary-total .value {
+          font-size: 28px;
+          font-weight: bold;
+          margin: 5px 0 0 0;
+        }
+        .notes-section {
+          margin-top: 20px;
+          padding: 15px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border-right: 4px solid #7c3aed;
+        }
+        .notes-section h4 {
+          margin: 0 0 10px 0;
+          color: #7c3aed;
+          font-size: 14px;
+        }
+        .notes-section p {
+          margin: 0;
+          font-size: 13px;
+          white-space: pre-wrap;
+        }
+        .footer {
+          margin-top: 40px;
+          text-align: center;
+          color: #888;
+          font-size: 11px;
+          border-top: 1px solid #e0e0e0;
+          padding-top: 20px;
+        }
+      </style>
+
       <!-- Header -->
-      <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #7c3aed;">
-        <h1 style="margin: 0; font-size: 28px; color: #7c3aed;">קבלה</h1>
-        <p style="margin: 10px 0 0 0; font-size: 18px; color: #666;">מספר: ${data.receiptNumber}</p>
-        <p style="margin: 5px 0 0 0; font-size: 14px; color: #888;">${formatDate(data.date)}</p>
+      <div class="header">
+        <h1>קבלה</h1>
+        <div class="header-info">
+          <strong>מספר: ${data.receiptNumber}</strong>
+          <span style="margin: 0 10px;">|</span>
+          <span>${formatDate(data.date)}</span>
+        </div>
       </div>
 
       <!-- Company & Customer Info -->
-      <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-        <div style="width: 48%; text-align: right;">
-          <h3 style="margin: 0 0 10px 0; color: #7c3aed; font-size: 16px;">פרטי החברה</h3>
-          <p style="margin: 5px 0; font-size: 14px;"><strong>${data.company.name}</strong></p>
-          <p style="margin: 5px 0; font-size: 12px;">${data.company.address}</p>
-          <p style="margin: 5px 0; font-size: 12px;">ח.פ: ${data.company.hp}</p>
-          <p style="margin: 5px 0; font-size: 12px;">טל: ${data.company.phone}</p>
+      <div class="info-section">
+        <div class="info-box">
+          <h3>פרטי החברה</h3>
+          <p><strong>${data.company.name}</strong></p>
+          <p>${data.company.address}</p>
+          <p>ח.פ: ${data.company.hp}</p>
+          <p>טל: ${data.company.phone}</p>
         </div>
-        <div style="width: 48%; text-align: right;">
-          <h3 style="margin: 0 0 10px 0; color: #7c3aed; font-size: 16px;">פרטי הלקוח</h3>
-          <p style="margin: 5px 0; font-size: 14px;"><strong>${data.customer.name}</strong></p>
-          <p style="margin: 5px 0; font-size: 12px;">${data.customer.address}</p>
-          <p style="margin: 5px 0; font-size: 12px;">ח.פ/ת.ז: ${data.customer.hp}</p>
-          <p style="margin: 5px 0; font-size: 12px;">טל: ${data.customer.phone}</p>
+        <div class="info-box">
+          <h3>פרטי הלקוח</h3>
+          <p><strong>${data.customer.name}</strong></p>
+          <p>${data.customer.address}</p>
+          <p>ח.פ/ת.ז: ${data.customer.hp}</p>
+          <p>טל: ${data.customer.phone}</p>
         </div>
       </div>
 
       <!-- Receipt For -->
-      <div style="margin-bottom: 20px; padding: 15px; background: #f5f3ff; border-radius: 8px;">
-        <p style="margin: 0; font-size: 14px;"><strong>קבלה עבור:</strong> ${receiptForLabel[data.receiptForType]}</p>
+      <div class="receipt-for">
+        <p><strong>קבלה עבור:</strong> ${receiptForLabel[data.receiptForType]}</p>
         ${data.originalInvoice ? `
-          <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">
+          <p class="sub">
             חשבונית מס מספר: ${data.originalInvoice.invoiceNumber} | תאריך: ${formatDate(data.originalInvoice.date)} | סכום: ${formatCurrency(data.originalInvoice.totalAmount)}
           </p>
         ` : ''}
       </div>
 
       <!-- Payments Table -->
-      <div style="margin-bottom: 30px;">
-        <h3 style="margin: 0 0 15px 0; color: #7c3aed; font-size: 16px;">תשלומים</h3>
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+      <div class="table-section">
+        <h3>תשלומים</h3>
+        <table class="payment-table">
           <thead>
-            <tr style="background: #7c3aed; color: white;">
-              <th style="padding: 10px; text-align: right;">סוג תשלום</th>
-              <th style="padding: 10px; text-align: center;">תאריך</th>
-              <th style="padding: 10px; text-align: center;">אסמכתא</th>
-              <th style="padding: 10px; text-align: left;">סכום</th>
+            <tr>
+              <th>סוג תשלום</th>
+              <th class="center">תאריך</th>
+              <th class="center">אסמכתא</th>
+              <th class="left">סכום</th>
             </tr>
           </thead>
           <tbody>
@@ -122,54 +298,54 @@ function createReceiptPDFHTML(data: ReceiptData): string {
       </div>
 
       <!-- Summary -->
-      <div style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
-          <div style="flex: 1; min-width: 120px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.8;">סה"כ מזומן</p>
-            <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">${formatCurrency(data.totals.cash)}</p>
+      <div class="summary-box">
+        <div class="summary-grid">
+          <div class="summary-item">
+            <p class="label">סה"כ מזומן</p>
+            <p class="value">${formatCurrency(data.totals.cash)}</p>
           </div>
-          <div style="flex: 1; min-width: 120px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.8;">סה"כ המחאות</p>
-            <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">${formatCurrency(data.totals.check)}</p>
+          <div class="summary-item">
+            <p class="label">סה"כ המחאות</p>
+            <p class="value">${formatCurrency(data.totals.check)}</p>
           </div>
-          <div style="flex: 1; min-width: 120px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.8;">סה"כ כרטיסי אשראי</p>
-            <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">${formatCurrency(data.totals.creditCard)}</p>
+          <div class="summary-item">
+            <p class="label">סה"כ כרטיסי אשראי</p>
+            <p class="value">${formatCurrency(data.totals.creditCard)}</p>
           </div>
-          <div style="flex: 1; min-width: 120px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.8;">סה"כ העברות בנקאיות</p>
-            <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">${formatCurrency(data.totals.bankTransfer)}</p>
+          <div class="summary-item">
+            <p class="label">סה"כ העברות בנקאיות</p>
+            <p class="value">${formatCurrency(data.totals.bankTransfer)}</p>
           </div>
-          <div style="flex: 1; min-width: 120px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.8;">סה"כ אחר</p>
-            <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">${formatCurrency(data.totals.other)}</p>
+          <div class="summary-item">
+            <p class="label">סה"כ אחר</p>
+            <p class="value">${formatCurrency(data.totals.other)}</p>
           </div>
-          <div style="flex: 1; min-width: 120px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.8;">סה"כ ניכוי מס במקור</p>
-            <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">${formatCurrency(data.totals.taxDeduction)}</p>
+          <div class="summary-item">
+            <p class="label">סה"כ ניכוי מס במקור</p>
+            <p class="value">${formatCurrency(data.totals.taxDeduction)}</p>
           </div>
-          <div style="flex: 1; min-width: 120px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.8;">סה"כ רכבים</p>
-            <p style="margin: 5px 0 0 0; font-size: 16px; font-weight: bold;">${formatCurrency(data.totals.vehicle)}</p>
+          <div class="summary-item">
+            <p class="label">סה"כ רכבים</p>
+            <p class="value">${formatCurrency(data.totals.vehicle)}</p>
           </div>
         </div>
-        <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px; text-align: center;">
-          <p style="margin: 0; font-size: 14px; opacity: 0.8;">סה"כ שולם</p>
-          <p style="margin: 5px 0 0 0; font-size: 28px; font-weight: bold;">${formatCurrency(data.totals.grandTotal)}</p>
+        <div class="summary-total">
+          <p class="label">סה"כ שולם</p>
+          <p class="value">${formatCurrency(data.totals.grandTotal)}</p>
         </div>
       </div>
 
       <!-- Notes -->
       ${data.notes ? `
-        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-right: 4px solid #7c3aed;">
-          <h4 style="margin: 0 0 10px 0; color: #7c3aed;">הערות</h4>
-          <p style="margin: 0; font-size: 14px; white-space: pre-wrap;">${data.notes}</p>
+        <div class="notes-section">
+          <h4>הערות</h4>
+          <p>${data.notes}</p>
         </div>
       ` : ''}
 
       <!-- Footer -->
-      <div style="margin-top: 40px; text-align: center; color: #888; font-size: 12px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
-        <p style="margin: 0;">מסמך זה הופק באופן אוטומטי | ${data.company.name}</p>
+      <div class="footer">
+        <p>מסמך זה הופק באופן אוטומטי | ${data.company.name}</p>
       </div>
     </div>
   `;
