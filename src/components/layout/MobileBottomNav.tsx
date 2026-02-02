@@ -166,8 +166,8 @@ export function MobileBottomNav() {
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 px-2 py-3 rounded-2xl transition-all duration-300 relative min-h-[70px] mobile-touch-target",
                   active 
-                    ? "bg-gradient-to-t from-[#2F3C7E] to-[#4CAF50] text-white shadow-lg transform scale-105" 
-                    : "text-gray-600 hover:text-[#2F3C7E] hover:bg-gray-50 active:bg-gray-100"
+                    ? "bg-primary text-primary-foreground shadow-lg transform scale-105" 
+                    : "text-muted-foreground hover:text-primary hover:bg-muted active:bg-muted/80"
                 )}
               >
                 <div className="relative">
@@ -204,7 +204,7 @@ export function MobileBottomNav() {
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-3xl border-0 shadow-2xl" dir="rtl">
           <SheetHeader className="pb-6">
-            <SheetTitle className="text-right text-xl font-bold text-[#2F3C7E]">תפריט נוסף</SheetTitle>
+            <SheetTitle className="text-right text-xl font-bold text-primary">תפריט נוסף</SheetTitle>
           </SheetHeader>
           <div 
             className="grid grid-cols-1 gap-4 pb-6 max-h-[50vh] overflow-y-auto scroll-smooth touch-pan-y custom-scrollbar custom-scrollbar-mobile"
