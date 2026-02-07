@@ -26,6 +26,7 @@ interface ConvertedTemplate {
   type: 'lead' | 'car';
   templateContent: string;
   facebookTemplateName: string | null;
+  supportsImageHeader: boolean;
 }
 
 export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDialogProps) {
@@ -53,6 +54,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
         type: 'lead' as const,
         templateContent: t.template_content,
         facebookTemplateName: t.facebook_template_name,
+        supportsImageHeader: t.supports_image_header || false,
       }));
 
     const convertedCarTemplates: ConvertedTemplate[] = dbTemplates
@@ -64,6 +66,7 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
         type: 'car' as const,
         templateContent: t.template_content,
         facebookTemplateName: t.facebook_template_name,
+        supportsImageHeader: t.supports_image_header || false,
       }));
 
     setLeadTemplates(convertedLeadTemplates);
@@ -201,6 +204,12 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
       setIsSending(true);
 
       if (selectedTemplate?.facebookTemplateName) {
+        // Check if template requires an image header
+        if (selectedTemplate.supportsImageHeader) {
+          toast.error("תבנית זו דורשת תמונה. השתמש בתבנית אחרת או שלח מדף הרכבים");
+          return;
+        }
+
         // Build ordered parameters array (sort by numeric key, use UNDEFINED for empty values)
         const orderedParameters = Object.keys(variableValues)
           .sort((a, b) => {
