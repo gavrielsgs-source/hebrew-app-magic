@@ -62,7 +62,7 @@ serve(async (req) => {
       };
     } else {
       // Send as template message
-      const components = [];
+      const components: any[] = [];
 
       // Add image header if provided
       if (imageUrl) {
@@ -79,27 +79,38 @@ serve(async (req) => {
         });
       }
 
-      // Add body parameters - always include body component
-      components.push({
-        type: "body",
-        parameters: (parameters || []).map((param) => ({
-          type: "text",
-          text: String(param),
-        })),
-      });
+      // Add body parameters only if there are actual parameters
+      const filteredParams = (parameters || []).filter(p => p !== undefined && p !== null);
+      if (filteredParams.length > 0) {
+        components.push({
+          type: "body",
+          parameters: filteredParams.map((param) => ({
+            type: "text",
+            text: String(param),
+          })),
+        });
+      }
+
+      const templatePayload: any = {
+        name: templateName,
+        language: {
+          code: languageCode || "he",
+        },
+      };
+
+      // Only include components if there are any
+      if (components.length > 0) {
+        templatePayload.components = components;
+      }
 
       body = {
         messaging_product: "whatsapp",
         type: "template",
         to: to,
-        template: {
-          name: templateName,
-          language: {
-            code: languageCode || "he",
-          },
-          components: components,
-        },
+        template: templatePayload,
       };
+
+      console.log("📦 Template payload:", JSON.stringify(body, null, 2));
     }
 
     // Send WhatsApp message
