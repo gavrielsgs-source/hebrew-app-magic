@@ -304,7 +304,12 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       setIsSending(true);
 
       if (selectedTemplate?.facebookTemplateName === 'car_template') {
-        // תבנית רכב מאושרת - שליחה ללא תמונה (התבנית בפייסבוק לא כוללת הדר עם תמונה)
+        // תבנית רכב מאושרת - שליחה עם תמונה אם קיימת
+        
+        if (!carImageUrl) {
+          toast.error("לא נמצאה תמונת רכב. יש להעלות תמונה לרכב לפני שליחת תבנית זו");
+          return;
+        }
         
         // Build parameters in correct order (1-7), use UNDEFINED for missing values
         const parameters = [
@@ -322,7 +327,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             type: 'template',
             to: formattedNumber,
             templateName: 'car_template',
-            parameters
+            parameters,
+            imageUrl: carImageUrl
           }
         });
 
