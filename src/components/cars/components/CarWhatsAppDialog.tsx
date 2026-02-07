@@ -76,13 +76,25 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
       supportsImageHeader: dbTemplate.supports_image_header || false,
     }));
     
-    setCarTemplates(convertedCarTemplates);
-    setLeadTemplates(convertedLeadTemplates);
+    // Sort: approved templates (with facebookTemplateName) first
+    const sortByApproved = (a: any, b: any) => {
+      const aApproved = !!a.facebookTemplateName;
+      const bApproved = !!b.facebookTemplateName;
+      if (aApproved && !bApproved) return -1;
+      if (!aApproved && bApproved) return 1;
+      return 0;
+    };
+    
+    const sortedCar = [...convertedCarTemplates].sort(sortByApproved);
+    const sortedLead = [...convertedLeadTemplates].sort(sortByApproved);
+    
+    setCarTemplates(sortedCar);
+    setLeadTemplates(sortedLead);
     
     // Set default template - prefer car_template (the approved one)
-    if (convertedCarTemplates.length > 0 && !selectedTemplateId) {
-      const defaultTemplate = convertedCarTemplates.find(t => t.facebookTemplateName === 'car_template');
-      setSelectedTemplateId(defaultTemplate?.id || convertedCarTemplates[0].id);
+    if (sortedCar.length > 0 && !selectedTemplateId) {
+      const defaultTemplate = sortedCar.find(t => t.facebookTemplateName === 'car_template');
+      setSelectedTemplateId(defaultTemplate?.id || sortedCar[0].id);
     }
   }, [dbTemplates]);
 
