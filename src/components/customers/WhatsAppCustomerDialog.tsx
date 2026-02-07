@@ -69,10 +69,19 @@ export function WhatsAppCustomerDialog({ customer, onClose }: WhatsAppCustomerDi
         supportsImageHeader: t.supports_image_header || false,
       }));
 
-    setLeadTemplates(convertedLeadTemplates);
-    setCarTemplates(convertedCarTemplates);
+    // Sort: approved templates (with facebookTemplateName) first
+    const sortByApproved = (a: ConvertedTemplate, b: ConvertedTemplate) => {
+      const aApproved = !!a.facebookTemplateName;
+      const bApproved = !!b.facebookTemplateName;
+      if (aApproved && !bApproved) return -1;
+      if (!aApproved && bApproved) return 1;
+      return 0;
+    };
 
-    // Select first lead template by default
+    setLeadTemplates([...convertedLeadTemplates].sort(sortByApproved));
+    setCarTemplates([...convertedCarTemplates].sort(sortByApproved));
+
+    // Select first lead template by default (approved will be first)
     if (convertedLeadTemplates.length > 0 && !selectedTemplateId) {
       setSelectedTemplateId(convertedLeadTemplates[0].id);
     }
