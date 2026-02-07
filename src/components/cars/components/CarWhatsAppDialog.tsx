@@ -348,7 +348,8 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
             type: 'template',
             to: formattedNumber,
             templateName: selectedTemplate.facebookTemplateName,
-            parameters: orderedParameters
+            parameters: orderedParameters,
+            imageUrl: selectedTemplate.supportsImageHeader ? carImageUrl : undefined
           }
         });
 
