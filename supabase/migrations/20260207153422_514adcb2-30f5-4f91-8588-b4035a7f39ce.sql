@@ -1,0 +1,1 @@
+UPDATE whatsapp_templates SET supports_image_header = true WHERE facebook_template_name = 'car_template';
