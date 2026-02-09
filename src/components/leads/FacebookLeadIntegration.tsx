@@ -152,7 +152,7 @@ export function FacebookLeadIntegration() {
                 const longLivedPageToken = await exchangeForLongLivedToken(page.access_token);
 
                 // שמירת הטוקן הארוך של הדף
-                console.log("token for page:", longLivedPageToken);
+                addDebugLog("token for page:", longLivedPageToken);
                 await saveUserAccessToken(longLivedPageToken, page.id, page.name);
                 addDebugLog(`Saved long-lived token for page: ${page.name}`);
 
