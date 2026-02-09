@@ -93,7 +93,7 @@ export function FacebookLeadIntegration() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "<your-anon-key>",
+        apikey: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({ shortLivedToken }),
