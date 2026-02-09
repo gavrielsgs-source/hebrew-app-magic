@@ -123,6 +123,7 @@ export function FacebookLeadIntegration() {
         if (response.authResponse) {
           const userAccessToken = response.authResponse.accessToken;
           addDebugLog("Successfully obtained user access token");
+          addDebugLog(userAccessToken);
           setConnectionStatus("מקבל נתוני דפים...");
 
           (async () => {
@@ -142,6 +143,7 @@ export function FacebookLeadIntegration() {
               addDebugLog(`Found ${pagesResponse.data.length} pages`);
               const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
               for (const page of pagesResponse.data) {
+                addDebugLog(JSON.stringify(page, null, 2));
                 addDebugLog(`Processing page: ${page.name} (${page.id})`);
                 setConnectionStatus(`מעבד דף: ${page.name}`);
 
