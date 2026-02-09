@@ -91,11 +91,16 @@ export function FacebookLeadIntegration() {
   const exchangeForLongLivedToken = async (shortLivedToken: string) => {
     const res = await fetch("https://zjmkdmmnajzevoupgfhg.supabase.co/functions/v1/exchange-for-long-lived-token", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "<your-anon-key>",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({ shortLivedToken }),
     });
+
     const data = await res.json();
-    addDebugLog(JSON.stringify(res));
+    addDebugLog("Edge function response: " + JSON.stringify(data));
     return data.access_token;
   };
 
