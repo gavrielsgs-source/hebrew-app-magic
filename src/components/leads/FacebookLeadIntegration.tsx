@@ -89,6 +89,9 @@ export function FacebookLeadIntegration() {
   }
 
   const exchangeForLongLivedToken = async (shortLivedToken: string) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     const res = await fetch("https://zjmkdmmnajzevoupgfhg.supabase.co/functions/v1/exchange-for-long-lived-token", {
       method: "POST",
       headers: {
