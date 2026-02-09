@@ -94,7 +94,7 @@ export function FacebookLeadIntegration() {
       headers: {
         "Content-Type": "application/json",
         apikey: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        Authorization: `Bearer ${process.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
       body: JSON.stringify({ shortLivedToken }),
     });
