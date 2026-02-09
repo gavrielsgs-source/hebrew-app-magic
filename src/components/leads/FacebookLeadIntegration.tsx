@@ -95,6 +95,7 @@ export function FacebookLeadIntegration() {
       body: JSON.stringify({ shortLivedToken }),
     });
     const data = await res.json();
+    addDebugLog(JSON.stringify(res));
     return data.access_token;
   };
 
