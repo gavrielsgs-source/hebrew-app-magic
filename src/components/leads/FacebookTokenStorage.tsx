@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -18,17 +17,21 @@ export function FacebookTokenStorage() {
 
   const saveUserAccessToken = async (accessToken: string, pageId: string, pageName: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      console.log('args:', accessToken, pageId, pageId, user.id)
-      const { error } = await supabase.rpc('save_facebook_token' as any, {
+      const neverExpire = new Date("2999-12-31T23:59:59Z");
+
+      const { error } = await supabase.rpc("save_facebook_token" as any, {
         p_access_token: accessToken,
         p_page_id: pageId,
         p_page_name: pageName,
-        p_user_id: user.id
+        p_user_id: user.id,
+        p_expires_at: neverExpire,
       });
-      
+
       if (error) throw error;
 
       toast({
@@ -38,7 +41,7 @@ export function FacebookTokenStorage() {
 
       await loadTokens();
     } catch (error: any) {
-      console.error('Error saving Facebook token:', error);
+      console.error("Error saving Facebook token:", error);
       toast({
         title: "שגיאה",
         description: `שגיאה בשמירת הטוקן: ${error.message}`,
@@ -49,20 +52,22 @@ export function FacebookTokenStorage() {
 
   const loadTokens = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase.rpc('get_facebook_tokens' as any, {
-        p_user_id: user.id
+      const { data, error } = await supabase.rpc("get_facebook_tokens" as any, {
+        p_user_id: user.id,
       });
 
       if (error) throw error;
-      
+
       // Properly type the returned data
       const typedData = data as FacebookToken[];
       setTokens(typedData || []);
     } catch (error) {
-      console.error('Error loading Facebook tokens:', error);
+      console.error("Error loading Facebook tokens:", error);
     }
   };
 
@@ -73,6 +78,6 @@ export function FacebookTokenStorage() {
   return {
     tokens,
     saveUserAccessToken,
-    loadTokens
+    loadTokens,
   };
 }
