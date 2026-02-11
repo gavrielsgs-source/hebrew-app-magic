@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Lock } from 'lucide-react';
+import { Lock, Loader2 } from 'lucide-react';
 import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
 
 export default function ResetPassword() {
@@ -13,21 +13,52 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isReady, setIsReady] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have a valid session from the reset link
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        toast({
-          variant: "destructive",
-          title: "קישור לא תקין",
-          description: "הקישור לאיפוס סיסמה פג תוקפו או לא תקין",
-        });
-        navigate('/forgot-password');
+    // Listen for PASSWORD_RECOVERY event from Supabase auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('ResetPassword auth event:', event);
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        setIsReady(true);
+        setIsChecking(false);
+      } else if (event === 'SIGNED_IN' && session) {
+        // Also accept SIGNED_IN as the recovery token may have been exchanged already
+        setIsReady(true);
+        setIsChecking(false);
       }
     });
+
+    // Also check if there's already a session (e.g., if the event fired before mount)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsReady(true);
+        setIsChecking(false);
+      }
+    });
+
+    // Timeout - if no recovery event after 8 seconds, show expired message
+    const timeout = setTimeout(() => {
+      setIsChecking(prev => {
+        if (prev) {
+          toast({
+            variant: "destructive",
+            title: "קישור לא תקין",
+            description: "הקישור לאיפוס סיסמה פג תוקפו או לא תקין",
+          });
+          navigate('/forgot-password');
+        }
+        return false;
+      });
+    }, 8000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [navigate, toast]);
 
   const validatePassword = () => {
@@ -93,6 +124,17 @@ export default function ResetPassword() {
       setLoading(false);
     }
   };
+
+  if (isChecking && !isReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+        <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-brand-primary" />
+          <p className="text-muted-foreground">מאמת קישור איפוס סיסמה...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
