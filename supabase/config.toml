@@ -78,6 +78,12 @@ verify_jwt = true
 [functions.get-public-inventory]
 verify_jwt = false
 
+[functions.tranzila-handshake]
+verify_jwt = false
+
+[functions.tranzila-webhook]
+verify_jwt = false
+
 [auth]
 enabled = true
 site_url = "https://carsleadapp.com"
