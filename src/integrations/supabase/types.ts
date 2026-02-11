@@ -1643,15 +1643,26 @@ export type Database = {
         }
         Returns: undefined
       }
-      save_facebook_token: {
-        Args: {
-          p_access_token: string
-          p_page_id: string
-          p_page_name: string
-          p_user_id: string
-        }
-        Returns: undefined
-      }
+      save_facebook_token:
+        | {
+            Args: {
+              p_access_token: string
+              p_expires_at?: string
+              p_page_id: string
+              p_page_name: string
+              p_user_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_access_token: string
+              p_page_id: string
+              p_page_name: string
+              p_user_id: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       user_role:
