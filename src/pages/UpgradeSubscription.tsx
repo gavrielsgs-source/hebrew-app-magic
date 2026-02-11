@@ -12,16 +12,31 @@ import { SubscriptionPlanCards } from "@/components/subscription/SubscriptionPla
 import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
 import { BillingToggle } from "@/components/subscription/BillingToggle";
+import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
 
 export default function UpgradeSubscription() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [tranzilaData, setTranzilaData] = useState<{
+    thtk: string;
+    supplier: string;
+    customerInfo: PaymentFormValues;
+  } | null>(null);
   const { subscription, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
+  const getSelectedPlanDetails = (planId: string) => {
+    const plans = [
+      { id: "premium", name: "פרימיום", monthlyPrice: 199, yearlyPrice: 179, tier: "premium" },
+      { id: "business", name: "ביזנס", monthlyPrice: 399, yearlyPrice: 349, tier: "business" },
+      { id: "enterprise", name: "אנטרפרייז", monthlyPrice: 699, yearlyPrice: 619, tier: "enterprise" },
+    ];
+    return plans.find(plan => plan.id === planId);
+  };
+
   const onSubmit = async (data: PaymentFormValues) => {
     if (!selectedPlan) {
       toast.error("אנא בחר חבילה תחילה");
@@ -31,154 +46,63 @@ export default function UpgradeSubscription() {
     setLoading(true);
     
     try {
-      console.log("Start upgrade planning!");
       const selectedPlanObj = getSelectedPlanDetails(selectedPlan);
-      if (!selectedPlanObj) {
-        throw new Error("חבילה לא נמצאה");
-      }
+      if (!selectedPlanObj) throw new Error("חבילה לא נמצאה");
 
       const actualSum = isYearly 
         ? selectedPlanObj.yearlyPrice * 12
         : selectedPlanObj.monthlyPrice;
 
-      // Prepare payment parameters with proper types
-      const paymentPayload = {
-        sum: actualSum,
-        fullName: data.fullName,
-        phone: data.phone,
-        email: data.email,
-      };
-
-      console.log("Sending payment payload:", paymentPayload);
-
-      // Send request to create payment
-      const { data: paymentData, error } = await supabase.functions.invoke('grow-payment', {
+      // Call tranzila-handshake to get thtk token
+      const { data: handshakeData, error } = await supabase.functions.invoke('tranzila-handshake', {
         body: {
-          action: 'createPaymentProcess',
-          payload: paymentPayload
+          sum: actualSum,
+          planId: selectedPlan,
+          billingCycle: isYearly ? 'yearly' : 'monthly',
+          isYearly,
         }
       });
 
       if (error) {
-        console.error("Supabase function error:", error);
+        console.error("Handshake error:", error);
         throw new Error(error.message);
       }
 
-      console.log("Payment response:", paymentData);
-
-      // Check for errors in response
-      if (paymentData.error) {
-        console.error("Payment API error:", paymentData);
-        const errorMessage = typeof paymentData.error === 'string' 
-          ? paymentData.error 
-          : (paymentData.details?.message || 'שגיאה לא ידועה');
-        throw new Error(errorMessage);
+      if (!handshakeData?.success || !handshakeData?.thtk) {
+        console.error("Handshake failed:", handshakeData);
+        throw new Error(handshakeData?.error || 'שגיאה באתחול תשלום');
       }
 
-      // Handle successful response
-      if (paymentData.success) {
-        // If redirect URL exists, redirect user
-        if (paymentData.url || paymentData.redirectUrl) {
-          const redirectUrl = paymentData.url || paymentData.redirectUrl;
-          console.log("Redirecting to payment URL:", redirectUrl);
-          window.location.href = redirectUrl;
-        } else {
-          console.error("Missing redirect URL in response:", paymentData);
-          throw new Error('לא התקבלה כתובת הפניה לתשלום');
-        }
-      } else {
-        throw new Error('לא התקבלה תשובה תקינה משרת התשלומים');
-      }
-      
+      console.log("Handshake successful, thtk received");
+
+      // Set Tranzila data to show the iframe
+      setTranzilaData({
+        thtk: handshakeData.thtk,
+        supplier: handshakeData.supplier,
+        customerInfo: data,
+      });
+
     } catch (error) {
       console.error("Error initiating payment:", error);
       toast.error("שגיאה בתהליך התשלום", {
         description: error instanceof Error ? error.message : String(error)
       });
+    } finally {
       setLoading(false);
     }
   };
 
-  const updateRecurringPayment = async (params: {
-    userId: string;
-    transactionToken: string;
-    transactionId: string;
-    asmachta: string;
-    fullName?: string;
-    phone?: string;
-    email?: string;
-  }) => {
-    try {
-      console.log("Updating recurring payment:", params);
-      
-      const { data: updateResponse, error } = await supabase.functions.invoke('grow-payment', {
-        body: {
-          action: 'updateDirectDebit',
-          payload: {
-             fullName: params.fullName,
-             phone: params.phone,
-             sum: 10 //put here the intended sum
-          }
-        }
-      });
-
-      if (error) {
-        console.error("Error updating recurring payment:", error);
-        return { success: false, error: error.message };
-      }
-
-      console.log("Update response:", updateResponse);
-      
-      if (updateResponse.error) {
-        return { 
-          success: false, 
-          error: typeof updateResponse.error === 'string' ? 
-            updateResponse.error : 
-            updateResponse.details?.message || 'Unknown error' 
-        };
-      }
-
-      return { success: true, data: updateResponse };
-    } catch (error) {
-      console.error("Exception updating recurring payment:", error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      };
-    }
-  };
-
-  const handleUpgrade = async (planId: string) => {
+  const handleUpgrade = (planId: string) => {
     setSelectedPlan(planId);
+    setTranzilaData(null); // Reset iframe when selecting new plan
     setPaymentDrawerOpen(true);
   };
-  
-  const getSelectedPlanDetails = (planId: string) => {
-    const plans = [
-      {
-        id: "premium",
-        name: "פרימיום",
-        monthlyPrice: 199,
-        yearlyPrice: 179,
-        tier: "premium"
-      },
-      {
-        id: "business",
-        name: "ביזנס",
-        monthlyPrice: 399,
-        yearlyPrice: 349,
-        tier: "business"
-      },
-      {
-        id: "enterprise",
-        name: "אנטרפרייז",
-        monthlyPrice: 699,
-        yearlyPrice: 619,
-        tier: "enterprise"
-      }
-    ];
-    
-    return plans.find(plan => plan.id === planId);
+
+  const handleDrawerClose = (open: boolean) => {
+    setPaymentDrawerOpen(open);
+    if (!open) {
+      setTranzilaData(null);
+    }
   };
 
   return (
@@ -212,13 +136,13 @@ export default function UpgradeSubscription() {
 
       <PaymentInfo />
 
-      <Drawer open={paymentDrawerOpen} onOpenChange={setPaymentDrawerOpen}>
+      <Drawer open={paymentDrawerOpen} onOpenChange={handleDrawerClose}>
         <DrawerContent className={`max-h-[96%] ${isMobile ? 'h-[90vh]' : ''}`}>
           <DrawerHeader>
             <DrawerTitle className={`text-center ${isMobile ? 'text-base' : 'text-lg'}`}>
               {selectedPlan && (
                 <>
-                  פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
+                  {tranzilaData ? 'השלם תשלום' : 'פרטי תשלום'} - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
                   {isYearly && " (תשלום שנתי)"}
                 </>
               )}
@@ -226,12 +150,37 @@ export default function UpgradeSubscription() {
           </DrawerHeader>
           
           <div className="px-4 overflow-y-auto">
-            <PaymentForm 
-              onSubmit={onSubmit}
-              loading={loading}
-              onCancel={() => setPaymentDrawerOpen(false)}
-              selectedPlan={selectedPlan}
-            />
+            {tranzilaData && selectedPlan ? (
+              <TranzilaPaymentIframe
+                supplier={tranzilaData.supplier}
+                thtk={tranzilaData.thtk}
+                sum={isYearly 
+                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
+                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                recurSum={isYearly 
+                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
+                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                recurTransaction={isYearly ? '7_approved' : '4_approved'}
+                customerInfo={{
+                  contact: tranzilaData.customerInfo.fullName,
+                  email: tranzilaData.customerInfo.email,
+                  phone: tranzilaData.customerInfo.phone,
+                  company: tranzilaData.customerInfo.companyName,
+                  address: tranzilaData.customerInfo.address,
+                  city: tranzilaData.customerInfo.city,
+                }}
+                planId={selectedPlan}
+                billingCycle={isYearly ? 'yearly' : 'monthly'}
+                productName={`מנוי ${getSelectedPlanDetails(selectedPlan)?.name} - CarsLead`}
+              />
+            ) : (
+              <PaymentForm 
+                onSubmit={onSubmit}
+                loading={loading}
+                onCancel={() => handleDrawerClose(false)}
+                selectedPlan={selectedPlan}
+              />
+            )}
           </div>
           
           <DrawerFooter className="pt-2">
