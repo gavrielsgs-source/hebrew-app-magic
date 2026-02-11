@@ -112,7 +112,7 @@ export function usePushNotifications() {
             console.log('Service Worker registered successfully');
             
             // Subscribe to push notifications
-            const subscription = await registration.pushManager.subscribe({
+            const subscription = await (registration as any).pushManager.subscribe({
               userVisibleOnly: true,
               applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
             });

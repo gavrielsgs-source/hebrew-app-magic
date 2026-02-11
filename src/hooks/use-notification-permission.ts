@@ -78,7 +78,7 @@ export function useNotificationPermission() {
               const registration = await navigator.serviceWorker.register('/sw.js');
               console.log('Service Worker registered successfully');
               
-              const subscription = await registration.pushManager.subscribe({
+              const subscription = await (registration as any).pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
               });
