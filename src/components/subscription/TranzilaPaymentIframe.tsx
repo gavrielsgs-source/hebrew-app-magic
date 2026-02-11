@@ -118,6 +118,10 @@ export function TranzilaPaymentIframe({
         {/* Webhook notification URL */}
         <input type="hidden" name="notify_url" value={webhookUrl} />
 
+        {/* Success/Error redirect URLs */}
+        <input type="hidden" name="success_url_address" value={`${window.location.origin}/subscription/payment-success?plan=${planId}&cycle=${billingCycle}`} />
+        <input type="hidden" name="fail_url_address" value={`${window.location.origin}/subscription/payment-error?plan=${planId}`} />
+
         {/* Display settings */}
         <input type="hidden" name="lang" value="il" />
         <input type="hidden" name="nologo" value="1" />
