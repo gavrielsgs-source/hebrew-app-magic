@@ -17,8 +17,22 @@ export function useAuth() {
         setUser(session?.user ?? null);
         setLoading(false);
         
+        // Handle password recovery - redirect to reset page
+        if (event === 'PASSWORD_RECOVERY') {
+          console.log('Password recovery event detected, redirecting to /reset-password');
+          if (!window.location.pathname.includes('/reset-password')) {
+            window.location.href = '/reset-password';
+          }
+          return;
+        }
+        
         // Handle successful OAuth login
         if (event === 'SIGNED_IN' && session?.user) {
+          // Skip OAuth redirect logic if on reset-password page
+          if (window.location.pathname.includes('/reset-password')) {
+            return;
+          }
+          
           // Check if this is a redirect from OAuth
           const isOAuthRedirect = window.location.href.includes('#access_token') || 
                                  window.location.href.includes('?code=');

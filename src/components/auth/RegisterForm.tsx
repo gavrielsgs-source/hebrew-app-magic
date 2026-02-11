@@ -69,7 +69,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
         ? `${window.location.origin}/payment`
         : `${window.location.origin}/dashboard`;
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -91,6 +91,20 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
 
       if (error) throw error;
 
+      // Check if email confirmation is required
+      const needsConfirmation = data.user && !data.user.email_confirmed_at;
+
+      if (needsConfirmation) {
+        toast({
+          title: "נרשמת בהצלחה! 📧",
+          description: "שלחנו לך אימייל אימות. אנא בדוק את תיבת הדואר שלך ואשר את החשבון לפני ההתחברות.",
+        });
+        setErrorMsg('');
+        // Show confirmation message instead of navigating
+        navigate('/login', { state: { message: 'אנא אשר את האימייל שלך לפני ההתחברות' } });
+        return;
+      }
+
       // Get the newly created user
       const { data: { user: newUser } } = await supabase.auth.getUser();
       
@@ -108,13 +122,11 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
 
           if (trialError) {
             console.error('Error creating trial subscription:', trialError);
-            // Don't throw - user is registered, subscription issue is non-critical
           } else {
             console.log('✅ Trial subscription created successfully');
           }
         } catch (subError) {
           console.error('Error in trial subscription flow:', subError);
-          // Continue - user registration was successful
         }
 
         // Send welcome email with magic link
@@ -150,7 +162,6 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
       });
 
       if (isTrialIntent) {
-        // Get selected plan from URL if exists
         const urlParams = new URLSearchParams(window.location.search);
         const selectedPlan = urlParams.get('plan');
         navigate(selectedPlan ? `/payment?plan=${selectedPlan}` : '/payment');
