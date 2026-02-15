@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Eye, Download, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface DocumentPreviewDialogProps {
   documentId: string;
@@ -170,14 +171,20 @@ export function DocumentPreviewDialog({
 
         // Generate PDF
         const opt = {
-          margin: 10,
-          filename: `${documentTitle}.pdf`,
-          image: { type: 'jpeg' as const, quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: 794,
+          width: 794,
         };
 
-        const pdfBlob = await html2pdf().from(element).set(opt).output('blob');
+        const canvas = await html2canvas(element, opt);
+        const pdf = new jsPDF('portrait', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/jpeg', 0.98);
+        const imgWidth = 190;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
+        const pdfBlob = pdf.output('blob');
 
         // Upload to storage
         const fileName = `${documentId}.pdf`;
