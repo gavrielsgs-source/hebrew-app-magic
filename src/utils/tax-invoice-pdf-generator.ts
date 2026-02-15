@@ -13,6 +13,11 @@ export async function generateTaxInvoicePDF(data: TaxInvoiceData, returnBlob?: b
   element.style.lineHeight = '1.4';
   element.style.color = '#000';
   element.style.backgroundColor = '#fff';
+  element.style.position = 'fixed';
+  element.style.top = '0';
+  element.style.left = '0';
+  element.style.zIndex = '-9999';
+  element.style.opacity = '0';
 
   document.body.appendChild(element);
 
