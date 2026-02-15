@@ -23,7 +23,9 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData, return
   element.style.top = '0';
   element.style.left = '0';
   element.style.zIndex = '-9999';
-  element.style.opacity = '0';
+  element.style.pointerEvents = 'none';
+  element.style.overflow = 'hidden';
+  element.style.height = '0';
   
   // Append to body temporarily
   document.body.appendChild(element);

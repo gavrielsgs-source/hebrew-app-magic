@@ -17,9 +17,14 @@ export async function generateTaxInvoiceReceiptPDF(data: TaxInvoiceReceiptData, 
   element.style.top = '0';
   element.style.left = '0';
   element.style.zIndex = '-9999';
-  element.style.opacity = '0';
+  element.style.pointerEvents = 'none';
+  element.style.overflow = 'hidden';
+  element.style.height = '0';
 
   document.body.appendChild(element);
+
+  // Wait for content to render
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   const opt = {
     margin: 10,
@@ -56,41 +61,35 @@ function createTaxInvoiceReceiptPDFHTML(data: TaxInvoiceReceiptData): string {
   };
 
   return `
-    <!DOCTYPE html>
-    <html dir="rtl" lang="he">
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; direction: rtl; padding: 20px; background: white; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #4F46E5; padding-bottom: 20px; }
-        .header h1 { font-size: 28px; color: #4F46E5; margin-bottom: 10px; }
-        .header p { font-size: 14px; color: #666; }
-        .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px; }
-        .info-box { flex: 1; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9fafb; }
-        .info-box h3 { font-size: 16px; color: #4F46E5; margin-bottom: 10px; border-bottom: 2px solid #4F46E5; padding-bottom: 5px; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        .info-row span:first-child { font-weight: bold; color: #374151; }
-        .info-row span:last-child { color: #6B7280; }
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; }
-        .items-table th { background: #4F46E5; color: white; padding: 12px 8px; text-align: center; font-weight: bold; }
-        .items-table td { border: 1px solid #ddd; padding: 10px 8px; text-align: center; }
-        .items-table tbody tr:nth-child(even) { background: #f9fafb; }
-        .summary { margin-top: 30px; display: flex; justify-content: flex-end; }
-        .summary-box { border: 2px solid #4F46E5; padding: 20px; border-radius: 8px; min-width: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
-        .summary-row.total { font-size: 18px; font-weight: bold; border-top: 2px solid white; padding-top: 12px; margin-top: 12px; }
-        .payments-section { margin: 30px 0; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
-        .payments-section h3 { font-size: 16px; color: #4F46E5; margin-bottom: 15px; }
-        .payment-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .payment-item:last-child { border-bottom: none; }
-        .notes { margin-top: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fffbeb; }
-        .notes h3 { font-size: 14px; color: #92400e; margin-bottom: 10px; }
-        .notes p { font-size: 12px; color: #78350f; line-height: 1.6; }
-        .footer { margin-top: 40px; text-align: center; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #9CA3AF; }
-      </style>
-    </head>
-    <body>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #4F46E5; padding-bottom: 20px; }
+      .header h1 { font-size: 28px; color: #4F46E5; margin-bottom: 10px; }
+      .header p { font-size: 14px; color: #666; }
+      .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px; }
+      .info-box { flex: 1; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #f9fafb; }
+      .info-box h3 { font-size: 16px; color: #4F46E5; margin-bottom: 10px; border-bottom: 2px solid #4F46E5; padding-bottom: 5px; }
+      .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+      .info-row span:first-child { font-weight: bold; color: #374151; }
+      .info-row span:last-child { color: #6B7280; }
+      .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; }
+      .items-table th { background: #4F46E5; color: white; padding: 12px 8px; text-align: center; font-weight: bold; }
+      .items-table td { border: 1px solid #ddd; padding: 10px 8px; text-align: center; }
+      .items-table tbody tr:nth-child(even) { background: #f9fafb; }
+      .summary { margin-top: 30px; display: flex; justify-content: flex-end; }
+      .summary-box { border: 2px solid #4F46E5; padding: 20px; border-radius: 8px; min-width: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+      .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+      .summary-row.total { font-size: 18px; font-weight: bold; border-top: 2px solid white; padding-top: 12px; margin-top: 12px; }
+      .payments-section { margin: 30px 0; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+      .payments-section h3 { font-size: 16px; color: #4F46E5; margin-bottom: 15px; }
+      .payment-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+      .payment-item:last-child { border-bottom: none; }
+      .notes { margin-top: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fffbeb; }
+      .notes h3 { font-size: 14px; color: #92400e; margin-bottom: 10px; }
+      .notes p { font-size: 12px; color: #78350f; line-height: 1.6; }
+      .footer { margin-top: 40px; text-align: center; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #9CA3AF; }
+    </style>
+    <div style="font-family: Arial, sans-serif; direction: rtl; padding: 20px;">
       <div class="header">
         ${data.company.logoUrl ? `
           <div style="margin-bottom: 15px;">
@@ -203,7 +202,6 @@ function createTaxInvoiceReceiptPDFHTML(data: TaxInvoiceReceiptData): string {
         <p>מסמך זה נוצר באמצעות מערכת CARSLEAD</p>
         <p>${data.lastPaymentDate ? `תאריך אחרון לתשלום: ${new Date(data.lastPaymentDate).toLocaleDateString('he-IL')}` : ''}</p>
       </div>
-    </body>
-    </html>
+    </div>
   `;
 }
