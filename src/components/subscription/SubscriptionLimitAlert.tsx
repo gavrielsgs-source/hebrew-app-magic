@@ -20,6 +20,11 @@ export function SubscriptionLimitAlert({
   const { subscription } = useSubscription();
   const navigate = useNavigate();
 
+  // Don't show upgrade alerts for paid subscribers
+  if (subscription.subscription_status === 'active' || subscription.subscription_status === 'cancelled') {
+    return null;
+  }
+
   const resourceNames = {
     car: 'רכבים',
     lead: 'לקוחות פוטנציאליים', 
