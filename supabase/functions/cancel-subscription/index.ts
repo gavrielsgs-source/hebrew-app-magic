@@ -6,9 +6,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0';
-const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || '';
-const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || '';
+const TRANZILA_SUPPLIER = Deno.env.get('TRANZILA_SUPPLIER') || '';
+const TRANZILA_PW = Deno.env.get('TRANZILA_PW') || '';
+
+async function cancelTranzilaRecurring(paymentToken: string): Promise<void> {
+  // Cancel recurring payment via Tranzila CGI API using the transaction index
+  const params = new URLSearchParams({
+    supplier: TRANZILA_SUPPLIER,
+    TranzilaPW: TRANZILA_PW,
+    op: '3',
+    index: paymentToken,
+  });
+
+  const response = await fetch(
+    `https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi?${params.toString()}`,
+    { method: 'GET' }
+  );
+
+  const responseText = await response.text();
+  console.log(`Tranzila cancel recurring response for index ${paymentToken}:`, responseText);
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -86,20 +103,13 @@ serve(async (req) => {
         throw new Error(`Failed to cancel subscription: ${updateError.message}`);
       }
 
-      // If there's a recurring payment, cancel it with Grow
-      if (subscription.recurring_payment_id) {
+      // Cancel recurring payment with Tranzila
+      if (subscription.payment_token) {
         try {
-          const formData = new FormData();
-          formData.append('customerId', GROW_CLIENT_ID);
-          formData.append('apiPassword', GROW_EC_PWD);
-          formData.append('recurringPaymentId', subscription.recurring_payment_id);
-
-          await fetch(`${GROW_API_BASE}/cancelRecurringPayment`, {
-            method: 'POST',
-            body: formData,
-          });
-        } catch (growError) {
-          console.error('Failed to cancel recurring payment with Grow:', growError);
+          await cancelTranzilaRecurring(subscription.payment_token);
+          console.log(`✅ Recurring payment cancelled with Tranzila for user ${user.id}`);
+        } catch (tranzilaError) {
+          console.error('Failed to cancel recurring payment with Tranzila:', tranzilaError);
           // Continue anyway - subscription is cancelled in our system
         }
       }
@@ -128,21 +138,13 @@ serve(async (req) => {
         throw new Error(`Failed to schedule cancellation: ${updateError.message}`);
       }
 
-      // Cancel recurring payment with Grow so user won't be charged again
-      if (subscription.recurring_payment_id) {
+      // Cancel recurring payment with Tranzila so user won't be charged again
+      if (subscription.payment_token) {
         try {
-          const formData = new FormData();
-          formData.append('customerId', GROW_CLIENT_ID);
-          formData.append('apiPassword', GROW_EC_PWD);
-          formData.append('recurringPaymentId', subscription.recurring_payment_id);
-
-          await fetch(`${GROW_API_BASE}/cancelRecurringPayment`, {
-            method: 'POST',
-            body: formData,
-          });
-          console.log(`✅ Recurring payment cancelled with Grow for user ${user.id}`);
-        } catch (growError) {
-          console.error('Failed to cancel recurring payment with Grow:', growError);
+          await cancelTranzilaRecurring(subscription.payment_token);
+          console.log(`✅ Recurring payment cancelled with Tranzila for user ${user.id}`);
+        } catch (tranzilaError) {
+          console.error('Failed to cancel recurring payment with Tranzila:', tranzilaError);
         }
       }
 
