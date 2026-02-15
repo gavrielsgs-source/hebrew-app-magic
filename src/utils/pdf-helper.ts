@@ -12,11 +12,12 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<Blob | v
   // Create a hidden iframe for rendering
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
-  iframe.style.overflow = 'hidden';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '0';
+  iframe.style.width = '794px';
+  iframe.style.height = '1123px';
   iframe.style.border = 'none';
-  iframe.style.visibility = 'hidden';
+  iframe.style.visibility = 'visible';
   document.body.appendChild(iframe);
 
   try {
