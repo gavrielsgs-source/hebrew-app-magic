@@ -322,12 +322,20 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     }
   };
 
+  const escapeHtml = (text: string | number | null | undefined): string => {
+    if (text == null) return '';
+    const str = String(text);
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  };
+
   const generateDocumentHTML = (doc: any) => {
     return `<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>${doc.title}</title>
+  <title>${escapeHtml(doc.title)}</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -378,17 +386,17 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 </head>
 <body>
   <div class="header">
-    <h1>${doc.title}</h1>
-    <p>מספר מסמך: ${doc.document_number}</p>
+    <h1>${escapeHtml(doc.title)}</h1>
+    <p>מספר מסמך: ${escapeHtml(doc.document_number)}</p>
   </div>
   <div class="details">
     <div class="details-row">
       <span class="details-label">סוג מסמך:</span>
-      <span>${doc.type}</span>
+      <span>${escapeHtml(doc.type)}</span>
     </div>
     <div class="details-row">
       <span class="details-label">סכום:</span>
-      <span>${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}</span>
+      <span>${doc.amount ? `₪${Number(doc.amount).toLocaleString()}` : 'לא צוין'}</span>
     </div>
     <div class="details-row">
       <span class="details-label">תאריך:</span>
@@ -396,7 +404,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     </div>
     <div class="details-row">
       <span class="details-label">סטטוס:</span>
-      <span>${doc.status}</span>
+      <span>${escapeHtml(doc.status)}</span>
     </div>
   </div>
   <div class="footer">

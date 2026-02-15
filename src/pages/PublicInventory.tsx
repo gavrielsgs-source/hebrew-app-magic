@@ -82,7 +82,7 @@ export default function PublicInventory() {
 
       // Use fetch directly for GET request with query params
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL || 'https://zjmkdmmnajzevoupgfhg.supabase.co'}/functions/v1/get-public-inventory?${params.toString()}`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-public-inventory?${params.toString()}`,
         {
           method: 'GET',
           headers: {
