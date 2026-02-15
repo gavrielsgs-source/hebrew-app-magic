@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +26,7 @@ export default function UpgradeSubscription() {
     customerInfo: PaymentFormValues;
   } | null>(null);
   const { subscription, refreshSubscription } = useSubscription();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -171,6 +173,7 @@ export default function UpgradeSubscription() {
                 }}
                 planId={selectedPlan}
                 billingCycle={isYearly ? 'yearly' : 'monthly'}
+                userId={user?.id}
                 productName={`מנוי ${getSelectedPlanDetails(selectedPlan)?.name} - CarsLead`}
               />
             ) : (
