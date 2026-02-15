@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Crown, Star, Zap, LogOut, CreditCard, TrendingUp } from "lucide-react";
+import { ArrowLeft, Crown, Star, Zap, LogOut, CreditCard, TrendingUp, Settings } from "lucide-react";
 import { useSubscription } from "@/contexts/subscription-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
@@ -219,6 +219,14 @@ export default function Subscription() {
             )}
             <Button 
               variant="outline" 
+              onClick={() => navigate("/subscription/manage")}
+              className="w-full h-12 rounded-xl border-2"
+            >
+              <Settings className="h-4 w-4 ml-2" />
+              ניהול מנוי
+            </Button>
+            <Button 
+              variant="outline" 
               onClick={handleSignOut}
               className="w-full h-12 rounded-xl border-2"
             >
@@ -348,7 +356,15 @@ export default function Subscription() {
             </Card>
 
             <Card className="shadow-lg rounded-2xl border-2">
-              <CardContent className="p-6">
+              <CardContent className="p-6 space-y-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate("/subscription/manage")}
+                  className="w-full h-12 rounded-xl border-2"
+                >
+                  <Settings className="h-4 w-4 ml-2" />
+                  ניהול מנוי
+                </Button>
                 <Button 
                   variant="outline" 
                   onClick={handleSignOut}
