@@ -128,6 +128,24 @@ serve(async (req) => {
         throw new Error(`Failed to schedule cancellation: ${updateError.message}`);
       }
 
+      // Cancel recurring payment with Grow so user won't be charged again
+      if (subscription.recurring_payment_id) {
+        try {
+          const formData = new FormData();
+          formData.append('customerId', GROW_CLIENT_ID);
+          formData.append('apiPassword', GROW_EC_PWD);
+          formData.append('recurringPaymentId', subscription.recurring_payment_id);
+
+          await fetch(`${GROW_API_BASE}/cancelRecurringPayment`, {
+            method: 'POST',
+            body: formData,
+          });
+          console.log(`✅ Recurring payment cancelled with Grow for user ${user.id}`);
+        } catch (growError) {
+          console.error('Failed to cancel recurring payment with Grow:', growError);
+        }
+      }
+
       console.log(`✅ Subscription scheduled for cancellation at period end for user ${user.id}`);
 
       return new Response(
