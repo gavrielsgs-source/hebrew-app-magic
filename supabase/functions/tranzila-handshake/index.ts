@@ -57,22 +57,25 @@ serve(async (req) => {
 
     console.log('Tranzila handshake response:', handshakeText);
 
-    let handshakeData;
+    // Parse response - Tranzila returns URL-encoded format like "thtk=xxx"
+    let thtk: string | null = null;
     try {
-      handshakeData = JSON.parse(handshakeText);
+      const jsonData = JSON.parse(handshakeText);
+      thtk = jsonData.thtk || null;
     } catch {
-      console.error('Failed to parse handshake response:', handshakeText);
-      return new Response(JSON.stringify({ error: 'Invalid response from payment system' }), { status: 502, headers: corsHeaders });
+      // Not JSON - try URL-encoded format
+      const params = new URLSearchParams(handshakeText.trim());
+      thtk = params.get('thtk');
     }
 
-    if (!handshakeData.thtk) {
-      console.error('No thtk in handshake response:', handshakeData);
-      return new Response(JSON.stringify({ error: 'Failed to initialize payment', details: handshakeData }), { status: 502, headers: corsHeaders });
+    if (!thtk) {
+      console.error('No thtk in handshake response:', handshakeText);
+      return new Response(JSON.stringify({ error: 'Failed to initialize payment' }), { status: 502, headers: corsHeaders });
     }
 
     return new Response(JSON.stringify({
       success: true,
-      thtk: handshakeData.thtk,
+      thtk: thtk,
       supplier: supplier,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
