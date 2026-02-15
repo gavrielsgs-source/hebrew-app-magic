@@ -332,8 +332,31 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     try {
       toast.loading('מכין את המסמך להורדה...', { id: 'pdf-download' });
 
-      // Priority 1: Attached documents with internal URL - open in new tab
+      // Priority 1: Attached documents with internal URL - try to find the original styled PDF first
       if (doc.status === 'attached' && doc.url && doc.url.startsWith('/')) {
+        // Search for matching document record that has the actual PDF file
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: matchingDoc } = await supabase
+            .from('documents')
+            .select('file_path')
+            .eq('user_id', user.id)
+            .eq('entity_id', doc.entity_id || doc.id)
+            .not('file_path', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (matchingDoc?.file_path) {
+            const downloaded = await downloadFromBucket('documents', matchingDoc.file_path, doc.title);
+            if (downloaded) {
+              toast.dismiss('pdf-download');
+              toast.success('המסמך הורד בהצלחה');
+              return;
+            }
+          }
+        }
+        // Fallback: open internal route in new tab
         toast.dismiss('pdf-download');
         window.open(doc.url, '_blank');
         toast.success('פותח את המסמך...');
