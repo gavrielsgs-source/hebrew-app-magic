@@ -1,4 +1,5 @@
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export interface GeneratePDFOptions {
   htmlContent: string;
@@ -17,7 +18,7 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<Blob | v
   iframe.style.width = '794px';  // A4 width at 96dpi
   iframe.style.height = '1123px'; // A4 height at 96dpi
   iframe.style.border = 'none';
-  iframe.style.opacity = '0.01'; // Nearly invisible but still rendered
+  iframe.style.opacity = '0.01';
   iframe.style.pointerEvents = 'none';
   iframe.style.zIndex = '-1';
   document.body.appendChild(iframe);
@@ -33,36 +34,81 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<Blob | v
     // Wait for fonts and images to load
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Make fully visible right before capture (html2canvas needs visibility)
+    // Make visible for capture
     iframe.style.opacity = '1';
 
     const body = iframeDoc.body;
 
-    const opt = {
-      margin: [10, 10, 10, 10] as [number, number, number, number],
-      filename,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true,
-        letterRendering: true,
-        logging: false,
-        scrollY: 0,
-        windowWidth: 794,
-      },
-      jsPDF: { 
-        unit: 'mm' as const, 
-        format: 'a4' as const, 
-        orientation: 'portrait' as const 
-      },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-    };
+    // Step 1: Capture HTML as canvas using html2canvas
+    const canvas = await html2canvas(body, {
+      scale: 2,
+      useCORS: true,
+      
+      logging: false,
+      scrollY: 0,
+      windowWidth: 794,
+      width: 794,
+    });
+
+    // Step 2: Build PDF with jsPDF, slicing the canvas into A4 pages
+    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    const pageWidthMM = 210;
+    const pageHeightMM = 297;
+    const margin = 10; // mm
+    const contentWidthMM = pageWidthMM - margin * 2;
+    const contentHeightMM = pageHeightMM - margin * 2;
+
+    const imgWidthPx = canvas.width;
+    const imgHeightPx = canvas.height;
+
+    // How tall is the full image in mm (scaled to fit content width)
+    const totalImgHeightMM = (imgHeightPx * contentWidthMM) / imgWidthPx;
+
+    // How many pixels correspond to one page of content height
+    const pageHeightPx = (contentHeightMM / totalImgHeightMM) * imgHeightPx;
+
+    let currentPositionPx = 0;
+    let pageIndex = 0;
+
+    while (currentPositionPx < imgHeightPx) {
+      // Determine the slice height for this page
+      const sliceHeightPx = Math.min(pageHeightPx, imgHeightPx - currentPositionPx);
+
+      // Create a temporary canvas for this page slice
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = imgWidthPx;
+      pageCanvas.height = sliceHeightPx;
+      const ctx = pageCanvas.getContext('2d');
+      if (!ctx) throw new Error('Cannot get canvas context');
+
+      // Draw the slice from the full canvas
+      ctx.drawImage(
+        canvas,
+        0, currentPositionPx,        // source x, y
+        imgWidthPx, sliceHeightPx,   // source width, height
+        0, 0,                         // dest x, y
+        imgWidthPx, sliceHeightPx    // dest width, height
+      );
+
+      const sliceDataUrl = pageCanvas.toDataURL('image/jpeg', 0.98);
+
+      // Calculate the height of this slice in mm
+      const sliceHeightMM = (sliceHeightPx * contentWidthMM) / imgWidthPx;
+
+      if (pageIndex > 0) {
+        pdf.addPage();
+      }
+
+      pdf.addImage(sliceDataUrl, 'JPEG', margin, margin, contentWidthMM, sliceHeightMM);
+
+      currentPositionPx += sliceHeightPx;
+      pageIndex++;
+    }
 
     if (returnBlob) {
-      const blob = await html2pdf().from(body).set(opt).output('blob');
-      return blob as Blob;
+      return pdf.output('blob');
     } else {
-      await html2pdf().from(body).set(opt).save();
+      pdf.save(filename);
     }
   } finally {
     document.body.removeChild(iframe);
