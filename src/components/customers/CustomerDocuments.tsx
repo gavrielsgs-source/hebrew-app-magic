@@ -91,7 +91,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     }
     
     // Navigate directly to wa.me
-    window.open(whatsappUrl, '_blank');
+    window.location.href = whatsappUrl;
   };
 
   const generateDocumentHTML = (doc: any) => {
