@@ -19,7 +19,7 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<Blob | v
   container.style.left = '-9999px';
   container.style.top = '0';
   container.style.width = '794px'; // A4 width at 96dpi
-  container.style.minHeight = '1123px';
+  container.style.background = '#fff';
   container.style.background = '#fff';
   container.style.zIndex = '-9999';
 
@@ -57,12 +57,15 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<Blob | v
         useCORS: true,
         letterRendering: true,
         logging: false,
+        scrollY: 0,
+        windowWidth: 794,
       },
       jsPDF: { 
         unit: 'mm' as const, 
         format: 'a4' as const, 
         orientation: 'portrait' as const 
       },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
     };
 
     if (returnBlob) {
