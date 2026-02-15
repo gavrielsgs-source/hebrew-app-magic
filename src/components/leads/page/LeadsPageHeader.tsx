@@ -73,12 +73,6 @@ export function LeadsPageHeader({
               <Plus className="h-5 w-5 ml-2" />
               הוסף לקוח חדש
             </Button>
-            <Button 
-              variant="outline"
-              className="rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
-            >
-              דוחות
-            </Button>
           </div>
         </div>
       </div>
