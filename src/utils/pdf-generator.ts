@@ -18,6 +18,13 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData, return
   element.style.boxSizing = 'border-box';
   element.style.minHeight = 'auto'; // Allow dynamic height
   
+  // Position fixed in viewport so html2canvas can capture it, but invisible to user
+  element.style.position = 'fixed';
+  element.style.top = '0';
+  element.style.left = '0';
+  element.style.zIndex = '-9999';
+  element.style.opacity = '0';
+  
   // Append to body temporarily
   document.body.appendChild(element);
 

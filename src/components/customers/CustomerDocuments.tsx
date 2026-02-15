@@ -189,6 +189,12 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
       const htmlContent = generateDocumentHTML(doc);
       const element = document.createElement('div');
       element.innerHTML = htmlContent;
+      // Position fixed in viewport so html2canvas can capture it
+      element.style.position = 'fixed';
+      element.style.top = '0';
+      element.style.left = '0';
+      element.style.zIndex = '-9999';
+      element.style.opacity = '0';
       document.body.appendChild(element);
       try {
         const opt = {
@@ -221,8 +227,9 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         console.log('Generating PDF for document:', doc.id, 'type:', doc.type);
         const pdfBlob = await generatePdfBlobForDoc(doc);
         
-        if (!pdfBlob || pdfBlob.size === 0) {
-          toast.error('שגיאה ביצירת PDF - הקובץ ריק');
+        if (!pdfBlob || pdfBlob.size < 1024) {
+          console.error('PDF blob too small:', pdfBlob?.size, 'bytes');
+          toast.error('שגיאה ביצירת PDF - הקובץ ריק או פגום. נסה שוב');
           toast.dismiss('whatsapp-pdf');
           return;
         }
