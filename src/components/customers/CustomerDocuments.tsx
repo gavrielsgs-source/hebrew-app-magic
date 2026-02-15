@@ -12,7 +12,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import html2pdf from 'html2pdf.js';
+import { generatePDF, wrapInHTMLDocument } from '@/utils/pdf-helper';
 
 interface CustomerDocumentsProps {
   customerId: string;
@@ -72,27 +72,17 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   };
 
   const generatePdfBlobForDoc = async (doc: any): Promise<Blob | null> => {
-    // Generic fallback PDF
     const htmlContent = generateDocumentHTML(doc);
-    const element = document.createElement('div');
-    element.innerHTML = htmlContent;
-    element.style.position = 'fixed';
-    element.style.top = '0';
-    element.style.left = '0';
-    element.style.zIndex = '-9999';
-    element.style.opacity = '0';
-    document.body.appendChild(element);
     try {
-      const opt = {
-        margin: 10,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-      };
-      const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      return blob;
-    } finally {
-      document.body.removeChild(element);
+      const blob = await generatePDF({
+        htmlContent,
+        filename: `${doc.title}.pdf`,
+        returnBlob: true,
+      });
+      return blob as Blob || null;
+    } catch (err) {
+      console.error('Error generating PDF blob:', err);
+      return null;
     }
   };
 
@@ -342,48 +332,18 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     try {
       toast.loading('מכין את המסמך להורדה...', { id: 'pdf-download' });
 
-      // Priority 1: Attached documents (from documents table) - use direct URL or documents bucket
-      if (doc.status === 'attached') {
-        // Tax invoices have internal URLs
-        if (doc.entity_type === 'tax_invoice') {
-          toast.dismiss('pdf-download');
-          window.open(doc.url, '_blank');
-          toast.success('פותח את המסמך...');
-          return;
-        }
-
-        // Attached docs with file_path - try 'documents' bucket first
-        if (doc.file_path) {
-          const downloaded = await downloadFromBucket('documents', doc.file_path, doc.title);
-          if (downloaded) {
-            toast.dismiss('pdf-download');
-            toast.success('המסמך הורד בהצלחה');
-            return;
-          }
-        }
-
-        // Attached docs with external URL
-        if (doc.url && doc.url.startsWith('http')) {
-          const link = document.createElement('a');
-          link.href = doc.url;
-          link.download = `${doc.title}.pdf`;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          toast.dismiss('pdf-download');
-          toast.success('המסמך הורד בהצלחה');
-          return;
-        }
-
+      // Priority 1: Attached documents with internal URL - open in new tab
+      if (doc.status === 'attached' && doc.url && doc.url.startsWith('/')) {
         toast.dismiss('pdf-download');
-        toast.error('לא נמצא קובץ למסמך');
+        window.open(doc.url, '_blank');
+        toast.success('פותח את המסמך...');
         return;
       }
 
-      // Priority 2: Customer documents with file_path - try customer-documents bucket
+      // Priority 2: Documents with file_path - download from storage
       if (doc.file_path) {
-        const downloaded = await downloadFromBucket('customer-documents', doc.file_path, doc.title);
+        const bucketName = doc.status === 'attached' ? 'documents' : 'customer-documents';
+        const downloaded = await downloadFromBucket(bucketName, doc.file_path, doc.title);
         if (downloaded) {
           toast.dismiss('pdf-download');
           toast.success('המסמך הורד בהצלחה');
@@ -391,12 +351,43 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         }
       }
 
-      // PDF generation temporarily disabled - use generic fallback
-      toast.dismiss('pdf-download');
-      toast.info('יצירת PDF בקרוב - פונקציית ה-PDF בשלבי פיתוח מחדש');
+      // Priority 3: External URL - direct download
+      if (doc.url && doc.url.startsWith('http')) {
+        const link = document.createElement('a');
+        link.href = doc.url;
+        link.download = `${doc.title}.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.dismiss('pdf-download');
+        toast.success('המסמך הורד בהצלחה');
+        return;
+      }
 
-      toast.dismiss('pdf-download');
-      toast.success('המסמך הורד בהצלחה');
+      // Priority 4: Generate PDF on-the-fly
+      const htmlContent = generateDocumentHTML(doc);
+      const blob = await generatePDF({
+        htmlContent,
+        filename: `${doc.title}.pdf`,
+        returnBlob: true,
+      });
+
+      if (blob) {
+        const url = URL.createObjectURL(blob as Blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${doc.title}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.dismiss('pdf-download');
+        toast.success('המסמך הורד בהצלחה');
+      } else {
+        toast.dismiss('pdf-download');
+        toast.error('שגיאה ביצירת המסמך');
+      }
     } catch (error) {
       console.error('Error downloading PDF:', error);
       toast.dismiss('pdf-download');
