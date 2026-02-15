@@ -20,7 +20,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useLeads } from "@/hooks/use-leads";
 import { useCars } from "@/hooks/use-cars";
 import { useProfile } from "@/hooks/use-profile";
-import { generateSalesAgreementPDF } from "@/utils/pdf-generator";
+
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
@@ -185,7 +185,8 @@ export default function SalesAgreement() {
         }
       };
 
-      await generateSalesAgreementPDF(agreementData);
+      // PDF generation temporarily disabled
+      toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
 
       // Attach the agreement to an existing customer when possible
       if (selectedEntity?.type === 'customer') {

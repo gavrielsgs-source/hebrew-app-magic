@@ -24,7 +24,7 @@ import { useCars } from '@/hooks/use-cars';
 import { useCustomers } from '@/hooks/customers';
 import { useProfile } from '@/hooks/use-profile';
 import { TaxInvoicePreview } from '@/components/tax-invoice/TaxInvoicePreview';
-import { generateTaxInvoicePDF } from '@/utils/tax-invoice-pdf-generator';
+
 import { useTaxInvoice } from '@/hooks/tax-invoice/use-tax-invoice';
 import type { TaxInvoiceData, InvoiceItem } from '@/types/tax-invoice';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
@@ -307,25 +307,10 @@ export default function TaxInvoice() {
         }
       }
       
-      // Generate PDF as Blob and upload to cloud
-      const pdfBlob = await generateTaxInvoicePDF(savedInvoice, true) as Blob;
-      const url = await uploadDocument({
-        pdfBlob,
-        documentType: 'tax_invoice',
-        documentNumber: savedInvoice.invoiceNumber,
-        customerName: savedInvoice.customer.name,
-        entityType,
-        entityId
-      });
-      
-      setDocumentUrl(url);
-      
-      // Also download for user
-      await generateTaxInvoicePDF(savedInvoice);
-      
+      // PDF generation temporarily disabled
       toast({
         title: "חשבונית נוצרה בהצלחה",
-        description: `חשבונית מס ${savedInvoice.invoiceNumber} נוצרה והורדה למחשב`,
+        description: `חשבונית מס ${savedInvoice.invoiceNumber} נשמרה`,
       });
 
       // Reset form

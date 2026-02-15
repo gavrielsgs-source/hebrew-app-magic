@@ -18,7 +18,7 @@ import { toast } from '@/hooks/use-toast';
 import { CustomerAndLeadSearchSelect } from '@/components/customers/CustomerAndLeadSearchSelect';
 import { useCustomers } from '@/hooks/customers';
 import { useProfile } from '@/hooks/use-profile';
-import { generateTaxInvoiceCreditPDF } from '@/utils/tax-invoice-credit-pdf-generator';
+
 import { useTaxInvoiceCredit } from '@/hooks/tax-invoice-credit/use-tax-invoice-credit';
 import type { TaxInvoiceCreditData, OriginalInvoice } from '@/types/tax-invoice-credit';
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
@@ -202,18 +202,7 @@ export default function TaxInvoiceCredit() {
       setSavedCreditData(result);
       setIsSaved(true);
       
-      // Generate PDF as Blob and upload to cloud
-      const pdfBlob = await generateTaxInvoiceCreditPDF(result, true) as Blob;
-      const url = await uploadDocument({
-        pdfBlob,
-        documentType: 'tax_invoice',
-        documentNumber: result.creditInvoiceNumber,
-        customerName: result.customer.name,
-        entityType: selectedEntity?.type,
-        entityId: selectedEntity?.id
-      });
-      
-      setDocumentUrl(url);
+      // PDF generation temporarily disabled
       
       toast({
         title: "חשבונית מס זיכוי נשמרה בהצלחה",
@@ -268,12 +257,7 @@ export default function TaxInvoiceCredit() {
         notes: form.getValues('notes')
       } as TaxInvoiceCreditData;
 
-      await generateTaxInvoiceCreditPDF(dataToUse);
-      
-      toast({
-        title: "PDF הורד בהצלחה",
-        description: "חשבונית מס זיכוי הורדה בהצלחה",
-      });
+      toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
