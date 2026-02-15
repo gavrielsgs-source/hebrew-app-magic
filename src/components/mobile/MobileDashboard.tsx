@@ -175,7 +175,7 @@ export function MobileDashboard() {
                     "h-20 flex-col gap-1.5 shadow-lg rounded-2xl",
                     action.variant === "primary" 
                       ? "bg-gradient-to-l from-primary to-primary/80 text-primary-foreground border-0 hover:opacity-90" 
-                      : "bg-card text-foreground border-2 border-border hover:bg-muted/50"
+                      : "bg-card text-foreground border-2 border-border hover:bg-primary/10 hover:border-primary hover:text-primary"
                   )}
                 >
                   <span className="font-bold text-sm">{action.title}</span>

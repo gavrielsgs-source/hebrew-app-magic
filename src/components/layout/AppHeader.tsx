@@ -4,10 +4,12 @@ import { NotificationsPopover } from "@/components/notifications/NotificationsPo
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 
 export function AppHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
@@ -31,7 +33,7 @@ export function AppHeader() {
             <Button
               variant="ghost"
               className="text-[#2F3C7E] hover:bg-[#2F3C7E]/10"
-              onClick={() => window.location.href = '/'}
+              onClick={() => navigate('/dashboard')}
             >
               דשבורד
             </Button>
@@ -92,7 +94,7 @@ export function AppHeader() {
               variant="ghost"
               className="text-[#2F3C7E] hover:bg-[#2F3C7E]/10 justify-start"
               onClick={() => {
-                window.location.href = '/';
+                navigate('/dashboard');
                 setIsMobileMenuOpen(false);
               }}
             >
