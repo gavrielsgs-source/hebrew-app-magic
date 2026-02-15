@@ -1,42 +1,66 @@
 
-# תיקון: החלפת Grow ב-Tranzila בפונקציית ביטול מנוי
+
+# תיקון: PDF ריק שנשלח בוואטסאפ
 
 ## הבעיה
-הפונקציה `cancel-subscription` עדיין משתמשת ב-Grow API (meshulam) לביטול חיובים חוזרים, למרות שכל מערכת התשלומים עברה ל-Tranzila.
+כשנשלח מסמך (הסכם מכר, קבלה, הצעת מחיר) דרך וואטסאפ, הלקוח פותח את הקישור ורואה PDF ריק -- ללא תוכן.
+
+## ניתוח הגורם
+
+יש שתי בעיות אפשריות שצריך לטפל בהן:
+
+### בעיה 1: PDF נוצר ריק בצד הלקוח
+ספריית `html2pdf.js` משתמשת ב-`html2canvas` כדי לצלם את ה-HTML לתמונה ואז להפוך אותו ל-PDF. כדי שזה יעבוד, האלמנט חייב להיות גלוי בדף. כרגע האלמנט מתווסף ל-`document.body` בלי מיקום מפורש, מה שעלול לגרום לו:
+- להיות מכוסה על ידי אלמנטים אחרים
+- להיות מחוץ ל-viewport
+- שגודלו לא יהיה תקין
+
+### בעיה 2: הצגת PDF ב-iframe במובייל
+דפדפנים במובייל (במיוחד באנדרואיד) לא תמיד יודעים להציג PDF ב-iframe. הדף `SharedDocument` מנסה להציג את ה-PDF ישירות ב-iframe, מה שלא עובד בהרבה מכשירים.
 
 ## הפתרון
-להסיר את כל הקוד של Grow ולהחליף בקריאה ל-Tranzila API לביטול חיוב חוזר.
 
-## שינויים בקובץ `supabase/functions/cancel-subscription/index.ts`
+### שינוי 1: תיקון יצירת ה-PDF (`src/utils/pdf-generator.ts` + קבצי PDF נוספים)
+- להוסיף `position: fixed` עם `top: 0; left: 0; z-index: -9999; opacity: 0` לאלמנט הזמני
+- זה מבטיח שהאלמנט נמצא ב-viewport (כדי ש-html2canvas יצלם אותו) אבל לא גלוי למשתמש
+- להוסיף בדיקת גודל ה-blob לפני העלאה -- אם הוא קטן מ-1KB, סימן שהוא ריק
 
-### 1. הסרת כל ההפניות ל-Grow
-- הסרת המשתנים `GROW_API_BASE`, `GROW_CLIENT_ID`, `GROW_EC_PWD` (שורות 9-11)
-- הסרת שני הבלוקים של `cancelRecurringPayment` מול Grow (שורות 89-104 ושורות 131-147)
+### שינוי 2: שיפור דף הצגת המסמך (`src/pages/SharedDocument.tsx`)
+- להוסיף fallback למקרה שה-PDF לא נטען ב-iframe (למשל במובייל)
+- להוסיף כפתור "פתח ב-tab חדש" שפותח את ה-PDF ישירות בדפדפן
+- להוסיף הודעה למשתמש שאם הוא לא רואה את המסמך, ילחץ על הכפתור
 
-### 2. הוספת Tranzila API לביטול חיוב חוזר
-- שימוש ב-`TRANZILA_SUPPLIER` ו-`TRANZILA_PW` (כבר מוגדרים כ-secrets)
-- קריאה ל-Tranzila API לביטול עסקה חוזרת באמצעות ה-`payment_token` (שזה ה-`index` של העסקה ב-Tranzila שנשמר ב-webhook)
-
-### 3. לוגיקת הביטול נשארת זהה
-- Trial: ביטול מיידי + ביטול חיוב חוזר ב-Tranzila
-- Active: סימון `cancel_at_period_end: true` + ביטול חיוב חוזר ב-Tranzila (כדי שלא יחויב שוב)
+### שינוי 3: בדיקת גודל ה-blob לפני העלאה (`src/components/customers/CustomerDocuments.tsx`)
+- בפונקציית `handleSendToWhatsApp`, אחרי יצירת ה-PDF, לבדוק שה-blob לא ריק (גודל > 1KB)
+- אם ריק, להציג שגיאה ברורה למשתמש
 
 ## פרטים טכניים
 
-קובץ אחד לעדכון: `supabase/functions/cancel-subscription/index.ts`
+### קבצים לעדכון:
+1. `src/utils/pdf-generator.ts` -- הוספת position fixed לאלמנט הזמני
+2. `src/utils/receipt-pdf-generator.ts` -- אותו תיקון
+3. `src/utils/price-quote-pdf-generator.ts` -- אותו תיקון  
+4. `src/pages/SharedDocument.tsx` -- הוספת fallback ו-"פתח ב-tab חדש"
+5. `src/components/customers/CustomerDocuments.tsx` -- בדיקת גודל blob
 
-שינויים עיקריים:
+### דוגמת קוד לתיקון ה-PDF generator:
 ```text
-// הסרה:
-const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0';
-const GROW_CLIENT_ID = ...
-const GROW_EC_PWD = ...
+// לפני:
+element.style.padding = '20px';
+document.body.appendChild(element);
 
-// הוספה:
-const TRANZILA_SUPPLIER = Deno.env.get('TRANZILA_SUPPLIER');
-const TRANZILA_PW = Deno.env.get('TRANZILA_PW');
+// אחרי:
+element.style.position = 'fixed';
+element.style.top = '0';
+element.style.left = '0';
+element.style.zIndex = '-9999';
+element.style.opacity = '0';
+element.style.padding = '20px';
+document.body.appendChild(element);
 ```
 
-ביטול חיוב חוזר ב-Tranzila ייעשה דרך קריאת API עם ה-`payment_token` (index של העסקה) שנשמר בטבלת subscriptions ע"י ה-`tranzila-webhook`.
-
-הסודות `TRANZILA_SUPPLIER` ו-`TRANZILA_PW` כבר מוגדרים בפרויקט.
+### דוגמת קוד ל-SharedDocument fallback:
+```text
+// הוספת כפתור "פתח ב-tab חדש" ליד כפתור ההורדה
+// + הודעה: "לא רואה את המסמך? לחץ כאן לפתיחה ישירה"
+```
