@@ -19,13 +19,16 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(u
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription>(subscriptionFeatures.premium);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [daysLeftInTrial, setDaysLeftInTrial] = useState(14);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
 
   const fetchSubscription = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
     
     setIsLoading(true);
     setError(null);

@@ -31,6 +31,12 @@ export default function SubscriptionGuard({ children }: SubscriptionGuardProps) 
       return;
     }
 
+    // אם המנוי שולם (active או cancelled) - לא חוסמים בכלל
+    if (subscription?.subscription_status === 'active' || subscription?.subscription_status === 'cancelled') {
+      console.log('✅ Paid subscription, allowing access:', subscription.subscription_status);
+      return;
+    }
+
     // חסימה מיידית אם הניסיון פג תוקף
     if (isTrialExpired) {
       console.log('🚫 Trial expired, blocking access to:', location.pathname);
