@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useLeads } from "@/hooks/use-leads";
 import type { Document } from "@/hooks/use-documents";
 import { Send } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentWhatsAppDialogProps {
   isOpen: boolean;
@@ -17,24 +18,25 @@ interface DocumentWhatsAppDialogProps {
   document: Document | null;
 }
 
-export function DocumentWhatsAppDialog({ isOpen, onClose, document }: DocumentWhatsAppDialogProps) {
+export function DocumentWhatsAppDialog({ isOpen, onClose, document: doc }: DocumentWhatsAppDialogProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState("");
   const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const { leads } = useLeads();
 
   useEffect(() => {
-    if (document) {
+    if (doc) {
       setMessage(`שלום,
 
-אני שולח לך את המסמך: ${document.name}
+אני שולח לך את המסמך: ${doc.name}
 
-ניתן לצפות במסמך בקישור הבא:
-${document.url}
+ניתן לצפות במסמך ולהוריד אותו בקישור הבא:
+[הקישור ייווצר אוטומטית]
 
 בברכה`);
     }
-  }, [document]);
+  }, [doc]);
 
   const handleLeadSelect = (leadId: string) => {
     const selectedLead = leads?.find(lead => (lead.id as string) === leadId);
@@ -46,38 +48,89 @@ ${document.url}
 
   const formatPhoneForWhatsApp = (phone: string) => {
     if (!phone) return '';
-    
-    // Remove all non-numeric characters
     const cleanPhone = phone.replace(/[^0-9]/g, '');
-    
-    // If already starts with 972, return as is
-    if (cleanPhone.startsWith('972')) {
-      return cleanPhone;
-    }
-    
-    // If starts with 0, replace with 972
-    if (cleanPhone.startsWith('0')) {
-      return '972' + cleanPhone.substring(1);
-    }
-    
-    // If doesn't start with 972 or 0, add 972 prefix
+    if (cleanPhone.startsWith('972')) return cleanPhone;
+    if (cleanPhone.startsWith('0')) return '972' + cleanPhone.substring(1);
     return '972' + cleanPhone;
   };
 
-  const handleSend = () => {
-    if (!phoneNumber) {
+  const handleSend = async () => {
+    if (!phoneNumber || !doc) {
       toast.error("יש להזין מספר טלפון או לבחור לקוח");
       return;
     }
 
-    const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
-    
-    const encodedText = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
-    window.open(whatsappUrl, '_blank');
-    
-    toast.success("ההודעה נשלחה בוואטסאפ");
-    handleClose();
+    setIsSending(true);
+
+    try {
+      const filePath = doc.file_path;
+      if (!filePath) {
+        toast.error("אין קובץ למסמך זה");
+        setIsSending(false);
+        return;
+      }
+
+      // Check for existing active share
+      const { data: existingShare } = await supabase
+        .from('document_shares' as any)
+        .select('share_id')
+        .eq('document_id', doc.id)
+        .is('revoked_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      let shareId: string;
+
+      if (existingShare) {
+        shareId = (existingShare as any).share_id;
+      } else {
+        const { data: user } = await supabase.auth.getUser();
+        const newShareId = crypto.randomUUID();
+
+        const { error: insertError } = await supabase
+          .from('document_shares' as any)
+          .insert({
+            document_id: doc.id,
+            share_id: newShareId,
+            user_id: user.user?.id,
+            file_path: filePath,
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          });
+
+        if (insertError) {
+          console.error('Share insert error:', insertError);
+          toast.error('שגיאה ביצירת קישור שיתוף');
+          setIsSending(false);
+          return;
+        }
+
+        shareId = newShareId;
+      }
+
+      const shareUrl = `https://hebrew-app-magic.lovable.app/share/document/${shareId}`;
+
+      // Replace placeholder in message with actual URL
+      const finalMessage = message.replace(
+        /\[הקישור ייווצר אוטומטית\]/g,
+        shareUrl
+      ).replace(
+        doc.url || '___NO_MATCH___',
+        shareUrl
+      );
+
+      const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
+      const encodedText = encodeURIComponent(finalMessage);
+      const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodedText}`;
+      window.open(whatsappUrl, '_blank');
+
+      toast.success("ההודעה נשלחה בוואטסאפ");
+      handleClose();
+    } catch (error) {
+      console.error('Error creating share:', error);
+      toast.error('שגיאה בשליחת המסמך');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleClose = () => {
@@ -87,7 +140,7 @@ ${document.url}
     onClose();
   };
 
-  if (!document) return null;
+  if (!doc) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -98,13 +151,13 @@ ${document.url}
         
         <div className="space-y-4">
           <div className="bg-muted p-3 rounded-lg">
-            <h4 className="font-medium text-right mb-1 text-sm">{document.name}</h4>
+            <h4 className="font-medium text-right mb-1 text-sm">{doc.name}</h4>
             <p className="text-xs text-muted-foreground text-right">
-              {document.type === 'contract' ? 'חוזה' : 
-               document.type === 'quote' ? 'הצעת מחיר' :
-               document.type === 'invoice' ? 'חשבונית' :
-               document.type === 'receipt' ? 'קבלה' :
-               document.type === 'other' ? 'אחר' : document.type}
+              {doc.type === 'contract' ? 'חוזה' : 
+               doc.type === 'quote' ? 'הצעת מחיר' :
+               doc.type === 'invoice' ? 'חשבונית' :
+               doc.type === 'receipt' ? 'קבלה' :
+               doc.type === 'other' ? 'אחר' : doc.type}
             </p>
           </div>
 
@@ -155,11 +208,11 @@ ${document.url}
           </Button>
           <Button 
             onClick={handleSend}
-            disabled={!phoneNumber || !message}
+            disabled={!phoneNumber || !message || isSending}
             className="bg-green-600 hover:bg-green-700"
           >
             <Send className="w-4 h-4 ml-2" />
-            שלח בוואטסאפ
+            {isSending ? 'מכין קישור...' : 'שלח בוואטסאפ'}
           </Button>
         </DialogFooter>
       </DialogContent>
