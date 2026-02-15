@@ -1,63 +1,21 @@
-import html2pdf from 'html2pdf.js';
+import { renderHtmlToPdf } from './pdf-render-helper';
 import type { TaxInvoiceData } from '@/types/tax-invoice';
 
 export async function generateTaxInvoicePDF(data: TaxInvoiceData, returnBlob?: boolean): Promise<void | Blob> {
-  const element = document.createElement('div');
-  element.innerHTML = createTaxInvoicePDFHTML(data);
-  element.style.direction = 'rtl';
-  element.style.width = '210mm';
-  element.style.minHeight = '297mm';
-  element.style.padding = '20mm';
-  element.style.fontFamily = 'Arial, sans-serif';
-  element.style.fontSize = '12px';
-  element.style.lineHeight = '1.4';
-  element.style.color = '#000';
-  element.style.backgroundColor = '#fff';
-  element.style.position = 'fixed';
-  element.style.top = '0';
-  element.style.left = '0';
-  element.style.zIndex = '-9999';
-  element.style.pointerEvents = 'none';
-
-  document.body.appendChild(element);
-
-  // Wait for content to render
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const options = {
-    margin: 0,
+  const htmlContent = createTaxInvoicePDFHTML(data);
+  return renderHtmlToPdf({
+    htmlContent,
     filename: `tax-invoice-${data.invoiceNumber}.pdf`,
-    image: { type: 'jpeg' as const, quality: 0.98 },
-    html2canvas: { 
-      scale: 2,
-      useCORS: true,
-      letterRendering: true,
-      allowTaint: false
-    },
-    jsPDF: { 
-      unit: 'mm', 
-      format: 'a4', 
-      orientation: 'portrait' as const
-    }
-  };
-
-  try {
-    if (returnBlob) {
-      const blob = await html2pdf().set(options).from(element).outputPdf('blob');
-      return blob;
-    } else {
-      await html2pdf().set(options).from(element).save();
-    }
-  } finally {
-    document.body.removeChild(element);
-  }
+    returnBlob,
+    direction: 'rtl',
+  });
 }
 
 function createTaxInvoicePDFHTML(data: TaxInvoiceData): string {
   const currencySymbol = data.currency === 'ILS' ? '₪' : '$';
   
   return `
-    <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6;">
+    <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6; padding: 20mm;">
       <!-- Header with Logo -->
       <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 20px;">
         ${data.company.logoUrl ? `
@@ -77,9 +35,9 @@ function createTaxInvoicePDFHTML(data: TaxInvoiceData): string {
       </div>
 
       <!-- Company and Customer Info -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px;">
+      <div style="display: flex; justify-content: space-between; gap: 40px; margin-bottom: 30px;">
         <!-- Company Info -->
-        <div style="border: 1px solid #ddd; padding: 20px; border-radius: 5px;">
+        <div style="flex: 1; border: 1px solid #ddd; padding: 20px; border-radius: 5px;">
           <h3 style="font-size: 18px; font-weight: bold; margin: 0 0 15px 0; color: #2563eb; border-bottom: 1px solid #eee; padding-bottom: 5px;">פרטי המוכר</h3>
           <div style="line-height: 1.8;">
             <div><strong>שם החברה:</strong> ${data.company.name}</div>
@@ -91,7 +49,7 @@ function createTaxInvoicePDFHTML(data: TaxInvoiceData): string {
         </div>
 
         <!-- Customer Info -->
-        <div style="border: 1px solid #ddd; padding: 20px; border-radius: 5px;">
+        <div style="flex: 1; border: 1px solid #ddd; padding: 20px; border-radius: 5px;">
           <h3 style="font-size: 18px; font-weight: bold; margin: 0 0 15px 0; color: #2563eb; border-bottom: 1px solid #eee; padding-bottom: 5px;">פרטי הקונה</h3>
           <div style="line-height: 1.8;">
             <div><strong>שם:</strong> ${data.customer.name}</div>
@@ -178,7 +136,7 @@ function createTaxInvoicePDFHTML(data: TaxInvoiceData): string {
       <div style="text-align: center; font-size: 11px; color: #666; line-height: 1.6;">
         <p style="margin: 5px 0;">חשבונית זו נוצרה במערכת ניהול חכמה לסוכנויות רכב</p>
         <p style="margin: 5px 0;">המסמך תקף עם חתימה וחותמת בלבד</p>
-        <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 100px;">
+        <div style="margin-top: 40px; display: flex; justify-content: space-around;">
           <div style="text-align: center;">
             <div style="border-top: 1px solid #333; width: 150px; margin: 0 auto; padding-top: 5px;">
               <strong>חתימת המוכר</strong>

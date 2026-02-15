@@ -1,57 +1,14 @@
-import html2pdf from 'html2pdf.js';
+import { renderHtmlToPdf } from './pdf-render-helper';
 import type { ReceiptData } from '@/types/receipt';
 
 export async function generateReceiptPDF(data: ReceiptData, returnBlob: boolean = false): Promise<void | Blob> {
-  const element = document.createElement('div');
-  element.innerHTML = createReceiptPDFHTML(data);
-  element.style.direction = 'rtl';
-  element.style.width = '210mm';
-  element.style.minHeight = '297mm';
-  element.style.padding = '20mm';
-  element.style.fontFamily = 'Arial, sans-serif';
-  element.style.fontSize = '12px';
-  element.style.lineHeight = '1.4';
-  element.style.color = '#000';
-  element.style.backgroundColor = '#fff';
-
-  // Position fixed in viewport so html2canvas can capture it, but invisible to user
-  element.style.position = 'fixed';
-  element.style.top = '0';
-  element.style.left = '0';
-  element.style.zIndex = '-9999';
-  element.style.pointerEvents = 'none';
-
-  document.body.appendChild(element);
-
-  // Wait for content to render
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const opt = {
-    margin: 0,
+  const htmlContent = createReceiptPDFHTML(data);
+  return renderHtmlToPdf({
+    htmlContent,
     filename: `קבלה-${data.receiptNumber}.pdf`,
-    image: { type: 'jpeg' as const, quality: 0.98 },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true,
-      letterRendering: true,
-      allowTaint: false
-    },
-    jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-  };
-
-  try {
-    if (returnBlob) {
-      const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      document.body.removeChild(element);
-      return blob;
-    } else {
-      await html2pdf().set(opt).from(element).save();
-      document.body.removeChild(element);
-    }
-  } catch (error) {
-    document.body.removeChild(element);
-    throw error;
-  }
+    returnBlob,
+    direction: 'rtl',
+  });
 }
 
 function createReceiptPDFHTML(data: ReceiptData): string {
@@ -90,7 +47,7 @@ function createReceiptPDFHTML(data: ReceiptData): string {
   };
 
   return `
-    <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6;">
+    <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6; padding: 20mm;">
       <style>
         .header {
           text-align: center;

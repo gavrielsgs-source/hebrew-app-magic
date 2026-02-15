@@ -1,43 +1,14 @@
-import html2pdf from 'html2pdf.js';
+import { renderHtmlToPdf } from './pdf-render-helper';
 import type { TaxInvoiceCreditData } from '@/types/tax-invoice-credit';
 
 export async function generateTaxInvoiceCreditPDF(data: TaxInvoiceCreditData, returnBlob: boolean = false): Promise<void | Blob> {
-  const element = document.createElement('div');
-  element.innerHTML = createTaxInvoiceCreditPDFHTML(data);
-  
-  // Position fixed in viewport so html2canvas can capture it, but invisible to user
-  element.style.position = 'fixed';
-  element.style.top = '0';
-  element.style.left = '0';
-  element.style.zIndex = '-9999';
-  element.style.pointerEvents = 'none';
-  
-  document.body.appendChild(element);
-
-  // Wait for content to render
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const opt = {
-    margin: [10, 10, 10, 10] as [number, number, number, number],
+  const htmlContent = createTaxInvoiceCreditPDFHTML(data);
+  return renderHtmlToPdf({
+    htmlContent,
     filename: `חשבונית-מס-זיכוי-${data.creditInvoiceNumber}.pdf`,
-    image: { type: 'jpeg' as const, quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-  };
-
-  try {
-    if (returnBlob) {
-      const blob = await html2pdf().set(opt).from(element).output('blob');
-      document.body.removeChild(element);
-      return blob;
-    } else {
-      await html2pdf().set(opt).from(element).save();
-      document.body.removeChild(element);
-    }
-  } catch (error) {
-    document.body.removeChild(element);
-    throw error;
-  }
+    returnBlob,
+    direction: 'rtl',
+  });
 }
 
 function createTaxInvoiceCreditPDFHTML(data: TaxInvoiceCreditData): string {
