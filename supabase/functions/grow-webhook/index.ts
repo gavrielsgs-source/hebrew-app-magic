@@ -98,8 +98,10 @@ serve(async (req) => {
     if (status === '1' || status === 1) {
       console.log('Payment successful, creating user account...');
 
-      // Generate a temporary password
-      const tempPassword = `CarsLead${Math.random().toString(36).slice(-8)}!`;
+      // Generate a cryptographically secure temporary password
+      const randomBytes = new Uint8Array(16);
+      crypto.getRandomValues(randomBytes);
+      const tempPassword = `CarsLead${Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('').slice(0, 12)}!`;
 
       try {
         // Create user account
