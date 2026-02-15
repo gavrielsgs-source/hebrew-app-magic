@@ -1,24 +1,27 @@
 
-## תיקון שליחת וואטסאפ במסמכי לקוח
+
+## תיקון שליחת וואטסאפ - שימוש ב-window.location.href
 
 ### הבעיה
-הכתובת `api.whatsapp.com` חסומה בדפדפן (ERR_BLOCKED_BY_RESPONSE). צריך להחליף לפורמט `wa.me` שעובד בכל דפדפן.
+`window.open` נחסם בתוך ה-iframe של סביבת ה-Preview. זו הסיבה שזה לא עובד גם אחרי רענון.
 
 ### הפתרון
-שינוי שורה אחת בקובץ `src/components/customers/CustomerDocuments.tsx`:
+בקובץ `src/components/customers/CustomerDocuments.tsx`, שורה 94:
 
-החלפת:
+**מ:**
 ```
-https://api.whatsapp.com/send?phone=...&text=...
-```
-ב:
-```
-https://wa.me/PHONE?text=...
+window.open(whatsappUrl, '_blank');
 ```
 
-בנוסף, שימוש ב-`window.location.href` במקום anchor element כדי לנווט ישירות ללא חסימת popup.
+**ל:**
+```
+window.location.href = whatsappUrl;
+```
+
+זה מנווט ישירות לוואטסאפ בטאב הנוכחי במקום לנסות לפתוח טאב חדש. שיטה זו לא נחסמת על ידי iframe.
 
 ### היקף השינוי
-- קובץ אחד בלבד: `src/components/customers/CustomerDocuments.tsx`
-- פונקציית `handleSendWhatsApp` בלבד
-- אין שינוי בשום מקום אחר במערכת
+- קובץ אחד: `src/components/customers/CustomerDocuments.tsx`
+- שורה אחת בלבד (שורה 94)
+- אין שינוי בשום מקום אחר
+
