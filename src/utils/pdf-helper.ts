@@ -9,44 +9,34 @@ export interface GeneratePDFOptions {
 export async function generatePDF(options: GeneratePDFOptions): Promise<Blob | void> {
   const { htmlContent, filename, returnBlob = false } = options;
 
-  // Parse the HTML content and extract styles + body
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlContent, 'text/html');
-
-  // Create a container div in the current document
-  const container = document.createElement('div');
-  container.style.position = 'fixed';
-  container.style.left = '-9999px';
-  container.style.top = '0';
-  container.style.width = '794px'; // A4 width at 96dpi
-  container.style.background = '#fff';
-  container.style.background = '#fff';
-  container.style.zIndex = '-9999';
-
-  // Copy all <style> tags from parsed HTML into the container as scoped styles
-  const styles = doc.querySelectorAll('style');
-  styles.forEach(style => {
-    const newStyle = document.createElement('style');
-    newStyle.textContent = style.textContent;
-    container.appendChild(newStyle);
-  });
-
-  // Copy body content and attributes
-  const bodyEl = doc.body;
-  container.setAttribute('dir', bodyEl.getAttribute('dir') || 'rtl');
-  container.innerHTML += bodyEl.innerHTML;
-
-  // Apply body styles from parsed HTML inline
-  const bodyStyles = bodyEl.getAttribute('style');
-  if (bodyStyles) {
-    container.style.cssText += '; ' + bodyStyles;
-  }
-
-  document.body.appendChild(container);
+  // Create an iframe with real A4 dimensions for proper CSS layout computation
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '0';
+  iframe.style.top = '0';
+  iframe.style.width = '794px';  // A4 width at 96dpi
+  iframe.style.height = '1123px'; // A4 height at 96dpi
+  iframe.style.border = 'none';
+  iframe.style.opacity = '0.01'; // Nearly invisible but still rendered
+  iframe.style.pointerEvents = 'none';
+  iframe.style.zIndex = '-1';
+  document.body.appendChild(iframe);
 
   try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) throw new Error('Cannot access iframe document');
+
+    iframeDoc.open();
+    iframeDoc.write(htmlContent);
+    iframeDoc.close();
+
     // Wait for fonts and images to load
     await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Make fully visible right before capture (html2canvas needs visibility)
+    iframe.style.opacity = '1';
+
+    const body = iframeDoc.body;
 
     const opt = {
       margin: [10, 10, 10, 10] as [number, number, number, number],
@@ -69,13 +59,13 @@ export async function generatePDF(options: GeneratePDFOptions): Promise<Blob | v
     };
 
     if (returnBlob) {
-      const blob = await html2pdf().from(container).set(opt).output('blob');
+      const blob = await html2pdf().from(body).set(opt).output('blob');
       return blob as Blob;
     } else {
-      await html2pdf().from(container).set(opt).save();
+      await html2pdf().from(body).set(opt).save();
     }
   } finally {
-    document.body.removeChild(container);
+    document.body.removeChild(iframe);
   }
 }
 
