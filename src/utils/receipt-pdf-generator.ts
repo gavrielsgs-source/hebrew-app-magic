@@ -14,6 +14,13 @@ export async function generateReceiptPDF(data: ReceiptData, returnBlob: boolean 
   element.style.color = '#000';
   element.style.backgroundColor = '#fff';
 
+  // Position fixed in viewport so html2canvas can capture it, but invisible to user
+  element.style.position = 'fixed';
+  element.style.top = '0';
+  element.style.left = '0';
+  element.style.zIndex = '-9999';
+  element.style.opacity = '0';
+
   document.body.appendChild(element);
 
   const opt = {

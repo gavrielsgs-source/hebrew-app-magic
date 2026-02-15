@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Download, FileText, AlertTriangle, Loader2 } from "lucide-react";
+import { Download, FileText, AlertTriangle, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface DocumentMeta {
@@ -135,13 +135,23 @@ export default function SharedDocument() {
               )}
             </div>
           </div>
-          <Button
-            onClick={handleDownload}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
-          >
-            <Download className="h-4 w-4 ml-1" />
-            הורדה
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => window.open(pdfUrl, '_blank')}
+              variant="outline"
+              className="rounded-lg text-sm"
+            >
+              <ExternalLink className="h-4 w-4 ml-1" />
+              פתח ב-tab חדש
+            </Button>
+            <Button
+              onClick={handleDownload}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+            >
+              <Download className="h-4 w-4 ml-1" />
+              הורדה
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -154,6 +164,20 @@ export default function SharedDocument() {
             style={{ minHeight: "calc(100vh - 120px)" }}
             title="Document Preview"
           />
+          {/* Mobile fallback message */}
+          <div className="mt-3 text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-slate-600 mb-2">
+              לא רואה את המסמך? לחץ על הכפתור למטה לפתיחה ישירה
+            </p>
+            <Button
+              onClick={() => window.open(pdfUrl, '_blank')}
+              variant="outline"
+              className="text-sm"
+            >
+              <ExternalLink className="h-4 w-4 ml-1" />
+              פתח את המסמך
+            </Button>
+          </div>
         </div>
       </main>
 

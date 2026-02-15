@@ -4,6 +4,14 @@ import type { TaxInvoiceCreditData } from '@/types/tax-invoice-credit';
 export async function generateTaxInvoiceCreditPDF(data: TaxInvoiceCreditData, returnBlob: boolean = false): Promise<void | Blob> {
   const element = document.createElement('div');
   element.innerHTML = createTaxInvoiceCreditPDFHTML(data);
+  
+  // Position fixed in viewport so html2canvas can capture it, but invisible to user
+  element.style.position = 'fixed';
+  element.style.top = '0';
+  element.style.left = '0';
+  element.style.zIndex = '-9999';
+  element.style.opacity = '0';
+  
   document.body.appendChild(element);
 
   const opt = {
