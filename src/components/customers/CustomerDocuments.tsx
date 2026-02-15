@@ -8,9 +8,13 @@ import { CreateCustomerDocumentDialog } from "./CreateCustomerDocumentDialog";
 import { UploadDocumentDialog } from "./UploadDocumentDialog";
 import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocumentStatus, useCustomerRelatedDocuments } from "@/hooks/customers";
 import { useCustomer } from "@/hooks/customers/use-customer";
+import { useProfile } from "@/hooks/use-profile";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { generateSalesAgreementPDF } from "@/utils/pdf-generator";
+import { generateReceiptPDF } from "@/utils/receipt-pdf-generator";
+import { generatePriceQuotePDF } from "@/utils/price-quote-pdf-generator";
 import html2pdf from 'html2pdf.js';
 
 interface CustomerDocumentsProps {
@@ -22,6 +26,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   const { data: documentReturns = [], isLoading: returnsLoading } = useCustomerDocumentReturns(customerId);
   const { data: attachedDocs = [], isLoading: attachedLoading } = useCustomerRelatedDocuments(customerId);
   const { data: customer } = useCustomer(customerId);
+  const { profile } = useProfile();
   const updateDocumentStatus = useUpdateCustomerDocumentStatus();
   const isMobile = useIsMobile();
 
@@ -180,7 +185,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
       // For attached documents (tax invoices etc.) - navigate to internal URL
       if (doc.status === 'attached' && doc.entity_type === 'tax_invoice') {
         toast.dismiss('pdf-download');
-        // Open the tax invoice page which has its own PDF generation
         window.open(doc.url, '_blank');
         toast.success('פותח את המסמך...');
         return;
@@ -225,22 +229,148 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         }
       }
 
-      // Generate PDF from HTML content
-      const htmlContent = generateDocumentHTML(doc);
-      const element = document.createElement('div');
-      element.innerHTML = htmlContent;
-      document.body.appendChild(element);
+      // Generate proper PDF based on document type
+      const docType = doc.type?.toLowerCase() || '';
+      const docDate = doc.date || doc.created_at ? new Date(doc.date || doc.created_at).toLocaleDateString('he-IL') : new Date().toLocaleDateString('he-IL');
 
-      const opt = {
-        margin: 10,
-        filename: `${doc.title}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-      };
+      if (docType === 'contract' || doc.title?.includes('הסכם מכר') || doc.title?.includes('הסכם')) {
+        // Generate sales agreement PDF
+        const salesData = {
+          date: docDate,
+          seller: {
+            company: profile?.company_name || '______',
+            id: profile?.company_hp || '______',
+            phone: profile?.phone || '______',
+            address: {
+              street: profile?.company_address || '______',
+              city: '',
+              country: 'ישראל',
+            },
+          },
+          buyer: {
+            name: customer?.full_name || '______',
+            id: customer?.id_number || '______',
+            phone: customer?.phone || '______',
+            address: customer?.address || '______',
+          },
+          car: {
+            make: '',
+            model: '',
+            licenseNumber: '',
+            chassisNumber: '',
+            year: 0,
+            mileage: 0,
+            hand: '',
+            originality: '',
+          },
+          financial: {
+            totalPrice: doc.amount || 0,
+            downPayment: 0,
+            remainingAmount: doc.amount || 0,
+            paymentTerms: '',
+            specialTerms: '',
+          },
+        };
+        await generateSalesAgreementPDF(salesData);
+      } else if (docType === 'receipt' || doc.title?.includes('קבלה')) {
+        // Generate receipt PDF
+        const receiptData = {
+          receiptNumber: doc.document_number || '',
+          date: docDate,
+          branch: '',
+          language: 'hebrew' as const,
+          currency: 'ILS' as const,
+          title: doc.title || 'קבלה',
+          customer: {
+            name: customer?.full_name || '',
+            address: customer?.address || '',
+            hp: customer?.id_number || '',
+            phone: customer?.phone || '',
+          },
+          receiptForType: 'none' as const,
+          payments: [{
+            id: '1',
+            type: 'cash' as const,
+            amount: doc.amount || 0,
+            date: docDate,
+          }],
+          totals: {
+            cash: doc.amount || 0,
+            check: 0,
+            creditCard: 0,
+            bankTransfer: 0,
+            other: 0,
+            taxDeduction: 0,
+            vehicle: 0,
+            totalWithTaxDeduction: doc.amount || 0,
+            grandTotal: doc.amount || 0,
+          },
+          notes: '',
+          company: {
+            name: profile?.company_name || '',
+            address: profile?.company_address || '',
+            hp: profile?.company_hp || '',
+            phone: profile?.phone || '',
+            authorizedDealer: profile?.company_authorized_dealer || false,
+            logoUrl: profile?.company_logo_url || undefined,
+          },
+        };
+        await generateReceiptPDF(receiptData);
+      } else if (docType === 'quote' || doc.title?.includes('הצעת מחיר')) {
+        // Generate price quote PDF
+        const quoteData = {
+          date: docDate,
+          quoteNumber: doc.document_number || '',
+          customer: {
+            fullName: customer?.full_name || '',
+            firstName: customer?.full_name?.split(' ')[0] || '',
+            phone: customer?.phone || '',
+            email: customer?.email || '',
+            city: customer?.city || '',
+            address: customer?.address || '',
+          },
+          items: [{
+            id: '1',
+            description: doc.title || 'פריט',
+            unitPrice: doc.amount || 0,
+            quantity: 1,
+            discount: 0,
+            totalPrice: doc.amount || 0,
+          }],
+          validUntil: '',
+          financial: {
+            subtotal: doc.amount || 0,
+            totalDiscount: 0,
+            total: doc.amount || 0,
+          },
+          company: {
+            name: profile?.company_name || '',
+            address: profile?.company_address || '',
+            hp: profile?.company_hp || '',
+            phone: profile?.phone || '',
+            authorizedDealer: profile?.company_authorized_dealer || false,
+            logoUrl: profile?.company_logo_url || undefined,
+          },
+        };
+        await generatePriceQuotePDF(quoteData);
+      } else {
+        // Fallback: generate generic document PDF
+        const htmlContent = generateDocumentHTML(doc);
+        const element = document.createElement('div');
+        element.innerHTML = htmlContent;
+        document.body.appendChild(element);
 
-      await html2pdf().set(opt).from(element).save();
-      document.body.removeChild(element);
+        const opt = {
+          margin: 10,
+          filename: `${doc.title}.pdf`,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        };
+
+        await html2pdf().set(opt).from(element).save();
+        document.body.removeChild(element);
+      }
 
       toast.dismiss('pdf-download');
       toast.success('המסמך הורד בהצלחה');
