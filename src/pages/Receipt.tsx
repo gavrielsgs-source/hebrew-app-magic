@@ -20,7 +20,7 @@ import { toast } from '@/hooks/use-toast';
 import { CustomerAndLeadSearchSelect } from '@/components/customers/CustomerAndLeadSearchSelect';
 import { useCustomers } from '@/hooks/customers';
 import { useProfile } from '@/hooks/use-profile';
-import { generateReceiptPDF } from '@/utils/receipt-pdf-generator';
+
 import { useReceipt } from '@/hooks/receipt/use-receipt';
 import type { ReceiptData, ReceiptPayment } from '@/types/receipt';
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
@@ -256,18 +256,7 @@ export default function Receipt() {
         description: `מספר קבלה: ${result.receiptNumber}`,
       });
       
-      // Generate PDF and upload
-      const pdfBlob = await generateReceiptPDF(result, true) as Blob;
-      const url = await uploadDocument({
-        pdfBlob,
-        documentType: 'receipt',
-        documentNumber: result.receiptNumber,
-        customerName: result.customer.name,
-        entityType: selectedEntity?.type || undefined,
-        entityId: selectedEntity?.id || undefined,
-      });
-      
-      setDocumentUrl(url);
+      // PDF generation temporarily disabled
     } catch (error) {
       console.error('Error creating receipt:', error);
     } finally {
@@ -326,12 +315,7 @@ export default function Receipt() {
         notes: form.getValues('notes'),
       } as ReceiptData;
 
-      await generateReceiptPDF(dataToUse);
-      
-      toast({
-        title: "PDF הורד בהצלחה",
-        description: "הקובץ נשמר למחשב שלך",
-      });
+      toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({

@@ -20,7 +20,7 @@ import { CustomerAndLeadSearchSelect } from "@/components/customers/CustomerAndL
 import { usePriceQuote } from "@/hooks/price-quote/use-price-quote";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { generatePriceQuotePDF } from "@/utils/price-quote-pdf-generator";
+
 import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
 
 const priceQuoteSchema = z.object({
@@ -200,42 +200,7 @@ export default function PriceQuote() {
         description: `מספר הצעה: ${result.quoteNumber}`,
       });
       
-      // Generate PDF as Blob and upload to cloud
-      try {
-        const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
-        
-        // Determine entity type and ID
-        let entityType: string | undefined;
-        let entityId: string | undefined;
-        
-        if (data.customerId) {
-          entityType = 'customer';
-          entityId = data.customerId;
-        } else if (data.leadId) {
-          entityType = 'lead';
-          entityId = data.leadId;
-        }
-        
-        const url = await uploadDocument({
-          pdfBlob,
-          documentType: 'price_quote',
-          documentNumber: result.quoteNumber,
-          customerName: result.customer.fullName,
-          entityType,
-          entityId
-        });
-        
-        setDocumentUrl(url);
-        setShowPreview(true);
-      } catch (uploadError) {
-        console.error("Error uploading PDF:", uploadError);
-        // PDF upload failed but the quote was saved
-        toast({
-          title: "הקובץ לא הועלה לענן",
-          description: "ההצעה נשמרה אבל ההעלאה לענן נכשלה. תוכל להוריד PDF ידנית.",
-          variant: "destructive",
-        });
-      }
+      // PDF generation temporarily disabled
     } catch (error) {
       console.error("Error saving price quote:", error);
       toast({
@@ -282,20 +247,7 @@ export default function PriceQuote() {
       notes: formData.notes,
     };
     
-    try {
-      await generatePriceQuotePDF(quoteData);
-      toast({
-        title: "הצעת המחיר הורדה בהצלחה",
-        description: `קובץ PDF של הצעה ${quoteData.quoteNumber} נשמר למחשב`,
-      });
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "שגיאה ביצירת PDF",
-        description: "אירעה שגיאה ביצירת קובץ ה-PDF",
-        variant: "destructive",
-      });
-    }
+    toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
   };
 
   const handleWhatsAppSend = () => {
