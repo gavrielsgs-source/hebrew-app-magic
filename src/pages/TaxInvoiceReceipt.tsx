@@ -26,6 +26,7 @@ import { useTaxInvoiceReceipt } from '@/hooks/tax-invoice-receipt/use-tax-invoic
 import type { TaxInvoiceReceiptData, TaxInvoiceReceiptItem, PaymentMethod } from '@/types/tax-invoice-receipt';
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
+import { generateTaxInvoiceReceiptPDF } from '@/utils/pdf/tax-invoice-receipt-pdf';
 import { useAddCustomerVehiclePurchase } from '@/hooks/customers/use-customer-vehicles';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileContainer } from '@/components/mobile/MobileContainer';
@@ -383,7 +384,7 @@ export default function TaxInvoiceReceipt() {
         ...financialSummary
       } as TaxInvoiceReceiptData;
 
-      toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
+      await generateTaxInvoiceReceiptPDF(dataToUse);
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({

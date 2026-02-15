@@ -24,6 +24,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
+import { generateSalesAgreementPDF } from "@/utils/pdf/sales-agreement-pdf";
 import { useCustomers, useCreateCustomerDocument } from "@/hooks/customers";
 import { Label } from "@/components/ui/label";
 
@@ -185,8 +186,8 @@ export default function SalesAgreement() {
         }
       };
 
-      // PDF generation temporarily disabled
-      toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
+      // Generate and download PDF
+      await generateSalesAgreementPDF(agreementData);
 
       // Attach the agreement to an existing customer when possible
       if (selectedEntity?.type === 'customer') {

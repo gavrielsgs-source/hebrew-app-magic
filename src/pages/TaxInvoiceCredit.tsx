@@ -23,6 +23,7 @@ import { useTaxInvoiceCredit } from '@/hooks/tax-invoice-credit/use-tax-invoice-
 import type { TaxInvoiceCreditData, OriginalInvoice } from '@/types/tax-invoice-credit';
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
+import { generateTaxInvoiceCreditPDF } from '@/utils/pdf/tax-invoice-credit-pdf';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -257,7 +258,7 @@ export default function TaxInvoiceCredit() {
         notes: form.getValues('notes')
       } as TaxInvoiceCreditData;
 
-      toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
+      await generateTaxInvoiceCreditPDF(dataToUse);
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({

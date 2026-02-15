@@ -29,6 +29,7 @@ import { useTaxInvoice } from '@/hooks/tax-invoice/use-tax-invoice';
 import type { TaxInvoiceData, InvoiceItem } from '@/types/tax-invoice';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
 import { useAddCustomerVehiclePurchase } from '@/hooks/customers/use-customer-vehicles';
+import { generateTaxInvoicePDF } from '@/utils/pdf/tax-invoice-pdf';
 
 const invoiceItemSchema = z.object({
   id: z.string(),
@@ -307,7 +308,9 @@ export default function TaxInvoice() {
         }
       }
       
-      // PDF generation temporarily disabled
+      // Generate and download PDF
+      await generateTaxInvoicePDF({ ...invoiceData, invoiceNumber: savedInvoice.invoiceNumber });
+
       toast({
         title: "חשבונית נוצרה בהצלחה",
         description: `חשבונית מס ${savedInvoice.invoiceNumber} נשמרה`,
