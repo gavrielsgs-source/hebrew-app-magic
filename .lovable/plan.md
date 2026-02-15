@@ -1,37 +1,42 @@
 
-# תיקון: ביטול חיוב חוזר ב-Grow גם למנויים פעילים
+# תיקון: החלפת Grow ב-Tranzila בפונקציית ביטול מנוי
 
 ## הבעיה
-כשמשתמש עם מנוי פעיל (active) לוחץ "בטל מנוי", הקוד מסמן את המנוי כ-`cancel_at_period_end: true` אבל **לא מבטל את ההוראת חיוב החוזרת ב-Grow**. כתוצאה מכך, Grow ימשיך לחייב את הלקוח בתאריך החיוב הבא.
+הפונקציה `cancel-subscription` עדיין משתמשת ב-Grow API (meshulam) לביטול חיובים חוזרים, למרות שכל מערכת התשלומים עברה ל-Tranzila.
 
 ## הפתרון
-עדכון ה-Edge Function `cancel-subscription` כך שגם עבור מנויים פעילים (לא רק trial), יבוצע ביטול החיוב החוזר מול Grow API.
+להסיר את כל הקוד של Grow ולהחליף בקריאה ל-Tranzila API לביטול חיוב חוזר.
 
-## שינויים
+## שינויים בקובץ `supabase/functions/cancel-subscription/index.ts`
 
-### קובץ: `supabase/functions/cancel-subscription/index.ts`
-בבלוק ה-`else` (ביטול בסוף תקופת חיוב), להוסיף קריאה ל-`cancelRecurringPayment` של Grow -- אותה קריאה שכבר קיימת בבלוק ה-trial:
+### 1. הסרת כל ההפניות ל-Grow
+- הסרת המשתנים `GROW_API_BASE`, `GROW_CLIENT_ID`, `GROW_EC_PWD` (שורות 9-11)
+- הסרת שני הבלוקים של `cancelRecurringPayment` מול Grow (שורות 89-104 ושורות 131-147)
 
-```text
-לפני:
-  else {
-    // Cancel at end of billing period
-    UPDATE subscriptions SET cancel_at_period_end = true
-    // (לא מבטל ב-Grow)
-  }
+### 2. הוספת Tranzila API לביטול חיוב חוזר
+- שימוש ב-`TRANZILA_SUPPLIER` ו-`TRANZILA_PW` (כבר מוגדרים כ-secrets)
+- קריאה ל-Tranzila API לביטול עסקה חוזרת באמצעות ה-`payment_token` (שזה ה-`index` של העסקה ב-Tranzila שנשמר ב-webhook)
 
-אחרי:
-  else {
-    // Cancel at end of billing period
-    UPDATE subscriptions SET cancel_at_period_end = true
-    // ביטול החיוב החוזר ב-Grow כדי שלא יחויב שוב
-    if (subscription.recurring_payment_id) {
-      cancelRecurringPayment with Grow API
-    }
-  }
-```
+### 3. לוגיקת הביטול נשארת זהה
+- Trial: ביטול מיידי + ביטול חיוב חוזר ב-Tranzila
+- Active: סימון `cancel_at_period_end: true` + ביטול חיוב חוזר ב-Tranzila (כדי שלא יחויב שוב)
 
 ## פרטים טכניים
-- קובץ אחד לעדכון: `supabase/functions/cancel-subscription/index.ts`
-- להעתיק את בלוק ביטול ה-Grow (שורות 89-104) גם לבלוק ה-else (שורות 117+)
-- הביטול ב-Grow מבטיח שהלקוח לא יחויב שוב, והמנוי ימשיך לעבוד עד סוף התקופה הנוכחית
+
+קובץ אחד לעדכון: `supabase/functions/cancel-subscription/index.ts`
+
+שינויים עיקריים:
+```text
+// הסרה:
+const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0';
+const GROW_CLIENT_ID = ...
+const GROW_EC_PWD = ...
+
+// הוספה:
+const TRANZILA_SUPPLIER = Deno.env.get('TRANZILA_SUPPLIER');
+const TRANZILA_PW = Deno.env.get('TRANZILA_PW');
+```
+
+ביטול חיוב חוזר ב-Tranzila ייעשה דרך קריאת API עם ה-`payment_token` (index של העסקה) שנשמר בטבלת subscriptions ע"י ה-`tranzila-webhook`.
+
+הסודות `TRANZILA_SUPPLIER` ו-`TRANZILA_PW` כבר מוגדרים בפרויקט.
