@@ -83,15 +83,21 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     const message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}`;
     const phoneNumber = customer.phone.replace(/[^\d]/g, '');
     const formattedPhone = phoneNumber.startsWith('0') ? `972${phoneNumber.slice(1)}` : phoneNumber;
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(message)}`;
     
     // Update status to sent
     if (doc.status !== 'attached') {
       handleStatusUpdate(doc.id, 'sent');
     }
     
-    // Open WhatsApp
-    window.open(whatsappUrl, '_blank');
+    // Open WhatsApp Web via anchor element to avoid popup blockers
+    const link = document.createElement('a');
+    link.href = whatsappUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const generateDocumentHTML = (doc: any) => {
