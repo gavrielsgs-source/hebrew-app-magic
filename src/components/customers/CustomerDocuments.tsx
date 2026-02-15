@@ -90,8 +90,14 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
       handleStatusUpdate(doc.id, 'sent');
     }
     
-    // Navigate directly to wa.me
-    window.location.href = whatsappUrl;
+    // Open WhatsApp in new tab using anchor element (avoids popup blocker)
+    const a = document.createElement('a');
+    a.href = whatsappUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const generateDocumentHTML = (doc: any) => {
