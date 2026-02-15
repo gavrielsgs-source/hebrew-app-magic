@@ -1,73 +1,14 @@
-import html2pdf from 'html2pdf.js';
+import { renderHtmlToPdf } from './pdf-render-helper';
 import { SalesAgreementData } from "@/types/document-production";
 
 export async function generateSalesAgreementPDF(data: SalesAgreementData, returnBlob?: boolean): Promise<void | Blob> {
-  // Create a temporary element for the PDF content
-  const element = document.createElement('div');
-  element.innerHTML = createPDFHTML(data);
-  
-  // Apply styles for PDF
-  element.style.fontFamily = '"Noto Sans Hebrew", "Rubik", Arial, sans-serif';
-  element.style.direction = 'rtl';
-  element.style.padding = '20px';
-  element.style.backgroundColor = 'white';
-  element.style.color = 'black';
-  element.style.fontSize = '14px';
-  element.style.lineHeight = '1.6';
-  element.style.width = '210mm'; // A4 width
-  element.style.boxSizing = 'border-box';
-  element.style.minHeight = 'auto'; // Allow dynamic height
-  
-  // Position fixed in viewport so html2canvas can capture it, but invisible to user
-  element.style.position = 'fixed';
-  element.style.top = '0';
-  element.style.left = '0';
-  element.style.zIndex = '-9999';
-  element.style.pointerEvents = 'none';
-  
-  // Append to body temporarily
-  document.body.appendChild(element);
-
-  // Wait for content to render properly
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  try {
-    const options = {
-      margin: [10, 8, 10, 8] as [number, number, number, number],
-      filename: `הסכם_מכר_${data.buyer.name || 'לקוח'}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.95 },
-      html2canvas: { 
-        scale: 1.0,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0,
-        letterRendering: true,
-        windowWidth: 794,
-        windowHeight: element.scrollHeight + 100
-      },
-      jsPDF: { 
-        unit: 'mm' as const, 
-        format: 'a4' as const, 
-        orientation: 'portrait' as const,
-        compress: true
-      },
-      pagebreak: { mode: 'css' }
-    };
-
-    if (returnBlob) {
-      const blob = await html2pdf().set(options).from(element).outputPdf('blob');
-      document.body.removeChild(element);
-      return blob;
-    } else {
-      await html2pdf().set(options).from(element).save();
-      document.body.removeChild(element);
-    }
-  } catch (error) {
-    document.body.removeChild(element);
-    throw error;
-  }
+  const htmlContent = createPDFHTML(data);
+  return renderHtmlToPdf({
+    htmlContent,
+    filename: `הסכם_מכר_${data.buyer.name || 'לקוח'}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`,
+    returnBlob,
+    direction: 'rtl',
+  });
 }
 
 function createPDFHTML(data: SalesAgreementData): string {
@@ -113,7 +54,7 @@ function createPDFHTML(data: SalesAgreementData): string {
       }
     </style>
     
-    <div style="max-width: 800px; margin: 0 auto; font-size: 14px; line-height: 1.6; color: #000;">
+    <div style="max-width: 800px; margin: 0 auto; font-size: 14px; line-height: 1.6; color: #000; padding: 20px;">
       <!-- Header -->
       <div class="pdf-header pdf-section" style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 15px;">
         <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 10px 0;">הסכם מכר</h1>

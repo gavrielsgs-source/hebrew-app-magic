@@ -1,65 +1,19 @@
-import html2pdf from 'html2pdf.js';
+import { renderHtmlToPdf } from './pdf-render-helper';
 import type { PriceQuoteData } from '@/types/document-production';
 
 export async function generatePriceQuotePDF(data: PriceQuoteData, returnBlob?: boolean): Promise<void | Blob> {
-  const element = document.createElement('div');
-  element.innerHTML = createPriceQuotePDFHTML(data);
-  element.style.direction = 'rtl';
-  element.style.width = '210mm';
-  element.style.minHeight = '297mm';
-  element.style.padding = '20mm';
-  element.style.fontFamily = 'Arial, sans-serif';
-  element.style.fontSize = '12px';
-  element.style.lineHeight = '1.4';
-  element.style.color = '#000';
-  element.style.backgroundColor = '#fff';
-
-  // Position fixed in viewport so html2canvas can capture it, but invisible to user
-  element.style.position = 'fixed';
-  element.style.top = '0';
-  element.style.left = '0';
-  element.style.zIndex = '-9999';
-  element.style.pointerEvents = 'none';
-
-  document.body.appendChild(element);
-
-  // Wait for content to render
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const options = {
-    margin: 0,
+  const htmlContent = createPriceQuotePDFHTML(data);
+  return renderHtmlToPdf({
+    htmlContent,
     filename: `price-quote-${data.quoteNumber}.pdf`,
-    image: { type: 'jpeg' as const, quality: 0.98 },
-    html2canvas: { 
-      scale: 2,
-      useCORS: true,
-      letterRendering: true,
-      allowTaint: false
-    },
-    jsPDF: { 
-      unit: 'mm', 
-      format: 'a4', 
-      orientation: 'portrait' as const
-    }
-  };
-
-  try {
-    if (returnBlob) {
-      // Return blob instead of downloading
-      const blob = await html2pdf().set(options).from(element).outputPdf('blob');
-      return blob;
-    } else {
-      // Download as usual
-      await html2pdf().set(options).from(element).save();
-    }
-  } finally {
-    document.body.removeChild(element);
-  }
+    returnBlob,
+    direction: 'rtl',
+  });
 }
 
 function createPriceQuotePDFHTML(data: PriceQuoteData): string {
   return `
-    <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6;">
+    <div style="font-family: Arial, sans-serif; direction: rtl; font-size: 14px; line-height: 1.6; padding: 20mm;">
       <!-- Header with Logo -->
       <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 20px;">
         ${data.company?.logoUrl ? `

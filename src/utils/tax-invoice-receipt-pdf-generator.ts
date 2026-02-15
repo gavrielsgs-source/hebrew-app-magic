@@ -1,50 +1,14 @@
-import html2pdf from 'html2pdf.js';
+import { renderHtmlToPdf } from './pdf-render-helper';
 import type { TaxInvoiceReceiptData } from '@/types/tax-invoice-receipt';
 
 export async function generateTaxInvoiceReceiptPDF(data: TaxInvoiceReceiptData, returnBlob?: boolean): Promise<void | Blob> {
-  const element = document.createElement('div');
-  element.innerHTML = createTaxInvoiceReceiptPDFHTML(data);
-  element.style.direction = 'rtl';
-  element.style.width = '210mm';
-  element.style.minHeight = '297mm';
-  element.style.padding = '20mm';
-  element.style.fontFamily = 'Arial, sans-serif';
-  element.style.fontSize = '12px';
-  element.style.lineHeight = '1.4';
-  element.style.color = '#000';
-  element.style.backgroundColor = '#fff';
-  element.style.position = 'fixed';
-  element.style.top = '0';
-  element.style.left = '0';
-  element.style.zIndex = '-9999';
-  element.style.pointerEvents = 'none';
-
-  document.body.appendChild(element);
-
-  // Wait for content to render
-  await new Promise(resolve => setTimeout(resolve, 100));
-
-  const opt = {
-    margin: 10,
+  const htmlContent = createTaxInvoiceReceiptPDFHTML(data);
+  return renderHtmlToPdf({
+    htmlContent,
     filename: `חשבונית-מס-קבלה-${data.invoiceNumber}.pdf`,
-    image: { type: 'jpeg' as const, quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
-  };
-
-  try {
-    if (returnBlob) {
-      const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      return blob;
-    } else {
-      await html2pdf().set(opt).from(element).save();
-    }
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    throw new Error('Failed to generate PDF');
-  } finally {
-    document.body.removeChild(element);
-  }
+    returnBlob,
+    direction: 'rtl',
+  });
 }
 
 function createTaxInvoiceReceiptPDFHTML(data: TaxInvoiceReceiptData): string {
@@ -87,7 +51,7 @@ function createTaxInvoiceReceiptPDFHTML(data: TaxInvoiceReceiptData): string {
       .notes p { font-size: 12px; color: #78350f; line-height: 1.6; }
       .footer { margin-top: 40px; text-align: center; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #9CA3AF; }
     </style>
-    <div style="font-family: Arial, sans-serif; direction: rtl; padding: 20px;">
+    <div style="font-family: Arial, sans-serif; direction: rtl; padding: 20mm;">
       <div class="header">
         ${data.company.logoUrl ? `
           <div style="margin-bottom: 15px;">
