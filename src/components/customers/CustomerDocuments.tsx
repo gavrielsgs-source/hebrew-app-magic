@@ -74,6 +74,137 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     updateDocumentStatus.mutate({ documentId, customerId, status });
   };
 
+  const generatePdfBlobForDoc = async (doc: any): Promise<Blob | null> => {
+    const docType = doc.type?.toLowerCase() || '';
+    const docDate = doc.date || doc.created_at ? new Date(doc.date || doc.created_at).toLocaleDateString('he-IL') : new Date().toLocaleDateString('he-IL');
+
+    if (docType === 'contract' || doc.title?.includes('הסכם מכר') || doc.title?.includes('הסכם')) {
+      const salesData = {
+        date: docDate,
+        seller: {
+          company: profile?.company_name || '______',
+          id: profile?.company_hp || '______',
+          phone: profile?.phone || '______',
+          address: {
+            street: profile?.company_address || '______',
+            city: '',
+            country: 'ישראל',
+          },
+        },
+        buyer: {
+          name: customer?.full_name || '______',
+          id: customer?.id_number || '______',
+          phone: customer?.phone || '______',
+          address: customer?.address || '______',
+        },
+        car: {
+          make: '', model: '', licenseNumber: '', chassisNumber: '',
+          year: 0, mileage: 0, hand: '', originality: '',
+        },
+        financial: {
+          totalPrice: doc.amount || 0,
+          downPayment: 0,
+          remainingAmount: doc.amount || 0,
+          paymentTerms: '',
+          specialTerms: '',
+        },
+      };
+      return (await generateSalesAgreementPDF(salesData, true)) as Blob;
+    } else if (docType === 'receipt' || doc.title?.includes('קבלה')) {
+      const receiptData = {
+        receiptNumber: doc.document_number || '',
+        date: docDate,
+        branch: '',
+        language: 'hebrew' as const,
+        currency: 'ILS' as const,
+        title: doc.title || 'קבלה',
+        customer: {
+          name: customer?.full_name || '',
+          address: customer?.address || '',
+          hp: customer?.id_number || '',
+          phone: customer?.phone || '',
+        },
+        receiptForType: 'none' as const,
+        payments: [{
+          id: '1',
+          type: 'cash' as const,
+          amount: doc.amount || 0,
+          date: docDate,
+        }],
+        totals: {
+          cash: doc.amount || 0, check: 0, creditCard: 0, bankTransfer: 0,
+          other: 0, taxDeduction: 0, vehicle: 0,
+          totalWithTaxDeduction: doc.amount || 0,
+          grandTotal: doc.amount || 0,
+        },
+        notes: '',
+        company: {
+          name: profile?.company_name || '',
+          address: profile?.company_address || '',
+          hp: profile?.company_hp || '',
+          phone: profile?.phone || '',
+          authorizedDealer: profile?.company_authorized_dealer || false,
+          logoUrl: profile?.company_logo_url || undefined,
+        },
+      };
+      return (await generateReceiptPDF(receiptData, true)) as Blob;
+    } else if (docType === 'quote' || doc.title?.includes('הצעת מחיר')) {
+      const quoteData = {
+        date: docDate,
+        quoteNumber: doc.document_number || '',
+        customer: {
+          fullName: customer?.full_name || '',
+          firstName: customer?.full_name?.split(' ')[0] || '',
+          phone: customer?.phone || '',
+          email: customer?.email || '',
+          city: customer?.city || '',
+          address: customer?.address || '',
+        },
+        items: [{
+          id: '1',
+          description: doc.title || 'פריט',
+          unitPrice: doc.amount || 0,
+          quantity: 1,
+          discount: 0,
+          totalPrice: doc.amount || 0,
+        }],
+        validUntil: '',
+        financial: {
+          subtotal: doc.amount || 0,
+          totalDiscount: 0,
+          total: doc.amount || 0,
+        },
+        company: {
+          name: profile?.company_name || '',
+          address: profile?.company_address || '',
+          hp: profile?.company_hp || '',
+          phone: profile?.phone || '',
+          authorizedDealer: profile?.company_authorized_dealer || false,
+          logoUrl: profile?.company_logo_url || undefined,
+        },
+      };
+      return (await generatePriceQuotePDF(quoteData, true)) as Blob;
+    } else {
+      // Fallback generic PDF
+      const htmlContent = generateDocumentHTML(doc);
+      const element = document.createElement('div');
+      element.innerHTML = htmlContent;
+      document.body.appendChild(element);
+      try {
+        const opt = {
+          margin: 10,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        };
+        const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
+        return blob;
+      } finally {
+        document.body.removeChild(element);
+      }
+    }
+  };
+
   const handleSendToWhatsApp = async (doc: any) => {
     if (!customer?.phone) {
       toast.error('לא נמצא מספר טלפון ללקוח');
@@ -87,27 +218,17 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
       let filePath = doc.file_path;
 
-      // If no file exists yet, generate PDF and upload
+      // If no file exists yet, generate PDF using type-specific generator and upload
       if (!filePath && doc.status !== 'attached') {
-        console.log('Generating PDF for document:', doc.id);
-        const htmlContent = generateDocumentHTML(doc);
-        const element = document.createElement('div');
-        element.innerHTML = htmlContent;
-        element.style.position = 'absolute';
-        element.style.left = '-9999px';
-        element.style.top = '0';
-        document.body.appendChild(element);
-
-        const opt = {
-          margin: 10,
-          image: { type: 'jpeg' as const, quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-        };
-
-        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
-        document.body.removeChild(element);
-        console.log('PDF generated, blob size:', (pdfBlob as Blob).size);
+        console.log('Generating type-specific PDF for document:', doc.id, 'type:', doc.type);
+        const pdfBlob = await generatePdfBlobForDoc(doc);
+        
+        if (!pdfBlob || pdfBlob.size === 0) {
+          toast.error('שגיאה ביצירת PDF - הקובץ ריק');
+          toast.dismiss('whatsapp-pdf');
+          return;
+        }
+        console.log('PDF generated, blob size:', pdfBlob.size);
 
         const fileName = `${doc.id}.pdf`;
         const { error: uploadError } = await supabase.storage
@@ -126,7 +247,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
         console.log('PDF uploaded successfully:', fileName);
 
-        // Update document record with file path
         await supabase
           .from('customer_documents')
           .update({ file_path: fileName })
@@ -175,12 +295,10 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     const formattedPhone = phoneNumber.startsWith('0') ? `972${phoneNumber.slice(1)}` : phoneNumber;
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     
-    // Update status to sent
     if (doc.status !== 'attached') {
       handleStatusUpdate(doc.id, 'sent');
     }
     
-    // Open WhatsApp in new tab using anchor element (avoids popup blocker)
     const a = document.createElement('a');
     a.href = whatsappUrl;
     a.target = '_blank';

@@ -1,7 +1,7 @@
 import html2pdf from 'html2pdf.js';
 import { SalesAgreementData } from "@/types/document-production";
 
-export async function generateSalesAgreementPDF(data: SalesAgreementData) {
+export async function generateSalesAgreementPDF(data: SalesAgreementData, returnBlob?: boolean): Promise<void | Blob> {
   // Create a temporary element for the PDF content
   const element = document.createElement('div');
   element.innerHTML = createPDFHTML(data);
@@ -23,11 +23,6 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
 
   // Wait for content to render properly
   await new Promise(resolve => setTimeout(resolve, 100));
-  
-  // Log element dimensions for debugging
-  console.log('PDF element height:', element.scrollHeight, 'px');
-  console.log('PDF element width:', element.scrollWidth, 'px');
-  console.log('PDF content length:', element.innerHTML.length, 'characters');
 
   try {
     const options = {
@@ -35,16 +30,15 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
       filename: `הסכם_מכר_${data.buyer.name || 'לקוח'}_${new Date().toLocaleDateString('he-IL').replace(/\//g, '_')}.pdf`,
       image: { type: 'jpeg' as const, quality: 0.95 },
       html2canvas: { 
-        scale: 1.0, // Reduced scale to prevent oversized content
+        scale: 1.0,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         scrollX: 0,
         scrollY: 0,
         letterRendering: true,
-        // Remove height restrictions to allow full content
-        windowWidth: 794, // A4 width in pixels at 96 DPI
-        windowHeight: element.scrollHeight + 100 // Dynamic height based on content
+        windowWidth: 794,
+        windowHeight: element.scrollHeight + 100
       },
       jsPDF: { 
         unit: 'mm' as const, 
@@ -52,13 +46,20 @@ export async function generateSalesAgreementPDF(data: SalesAgreementData) {
         orientation: 'portrait' as const,
         compress: true
       },
-      pagebreak: { mode: 'css' } // Simplified pagebreak mode
+      pagebreak: { mode: 'css' }
     };
 
-    await html2pdf().set(options).from(element).save();
-  } finally {
-    // Clean up
+    if (returnBlob) {
+      const blob = await html2pdf().set(options).from(element).outputPdf('blob');
+      document.body.removeChild(element);
+      return blob;
+    } else {
+      await html2pdf().set(options).from(element).save();
+      document.body.removeChild(element);
+    }
+  } catch (error) {
     document.body.removeChild(element);
+    throw error;
   }
 }
 
