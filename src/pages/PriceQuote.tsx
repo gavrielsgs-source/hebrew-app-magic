@@ -22,6 +22,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
+import { generatePriceQuotePDF } from "@/utils/pdf/price-quote-pdf";
 
 const priceQuoteSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
@@ -247,7 +248,7 @@ export default function PriceQuote() {
       notes: formData.notes,
     };
     
-    toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
+    await generatePriceQuotePDF(quoteData);
   };
 
   const handleWhatsAppSend = () => {

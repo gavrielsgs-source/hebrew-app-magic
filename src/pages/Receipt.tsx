@@ -32,6 +32,7 @@ import { MobileContainer } from '@/components/mobile/MobileContainer';
 import { MobileDocumentHeader } from '@/components/mobile/MobileDocumentHeader';
 import { PaymentTabContent } from '@/components/receipt/PaymentTabContent';
 import { ReceiptSummaryCard } from '@/components/receipt/ReceiptSummaryCard';
+import { generateReceiptPDF } from '@/utils/pdf/receipt-pdf';
 
 const paymentSchema = z.object({
   id: z.string(),
@@ -315,7 +316,7 @@ export default function Receipt() {
         notes: form.getValues('notes'),
       } as ReceiptData;
 
-      toast({ title: "יצירת PDF בקרוב", description: "פונקציית ה-PDF בשלבי פיתוח מחדש" });
+      await generateReceiptPDF(dataToUse);
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
