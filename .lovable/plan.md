@@ -1,36 +1,50 @@
 
-
-# תיקון הורדת מסמכים מעמוד הלקוח
+# תיקון הורדת מסמך מעמוד הלקוח - שימוש ב-PDF המקורי
 
 ## הבעיה
-מסמכים מקושרים (attached) מטבלת `documents` מגיעים עם:
-- `url: "/document-production/receipt"` (נתיב פנימי באפליקציה, לא קובץ אמיתי)
-- `file_path: null` (אין קובץ באחסון)
+כל מסמך שנוצר מעמוד הפקת מסמכים יוצר **שתי רשומות** בטבלת `documents`:
+1. רשומה עם שם עברי (למשל "קבלה - 0001"), URL פנימי (`/document-production/receipt`), **בלי** `file_path`
+2. רשומה עם שם אנגלי (למשל "receipt - 0001"), **עם** `file_path` ו-URL לקובץ ה-PDF האמיתי
 
-כשלוחצים "הורד PDF", הקוד:
-1. מציג טוסט "מכין את המסמך להורדה..."
-2. בודק `file_path` - ריק
-3. בודק `url` - לא מתחיל ב-`http`
-4. נתקע או מציג הודעה גנרית בלי להוריד כלום
+כשמורידים מעמוד הלקוח, הקוד רואה את הרשומה הראשונה (בלי file_path) ופותח חלון חדש לנתיב פנימי, או מנסה ליצור PDF גנרי עם עיצוב בסיסי - במקום להוריד את ה-PDF המעוצב שכבר קיים.
 
 ## הפתרון
-לתקן את `handleDownloadPDF` ב-`CustomerDocuments.tsx`:
-
-1. **מסמכים עם URL פנימי** (כמו `/document-production/receipt`) -- לפתוח את הנתיב הפנימי בחלון חדש, כי שם המשתמש יכול לצפות ולהוריד
-2. **להחליף את `generatePdfBlobForDoc`** מ-`html2pdf` הישן לפונקציית `generatePDF` מ-`pdf-helper.ts` (שעובדת עם html2canvas + jsPDF)
-3. **להסיר את ה-import של `html2pdf`** מהקובץ
+לפני שפותחים חלון חדש או יוצרים PDF גנרי - לחפש בטבלת `documents` רשומה תואמת **עם** `file_path` (אותו `type`, אותו `entity_id`, אותו `user_id`) ולהוריד ממנה את ה-PDF המקורי.
 
 ## שינויים טכניים
 
 ### קובץ: `src/components/customers/CustomerDocuments.tsx`
 
-**שינוי 1**: הסרת `import html2pdf` (שורה 15) והוספת `import { generatePDF } from '@/utils/pdf-helper'`
+**שינוי ב-`handleDownloadPDF`** (Priority 1 - attached docs with internal URL):
 
-**שינוי 2**: עדכון `generatePdfBlobForDoc` (שורות 74-97) להשתמש ב-`generatePDF` עם `returnBlob: true`
+במקום לפתוח `window.open(doc.url, '_blank')` מיד, קודם לבצע שאילתה:
 
-**שינוי 3**: עדכון `handleDownloadPDF` (שורות 341-405):
-- מסמכים עם URL פנימי (מתחיל ב-`/`) -- פתיחה בחלון חדש עם `window.open`
-- מסמכים עם `file_path` -- הורדה מ-storage כרגיל
-- מסמכים עם URL חיצוני (`http`) -- הורדה ישירה
-- fallback -- יצירת PDF עם `generatePDF` במקום הודעת שגיאה
+```text
+// חיפוש רשומה תואמת עם file_path
+const { data: matchingDoc } = await supabase
+  .from('documents')
+  .select('file_path, url')
+  .eq('user_id', user.id)
+  .eq('type', doc.type || doc.entity_type)
+  .eq('entity_type', doc.entity_type)
+  .eq('entity_id', doc.entity_id)
+  .not('file_path', 'is', null)
+  .order('created_at', { ascending: false })
+  .limit(1)
+  .maybeSingle();
+```
 
+אם נמצא `matchingDoc` עם `file_path`:
+- להוריד את ה-PDF מ-bucket `documents` (כי שם הוא הועלה ע"י `useUploadProductionDocument`)
+
+אם לא נמצא:
+- fallback לפתיחת הנתיב הפנימי בחלון חדש (ההתנהגות הנוכחית)
+
+### סדר העדיפויות החדש:
+1. מסמך מצורף עם URL פנימי -- חיפוש PDF תואם בטבלה, אם יש - הורדה ישירה, אם אין - פתיחת חלון חדש
+2. מסמך עם `file_path` -- הורדה מ-storage (ללא שינוי)
+3. URL חיצוני -- הורדה ישירה (ללא שינוי)
+4. fallback -- יצירת PDF בסיסי (ללא שינוי)
+
+### מה צריך:
+- גישה ל-`user` בתוך הפונקציה (כבר קיים ב-hook `useAuth` שמיובא בקומפוננטה)
