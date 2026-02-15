@@ -1,27 +1,34 @@
 
 
-## תיקון שליחת וואטסאפ - שימוש ב-window.location.href
+## תיקון שליחת וואטסאפ - anchor element (קובץ CustomerDocuments.tsx בלבד)
 
 ### הבעיה
-`window.open` נחסם בתוך ה-iframe של סביבת ה-Preview. זו הסיבה שזה לא עובד גם אחרי רענון.
+`window.location.href` מנווט את כל האפליקציה ל-wa.me, מה שגורם לדף שבור.
 
 ### הפתרון
-בקובץ `src/components/customers/CustomerDocuments.tsx`, שורה 94:
+בקובץ `src/components/customers/CustomerDocuments.tsx` בלבד, שורות 93-94, החלפת:
 
-**מ:**
-```
-window.open(whatsappUrl, '_blank');
-```
-
-**ל:**
 ```
 window.location.href = whatsappUrl;
 ```
 
-זה מנווט ישירות לוואטסאפ בטאב הנוכחי במקום לנסות לפתוח טאב חדש. שיטה זו לא נחסמת על ידי iframe.
+ב:
+
+```typescript
+const a = document.createElement('a');
+a.href = whatsappUrl;
+a.target = '_blank';
+a.rel = 'noopener noreferrer';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+```
 
 ### היקף השינוי
-- קובץ אחד: `src/components/customers/CustomerDocuments.tsx`
-- שורה אחת בלבד (שורה 94)
-- אין שינוי בשום מקום אחר
+- קובץ אחד בלבד: `src/components/customers/CustomerDocuments.tsx`
+- פונקציית `handleSendToWhatsApp` בלבד (שורות 93-94)
+- אין נגיעה בשום קובץ אחר - לא ב-WhatsAppCustomerDialog, לא ב-CarCardActions, ולא בשום קומפוננטה אחרת הקשורה לוואטסאפ
+
+### הערה חשובה
+בסביבת ה-Preview של Lovable ייתכן שפתיחת טאב חדש עדיין תיחסם. מומלץ לבדוק מהאתר המפורסם (hebrew-app-magic.lovable.app).
 
