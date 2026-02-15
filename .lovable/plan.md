@@ -1,31 +1,37 @@
 
-# Add Cancel/Manage Subscription Access for Paid Users
+# תיקון: ביטול חיוב חוזר ב-Grow גם למנויים פעילים
 
-## Problem
-Users who have paid for a subscription have no way to reach the "Manage Subscription" page (`/subscription/manage`) where the cancel button and payment history are located. The main `/subscription` page only shows plan details and an "Upgrade" button but no link to manage or cancel.
+## הבעיה
+כשמשתמש עם מנוי פעיל (active) לוחץ "בטל מנוי", הקוד מסמן את המנוי כ-`cancel_at_period_end: true` אבל **לא מבטל את ההוראת חיוב החוזרת ב-Grow**. כתוצאה מכך, Grow ימשיך לחייב את הלקוח בתאריך החיוב הבא.
 
-## Solution
-Add a "Manage Subscription / Cancel" button on the `/subscription` page that links to `/subscription/manage` -- but only for users with a paid subscription (`active` status). Trial users won't see it since their trial can be cancelled from the manage page too, but we can show it for all authenticated users.
+## הפתרון
+עדכון ה-Edge Function `cancel-subscription` כך שגם עבור מנויים פעילים (לא רק trial), יבוצע ביטול החיוב החוזר מול Grow API.
 
-Also, on the `/subscription/manage` page (ManageSubscription.tsx), update the logic to properly reflect the 14-day trial billing model:
-- During trial: show that cancellation is immediate and no charge will occur
-- After trial (active): show that cancellation happens at end of billing period
+## שינויים
 
-## Changes
+### קובץ: `supabase/functions/cancel-subscription/index.ts`
+בבלוק ה-`else` (ביטול בסוף תקופת חיוב), להוסיף קריאה ל-`cancelRecurringPayment` של Grow -- אותה קריאה שכבר קיימת בבלוק ה-trial:
 
-### 1. `src/pages/Subscription.tsx`
-Add a "Manage Subscription" button (with settings/manage icon) in both mobile and desktop views that navigates to `/subscription/manage`. This will appear for all users so they can always access payment history and cancellation.
+```text
+לפני:
+  else {
+    // Cancel at end of billing period
+    UPDATE subscriptions SET cancel_at_period_end = true
+    // (לא מבטל ב-Grow)
+  }
 
-- **Mobile view**: Add a button below "Upgrade" in the actions section
-- **Desktop view**: Add a button in the actions sidebar
+אחרי:
+  else {
+    // Cancel at end of billing period
+    UPDATE subscriptions SET cancel_at_period_end = true
+    // ביטול החיוב החוזר ב-Grow כדי שלא יחויב שוב
+    if (subscription.recurring_payment_id) {
+      cancelRecurringPayment with Grow API
+    }
+  }
+```
 
-### 2. No changes needed to ManageSubscription.tsx
-The existing `ManageSubscription` page already has the cancel button, cancel dialog, and payment history. The edge function `cancel-subscription` already handles both trial (immediate cancel) and active (cancel at period end) correctly, matching the business logic of:
-- Trial users: immediate cancel, no charge
-- Active users: cancel at end of billing period
-
-## Technical Details
-- One file to modify: `src/pages/Subscription.tsx`
-- Add a `Button` with `variant="outline"` navigating to `/subscription/manage`
-- Show in both mobile and desktop layouts
-- Use `Settings` or `CreditCard` icon for visual clarity
+## פרטים טכניים
+- קובץ אחד לעדכון: `supabase/functions/cancel-subscription/index.ts`
+- להעתיק את בלוק ביטול ה-Grow (שורות 89-104) גם לבלוק ה-else (שורות 117+)
+- הביטול ב-Grow מבטיח שהלקוח לא יחויב שוב, והמנוי ימשיך לעבוד עד סוף התקופה הנוכחית
