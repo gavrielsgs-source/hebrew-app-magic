@@ -6,10 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GROW_API_BASE = 'https://sandbox.meshulam.co.il/api/light/server/1.0';
-const GROW_CLIENT_ID = Deno.env.get('GROW_CLIENT_ID') || '';
-const GROW_EC_PWD = Deno.env.get('GROW_EC_PWD') || '';
-
 interface TrialExpiration {
   subscription_id: string;
   user_id: string;
@@ -18,9 +14,6 @@ interface TrialExpiration {
   subscription_tier: string;
   trial_ends_at: string;
   days_left: number;
-  payment_token?: string;
-  billing_amount: number;
-  billing_cycle: string;
 }
 
 serve(async (req) => {
@@ -59,7 +52,28 @@ serve(async (req) => {
       console.log(`✅ Updated ${expiredUpdate?.length || 0} expired trial subscriptions to 'expired' status`);
     }
 
-    // Get subscriptions where trial ends today
+    // Also handle cancel_at_period_end subscriptions that have passed their billing date
+    console.log('Checking subscriptions scheduled for cancellation...');
+    const { data: cancelledSubs, error: cancelError } = await supabase
+      .from('subscriptions')
+      .update({
+        subscription_status: 'cancelled',
+        active: false,
+        cancelled_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('cancel_at_period_end', true)
+      .eq('subscription_status', 'active')
+      .lt('next_billing_date', new Date().toISOString())
+      .select('id');
+
+    if (cancelError) {
+      console.error('Error cancelling end-of-period subscriptions:', cancelError);
+    } else {
+      console.log(`✅ Cancelled ${cancelledSubs?.length || 0} subscriptions at period end`);
+    }
+
+    // Get trials expiring today - send reminder emails
     const { data: expiringTrials, error: fetchError } = await supabase
       .rpc('get_expiring_trials', { days_ahead: 0 });
 
@@ -71,160 +85,79 @@ serve(async (req) => {
     if (!expiringTrials || expiringTrials.length === 0) {
       console.log('No trials expiring today');
       return new Response(
-        JSON.stringify({ message: 'No trials to process', processed: 0 }),
+        JSON.stringify({ 
+          message: 'No trials to process', 
+          processed: 0,
+          expired: expiredUpdate?.length || 0,
+          cancelled_at_period_end: cancelledSubs?.length || 0,
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
 
-    console.log(`Found ${expiringTrials.length} expiring trials to process`);
+    console.log(`Found ${expiringTrials.length} expiring trials to notify`);
 
     const results = {
       processed: 0,
-      successful: 0,
-      failed: 0,
+      notified: 0,
       errors: [] as string[],
     };
 
-    // Process each expiring trial
+    // Send expiration notification emails for trials expiring today
+    // Note: Recurring payments are managed automatically by Tranzila.
+    // When Tranzila charges successfully, the tranzila-webhook updates the subscription.
+    // If no payment was set up, the trial will be marked as expired by the update above.
     for (const trial of expiringTrials as TrialExpiration[]) {
       results.processed++;
 
       try {
-        // Get subscription details with payment token
-        const { data: subscription, error: subError } = await supabase
+        // Check if user has a payment token (meaning they set up payment via Tranzila)
+        const { data: subscription } = await supabase
           .from('subscriptions')
-          .select('payment_token, billing_amount, billing_cycle, recurring_payment_id')
+          .select('payment_token')
           .eq('id', trial.subscription_id)
           .single();
 
-        if (subError || !subscription) {
-          throw new Error(`Failed to fetch subscription: ${subError?.message}`);
-        }
-
-        if (!subscription.payment_token) {
-          throw new Error('No payment token found for subscription');
-        }
-
-        // Process recurring payment via Grow API
-        console.log(`Processing payment for user ${trial.email}, amount: ${subscription.billing_amount}`);
-
-        const formData = new FormData();
-        formData.append('customerId', GROW_CLIENT_ID);
-        formData.append('apiPassword', GROW_EC_PWD);
-        formData.append('paymentToken', subscription.payment_token);
-        formData.append('sum', String(subscription.billing_amount));
-        formData.append('description', `${trial.subscription_tier} subscription - ${subscription.billing_cycle}`);
-
-        const paymentResponse = await fetch(`${GROW_API_BASE}/processRecurringPayment`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        const paymentResult = await paymentResponse.json();
-
-        if (paymentResult.status === 1) {
-          // Payment successful - update subscription to active
-          const nextBillingDate = new Date();
-          nextBillingDate.setMonth(nextBillingDate.getMonth() + (subscription.billing_cycle === 'yearly' ? 12 : 1));
-
-          const { error: updateError } = await supabase
-            .from('subscriptions')
-            .update({
-              subscription_status: 'active',
-              active: true,
-              next_billing_date: nextBillingDate.toISOString(),
-              trial_ends_at: null,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', trial.subscription_id);
-
-          if (updateError) {
-            throw new Error(`Failed to update subscription: ${updateError.message}`);
+        if (!subscription?.payment_token) {
+          // No payment method - trial will expire, send notification
+          console.log(`📧 Sending trial expiration email to ${trial.email} (no payment method)`);
+          
+          try {
+            await supabase.functions.invoke('send-email', {
+              body: {
+                to: trial.email,
+                template: 'trial-expiring',
+                data: {
+                  userName: trial.full_name || trial.email,
+                  planName: trial.subscription_tier,
+                }
+              }
+            });
+            console.log(`✅ Expiration email sent to ${trial.email}`);
+          } catch (emailError) {
+            console.error(`Failed to send email to ${trial.email}:`, emailError);
           }
 
-          // Record payment in history
-          await supabase
-            .from('payment_history')
-            .insert({
-              user_id: trial.user_id,
-              subscription_id: trial.subscription_id,
-              transaction_id: paymentResult.data?.transactionId,
-              asmachta: paymentResult.data?.asmachta,
-              amount: subscription.billing_amount,
-              status: 'success',
-              payment_type: subscription.billing_cycle === 'yearly' ? 'yearly' : 'monthly',
-              metadata: { trial_conversion: true },
-            });
-
-          console.log(`✅ Successfully charged ${trial.email} - ${subscription.billing_amount} ILS`);
-          results.successful++;
-
-          // TODO: Send success email
+          results.notified++;
         } else {
-          // Payment failed
-          throw new Error(paymentResult.err?.message || 'Payment processing failed');
+          // User has payment token - Tranzila will handle the recurring charge automatically
+          console.log(`ℹ️ User ${trial.email} has payment method, Tranzila will charge automatically`);
         }
 
       } catch (error) {
-        console.error(`❌ Failed to process trial for ${trial.email}:`, error);
-        results.failed++;
+        console.error(`❌ Error processing trial for ${trial.email}:`, error);
         results.errors.push(`${trial.email}: ${error instanceof Error ? error.message : String(error)}`);
-
-        // Update subscription status to past_due
-        await supabase
-          .from('subscriptions')
-          .update({
-            subscription_status: 'past_due',
-            active: false,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', trial.subscription_id);
-
-        // Record failed payment
-        await supabase
-          .from('payment_history')
-          .insert({
-            user_id: trial.user_id,
-            subscription_id: trial.subscription_id,
-            amount: trial.billing_amount || 0,
-            status: 'failed',
-            payment_type: trial.billing_cycle === 'yearly' ? 'yearly' : 'monthly',
-            failure_reason: error instanceof Error ? error.message : String(error),
-            metadata: { trial_conversion_failed: true },
-          });
-
-        // Send payment failed email
-        try {
-          console.log(`📧 Sending payment failed email to ${trial.email}`);
-          
-          const { error: emailError } = await supabase.functions.invoke('send-email', {
-            body: {
-              to: trial.email,
-              template: 'payment-failed',
-              data: {
-                userName: trial.full_name || trial.email,
-                amount: trial.billing_amount || 99,
-                failureReason: error instanceof Error ? error.message : String(error),
-              }
-            }
-          });
-
-          if (emailError) {
-            console.error(`Failed to send payment failed email to ${trial.email}:`, emailError);
-          } else {
-            console.log(`✅ Payment failed email sent successfully to ${trial.email}`);
-          }
-        } catch (emailError) {
-          console.error(`Error sending payment failed email:`, emailError);
-          // Don't throw - recording the failure is more important
-        }
       }
     }
 
     console.log('Trial expiration check completed:', results);
 
     return new Response(
-      JSON.stringify(results),
+      JSON.stringify({
+        ...results,
+        expired: expiredUpdate?.length || 0,
+        cancelled_at_period_end: cancelledSubs?.length || 0,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
