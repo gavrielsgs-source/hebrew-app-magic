@@ -41,7 +41,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">4. תשלומים וביטולים</h2>
               <div className="space-y-3 text-gray-700">
-                <p><strong>4.1</strong> חיוב חודשי/שנתי יבוצע מראש באמצעות GROW.</p>
+                <p><strong>4.1</strong> חיוב חודשי/שנתי יבוצע מראש באמצעות Tranzila.</p>
                 <p><strong>4.2</strong> משתמש רשאי לבטל בכל עת; השירות ימשיך עד סוף מחזור החיוב.</p>
                 <p><strong>4.3</strong> החזר כספי יינתן רק במקרה של תקלה מערכתית מתמשכת (&gt;72 שעות).</p>
               </div>

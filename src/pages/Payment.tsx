@@ -10,6 +10,7 @@ import { SubscriptionPlanCards } from "@/components/subscription/SubscriptionPla
 import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
 import { BillingToggle } from "@/components/subscription/BillingToggle";
+import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
 
 export default function Payment() {
   const [searchParams] = useSearchParams();
@@ -19,6 +20,7 @@ export default function Payment() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(preselectedPlan);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [userId, setUserId] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
   const [userFullName, setUserFullName] = useState<string>("");
   const [userPhone, setUserPhone] = useState<string>("");
@@ -27,6 +29,11 @@ export default function Payment() {
   const [userAddress, setUserAddress] = useState<string>("");
   const [userCity, setUserCity] = useState<string>("");
   const [userPostalCode, setUserPostalCode] = useState<string>("");
+  const [tranzilaData, setTranzilaData] = useState<{
+    thtk: string;
+    supplier: string;
+    customerInfo: PaymentFormValues;
+  } | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -36,9 +43,9 @@ export default function Payment() {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
+        setUserId(user.id);
         setUserEmail(user.email || "");
 
-        // Get user metadata from auth
         const metadata = user.user_metadata || {};
 
         const { data: profile } = await supabase
@@ -53,7 +60,6 @@ export default function Payment() {
           setUserCompanyName(profile.company_name || metadata.company_name || "");
         }
 
-        // Try to get business details from user metadata
         setUserBusinessId(metadata.business_id || "");
         setUserAddress(metadata.address || "");
         setUserCity(metadata.city || "");
@@ -78,7 +84,6 @@ export default function Payment() {
     setLoading(true);
 
     try {
-      console.log("Start payment process!");
       const selectedPlanObj = getSelectedPlanDetails(selectedPlan);
       if (!selectedPlanObj) {
         throw new Error("חבילה לא נמצאה");
@@ -86,70 +91,56 @@ export default function Payment() {
 
       const actualSum = isYearly ? selectedPlanObj.yearlyPrice * 12 : selectedPlanObj.monthlyPrice;
 
-      console.log(data);
-      const paymentPayload = {
-        sum: actualSum,
-        fullName: data.fullName,
-        phone: data.phone,
-        userEmail,
-        email: data.email,
-        planId: selectedPlan,
-        isTrial: true,
-        billingCycle: isYearly ? "yearly" : "monthly",
-        companyName: data.companyName,
-        businessId: data.businessId,
-        address: data.address,
-        city: data.city,
-        postalCode: data.postalCode,
-      };
-
-      console.log("Sending payment payload:", paymentPayload);
-
-      const { data: paymentData, error } = await supabase.functions.invoke("grow-payment", {
+      // Call tranzila-handshake to get thtk token
+      const { data: handshakeData, error } = await supabase.functions.invoke('tranzila-handshake', {
         body: {
-          action: "createPaymentProcess",
-          payload: paymentPayload,
-        },
+          sum: actualSum,
+          planId: selectedPlan,
+          billingCycle: isYearly ? 'yearly' : 'monthly',
+          isYearly,
+        }
       });
 
       if (error) {
-        console.error("Supabase function error:", error);
+        console.error("Handshake error:", error);
         throw new Error(error.message);
       }
 
-      console.log("Payment response:", paymentData);
-
-      if (paymentData.error) {
-        console.error("Payment API error:", paymentData);
-        const errorMessage =
-          typeof paymentData.error === "string" ? paymentData.error : paymentData.details?.message || "שגיאה לא ידועה";
-        throw new Error(errorMessage);
+      if (!handshakeData?.success || !handshakeData?.thtk) {
+        console.error("Handshake failed:", handshakeData);
+        throw new Error(handshakeData?.error || 'שגיאה באתחול תשלום');
       }
 
-      if (paymentData.success) {
-        if (paymentData.url || paymentData.redirectUrl) {
-          const redirectUrl = paymentData.url || paymentData.redirectUrl;
-          console.log("Redirecting to payment URL:", redirectUrl);
-          window.location.href = redirectUrl;
-        } else {
-          console.error("Missing redirect URL in response:", paymentData);
-          throw new Error("לא התקבלה כתובת הפניה לתשלום");
-        }
-      } else {
-        throw new Error("לא התקבלה תשובה תקינה משרת התשלומים");
-      }
+      console.log("Handshake successful, thtk received");
+
+      // Set Tranzila data to show the iframe
+      setTranzilaData({
+        thtk: handshakeData.thtk,
+        supplier: handshakeData.supplier,
+        customerInfo: data,
+      });
+
     } catch (error) {
       console.error("Error initiating payment:", error);
       toast.error("שגיאה בתהליך התשלום", {
         description: error instanceof Error ? error.message : String(error),
       });
+    } finally {
       setLoading(false);
     }
   };
 
   const handleUpgrade = async (planId: string) => {
     setSelectedPlan(planId);
+    setTranzilaData(null);
     setPaymentDrawerOpen(true);
+  };
+
+  const handleDrawerClose = (open: boolean) => {
+    setPaymentDrawerOpen(open);
+    if (!open) {
+      setTranzilaData(null);
+    }
   };
 
   const getSelectedPlanDetails = (planId: string) => {
@@ -207,13 +198,13 @@ export default function Payment() {
 
       <PaymentInfo />
 
-      <Drawer open={paymentDrawerOpen} onOpenChange={setPaymentDrawerOpen}>
+      <Drawer open={paymentDrawerOpen} onOpenChange={handleDrawerClose}>
         <DrawerContent className={`max-h-[96%] ${isMobile ? "h-[90vh]" : ""}`}>
           <DrawerHeader>
             <DrawerTitle className={`text-center ${isMobile ? "text-base" : "text-lg"}`}>
               {selectedPlan && (
                 <>
-                  פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
+                  {tranzilaData ? 'השלם תשלום' : 'פרטי תשלום'} - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
                   {isYearly && " (תשלום שנתי)"}
                 </>
               )}
@@ -221,21 +212,47 @@ export default function Payment() {
           </DrawerHeader>
 
           <div className="px-4 overflow-y-auto">
-            <PaymentForm
-              onSubmit={onSubmit}
-              loading={loading}
-              onCancel={() => setPaymentDrawerOpen(false)}
-              selectedPlan={selectedPlan}
-              initialValues={{
-                fullName: userFullName,
-                phone: userPhone,
-                companyName: userCompanyName,
-                businessId: userBusinessId,
-                address: userAddress,
-                city: userCity,
-                postalCode: userPostalCode,
-              }}
-            />
+            {tranzilaData && selectedPlan ? (
+              <TranzilaPaymentIframe
+                supplier={tranzilaData.supplier}
+                thtk={tranzilaData.thtk}
+                sum={isYearly 
+                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
+                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                recurSum={isYearly 
+                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
+                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                recurTransaction={isYearly ? '7_approved' : '4_approved'}
+                customerInfo={{
+                  contact: tranzilaData.customerInfo.fullName,
+                  email: tranzilaData.customerInfo.email,
+                  phone: tranzilaData.customerInfo.phone,
+                  company: tranzilaData.customerInfo.companyName,
+                  address: tranzilaData.customerInfo.address,
+                  city: tranzilaData.customerInfo.city,
+                }}
+                planId={selectedPlan}
+                billingCycle={isYearly ? 'yearly' : 'monthly'}
+                userId={userId}
+                productName={`מנוי ${getSelectedPlanDetails(selectedPlan)?.name} - CarsLead`}
+              />
+            ) : (
+              <PaymentForm
+                onSubmit={onSubmit}
+                loading={loading}
+                onCancel={() => handleDrawerClose(false)}
+                selectedPlan={selectedPlan}
+                initialValues={{
+                  fullName: userFullName,
+                  phone: userPhone,
+                  companyName: userCompanyName,
+                  businessId: userBusinessId,
+                  address: userAddress,
+                  city: userCity,
+                  postalCode: userPostalCode,
+                }}
+              />
+            )}
           </div>
 
           <DrawerFooter className="pt-2">

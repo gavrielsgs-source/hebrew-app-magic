@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, ArrowRight } from "lucide-react";
+import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "שם מלא חייב להכיל לפחות 2 תווים"),
@@ -49,7 +50,20 @@ const plans = [
 
 export default function SignupTrial() {
   const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState<string>("");
+  const [tranzilaData, setTranzilaData] = useState<{
+    thtk: string;
+    supplier: string;
+  } | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+    };
+    fetchUser();
+  }, []);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -77,49 +91,48 @@ export default function SignupTrial() {
     try {
       console.log("Starting trial signup:", data);
 
-      // Call grow-payment edge function with trial=true
-      const { data: paymentData, error: paymentError } = await supabase.functions.invoke(
-        "grow-payment",
+      const actualSum = data.billingCycle === 'yearly'
+        ? getPlanPrice(data.plan, 'yearly')
+        : getPlanPrice(data.plan, 'monthly');
+
+      // Call tranzila-handshake to get thtk token
+      const { data: handshakeData, error: handshakeError } = await supabase.functions.invoke(
+        "tranzila-handshake",
         {
           body: {
-            action: "createPaymentProcess",
-            payload: {
-              fullName: data.fullName,
-              email: data.email,
-              phone: data.phone,
-              planId: data.plan,
-              isTrial: true,
-              billingCycle: data.billingCycle,
-              sum: 1, // Symbolic 1 ILS for card verification
-            },
+            sum: actualSum,
+            planId: data.plan,
+            billingCycle: data.billingCycle,
+            isYearly: data.billingCycle === 'yearly',
           },
         }
       );
 
-      if (paymentError) {
-        console.error("Payment error:", paymentError);
-        throw new Error(paymentError.message || "שגיאה ביצירת תהליך התשלום");
+      if (handshakeError) {
+        console.error("Handshake error:", handshakeError);
+        throw new Error(handshakeError.message || "שגיאה באתחול תשלום");
       }
 
-      if (paymentData.error) {
-        throw new Error(paymentData.error);
+      if (!handshakeData?.success || !handshakeData?.thtk) {
+        throw new Error(handshakeData?.error || "שגיאה באתחול תשלום");
       }
 
-      if (!paymentData.url) {
-        throw new Error("לא התקבל URL לתשלום");
-      }
-
-      console.log("Redirecting to payment URL:", paymentData.url);
+      console.log("Handshake successful, showing Tranzila iframe");
       
-      // Redirect to Grow payment page
-      window.location.href = paymentData.url;
+      setTranzilaData({
+        thtk: handshakeData.thtk,
+        supplier: handshakeData.supplier,
+      });
 
     } catch (error: any) {
       console.error("Signup error:", error);
       toast.error(error.message || "אירעה שגיאה בתהליך ההרשמה");
+    } finally {
       setIsLoading(false);
     }
   };
+
+  const formValues = form.watch();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-12 px-4">
@@ -150,209 +163,246 @@ export default function SignupTrial() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Plans Selection */}
-          <div>
+        {tranzilaData ? (
+          <div className="max-w-2xl mx-auto">
             <Card>
               <CardHeader>
-                <CardTitle>בחר את החבילה המתאימה לך</CardTitle>
-                <CardDescription>
-                  כל החבילות כוללות 14 ימי ניסיון חינם
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Form {...form}>
-                  <FormField
-                    control={form.control}
-                    name="billingCycle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>מחזור תשלום</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            className="flex gap-4"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="monthly" id="monthly" />
-                              <label htmlFor="monthly" className="cursor-pointer">חודשי</label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="yearly" id="yearly" />
-                              <label htmlFor="yearly" className="cursor-pointer">
-                                שנתי (חסוך 17%)
-                              </label>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="plan"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            className="space-y-3"
-                          >
-                            {plans.map((plan) => (
-                              <div
-                                key={plan.id}
-                                className={`relative border rounded-lg p-4 cursor-pointer transition-all ${
-                                  field.value === plan.id
-                                    ? "border-primary bg-primary/5"
-                                    : "border-border hover:border-primary/50"
-                                } ${plan.popular ? "ring-2 ring-primary" : ""}`}
-                              >
-                                {plan.popular && (
-                                  <div className="absolute -top-3 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">
-                                    הכי פופולרי
-                                  </div>
-                                )}
-                                <RadioGroupItem value={plan.id} id={plan.id} className="sr-only" />
-                                <label htmlFor={plan.id} className="cursor-pointer block">
-                                  <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                      <h3 className="font-bold text-lg">{plan.name}</h3>
-                                      <div className="text-2xl font-bold mt-1">
-                                        ₪{billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}
-                                        <span className="text-sm text-muted-foreground font-normal">
-                                          /{billingCycle === "yearly" ? "שנה" : "חודש"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <ul className="space-y-1 mt-3">
-                                    {plan.features.map((feature, idx) => (
-                                      <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                                        {feature}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </label>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </Form>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Signup Form */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>פרטיך האישיים</CardTitle>
-                <CardDescription>
-                  מלא את הפרטים כדי להתחיל את תקופת הניסיון
+                <CardTitle className="text-center">השלם תשלום</CardTitle>
+                <CardDescription className="text-center">
+                  מנוי {plans.find(p => p.id === selectedPlan)?.name} - {billingCycle === 'yearly' ? 'שנתי' : 'חודשי'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="fullName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>שם מלא</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="שם פרטי ושם משפחה" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>אימייל</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="email" placeholder="example@email.com" dir="ltr" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>טלפון</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="tel" placeholder="050-1234567" dir="ltr" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="pt-4 space-y-4">
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-sm font-medium mb-2">סיכום:</p>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between">
-                            <span>חבילה נבחרת:</span>
-                            <span className="font-medium">
-                              {plans.find((p) => p.id === selectedPlan)?.name}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>תשלום עתידי:</span>
-                            <span className="font-medium">
-                              ₪{getPlanPrice(selectedPlan, billingCycle)}/
-                              {billingCycle === "yearly" ? "שנה" : "חודש"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-green-600 font-medium">
-                            <span>היום:</span>
-                            <span>₪0 - ניסיון חינם!</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-                            מעבד...
-                          </>
-                        ) : (
-                          <>
-                            התחל ניסיון חינם
-                            <ArrowRight className="mr-2 h-5 w-5" />
-                          </>
-                        )}
-                      </Button>
-
-                      <p className="text-xs text-center text-muted-foreground">
-                        בלחיצה על הכפתור, אתה מסכים{" "}
-                        <a href="/terms" className="underline">לתנאי השימוש</a> ו
-                        <a href="/privacy" className="underline">למדיניות הפרטיות</a>
-                      </p>
-                    </div>
-                  </form>
-                </Form>
+                <TranzilaPaymentIframe
+                  supplier={tranzilaData.supplier}
+                  thtk={tranzilaData.thtk}
+                  sum={getPlanPrice(selectedPlan, billingCycle)}
+                  recurSum={getPlanPrice(selectedPlan, billingCycle)}
+                  recurTransaction={billingCycle === 'yearly' ? '7_approved' : '4_approved'}
+                  customerInfo={{
+                    contact: formValues.fullName,
+                    email: formValues.email,
+                    phone: formValues.phone,
+                  }}
+                  planId={selectedPlan}
+                  billingCycle={billingCycle}
+                  userId={userId}
+                  isNewUser={true}
+                  productName={`מנוי ${plans.find(p => p.id === selectedPlan)?.name} - CarsLead`}
+                />
+                <div className="mt-4 text-center">
+                  <Button variant="ghost" onClick={() => setTranzilaData(null)}>
+                    חזרה לבחירת חבילה
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
-        </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Plans Selection */}
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>בחר את החבילה המתאימה לך</CardTitle>
+                  <CardDescription>
+                    כל החבילות כוללות 14 ימי ניסיון חינם
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Form {...form}>
+                    <FormField
+                      control={form.control}
+                      name="billingCycle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>מחזור תשלום</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              className="flex gap-4"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="monthly" id="monthly" />
+                                <label htmlFor="monthly" className="cursor-pointer">חודשי</label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="yearly" id="yearly" />
+                                <label htmlFor="yearly" className="cursor-pointer">
+                                  שנתי (חסוך 17%)
+                                </label>
+                              </div>
+                            </RadioGroup>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="plan"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              className="space-y-3"
+                            >
+                              {plans.map((plan) => (
+                                <div
+                                  key={plan.id}
+                                  className={`relative border rounded-lg p-4 cursor-pointer transition-all ${
+                                    field.value === plan.id
+                                      ? "border-primary bg-primary/5"
+                                      : "border-border hover:border-primary/50"
+                                  } ${plan.popular ? "ring-2 ring-primary" : ""}`}
+                                >
+                                  {plan.popular && (
+                                    <div className="absolute -top-3 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">
+                                      הכי פופולרי
+                                    </div>
+                                  )}
+                                  <RadioGroupItem value={plan.id} id={plan.id} className="sr-only" />
+                                  <label htmlFor={plan.id} className="cursor-pointer block">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <div>
+                                        <h3 className="font-bold text-lg">{plan.name}</h3>
+                                        <div className="text-2xl font-bold mt-1">
+                                          ₪{billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}
+                                          <span className="text-sm text-muted-foreground font-normal">
+                                            /{billingCycle === "yearly" ? "שנה" : "חודש"}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <ul className="space-y-1 mt-3">
+                                      {plan.features.map((feature, idx) => (
+                                        <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
+                                          <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                                          {feature}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </label>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </Form>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Signup Form */}
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>פרטיך האישיים</CardTitle>
+                  <CardDescription>
+                    מלא את הפרטים כדי להתחיל את תקופת הניסיון
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="fullName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>שם מלא</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="שם פרטי ושם משפחה" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>אימייל</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" placeholder="example@email.com" dir="ltr" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>טלפון</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="tel" placeholder="050-1234567" dir="ltr" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="pt-4 space-y-4">
+                        <div className="bg-muted/50 p-4 rounded-lg">
+                          <p className="text-sm font-medium mb-2">סיכום:</p>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span>חבילה נבחרת:</span>
+                              <span className="font-medium">
+                                {plans.find((p) => p.id === selectedPlan)?.name}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>תשלום עתידי:</span>
+                              <span className="font-medium">
+                                ₪{getPlanPrice(selectedPlan, billingCycle)}/
+                                {billingCycle === "yearly" ? "שנה" : "חודש"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-green-600 font-medium">
+                              <span>היום:</span>
+                              <span>₪0 - ניסיון חינם!</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+                              מעבד...
+                            </>
+                          ) : (
+                            <>
+                              התחל ניסיון חינם
+                              <ArrowRight className="mr-2 h-5 w-5" />
+                            </>
+                          )}
+                        </Button>
+
+                        <p className="text-xs text-center text-muted-foreground">
+                          בלחיצה על הכפתור, אתה מסכים{" "}
+                          <a href="/terms" className="underline">לתנאי השימוש</a> ו
+                          <a href="/privacy" className="underline">למדיניות הפרטיות</a>
+                        </p>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

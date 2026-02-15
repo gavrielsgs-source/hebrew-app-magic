@@ -285,7 +285,7 @@ export default function ManageSubscription() {
                 </p>
               </div>
               <p className="text-xs text-muted-foreground pr-6">
-                פרטי כרטיס האשראי מנוהלים באמצעות Grow Payments
+                פרטי כרטיס האשראי מנוהלים באמצעות Tranzila
               </p>
             </div>
 
