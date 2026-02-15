@@ -131,7 +131,7 @@ export function TranzilaPaymentIframe({
 
         {/* Invoice product details */}
         <input type="hidden" name="u71" value="1" />
-        <input type="hidden" name="json_purchase_data" value={encodeURIComponent(purchaseData)} />
+        <input type="hidden" name="json_purchase_data" value={purchaseData} />
       </form>
 
       <iframe
