@@ -89,9 +89,13 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
       // If no file exists yet, generate PDF and upload
       if (!filePath && doc.status !== 'attached') {
+        console.log('Generating PDF for document:', doc.id);
         const htmlContent = generateDocumentHTML(doc);
         const element = document.createElement('div');
         element.innerHTML = htmlContent;
+        element.style.position = 'absolute';
+        element.style.left = '-9999px';
+        element.style.top = '0';
         document.body.appendChild(element);
 
         const opt = {
@@ -103,6 +107,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
         const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
         document.body.removeChild(element);
+        console.log('PDF generated, blob size:', (pdfBlob as Blob).size);
 
         const fileName = `${doc.id}.pdf`;
         const { error: uploadError } = await supabase.storage
@@ -114,8 +119,12 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          throw uploadError;
+          toast.error(`שגיאה בהעלאת המסמך: ${uploadError.message}`);
+          toast.dismiss('whatsapp-pdf');
+          return;
         }
+
+        console.log('PDF uploaded successfully:', fileName);
 
         // Update document record with file path
         await supabase
@@ -128,26 +137,38 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
       // Create signed URL (7 days)
       if (filePath) {
+        console.log('Creating signed URL for:', filePath);
         const { data: signedData, error: signedError } = await supabase.storage
           .from('customer-documents')
           .createSignedUrl(filePath, 604800);
 
-        if (!signedError && signedData?.signedUrl) {
+        if (signedError) {
+          console.error('Signed URL error:', signedError);
+          toast.error(`שגיאה ביצירת קישור: ${signedError.message}`);
+          toast.dismiss('whatsapp-pdf');
+          return;
+        }
+
+        if (signedData?.signedUrl) {
           pdfUrl = signedData.signedUrl;
+          console.log('Signed URL created successfully');
         }
       }
 
       toast.dismiss('whatsapp-pdf');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating PDF link:', error);
       toast.dismiss('whatsapp-pdf');
-      // Continue without link
+      toast.error(`שגיאה בהכנת המסמך: ${error?.message || 'שגיאה לא ידועה'}`);
+      return;
     }
 
     let message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}`;
     
     if (pdfUrl) {
       message += `\n\nלצפייה והורדה:\n${pdfUrl}`;
+    } else {
+      console.warn('No PDF URL generated - sending message without link');
     }
 
     const phoneNumber = customer.phone.replace(/[^\d]/g, '');
