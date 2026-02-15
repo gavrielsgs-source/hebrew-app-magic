@@ -78,6 +78,9 @@ verify_jwt = true
 [functions.get-public-inventory]
 verify_jwt = false
 
+[functions.get-shared-document]
+verify_jwt = false
+
 [functions.tranzila-handshake]
 verify_jwt = false
 

@@ -211,16 +211,14 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
       return;
     }
 
-    let pdfUrl = '';
-
     try {
       toast.loading('מכין קישור למסמך...', { id: 'whatsapp-pdf' });
 
       let filePath = doc.file_path;
 
-      // If no file exists yet, generate PDF using type-specific generator and upload
+      // If no file exists yet, generate PDF and upload
       if (!filePath && doc.status !== 'attached') {
-        console.log('Generating type-specific PDF for document:', doc.id, 'type:', doc.type);
+        console.log('Generating PDF for document:', doc.id, 'type:', doc.type);
         const pdfBlob = await generatePdfBlobForDoc(doc);
         
         if (!pdfBlob || pdfBlob.size === 0) {
@@ -228,7 +226,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
           toast.dismiss('whatsapp-pdf');
           return;
         }
-        console.log('PDF generated, blob size:', pdfBlob.size);
 
         const fileName = `${doc.id}.pdf`;
         const { error: uploadError } = await supabase.storage
@@ -245,8 +242,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
           return;
         }
 
-        console.log('PDF uploaded successfully:', fileName);
-
         await supabase
           .from('customer_documents')
           .update({ file_path: fileName })
@@ -255,57 +250,76 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         filePath = fileName;
       }
 
-      // Create signed URL (7 days)
-      if (filePath) {
-        console.log('Creating signed URL for:', filePath);
-        const { data: signedData, error: signedError } = await supabase.storage
-          .from('customer-documents')
-          .createSignedUrl(filePath, 604800);
+      if (!filePath) {
+        toast.error('לא נמצא קובץ למסמך');
+        toast.dismiss('whatsapp-pdf');
+        return;
+      }
 
-        if (signedError) {
-          console.error('Signed URL error:', signedError);
-          toast.error(`שגיאה ביצירת קישור: ${signedError.message}`);
+      // Check for existing active share
+      const { data: existingShare } = await supabase
+        .from('document_shares' as any)
+        .select('share_id')
+        .eq('document_id', doc.id)
+        .is('revoked_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      let shareId: string;
+
+      if (existingShare) {
+        shareId = (existingShare as any).share_id;
+      } else {
+        // Create new share record
+        const { data: user } = await supabase.auth.getUser();
+        const newShareId = crypto.randomUUID();
+        
+        const { error: insertError } = await supabase
+          .from('document_shares' as any)
+          .insert({
+            document_id: doc.id,
+            share_id: newShareId,
+            user_id: user.user?.id,
+            file_path: filePath,
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          });
+
+        if (insertError) {
+          console.error('Share insert error:', insertError);
+          toast.error('שגיאה ביצירת קישור שיתוף');
           toast.dismiss('whatsapp-pdf');
           return;
         }
 
-        if (signedData?.signedUrl) {
-          pdfUrl = signedData.signedUrl;
-          console.log('Signed URL created successfully');
-        }
+        shareId = newShareId;
       }
 
+      const shareUrl = `https://hebrew-app-magic.lovable.app/share/document/${shareId}`;
+
       toast.dismiss('whatsapp-pdf');
+
+      let message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}\n\nלצפייה והורדה:\n${shareUrl}`;
+
+      const phoneNumber = customer.phone.replace(/[^\d]/g, '');
+      const formattedPhone = phoneNumber.startsWith('0') ? `972${phoneNumber.slice(1)}` : phoneNumber;
+      const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+      
+      if (doc.status !== 'attached') {
+        handleStatusUpdate(doc.id, 'sent');
+      }
+      
+      const a = document.createElement('a');
+      a.href = whatsappUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } catch (error: any) {
-      console.error('Error generating PDF link:', error);
+      console.error('Error in handleSendToWhatsApp:', error);
       toast.dismiss('whatsapp-pdf');
       toast.error(`שגיאה בהכנת המסמך: ${error?.message || 'שגיאה לא ידועה'}`);
-      return;
     }
-
-    let message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}`;
-    
-    if (pdfUrl) {
-      message += `\n\nלצפייה והורדה:\n${pdfUrl}`;
-    } else {
-      console.warn('No PDF URL generated - sending message without link');
-    }
-
-    const phoneNumber = customer.phone.replace(/[^\d]/g, '');
-    const formattedPhone = phoneNumber.startsWith('0') ? `972${phoneNumber.slice(1)}` : phoneNumber;
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-    
-    if (doc.status !== 'attached') {
-      handleStatusUpdate(doc.id, 'sent');
-    }
-    
-    const a = document.createElement('a');
-    a.href = whatsappUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
   };
 
   const generateDocumentHTML = (doc: any) => {

@@ -686,6 +686,56 @@ export type Database = {
         }
         Relationships: []
       }
+      document_shares: {
+        Row: {
+          created_at: string
+          document_id: string
+          download_count: number
+          expires_at: string
+          file_path: string
+          id: string
+          last_viewed_at: string | null
+          revoked_at: string | null
+          share_id: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          download_count?: number
+          expires_at?: string
+          file_path: string
+          id?: string
+          last_viewed_at?: string | null
+          revoked_at?: string | null
+          share_id?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          download_count?: number
+          expires_at?: string
+          file_path?: string
+          id?: string
+          last_viewed_at?: string | null
+          revoked_at?: string | null
+          share_id?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_shares_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "customer_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
