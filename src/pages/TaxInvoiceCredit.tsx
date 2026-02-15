@@ -203,7 +203,22 @@ export default function TaxInvoiceCredit() {
       setSavedCreditData(result);
       setIsSaved(true);
       
-      // PDF generation temporarily disabled
+      // Generate and upload PDF to storage
+      try {
+        const pdfBlob = await generateTaxInvoiceCreditPDF(result, true) as Blob;
+        if (pdfBlob) {
+          await uploadDocument({
+            pdfBlob,
+            documentType: 'tax_invoice_credit',
+            documentNumber: result.creditInvoiceNumber,
+            customerName: result.customer?.name || '',
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+        }
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
       
       toast({
         title: "חשבונית מס זיכוי נשמרה בהצלחה",

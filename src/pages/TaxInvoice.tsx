@@ -308,8 +308,24 @@ export default function TaxInvoice() {
         }
       }
       
-      // Generate and download PDF
-      await generateTaxInvoicePDF({ ...invoiceData, invoiceNumber: savedInvoice.invoiceNumber });
+      // Generate and upload PDF to storage, then download
+      try {
+        const pdfBlob = await generateTaxInvoicePDF({ ...invoiceData, invoiceNumber: savedInvoice.invoiceNumber }, true) as Blob;
+        if (pdfBlob) {
+          await uploadDocument({
+            pdfBlob,
+            documentType: 'tax_invoice',
+            documentNumber: savedInvoice.invoiceNumber,
+            customerName: invoiceData.customer.name || '',
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+        }
+        // Also download the PDF for the user
+        await generateTaxInvoicePDF({ ...invoiceData, invoiceNumber: savedInvoice.invoiceNumber });
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
 
       toast({
         title: "חשבונית נוצרה בהצלחה",

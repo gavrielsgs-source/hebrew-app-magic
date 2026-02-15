@@ -342,7 +342,22 @@ export default function TaxInvoiceReceipt() {
         }
       }
       
-      // PDF generation temporarily disabled
+      // Generate and upload PDF to storage
+      try {
+        const pdfBlob = await generateTaxInvoiceReceiptPDF(result, true) as Blob;
+        if (pdfBlob) {
+          await uploadDocument({
+            pdfBlob,
+            documentType: 'tax_invoice_receipt',
+            documentNumber: result.invoiceNumber,
+            customerName: result.customer?.name || '',
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+        }
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
       
       toast({
         title: "חשבונית מס קבלה נשמרה בהצלחה",

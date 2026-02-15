@@ -257,7 +257,22 @@ export default function Receipt() {
         description: `מספר קבלה: ${result.receiptNumber}`,
       });
       
-      // PDF generation temporarily disabled
+      // Generate and upload PDF to storage
+      try {
+        const pdfBlob = await generateReceiptPDF(result, true) as Blob;
+        if (pdfBlob) {
+          await uploadDocument({
+            pdfBlob,
+            documentType: 'receipt',
+            documentNumber: result.receiptNumber,
+            customerName: result.customer?.name || '',
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+        }
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
     } catch (error) {
       console.error('Error creating receipt:', error);
     } finally {
