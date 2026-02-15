@@ -20,6 +20,13 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       line-height: 1.6;
       padding: 40px 45px;
     }
+    /* Prevent page-break cuts */
+    .section-box, .car-section, .terms-section, .signatures, .consent-box, .special-terms-box {
+      page-break-inside: avoid;
+    }
+    .terms-list li {
+      page-break-inside: avoid;
+    }
     .title {
       text-align: center;
       font-size: 28px;
