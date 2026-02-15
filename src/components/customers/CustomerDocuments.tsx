@@ -74,13 +74,82 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     updateDocumentStatus.mutate({ documentId, customerId, status });
   };
 
-  const handleSendToWhatsApp = (doc: any) => {
+  const handleSendToWhatsApp = async (doc: any) => {
     if (!customer?.phone) {
       toast.error('לא נמצא מספר טלפון ללקוח');
       return;
     }
 
-    const message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}`;
+    let pdfUrl = '';
+
+    try {
+      toast.loading('מכין קישור למסמך...', { id: 'whatsapp-pdf' });
+
+      let filePath = doc.file_path;
+
+      // If no file exists yet, generate PDF and upload
+      if (!filePath && doc.status !== 'attached') {
+        const htmlContent = generateDocumentHTML(doc);
+        const element = document.createElement('div');
+        element.innerHTML = htmlContent;
+        document.body.appendChild(element);
+
+        const opt = {
+          margin: 10,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        };
+
+        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+        document.body.removeChild(element);
+
+        const fileName = `${doc.id}.pdf`;
+        const { error: uploadError } = await supabase.storage
+          .from('customer-documents')
+          .upload(fileName, pdfBlob, {
+            contentType: 'application/pdf',
+            upsert: true
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw uploadError;
+        }
+
+        // Update document record with file path
+        await supabase
+          .from('customer_documents')
+          .update({ file_path: fileName })
+          .eq('id', doc.id);
+
+        filePath = fileName;
+      }
+
+      // Create signed URL (7 days)
+      if (filePath) {
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from('customer-documents')
+          .createSignedUrl(filePath, 604800);
+
+        if (!signedError && signedData?.signedUrl) {
+          pdfUrl = signedData.signedUrl;
+        }
+      }
+
+      toast.dismiss('whatsapp-pdf');
+    } catch (error) {
+      console.error('Error generating PDF link:', error);
+      toast.dismiss('whatsapp-pdf');
+      // Continue without link
+    }
+
+    let message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}`;
+    
+    if (pdfUrl) {
+      message += `\n\nלצפייה והורדה:\n${pdfUrl}`;
+    }
+
     const phoneNumber = customer.phone.replace(/[^\d]/g, '');
     const formattedPhone = phoneNumber.startsWith('0') ? `972${phoneNumber.slice(1)}` : phoneNumber;
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
