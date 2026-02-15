@@ -7,16 +7,23 @@ import { useSubscription } from "@/contexts/subscription-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionPlanCards } from "@/components/subscription/SubscriptionPlanCards";
 import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
 import { BillingToggle } from "@/components/subscription/BillingToggle";
+import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
 
 export default function UpgradeSubscription() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [tranzilaData, setTranzilaData] = useState<{
+    thtk: string;
+    supplier: string;
+    customerInfo: PaymentFormValues;
+  } | null>(null);
   const { subscription, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -31,16 +38,71 @@ export default function UpgradeSubscription() {
   };
 
   const onSubmit = async (data: PaymentFormValues) => {
-    toast.error("מערכת התשלומים אינה פעילה כרגע");
+    if (!selectedPlan) {
+      toast.error("אנא בחר חבילה תחילה");
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const selectedPlanObj = getSelectedPlanDetails(selectedPlan);
+      if (!selectedPlanObj) throw new Error("חבילה לא נמצאה");
+
+      const actualSum = isYearly 
+        ? selectedPlanObj.yearlyPrice * 12
+        : selectedPlanObj.monthlyPrice;
+
+      // Call tranzila-handshake to get thtk token
+      const { data: handshakeData, error } = await supabase.functions.invoke('tranzila-handshake', {
+        body: {
+          sum: actualSum,
+          planId: selectedPlan,
+          billingCycle: isYearly ? 'yearly' : 'monthly',
+          isYearly,
+        }
+      });
+
+      if (error) {
+        console.error("Handshake error:", error);
+        throw new Error(error.message);
+      }
+
+      if (!handshakeData?.success || !handshakeData?.thtk) {
+        console.error("Handshake failed:", handshakeData);
+        throw new Error(handshakeData?.error || 'שגיאה באתחול תשלום');
+      }
+
+      console.log("Handshake successful, thtk received");
+
+      // Set Tranzila data to show the iframe
+      setTranzilaData({
+        thtk: handshakeData.thtk,
+        supplier: handshakeData.supplier,
+        customerInfo: data,
+      });
+
+    } catch (error) {
+      console.error("Error initiating payment:", error);
+      toast.error("שגיאה בתהליך התשלום", {
+        description: error instanceof Error ? error.message : String(error)
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpgrade = (planId: string) => {
     setSelectedPlan(planId);
+    setTranzilaData(null);
     setPaymentDrawerOpen(true);
   };
 
   const handleDrawerClose = (open: boolean) => {
     setPaymentDrawerOpen(open);
+    if (!open) {
+      setTranzilaData(null);
+    }
   };
 
   return (
@@ -80,7 +142,7 @@ export default function UpgradeSubscription() {
             <DrawerTitle className={`text-center ${isMobile ? 'text-base' : 'text-lg'}`}>
               {selectedPlan && (
                 <>
-                  פרטי תשלום - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
+                  {tranzilaData ? 'השלם תשלום' : 'פרטי תשלום'} - מנוי {getSelectedPlanDetails(selectedPlan)?.name}
                   {isYearly && " (תשלום שנתי)"}
                 </>
               )}
@@ -88,12 +150,37 @@ export default function UpgradeSubscription() {
           </DrawerHeader>
           
           <div className="px-4 overflow-y-auto">
-            <PaymentForm 
-              onSubmit={onSubmit}
-              loading={loading}
-              onCancel={() => handleDrawerClose(false)}
-              selectedPlan={selectedPlan}
-            />
+            {tranzilaData && selectedPlan ? (
+              <TranzilaPaymentIframe
+                supplier={tranzilaData.supplier}
+                thtk={tranzilaData.thtk}
+                sum={isYearly 
+                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
+                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                recurSum={isYearly 
+                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
+                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                recurTransaction={isYearly ? '7_approved' : '4_approved'}
+                customerInfo={{
+                  contact: tranzilaData.customerInfo.fullName,
+                  email: tranzilaData.customerInfo.email,
+                  phone: tranzilaData.customerInfo.phone,
+                  company: tranzilaData.customerInfo.companyName,
+                  address: tranzilaData.customerInfo.address,
+                  city: tranzilaData.customerInfo.city,
+                }}
+                planId={selectedPlan}
+                billingCycle={isYearly ? 'yearly' : 'monthly'}
+                productName={`מנוי ${getSelectedPlanDetails(selectedPlan)?.name} - CarsLead`}
+              />
+            ) : (
+              <PaymentForm 
+                onSubmit={onSubmit}
+                loading={loading}
+                onCancel={() => handleDrawerClose(false)}
+                selectedPlan={selectedPlan}
+              />
+            )}
           </div>
           
           <DrawerFooter className="pt-2">
