@@ -147,8 +147,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       console.log("Final subscription object:", subscription);
       setSubscription(subscription);
       
-      // Calculate trial days
-      if (subscription.trialEndsAt) {
+      // Calculate trial days - only relevant if still in trial status
+      if (subscription.subscription_status === 'active' || subscription.subscription_status === 'cancelled') {
+        // Paid subscription - trial is irrelevant
+        setDaysLeftInTrial(0);
+        setIsTrialExpired(false);
+      } else if (subscription.trialEndsAt) {
         calculateTrialDays(subscription.trialEndsAt);
       } else {
         setDaysLeftInTrial(null);
