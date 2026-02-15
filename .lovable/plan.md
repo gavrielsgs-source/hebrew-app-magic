@@ -1,43 +1,64 @@
 
-# תיקון מנויים במסד הנתונים
+# Fix: Subscription Guard Blocks Active Users
 
-## מה קרה
-- המשתמש `itscarslead@gmail.com` ביצע תשלום מוצלח של 199 ש"ח
-- בטעות עדכנו את המנוי של `gavrielName@outlook.co.il` במקום של `itscarslead@gmail.com`
-- צריך לתקן את שני המנויים
+## Problem
+When `itscarslead@gmail.com` logs in, they get redirected to `/subscription/expired` even though their subscription is `active` in the database. The "see packages" page works because `/subscription` is in the whitelisted paths and doesn't go through the guard.
 
-## מה צריך לעשות
+## Root Causes
 
-### שלב 1: עדכון המנוי של itscarslead@gmail.com לפעיל
-עדכון הרשומה של user_id `4588e0ff-3cb1-40e6-b301-635da14d8e60`:
-- subscription_status: 'active'
-- subscription_tier: 'premium'  
-- billing_amount: 199
-- billing_cycle: 'monthly'
-- expires_at: עוד חודש מעכשיו
-- next_billing_date: עוד חודש מעכשיו
-- active: true
+1. **`isLoading` starts as `false`**: The SubscriptionGuard can run its checks before `fetchSubscription` even starts, using stale/default state.
 
-### שלב 2: החזרת המנוי של gavrielName@outlook.co.il למצב הקודם
-עדכון הרשומה של user_id `816dd11c-344a-43c6-8bcb-b91defb5c62d`:
-- subscription_status: 'expired' (מצב קודם - trial פג)
-- active: true (כמו שהיה)
-- billing_amount: null
-- expires_at: null
-- next_billing_date: null
+2. **Race condition**: Between the time `fetchSubscription` starts and completes, there's a window where the guard might evaluate with incorrect `isTrialExpired` state.
 
-### שלב 3: הוספת רשומה לhistory
-הוספת רשומת תשלום מוצלח ל-payment_history עבור itscarslead.
+3. **Guard doesn't check `subscription_status` directly**: The guard relies on `isTrialExpired` derived state, which depends on timing of multiple async state updates.
 
----
+## Solution
 
-## פרטים טכניים
+### 1. Fix initial `isLoading` state (`subscription-context.tsx`)
+Change `isLoading` initial value from `false` to `true` so the guard waits for subscription data before making any decisions.
 
-### מיגרציה SQL
-קובץ מיגרציה חדש שמבצע:
-1. UPDATE על subscriptions עבור itscarslead (user_id: 4588e0ff...) - הפעלת מנוי premium
-2. UPDATE על subscriptions עבור gavrielName (user_id: 816dd11c...) - החזרה למצב expired
-3. INSERT ל-payment_history עבור itscarslead - תיעוד התשלום המוצלח
+```typescript
+// Before:
+const [isLoading, setIsLoading] = useState(false);
 
-### הערה חשובה
-תיקון הקוד שהעברנו (userId prop) כבר פעיל - כל תשלום עתידי יעדכן אוטומטית את המנוי ללא צורך בהתערבות ידנית. דף payment-success כבר קורא ל-refreshSubscription שמרענן את הנתונים בצד הלקוח.
+// After:
+const [isLoading, setIsLoading] = useState(true);
+```
+
+### 2. Make SubscriptionGuard check `subscription_status` directly (`SubscriptionGuard.tsx`)
+Add a direct check: if the subscription has `subscription_status === 'active'` or `'cancelled'`, never redirect to expired - regardless of trial dates.
+
+```typescript
+// If subscription status is 'active' or 'cancelled', allow access
+if (subscription?.subscription_status === 'active' || subscription?.subscription_status === 'cancelled') {
+  return; // Paid subscription, no blocking
+}
+
+// Only then check trial expiration
+if (isTrialExpired) {
+  navigate('/subscription/expired', { replace: true });
+  return;
+}
+```
+
+### 3. Handle edge case when user is not logged in
+Since `isLoading` now starts as `true`, add a guard to set it `false` when there's no user (to avoid infinite loading screen).
+
+In `fetchSubscription`:
+```typescript
+if (!user) {
+  setIsLoading(false);
+  return;
+}
+```
+
+## Technical Details
+
+### Files to modify:
+- `src/contexts/subscription-context.tsx` - Change initial `isLoading` to `true`, ensure it's set to `false` when no user
+- `src/components/auth/SubscriptionGuard.tsx` - Add direct `subscription_status` check before trial expiration check
+
+### Why this fixes it:
+- `isLoading = true` initially means the guard shows "loading..." until real subscription data arrives
+- Direct `subscription_status` check means even if `isTrialExpired` has a stale value, active subscriptions are never blocked
+- This is a belt-and-suspenders approach that eliminates the race condition entirely
