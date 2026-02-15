@@ -20,8 +20,6 @@ export async function generateReceiptPDF(data: ReceiptData, returnBlob: boolean 
   element.style.left = '0';
   element.style.zIndex = '-9999';
   element.style.pointerEvents = 'none';
-  element.style.overflow = 'hidden';
-  element.style.height = '0';
 
   document.body.appendChild(element);
 
