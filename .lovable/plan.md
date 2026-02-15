@@ -1,57 +1,36 @@
 
 
-# גישת שני שלבים: html2canvas + jsPDF
+# תיקון הורדת מסמכים מעמוד הלקוח
 
-## הרעיון
-במקום להסתמך על `html2pdf.js` שעוטף את שני הכלים (ולפעמים מפספס עיצוב), נשתמש ב-`html2canvas` ו-`jsPDF` ישירות בשני שלבים ברורים:
+## הבעיה
+מסמכים מקושרים (attached) מטבלת `documents` מגיעים עם:
+- `url: "/document-production/receipt"` (נתיב פנימי באפליקציה, לא קובץ אמיתי)
+- `file_path: null` (אין קובץ באחסון)
 
-1. **שלב 1**: `html2canvas` מצלם את ה-HTML כתמונה (canvas)
-2. **שלב 2**: `jsPDF` יוצר PDF ומכניס את התמונה לתוכו, כולל חלוקה אוטומטית לדפים
+כשלוחצים "הורד PDF", הקוד:
+1. מציג טוסט "מכין את המסמך להורדה..."
+2. בודק `file_path` - ריק
+3. בודק `url` - לא מתחיל ב-`http`
+4. נתקע או מציג הודעה גנרית בלי להוריד כלום
 
-## יתרונות
-- שליטה מלאה על כל שלב בנפרד
-- התמונה שומרת את כל העיצוב כי html2canvas מצלם פיקסלים
-- אין בעיית חיתוך -- אנחנו חותכים את התמונה לגובה A4 ומחלקים לדפים ידנית
-- כבר מותקן בפרויקט, לא צריך להתקין שום דבר
+## הפתרון
+לתקן את `handleDownloadPDF` ב-`CustomerDocuments.tsx`:
 
-## מה ישתנה
-- קובץ אחד: `src/utils/pdf-helper.ts`
+1. **מסמכים עם URL פנימי** (כמו `/document-production/receipt`) -- לפתוח את הנתיב הפנימי בחלון חדש, כי שם המשתמש יכול לצפות ולהוריד
+2. **להחליף את `generatePdfBlobForDoc`** מ-`html2pdf` הישן לפונקציית `generatePDF` מ-`pdf-helper.ts` (שעובדת עם html2canvas + jsPDF)
+3. **להסיר את ה-import של `html2pdf`** מהקובץ
 
-## פרטים טכניים
+## שינויים טכניים
 
-### הלוגיקה החדשה:
-```text
-1. יצירת iframe עם מידות A4 (794x1123px)
-2. כתיבת ה-HTML לתוך ה-iframe
-3. המתנה לטעינת פונטים ותמונות
-4. html2canvas מצלם את ה-body של ה-iframe כ-canvas
-5. חישוב כמה דפים צריך (גובה canvas / גובה A4)
-6. לכל דף: חיתוך החלק המתאים מה-canvas והכנסה ל-jsPDF
-7. שמירה / החזרת blob
-```
+### קובץ: `src/components/customers/CustomerDocuments.tsx`
 
-### קוד מרכזי:
-```text
-// שלב 1: צילום
-const canvas = await html2canvas(body, { scale: 2, windowWidth: 794 });
+**שינוי 1**: הסרת `import html2pdf` (שורה 15) והוספת `import { generatePDF } from '@/utils/pdf-helper'`
 
-// שלב 2: יצירת PDF עם חלוקה לדפים
-const pdf = new jsPDF('portrait', 'mm', 'a4');
-const pageHeight = 297; // A4 height in mm
-const imgWidth = 210;   // A4 width in mm
-const imgHeight = (canvas.height * imgWidth) / canvas.width;
-let position = 0;
+**שינוי 2**: עדכון `generatePdfBlobForDoc` (שורות 74-97) להשתמש ב-`generatePDF` עם `returnBlob: true`
 
-while (position < imgHeight) {
-  // חיתוך חלק מהתמונה לדף הנוכחי
-  pdf.addImage(slice, 'JPEG', 0, 0, imgWidth, pageHeight);
-  position += pageHeight;
-  if (position < imgHeight) pdf.addPage();
-}
-```
-
-### שמירת iframe:
-- ה-iframe נשאר עם `opacity: 0.01` ומידות A4 כמו עכשיו
-- מוחזר ל-`opacity: 1` לפני הצילום
-- נמחק בסוף
+**שינוי 3**: עדכון `handleDownloadPDF` (שורות 341-405):
+- מסמכים עם URL פנימי (מתחיל ב-`/`) -- פתיחה בחלון חדש עם `window.open`
+- מסמכים עם `file_path` -- הורדה מ-storage כרגיל
+- מסמכים עם URL חיצוני (`http`) -- הורדה ישירה
+- fallback -- יצירת PDF עם `generatePDF` במקום הודעת שגיאה
 
