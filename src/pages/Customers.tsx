@@ -116,12 +116,6 @@ export default function Customers() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
-              variant="outline"
-              className="rounded-xl border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
-            >
-              דוחות
-            </Button>
-            <Button 
               onClick={() => setShowCreateDialog(true)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg rounded-xl px-8 h-12 font-bold text-base transition-all duration-300 hover:shadow-xl hover:scale-105 border-0"
             >

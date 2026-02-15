@@ -6,14 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreateCustomerDocumentDialog } from "./CreateCustomerDocumentDialog";
 import { UploadDocumentDialog } from "./UploadDocumentDialog";
-import { DocumentPreviewDialog } from "./DocumentPreviewDialog";
 import { useCustomerDocuments, useCustomerDocumentReturns, useUpdateCustomerDocumentStatus, useCustomerRelatedDocuments } from "@/hooks/customers";
 import { useCustomer } from "@/hooks/customers/use-customer";
-import type { Document as AppDocument } from "@/hooks/documents/types";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import html2pdf from 'html2pdf.js';
+
 interface CustomerDocumentsProps {
   customerId: string;
 }
@@ -25,6 +24,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
   const { data: customer } = useCustomer(customerId);
   const updateDocumentStatus = useUpdateCustomerDocumentStatus();
   const isMobile = useIsMobile();
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
@@ -77,21 +77,117 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 
     const message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}`;
     const phoneNumber = customer.phone.replace(/[^\d]/g, '');
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    const formattedPhone = phoneNumber.startsWith('0') ? `972${phoneNumber.slice(1)}` : phoneNumber;
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     
     // Update status to sent
-    handleStatusUpdate(doc.id, 'sent');
+    if (doc.status !== 'attached') {
+      handleStatusUpdate(doc.id, 'sent');
+    }
     
     // Open WhatsApp
     window.open(whatsappUrl, '_blank');
   };
 
+  const generateDocumentHTML = (doc: any) => {
+    return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>${doc.title}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      text-align: right;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+      color: #333;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 14px;
+      color: #666;
+    }
+    .details {
+      margin-bottom: 30px;
+    }
+    .details-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .details-label {
+      font-weight: bold;
+      color: #555;
+    }
+    .footer {
+      margin-top: 50px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>${doc.title}</h1>
+    <p>מספר מסמך: ${doc.document_number}</p>
+  </div>
+  <div class="details">
+    <div class="details-row">
+      <span class="details-label">סוג מסמך:</span>
+      <span>${doc.type}</span>
+    </div>
+    <div class="details-row">
+      <span class="details-label">סכום:</span>
+      <span>${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}</span>
+    </div>
+    <div class="details-row">
+      <span class="details-label">תאריך:</span>
+      <span>${new Date(doc.date || doc.created_at).toLocaleDateString('he-IL')}</span>
+    </div>
+    <div class="details-row">
+      <span class="details-label">סטטוס:</span>
+      <span>${doc.status}</span>
+    </div>
+  </div>
+  <div class="footer">
+    <p>מסמך זה נוצר אוטומטית במערכת</p>
+  </div>
+</body>
+</html>`;
+  };
+
   const handleDownloadPDF = async (doc: any) => {
     try {
-      toast.loading('מכין את המסמך להורדה...');
+      toast.loading('מכין את המסמך להורדה...', { id: 'pdf-download' });
 
-      // For attached documents that already have a URL, download directly
-      if (doc.status === 'attached' && doc.url) {
+      // For attached documents (tax invoices etc.) - navigate to internal URL
+      if (doc.status === 'attached' && doc.entity_type === 'tax_invoice') {
+        toast.dismiss('pdf-download');
+        // Open the tax invoice page which has its own PDF generation
+        window.open(doc.url, '_blank');
+        toast.success('פותח את המסמך...');
+        return;
+      }
+
+      // For attached documents with external URL
+      if (doc.status === 'attached' && doc.url && doc.url.startsWith('http')) {
         const link = document.createElement('a');
         link.href = doc.url;
         link.download = `${doc.title}.pdf`;
@@ -99,51 +195,41 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.dismiss();
+        toast.dismiss('pdf-download');
         toast.success('המסמך הורד בהצלחה');
         return;
       }
 
       // Check if PDF already exists in storage for customer documents
       if (doc.file_path && doc.status !== 'attached') {
-        const { data, error } = await supabase.storage
-          .from('customer-documents')
-          .download(doc.file_path);
+        try {
+          const { data, error } = await supabase.storage
+            .from('customer-documents')
+            .download(doc.file_path);
 
-        if (!error && data) {
-          const url = URL.createObjectURL(data);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${doc.title}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          toast.dismiss();
-          toast.success('המסמך הורד בהצלחה');
-          return;
+          if (!error && data) {
+            const url = URL.createObjectURL(data);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${doc.title}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            toast.dismiss('pdf-download');
+            toast.success('המסמך הורד בהצלחה');
+            return;
+          }
+        } catch (storageErr) {
+          console.warn('Storage download failed, generating PDF:', storageErr);
         }
       }
 
-      // Generate PDF from HTML content for customer documents
+      // Generate PDF from HTML content
+      const htmlContent = generateDocumentHTML(doc);
       const element = document.createElement('div');
-      element.innerHTML = `
-        <div style="padding: 40px; font-family: Arial, sans-serif; direction: rtl;">
-          <h1 style="text-align: center; margin-bottom: 30px;">${doc.title}</h1>
-          <div style="margin-bottom: 20px;">
-            <strong>מספר מסמך:</strong> ${doc.document_number}
-          </div>
-          <div style="margin-bottom: 20px;">
-            <strong>סוג:</strong> ${doc.type}
-          </div>
-          <div style="margin-bottom: 20px;">
-            <strong>סכום:</strong> ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}
-          </div>
-          <div style="margin-bottom: 20px;">
-            <strong>תאריך:</strong> ${new Date(doc.date || doc.created_at).toLocaleDateString('he-IL')}
-          </div>
-        </div>
-      `;
+      element.innerHTML = htmlContent;
+      document.body.appendChild(element);
 
       const opt = {
         margin: 10,
@@ -153,40 +239,14 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       };
 
-      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-      
-      // Upload to Supabase storage
-      const fileName = `${doc.id}.pdf`;
-      const { error: uploadError } = await supabase.storage
-        .from('customer-documents')
-        .upload(fileName, pdfBlob, {
-          contentType: 'application/pdf',
-          upsert: true
-        });
+      await html2pdf().set(opt).from(element).save();
+      document.body.removeChild(element);
 
-      if (uploadError) throw uploadError;
-
-      // Update document record with file path
-      await supabase
-        .from('customer_documents')
-        .update({ file_path: fileName })
-        .eq('id', doc.id);
-
-      // Download the file
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${doc.title}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast.dismiss();
+      toast.dismiss('pdf-download');
       toast.success('המסמך הורד בהצלחה');
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      toast.dismiss();
+      toast.dismiss('pdf-download');
       toast.error('שגיאה בהורדת המסמך');
     }
   };
@@ -260,7 +320,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
               </div>
             ) : (
               <div className="space-y-4" dir="rtl">
-                {/* Combined documents from both sources */}
                 {[...documents, ...attachedDocs.map(doc => ({
                   id: doc.id,
                   title: doc.name,
@@ -320,17 +379,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                       {doc.status !== 'attached' ? (
                         <>
                           <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2 flex-wrap`}>
-                            <DocumentPreviewDialog
-                              documentId={doc.id}
-                              documentTitle={doc.title}
-                              documentType={doc.type}
-                              trigger={
-                                <Button variant="outline" size="sm" className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-3'} hover:bg-blue-50 hover:border-blue-300`}>
-                                  <Eye className="h-3.5 w-3.5 ml-1" />
-                                  תצוגה מקדימה
-                                </Button>
-                              }
-                            />
                             <Button 
                               variant="outline" 
                               size="sm"
@@ -430,7 +478,9 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                             size="sm"
                             className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-4'} hover:bg-blue-50 hover:border-blue-300`}
                             onClick={() => {
-                              if (doc.url) {
+                              if (doc.entity_type === 'tax_invoice') {
+                                window.open(doc.url, '_blank');
+                              } else if (doc.url) {
                                 window.open(doc.url, '_blank');
                               } else {
                                 toast.error('אין קישור למסמך');
@@ -448,6 +498,19 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                           >
                             <Download className="h-3.5 w-3.5 ml-1" />
                             הורד PDF
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className={`rounded-lg ${isMobile ? 'w-full justify-start' : 'text-xs px-4'} hover:bg-green-50 hover:border-green-300`}
+                            onClick={() => handleSendToWhatsApp({
+                              ...doc,
+                              document_number: doc.document_number || doc.id.slice(0, 8)
+                            })}
+                            disabled={!customer?.phone}
+                          >
+                            <Send className="h-3.5 w-3.5 ml-1" />
+                            שלח לוואטסאפ
                           </Button>
                         </div>
                       )}
