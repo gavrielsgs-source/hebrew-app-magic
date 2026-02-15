@@ -201,7 +201,22 @@ export default function PriceQuote() {
         description: `מספר הצעה: ${result.quoteNumber}`,
       });
       
-      // PDF generation temporarily disabled
+      // Generate and upload PDF to storage
+      try {
+        const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
+        if (pdfBlob) {
+          await uploadDocument({
+            pdfBlob,
+            documentType: 'price_quote',
+            documentNumber: result.quoteNumber,
+            customerName: result.customer?.fullName || '',
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+        }
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
     } catch (error) {
       console.error("Error saving price quote:", error);
       toast({
