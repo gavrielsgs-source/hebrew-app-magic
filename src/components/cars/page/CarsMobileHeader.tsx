@@ -24,7 +24,7 @@ export function CarsMobileHeader({
       {/* כפתור פעולה */}
       <MobileButton
         onClick={onAddCar}
-        className="bg-gradient-primary text-primary-foreground hover:opacity-90 h-12 rounded-xl font-semibold text-base shadow-md transition-all duration-300"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 rounded-xl font-semibold text-base shadow-md transition-all duration-300"
         icon={<Plus className="h-5 w-5" />}
       >
         הוסף רכב חדש
