@@ -67,7 +67,6 @@ export function TranzilaPaymentIframe({
 
     // Recurring params
     params.set('recur_transaction', recurTransaction);
-    params.set('recur_sum', String(recurSum));
     params.set('recur_start_date', recurStartDate);
 
     // Customer info
