@@ -4,7 +4,23 @@ import type { TaxInvoiceReceiptData } from '@/types/tax-invoice-receipt';
 export async function generateTaxInvoiceReceiptPDF(data: TaxInvoiceReceiptData, returnBlob?: boolean): Promise<void | Blob> {
   const element = document.createElement('div');
   element.innerHTML = createTaxInvoiceReceiptPDFHTML(data);
-  
+  element.style.direction = 'rtl';
+  element.style.width = '210mm';
+  element.style.minHeight = '297mm';
+  element.style.padding = '20mm';
+  element.style.fontFamily = 'Arial, sans-serif';
+  element.style.fontSize = '12px';
+  element.style.lineHeight = '1.4';
+  element.style.color = '#000';
+  element.style.backgroundColor = '#fff';
+  element.style.position = 'fixed';
+  element.style.top = '0';
+  element.style.left = '0';
+  element.style.zIndex = '-9999';
+  element.style.opacity = '0';
+
+  document.body.appendChild(element);
+
   const opt = {
     margin: 10,
     filename: `חשבונית-מס-קבלה-${data.invoiceNumber}.pdf`,
@@ -24,7 +40,7 @@ export async function generateTaxInvoiceReceiptPDF(data: TaxInvoiceReceiptData, 
     console.error('Error generating PDF:', error);
     throw new Error('Failed to generate PDF');
   } finally {
-    element.remove();
+    document.body.removeChild(element);
   }
 }
 
