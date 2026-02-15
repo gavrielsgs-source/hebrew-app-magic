@@ -221,9 +221,16 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
       toast.loading('מכין קישור למסמך...', { id: 'whatsapp-pdf' });
 
       let filePath = doc.file_path;
+      let bucketName = 'customer-documents';
+
+      // For attached documents from documents table, use 'documents' bucket
+      if (doc.status === 'attached' && doc.file_path) {
+        bucketName = 'documents';
+        filePath = doc.file_path;
+      }
 
       // If no file exists yet, generate PDF and upload
-      if (!filePath && doc.status !== 'attached') {
+      if (!filePath) {
         console.log('Generating PDF for document:', doc.id, 'type:', doc.type);
         const pdfBlob = await generatePdfBlobForDoc(doc);
         
@@ -249,12 +256,15 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
           return;
         }
 
-        await supabase
-          .from('customer_documents')
-          .update({ file_path: fileName })
-          .eq('id', doc.id);
+        if (doc.status !== 'attached') {
+          await supabase
+            .from('customer_documents')
+            .update({ file_path: fileName })
+            .eq('id', doc.id);
+        }
 
         filePath = fileName;
+        bucketName = 'customer-documents';
       }
 
       if (!filePath) {
@@ -421,63 +431,86 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
 </html>`;
   };
 
+  const downloadFromBucket = async (bucketName: string, path: string, title: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .download(path);
+      if (!error && data) {
+        const url = URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${title}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        return true;
+      }
+    } catch (err) {
+      console.warn(`Download from ${bucketName}/${path} failed:`, err);
+    }
+    return false;
+  };
+
   const handleDownloadPDF = async (doc: any) => {
     try {
       toast.loading('מכין את המסמך להורדה...', { id: 'pdf-download' });
 
-      // For attached documents (tax invoices etc.) - navigate to internal URL
-      if (doc.status === 'attached' && doc.entity_type === 'tax_invoice') {
-        toast.dismiss('pdf-download');
-        window.open(doc.url, '_blank');
-        toast.success('פותח את המסמך...');
-        return;
-      }
+      // Priority 1: Attached documents (from documents table) - use direct URL or documents bucket
+      if (doc.status === 'attached') {
+        // Tax invoices have internal URLs
+        if (doc.entity_type === 'tax_invoice') {
+          toast.dismiss('pdf-download');
+          window.open(doc.url, '_blank');
+          toast.success('פותח את המסמך...');
+          return;
+        }
 
-      // For attached documents with external URL
-      if (doc.status === 'attached' && doc.url && doc.url.startsWith('http')) {
-        const link = document.createElement('a');
-        link.href = doc.url;
-        link.download = `${doc.title}.pdf`;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.dismiss('pdf-download');
-        toast.success('המסמך הורד בהצלחה');
-        return;
-      }
-
-      // Check if PDF already exists in storage for customer documents
-      if (doc.file_path && doc.status !== 'attached') {
-        try {
-          const { data, error } = await supabase.storage
-            .from('customer-documents')
-            .download(doc.file_path);
-
-          if (!error && data) {
-            const url = URL.createObjectURL(data);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${doc.title}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+        // Attached docs with file_path - try 'documents' bucket first
+        if (doc.file_path) {
+          const downloaded = await downloadFromBucket('documents', doc.file_path, doc.title);
+          if (downloaded) {
             toast.dismiss('pdf-download');
             toast.success('המסמך הורד בהצלחה');
             return;
           }
-        } catch (storageErr) {
-          console.warn('Storage download failed, generating PDF:', storageErr);
+        }
+
+        // Attached docs with external URL
+        if (doc.url && doc.url.startsWith('http')) {
+          const link = document.createElement('a');
+          link.href = doc.url;
+          link.download = `${doc.title}.pdf`;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          toast.dismiss('pdf-download');
+          toast.success('המסמך הורד בהצלחה');
+          return;
+        }
+
+        toast.dismiss('pdf-download');
+        toast.error('לא נמצא קובץ למסמך');
+        return;
+      }
+
+      // Priority 2: Customer documents with file_path - try customer-documents bucket
+      if (doc.file_path) {
+        const downloaded = await downloadFromBucket('customer-documents', doc.file_path, doc.title);
+        if (downloaded) {
+          toast.dismiss('pdf-download');
+          toast.success('המסמך הורד בהצלחה');
+          return;
         }
       }
 
-      // Generate proper PDF based on document type
+      // Priority 3: Generate PDF based on document type (fallback)
       const docType = doc.type?.toLowerCase() || '';
       const docDate = doc.date || doc.created_at ? new Date(doc.date || doc.created_at).toLocaleDateString('he-IL') : new Date().toLocaleDateString('he-IL');
 
       if (docType === 'contract' || doc.title?.includes('הסכם מכר') || doc.title?.includes('הסכם')) {
-        // Generate sales agreement PDF
         const salesData = {
           date: docDate,
           seller: {
@@ -497,14 +530,8 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
             address: customer?.address || '______',
           },
           car: {
-            make: '',
-            model: '',
-            licenseNumber: '',
-            chassisNumber: '',
-            year: 0,
-            mileage: 0,
-            hand: '',
-            originality: '',
+            make: '', model: '', licenseNumber: '', chassisNumber: '',
+            year: 0, mileage: 0, hand: '', originality: '',
           },
           financial: {
             totalPrice: doc.amount || 0,
@@ -516,7 +543,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         };
         await generateSalesAgreementPDF(salesData);
       } else if (docType === 'receipt' || doc.title?.includes('קבלה')) {
-        // Generate receipt PDF
         const receiptData = {
           receiptNumber: doc.document_number || '',
           date: docDate,
@@ -538,13 +564,8 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
             date: docDate,
           }],
           totals: {
-            cash: doc.amount || 0,
-            check: 0,
-            creditCard: 0,
-            bankTransfer: 0,
-            other: 0,
-            taxDeduction: 0,
-            vehicle: 0,
+            cash: doc.amount || 0, check: 0, creditCard: 0, bankTransfer: 0,
+            other: 0, taxDeduction: 0, vehicle: 0,
             totalWithTaxDeduction: doc.amount || 0,
             grandTotal: doc.amount || 0,
           },
@@ -560,7 +581,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         };
         await generateReceiptPDF(receiptData);
       } else if (docType === 'quote' || doc.title?.includes('הצעת מחיר')) {
-        // Generate price quote PDF
         const quoteData = {
           date: docDate,
           quoteNumber: doc.document_number || '',
@@ -597,10 +617,15 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         };
         await generatePriceQuotePDF(quoteData);
       } else {
-        // Fallback: generate generic document PDF
+        // Fallback: generate generic document PDF with position fix
         const htmlContent = generateDocumentHTML(doc);
         const element = document.createElement('div');
         element.innerHTML = htmlContent;
+        element.style.position = 'fixed';
+        element.style.top = '0';
+        element.style.left = '0';
+        element.style.zIndex = '-9999';
+        element.style.opacity = '0';
         document.body.appendChild(element);
 
         const opt = {
@@ -611,8 +636,11 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
           jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
         };
 
-        await html2pdf().set(opt).from(element).save();
-        document.body.removeChild(element);
+        try {
+          await html2pdf().set(opt).from(element).save();
+        } finally {
+          document.body.removeChild(element);
+        }
       }
 
       toast.dismiss('pdf-download');
@@ -705,6 +733,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
                   created_at: doc.created_at,
                   status: 'attached' as const,
                   url: doc.url,
+                  file_path: doc.file_path,
                   entity_type: doc.entity_type
                 }))].map((doc) => (
                   <div key={doc.id} className="border border-slate-200 rounded-xl p-4 bg-gradient-to-bl from-white via-slate-50/30 to-blue-50/20 shadow-md hover:shadow-lg transition-all duration-300">
