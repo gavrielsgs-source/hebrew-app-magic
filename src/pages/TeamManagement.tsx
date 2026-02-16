@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/contexts/subscription-context";
 import { UsageBar } from "@/components/subscription/UsageBar";
 import { useTeamManagement } from "@/hooks/use-team-management";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 
 export default function TeamManagement() {
@@ -14,6 +15,7 @@ export default function TeamManagement() {
   const { subscription, checkEntitlement } = useSubscription();
   const { teamUsers, isLoading, addTeamUser, updateUserRole, removeTeamUser } = useTeamManagement();
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const userLimit = subscription.userLimit || 2;
   const currentUsage = teamUsers.length;
@@ -25,27 +27,28 @@ export default function TeamManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100" dir="rtl">
+      {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm shadow-xl border-b-4 border-primary/20">
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="flex items-center gap-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+          <div className="flex items-center gap-3 sm:gap-6">
             <Button
               variant="ghost"
-              size="lg"
+              size={isMobile ? "sm" : "lg"}
               onClick={() => window.history.back()}
-              className="rounded-2xl bg-white/60 shadow-md hover:shadow-lg transition-all"
+              className="rounded-2xl bg-white/60 shadow-md hover:shadow-lg transition-all shrink-0"
             >
               <ArrowRight className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-4">
-              <div className="bg-primary/10 p-4 rounded-2xl">
-                <Users className="h-8 w-8 text-primary" />
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="bg-primary/10 p-2.5 sm:p-4 rounded-2xl shrink-0">
+                <Users className={`${isMobile ? 'h-5 w-5' : 'h-8 w-8'} text-primary`} />
               </div>
-              <div className="text-right">
-                <h1 className="text-3xl font-bold text-slate-800">
+              <div className="text-right min-w-0">
+                <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold text-slate-800`}>
                   ניהול צוות
                 </h1>
-                <p className="text-lg text-slate-600 mt-1">
-                  נהל את משתמשי הצוות שלך והגדר הרשאות גישה
+                <p className={`${isMobile ? 'text-sm' : 'text-lg'} text-slate-600 mt-0.5 sm:mt-1 truncate`}>
+                  נהל את משתמשי הצוות שלך והגדר הרשאות
                 </p>
               </div>
             </div>
@@ -53,21 +56,21 @@ export default function TeamManagement() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="space-y-8">
+      <div className="max-w-6xl mx-auto p-4 sm:p-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Usage Overview */}
           <Card className="bg-gradient-to-br from-primary/10 via-white to-secondary/10 shadow-2xl rounded-3xl border-0">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-gradient-to-br from-primary/20 to-primary/10 p-4 rounded-2xl shadow-lg">
-                    <Users className="h-8 w-8 text-primary" />
+            <CardContent className="p-4 sm:p-8">
+              <div className={`flex ${isMobile ? 'flex-col gap-4' : 'items-center justify-between'} mb-4 sm:mb-6`}>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="bg-gradient-to-br from-primary/20 to-primary/10 p-3 sm:p-4 rounded-2xl shadow-lg shrink-0">
+                    <Users className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary`} />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-slate-800">
+                    <h3 className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-slate-800`}>
                       שימוש במשתמשים
                     </h3>
-                    <p className="text-lg text-slate-600 mt-1">
+                    <p className={`${isMobile ? 'text-sm' : 'text-lg'} text-slate-600 mt-0.5`}>
                       {currentUsage} מתוך {userLimit} משתמשים
                     </p>
                   </div>
@@ -75,8 +78,8 @@ export default function TeamManagement() {
                 <Button
                   onClick={handleAddUser}
                   disabled={!canAddMore}
-                  size="lg"
-                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all text-lg font-semibold"
+                  size={isMobile ? "default" : "lg"}
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all text-base sm:text-lg font-semibold w-full sm:w-auto"
                 >
                   <Users className="h-5 w-5 mr-2" />
                   הוסף משתמש
@@ -91,24 +94,22 @@ export default function TeamManagement() {
             </CardContent>
           </Card>
 
-          {/* Team Members Table */}
+          {/* Team Members */}
           <Card className="shadow-2xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="pb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="bg-gradient-to-br from-secondary/20 to-secondary/10 p-3 rounded-2xl shadow-lg">
-                    <Settings className="h-6 w-6 text-secondary-foreground" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl font-bold text-slate-800 text-right">חברי הצוות</CardTitle>
-                    <p className="text-lg text-slate-600 text-right mt-1">
-                      נהל הרשאות וגישה של חברי הצוות
-                    </p>
-                  </div>
+            <CardHeader className="pb-4 sm:pb-6">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="bg-gradient-to-br from-secondary/20 to-secondary/10 p-2.5 sm:p-3 rounded-2xl shadow-lg shrink-0">
+                  <Settings className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-secondary-foreground`} />
+                </div>
+                <div>
+                  <CardTitle className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-slate-800 text-right`}>חברי הצוות</CardTitle>
+                  <p className={`${isMobile ? 'text-sm' : 'text-lg'} text-slate-600 text-right mt-0.5`}>
+                    נהל הרשאות וגישה של חברי הצוות
+                  </p>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-2 sm:pt-4">
               <TeamUsersTable 
                 users={teamUsers} 
                 onChangeRole={(userId, newRole) => updateUserRole.mutate({ userId, newRole })}

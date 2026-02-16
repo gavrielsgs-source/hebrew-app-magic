@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Shield, Eye, DollarSign, Users, Crown, Trash2, Edit } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type TeamUserRole = 'admin' | 'sales_agent' | 'viewer' | 'agency_manager';
 
@@ -51,6 +52,8 @@ const roleConfig: Record<TeamUserRole, { label: string; icon: React.ComponentTyp
 };
 
 export function TeamUsersTable({ users, onEditUser, onDeleteUser, onChangeRole }: TeamUsersTableProps) {
+  const isMobile = useIsMobile();
+
   const getRoleBadge = (role: TeamUserRole, isOwner?: boolean) => {
     if (isOwner) {
       return (
@@ -79,6 +82,87 @@ export function TeamUsersTable({ users, onEditUser, onDeleteUser, onChangeRole }
     return email.slice(0, 2).toUpperCase();
   };
 
+  const renderActions = (user: TeamUser) => {
+    if (user.isOwner) return null;
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-slate-100">
+            <span className="sr-only">פתח תפריט</span>
+            <MoreHorizontal className="h-5 w-5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 bg-white rounded-2xl shadow-2xl border-2 z-50">
+          {onEditUser && (
+            <DropdownMenuItem onClick={() => onEditUser(user)}>
+              <Edit className="mr-2 h-4 w-4" />
+              ערוך פרטים
+            </DropdownMenuItem>
+          )}
+          {onChangeRole && (
+            <>
+              {Object.entries(roleConfig).map(([roleKey, config]) => {
+                if (roleKey === user.role) return null;
+                const Icon = config.icon;
+                return (
+                  <DropdownMenuItem
+                    key={roleKey}
+                    onClick={() => onChangeRole(user.id, roleKey as TeamUserRole)}
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    שנה ל{config.label}
+                  </DropdownMenuItem>
+                );
+              })}
+            </>
+          )}
+          {onDeleteUser && (
+            <DropdownMenuItem
+              onClick={() => onDeleteUser(user.id)}
+              className="text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              הסר משתמש
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
+
+  // Mobile card layout
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        {users.map((user) => (
+          <div key={user.id} className="bg-white border-2 border-slate-200 rounded-2xl p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <Avatar className="h-10 w-10 shadow-md shrink-0">
+                  <AvatarFallback className="text-xs font-semibold bg-gradient-to-br from-primary/20 to-primary/10">
+                    {getInitials(user.email, user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-right min-w-0 flex-1">
+                  <div className="font-semibold text-base text-slate-800 truncate">{user.name}</div>
+                  <div className="text-sm text-slate-500 truncate">{user.email}</div>
+                </div>
+              </div>
+              {renderActions(user)}
+            </div>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+              {getRoleBadge(user.role, user.isOwner)}
+              <span className="text-xs text-slate-500">
+                {new Date(user.joinedAt).toLocaleDateString('he-IL')}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Desktop table layout
   return (
     <div className="rounded-2xl border-2 border-slate-200 overflow-hidden">
       <Table>
@@ -113,50 +197,7 @@ export function TeamUsersTable({ users, onEditUser, onDeleteUser, onChangeRole }
                 {new Date(user.joinedAt).toLocaleDateString('he-IL')}
               </TableCell>
               <TableCell className="py-4">
-                {!user.isOwner && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-slate-100">
-                        <span className="sr-only">פתח תפריט</span>
-                        <MoreHorizontal className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 bg-white rounded-2xl shadow-2xl border-2 z-50">
-                      {onEditUser && (
-                        <DropdownMenuItem onClick={() => onEditUser(user)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          ערוך פרטים
-                        </DropdownMenuItem>
-                      )}
-                      {onChangeRole && (
-                        <>
-                          {Object.entries(roleConfig).map(([roleKey, config]) => {
-                            if (roleKey === user.role) return null;
-                            const Icon = config.icon;
-                            return (
-                              <DropdownMenuItem
-                                key={roleKey}
-                                onClick={() => onChangeRole(user.id, roleKey as TeamUserRole)}
-                              >
-                                <Icon className="mr-2 h-4 w-4" />
-                                שנה ל{config.label}
-                              </DropdownMenuItem>
-                            );
-                          })}
-                        </>
-                      )}
-                      {onDeleteUser && (
-                        <DropdownMenuItem
-                          onClick={() => onDeleteUser(user.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          הסר משתמש
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                {renderActions(user)}
               </TableCell>
             </TableRow>
           ))}
