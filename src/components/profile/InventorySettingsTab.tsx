@@ -159,9 +159,9 @@ export function InventorySettingsTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LinkIcon className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 justify-end">
             דף מלאי פומבי
+            <LinkIcon className="h-5 w-5" />
           </CardTitle>
           <CardDescription>
             צור דף ציבורי שמציג את כל הרכבים הזמינים במלאי שלך. 
@@ -292,9 +292,9 @@ export function InventorySettingsTab() {
       {slug && enabled && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <QrCode className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 justify-end">
               קוד QR
+              <QrCode className="h-5 w-5" />
             </CardTitle>
             <CardDescription>
               הדפס או שתף את קוד ה-QR כדי שלקוחות יוכלו לגשת לדף המלאי בקלות
