@@ -252,12 +252,12 @@ export default function PublicInventory() {
             
             {/* Desktop Filters */}
             <div className="hidden md:flex gap-2 items-center">
-              <Select value={selectedMake} onValueChange={setSelectedMake}>
+              <Select value={selectedMake || "all"} onValueChange={(val) => setSelectedMake(val === "all" ? "" : val)}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="יצרן" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">הכל</SelectItem>
+                  <SelectItem value="all">הכל</SelectItem>
                   {availableFilters.makes.map(make => (
                     <SelectItem key={make} value={make}>{make}</SelectItem>
                   ))}
@@ -305,12 +305,12 @@ export default function PublicInventory() {
                 <div className="mt-6 space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">יצרן</label>
-                    <Select value={selectedMake} onValueChange={setSelectedMake}>
+                    <Select value={selectedMake || "all"} onValueChange={(val) => setSelectedMake(val === "all" ? "" : val)}>
                       <SelectTrigger>
                         <SelectValue placeholder="בחר יצרן" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">הכל</SelectItem>
+                        <SelectItem value="all">הכל</SelectItem>
                         {availableFilters.makes.map(make => (
                           <SelectItem key={make} value={make}>{make}</SelectItem>
                         ))}
