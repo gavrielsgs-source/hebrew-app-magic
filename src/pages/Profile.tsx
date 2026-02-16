@@ -143,7 +143,7 @@ export default function Profile() {
             <TabsContent value="profile" className="space-y-4">
               <Card className="shadow-lg rounded-2xl border-2">
                 <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
-                  <CardTitle className="text-right text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2 flex-row-reverse justify-end">
                     <User className="h-5 w-5 text-primary" />
                     עריכת פרטים אישיים
                   </CardTitle>
@@ -327,7 +327,7 @@ export default function Profile() {
           <TabsContent value="profile">
             <Card className="shadow-lg rounded-2xl border-2">
               <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
-                <CardTitle className="text-right text-xl flex items-center gap-2">
+              <CardTitle className="text-xl flex items-center gap-2 flex-row-reverse justify-end">
                   <User className="h-5 w-5 text-primary" />
                   עריכת פרטים אישיים
                 </CardTitle>
@@ -436,7 +436,7 @@ export default function Profile() {
           <TabsContent value="company">
             <Card className="shadow-lg rounded-2xl border-2">
               <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
-                <CardTitle className="text-right text-xl flex items-center gap-2">
+              <CardTitle className="text-xl flex items-center gap-2 flex-row-reverse justify-end">
                   <FileText className="h-5 w-5 text-primary" />
                   פרטי חברה למסמכים
                 </CardTitle>
