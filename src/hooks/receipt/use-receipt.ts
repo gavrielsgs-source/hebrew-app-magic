@@ -39,6 +39,7 @@ export function useReceipt() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['receipts'] });
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['customer-related-documents'] });
     },
     onError: (error) => {
       console.error('Error creating receipt:', error);
