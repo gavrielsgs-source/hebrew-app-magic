@@ -8,6 +8,9 @@ import { TemplateDialog } from "@/components/templates/TemplateDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { useToast } from "@/hooks/use-toast";
+import { useRealAdminCheck } from "@/hooks/use-real-admin-check";
+import { Navigate } from "react-router-dom";
+import { toast as sonnerToast } from "sonner";
 
 import { 
   useWhatsappTemplates,
@@ -33,6 +36,7 @@ interface DbTemplate {
 }
 
 export default function Templates() {
+  const { isAdmin, isLoading: adminLoading } = useRealAdminCheck();
   const [selectedTemplate, setSelectedTemplate] = useState<DbTemplate | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNew, setIsNew] = useState(false);
@@ -49,6 +53,12 @@ export default function Templates() {
   const { mutate: createTemplate, isPending: isCreating } = useCreateWhatsappTemplate();
   const { mutate: updateDbTemplate, isPending: isUpdating } = useUpdateWhatsappTemplate();
   const { mutate: deleteDbTemplate, isPending: isDeleting } = useDeleteWhatsappTemplate();
+
+  if (adminLoading) return null;
+  if (!isAdmin) {
+    sonnerToast.error("אין לך הרשאות לדף זה");
+    return <Navigate to="/dashboard" replace />;
+  }
 
   // Read templates directly from database
   const templates: DbTemplate[] = dbTemplates?.map(t => ({
