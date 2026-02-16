@@ -52,6 +52,8 @@ export function EditTaskForm({ task, onSuccess, isMobile = false }: EditTaskForm
     console.log("Starting task update with data:", data);
     
     try {
+      const isValidUUID = (val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
       const taskData = {
         title: data.title,
         description: data.description || null,
@@ -59,8 +61,8 @@ export function EditTaskForm({ task, onSuccess, isMobile = false }: EditTaskForm
         priority: data.priority,
         type: data.type,
         due_date: data.due_date ? data.due_date.toISOString() : null,
-        lead_id: data.lead_id === "none" || !data.lead_id ? null : data.lead_id,
-        car_id: data.car_id === "none" || !data.car_id ? null : data.car_id,
+        lead_id: (data.lead_id && data.lead_id !== "none" && isValidUUID(data.lead_id)) ? data.lead_id : null,
+        car_id: (data.car_id && data.car_id !== "none" && isValidUUID(data.car_id)) ? data.car_id : null,
       };
 
       console.log("Updating task data:", taskData);

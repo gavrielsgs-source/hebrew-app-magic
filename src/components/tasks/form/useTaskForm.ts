@@ -53,6 +53,11 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId, initialDat
       const taskStatus = validStatuses.includes(data.status) ? data.status : 'pending';
       const taskType = validTypes.includes(data.type) ? data.type : 'task';
       
+      const isValidUUID = (val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+      
+      const leadId = (data.lead_id && data.lead_id !== "none" && data.lead_id !== "" && isValidUUID(data.lead_id)) ? data.lead_id : null;
+      const carId = (data.car_id && data.car_id !== "none" && data.car_id !== "" && isValidUUID(data.car_id)) ? data.car_id : null;
+
       const taskData = {
         title: data.title,
         description: data.description || null,
@@ -60,8 +65,8 @@ export function useTaskForm({ onSuccess, initialLeadId, initialCarId, initialDat
         priority: data.priority,
         type: taskType,
         due_date: data.due_date ? data.due_date.toISOString() : null,
-        lead_id: (data.lead_id && data.lead_id !== "none" && data.lead_id !== "") ? data.lead_id : null,
-        car_id: (data.car_id && data.car_id !== "none" && data.car_id !== "") ? data.car_id : null,
+        lead_id: leadId,
+        car_id: carId,
       };
 
       console.log("Submitting task data:", taskData);
