@@ -95,7 +95,7 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
               {field.value && (
                 <div className="flex items-center justify-end gap-2 p-2 border rounded-md bg-muted/50">
                   <Select value={timeMinute} onValueChange={(minute) => handleTimeChange(timeHour, minute)}>
-                    <SelectTrigger className="w-20 text-right [&>span]:w-full [&>span]:text-right">
+                    <SelectTrigger className="w-[70px] text-center [&>span]:w-full [&>span]:text-center [&>svg]:shrink-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent align="end" className="bg-background border-2 shadow-2xl z-50 text-right">
@@ -106,9 +106,9 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                       ))}
                     </SelectContent>
                   </Select>
-                  <span className="text-sm">:</span>
+                  <span className="text-sm font-medium">:</span>
                   <Select value={timeHour} onValueChange={(hour) => handleTimeChange(hour, timeMinute)}>
-                    <SelectTrigger className="w-20 text-right [&>span]:w-full [&>span]:text-right">
+                    <SelectTrigger className="w-[70px] text-center [&>span]:w-full [&>span]:text-center [&>svg]:shrink-0">
                       <SelectValue placeholder="--" />
                     </SelectTrigger>
                     <SelectContent align="end" className="bg-background border-2 shadow-2xl z-50 text-right max-h-[200px] overflow-y-auto">
@@ -120,8 +120,8 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                       ))}
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-muted-foreground">:שעה (אופציונלי)</span>
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">שעה (אופציונלי):</span>
+                  <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                 </div>
               )}
             </div>
