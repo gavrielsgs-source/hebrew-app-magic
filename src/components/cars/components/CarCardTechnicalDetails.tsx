@@ -1,6 +1,7 @@
 
 import { Calendar, Gauge, Fuel, Car as CarIcon } from "lucide-react";
 import { Car } from "@/types/car";
+import { translateTransmission, translateFuelType } from "@/lib/car-translations";
 
 interface CarCardTechnicalDetailsProps {
   car: Car;
@@ -22,7 +23,7 @@ export function CarCardTechnicalDetails({ car, isMobile = false }: CarCardTechni
       
       <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg">
         <div className="text-sm min-w-0 flex-1">
-          <div className="font-medium text-gray-900 truncate">{car.fuel_type || 'לא צוין'}</div>
+          <div className="font-medium text-gray-900 truncate">{translateFuelType(car.fuel_type)}</div>
           <div className="text-xs text-gray-500">סוג דלק</div>
         </div>
         <Fuel className="h-5 w-5 text-brand-primary flex-shrink-0" />
@@ -31,7 +32,7 @@ export function CarCardTechnicalDetails({ car, isMobile = false }: CarCardTechni
       {car.transmission && (
         <div className="flex items-center gap-2 text-right bg-gray-50 p-3 rounded-lg col-span-2">
           <div className="text-sm min-w-0 flex-1">
-            <div className="font-medium text-gray-900 truncate">{car.transmission}</div>
+            <div className="font-medium text-gray-900 truncate">{translateTransmission(car.transmission)}</div>
             <div className="text-xs text-gray-500">תיבת הילוכים</div>
           </div>
           <CarIcon className="h-5 w-5 text-brand-primary flex-shrink-0" />
