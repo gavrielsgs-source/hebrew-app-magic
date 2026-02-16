@@ -77,6 +77,7 @@ export function useUploadProductionDocument() {
     },
     onSuccess: (publicUrl) => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['customer-related-documents'] });
       toast({
         title: "המסמך הועלה בהצלחה",
         description: "המסמך נשמר בענן וניתן לשיתוף",

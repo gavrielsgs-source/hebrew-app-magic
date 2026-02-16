@@ -39,6 +39,7 @@ export function useTaxInvoiceReceipt() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tax-invoice-receipts'] });
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['customer-related-documents'] });
     },
     onError: (error) => {
       console.error('Error creating tax invoice receipt:', error);
