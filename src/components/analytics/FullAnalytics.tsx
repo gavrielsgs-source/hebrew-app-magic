@@ -2,12 +2,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Users, Car, CheckCircle } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
 import { SmartInsights } from "./SmartInsights";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 export function FullAnalytics() {
+  const isMobile = useIsMobile();
   // ברירת מחדל: 30 הימים האחרונים + 30 הימים שלפניהם
   const now = new Date();
   const from = new Date(now);
@@ -146,10 +148,10 @@ export function FullAnalytics() {
 
       <Tabs defaultValue="leads" className="space-y-4">
         <div className="flex justify-end">
-          <TabsList className="rounded-xl bg-muted/50 p-1">
-            <TabsTrigger value="sources" className="rounded-lg">מקורות</TabsTrigger>
-            <TabsTrigger value="sales" className="rounded-lg">מכירות</TabsTrigger>
-            <TabsTrigger value="leads" className="rounded-lg">לידים</TabsTrigger>
+          <TabsList className="rounded-xl bg-muted/50 p-1 flex-wrap h-auto gap-1">
+            <TabsTrigger value="sources" className="rounded-lg text-xs sm:text-sm">מקורות</TabsTrigger>
+            <TabsTrigger value="sales" className="rounded-lg text-xs sm:text-sm">מכירות</TabsTrigger>
+            <TabsTrigger value="leads" className="rounded-lg text-xs sm:text-sm">לידים</TabsTrigger>
           </TabsList>
         </div>
         
@@ -167,7 +169,7 @@ export function FullAnalytics() {
                     color: "hsl(var(--chart-1))",
                   },
                 }}
-                className="h-[300px]"
+                className={isMobile ? "h-[220px]" : "h-[300px]"}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={leadsData}>
@@ -206,7 +208,7 @@ export function FullAnalytics() {
                     color: "hsl(var(--chart-2))",
                   },
                 }}
-                className="h-[300px]"
+                className={isMobile ? "h-[220px]" : "h-[300px]"}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={leadsData}>
@@ -237,7 +239,7 @@ export function FullAnalytics() {
                     color: "hsl(var(--chart-3))",
                   },
                 }}
-                className="h-[300px]"
+                className={isMobile ? "h-[220px]" : "h-[300px]"}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={sourceData}>
