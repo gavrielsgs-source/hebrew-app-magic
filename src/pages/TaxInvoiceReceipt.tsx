@@ -225,11 +225,6 @@ export default function TaxInvoiceReceipt() {
             let subtotal = quantity * unitPrice;
             let total = subtotal - discount;
             
-            // If VAT is included, calculate the actual total with VAT
-            if (includeVat) {
-              total = total * (1 + vatRate / 100);
-            }
-            
             const currentTotal = form.getValues(`items.${index}.total`);
             if (Math.abs(currentTotal - total) > 0.01) {
               form.setValue(`items.${index}.total`, total, { shouldValidate: false });
