@@ -51,16 +51,16 @@ const receiptSchema = z.object({
   
   // Company info
   companyName: z.string().min(1, 'שם החברה נדרש'),
-  companyAddress: z.string().min(1, 'כתובת החברה נדרשת'),
-  companyHp: z.string().min(1, 'מספר עוסק מורשה נדרש'),
-  companyPhone: z.string().min(1, 'טלפון החברה נדרש'),
+  companyAddress: z.string().optional().default(''),
+  companyHp: z.string().optional().default(''),
+  companyPhone: z.string().optional().default(''),
   companyAuthorizedDealer: z.boolean(),
   
   // Customer info
   customerName: z.string().min(1, 'שם הלקוח נדרש'),
-  customerAddress: z.string().min(1, 'כתובת הלקוח נדרשת'),
-  customerHp: z.string().min(1, 'ח.פ/ת.ז הלקוח נדרש'),
-  customerPhone: z.string().min(1, 'טלפון הלקוח נדרש'),
+  customerAddress: z.string().optional().default(''),
+  customerHp: z.string().optional().default(''),
+  customerPhone: z.string().optional().default(''),
 
   // Receipt for type
   receiptForType: z.enum(['none', 'tax_invoice', 'receipt_cancellation']),
@@ -74,13 +74,13 @@ type ReceiptFormData = z.infer<typeof receiptSchema>;
 type PaymentType = 'cash' | 'check' | 'credit_card' | 'bank_transfer' | 'other' | 'tax_deduction' | 'vehicle';
 
 const PAYMENT_TABS: { id: PaymentType; label: string; icon: React.ElementType }[] = [
-  { id: 'cash', label: 'מזומן', icon: Banknote },
-  { id: 'check', label: 'המחאות', icon: FileText },
-  { id: 'credit_card', label: 'כרטיסי אשראי', icon: CreditCard },
-  { id: 'bank_transfer', label: 'העברות בנקאיות', icon: Building2 },
-  { id: 'other', label: 'אחר', icon: ReceiptIcon },
-  { id: 'tax_deduction', label: 'ניכוי מס במקור', icon: FileText },
   { id: 'vehicle', label: 'רכבים', icon: Car },
+  { id: 'tax_deduction', label: 'ניכוי מס במקור', icon: FileText },
+  { id: 'other', label: 'אחר', icon: ReceiptIcon },
+  { id: 'bank_transfer', label: 'העברות בנקאיות', icon: Building2 },
+  { id: 'credit_card', label: 'כרטיסי אשראי', icon: CreditCard },
+  { id: 'check', label: 'המחאות', icon: FileText },
+  { id: 'cash', label: 'מזומן', icon: Banknote },
 ];
 
 export default function Receipt() {
@@ -306,7 +306,7 @@ export default function Receipt() {
       });
 
       const dataToUse = savedReceiptData || {
-        receiptNumber: 'DRAFT',
+        receiptNumber: form.getValues('title') || 'קבלה',
         date: form.getValues('date').toISOString(),
         branch: form.getValues('branch'),
         language: form.getValues('language'),
