@@ -119,7 +119,7 @@ export default function TaxInvoice() {
         description: '',
         quantity: 1,
         unitPrice: 0,
-        vatRate: 17,
+        vatRate: 18,
         total: 0,
         includeVat: true
       }] as InvoiceItem[],
@@ -196,7 +196,7 @@ export default function TaxInvoice() {
       description: '',
       quantity: 1,
       unitPrice: 0,
-      vatRate: 17,
+      vatRate: 18,
       total: 0,
       includeVat: true
     });
@@ -277,7 +277,7 @@ export default function TaxInvoice() {
           description: item.description || '',
           quantity: Number(item.quantity) || 0,
           unitPrice: Number(item.unitPrice) || 0,
-          vatRate: Number(item.vatRate) || 17,
+          vatRate: Number(item.vatRate) || 18,
           total: Number(item.total) || 0,
           includeVat: Boolean(item.includeVat)
         })) as InvoiceItem[],
