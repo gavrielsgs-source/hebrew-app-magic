@@ -15,9 +15,10 @@ import type { TaskFormProps } from "./TaskFormTypes";
 
 interface EditTaskFormProps extends TaskFormProps {
   task: Task;
+  isMobile?: boolean;
 }
 
-export function EditTaskForm({ task, onSuccess }: EditTaskFormProps) {
+export function EditTaskForm({ task, onSuccess, isMobile = false }: EditTaskFormProps) {
   const { updateTask } = useTasks();
   const { toast } = useToast();
   
@@ -93,9 +94,9 @@ export function EditTaskForm({ task, onSuccess }: EditTaskFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <TaskBasicDetails />
-        <TaskDateAndStatus />
-        <TaskTypeAndPriority />
-        <TaskRelations />
+        <TaskDateAndStatus hiddenOnMobile={isMobile} />
+        {!isMobile && <TaskTypeAndPriority />}
+        {!isMobile && <TaskRelations />}
         
         {/* Notification Option */}
         {watchedDueDate && (

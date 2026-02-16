@@ -106,6 +106,7 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
                   onSelectedDateChange={setSelectedDate}
                   onTaskClick={onTaskClick}
                   onTaskDateChange={handleTaskDateChange}
+                  onCreateTask={handleCreateTask}
                 />
               ) : viewMode === "calendar" ? (
                 <CalendarView
@@ -136,12 +137,16 @@ export function TaskCalendar({ tasks, onTaskClick, onTaskUpdate }: TaskCalendarP
         </div>
       </div>
 
-      {/* Add Task Dialog */}
-      <AddTaskDialog 
-        key={taskCreationDate?.toISOString()} 
-        onSuccess={handleAddTaskSuccess}
-        initialDate={taskCreationDate}
-      />
+      {/* Add Task Dialog - only shown when creating from calendar */}
+      {showAddTaskDialog && taskCreationDate && (
+        <AddTaskDialog 
+          key={taskCreationDate.toISOString()} 
+          onSuccess={handleAddTaskSuccess}
+          initialDate={taskCreationDate}
+          open={showAddTaskDialog}
+          onOpenChange={setShowAddTaskDialog}
+        />
+      )}
 
       {/* Keyboard shortcuts help overlay */}
       {showKeyboardHelp && (

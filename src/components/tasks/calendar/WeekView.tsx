@@ -14,6 +14,7 @@ interface WeekViewProps {
   onSelectedDateChange: (date: Date) => void;
   onTaskClick: (task: Task) => void;
   onTaskDateChange?: (taskId: string, newDate: Date) => void;
+  onCreateTask?: (date: Date) => void;
 }
 
 export function WeekView({ 
@@ -21,7 +22,8 @@ export function WeekView({
   selectedDate, 
   onSelectedDateChange, 
   onTaskClick, 
-  onTaskDateChange 
+  onTaskDateChange,
+  onCreateTask
 }: WeekViewProps) {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
@@ -133,6 +135,7 @@ export function WeekView({
             !isSelectedDate && !isTodayDate && !isDragOver && "border-border/50 hover:border-border hover:bg-muted/30"
           )}
           onClick={() => onSelectedDateChange(date)}
+          onDoubleClick={() => onCreateTask?.(date)}
           onDragOver={(e) => handleDragOver(e, date)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, date)}
@@ -161,7 +164,7 @@ export function WeekView({
                 "text-xs text-center py-6 rounded-lg",
                 isDragOver ? "text-emerald-600 bg-emerald-50 font-medium" : "text-muted-foreground"
               )}>
-                {isDragOver ? "שחרר כאן" : "אין משימות"}
+                {isDragOver ? "שחרר כאן" : onCreateTask ? "לחץ פעמיים להוספה" : "אין משימות"}
               </div>
             ) : (
               dayTasks.slice(0, 4).map(task => (

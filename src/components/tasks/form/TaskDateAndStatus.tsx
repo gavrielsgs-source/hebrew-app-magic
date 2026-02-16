@@ -11,7 +11,11 @@ import { useFormContext } from "react-hook-form";
 import type { TaskFormValues } from "@/types/task";
 import { useState } from "react";
 
-export function TaskDateAndStatus() {
+interface TaskDateAndStatusProps {
+  hiddenOnMobile?: boolean;
+}
+
+export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusProps) {
   const form = useFormContext<TaskFormValues>();
   const [timeHour, setTimeHour] = useState<string>("none");
   const [timeMinute, setTimeMinute] = useState<string>("00");
@@ -136,36 +140,38 @@ export function TaskDateAndStatus() {
         )}
       />
       
-      <FormField
-        control={form.control}
-        name="status"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>סטטוס</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger className="text-right [&>span]:w-full [&>span]:text-right">
-                  <SelectValue placeholder="בחר סטטוס" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent
-                dir="rtl" 
-                side="bottom" 
-                align="end" 
-                avoidCollisions={false} 
-                sideOffset={6}
-                className="z-50 min-w-[var(--radix-select-trigger-width)] bg-background"
-              >
-                <SelectItem value="pending" className="text-center">ממתין</SelectItem>
-                <SelectItem value="in_progress" className="text-center">בביצוע</SelectItem>
-                <SelectItem value="completed" className="text-center">הושלם</SelectItem>
-                <SelectItem value="cancelled" className="text-center">בוטל</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {!hiddenOnMobile && (
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>סטטוס</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="text-right [&>span]:w-full [&>span]:text-right">
+                    <SelectValue placeholder="בחר סטטוס" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent
+                  dir="rtl" 
+                  side="bottom" 
+                  align="end" 
+                  avoidCollisions={false} 
+                  sideOffset={6}
+                  className="z-50 min-w-[var(--radix-select-trigger-width)] bg-background"
+                >
+                  <SelectItem value="pending" className="text-center">ממתין</SelectItem>
+                  <SelectItem value="in_progress" className="text-center">בביצוע</SelectItem>
+                  <SelectItem value="completed" className="text-center">הושלם</SelectItem>
+                  <SelectItem value="cancelled" className="text-center">בוטל</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
     </>
   );
 }
