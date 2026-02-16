@@ -1,5 +1,5 @@
 
-import { MoreHorizontal, Link as LinkIcon, Download, MessageCircle, Star, StarOff } from "lucide-react";
+import { MoreHorizontal, Download, MessageCircle, Star, StarOff, Calendar, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { DocumentTypeIcon } from "./DocumentTypeIcon";
+import { DocumentTypeIcon, getIconBgColor, getTypeBadgeClasses } from "./DocumentTypeIcon";
 import { getDocumentTypeLabel, getEntityLabel } from "../utils/document-utils";
 import type { Document } from "@/hooks/use-documents";
 import { toast } from "sonner";
@@ -56,110 +56,86 @@ export function DocumentCard({
     }
   };
 
-  const getDocumentTypeColor = (type: string) => {
-    switch (type) {
-      case 'contract': return 'bg-blue-50/80 border-blue-200/50 dark:bg-blue-950/30 dark:border-blue-800/30';
-      case 'insurance': return 'bg-green-50/80 border-green-200/50 dark:bg-green-950/30 dark:border-green-800/30';
-      case 'license': return 'bg-yellow-50/80 border-yellow-200/50 dark:bg-yellow-950/30 dark:border-yellow-800/30';
-      case 'invoice': return 'bg-purple-50/80 border-purple-200/50 dark:bg-purple-950/30 dark:border-purple-800/30';
-      case 'id': return 'bg-orange-50/80 border-orange-200/50 dark:bg-orange-950/30 dark:border-orange-800/30';
-      default: return 'bg-muted/50 border-muted-foreground/10';
-    }
-  };
+  const entityLabel = (document.entity_id && document.entity_type) 
+    ? getEntityLabel(document.entity_id, document.entity_type, leads, cars) 
+    : null;
 
   return (
-    <div className={`border rounded-2xl p-4 h-24 flex items-center justify-between transition-all hover:shadow-md hover:scale-[1.01] ${
-      isTemplate ? 'border-yellow-300/50 bg-yellow-50/80 dark:bg-yellow-950/30' : getDocumentTypeColor(document.type)
+    <div className={`border rounded-2xl p-5 flex items-start gap-4 transition-all hover:shadow-lg hover:scale-[1.01] bg-card ${
+      isTemplate ? 'border-yellow-300/50 ring-1 ring-yellow-200/50' : 'border-border/50'
     }`}>
-      <div className={`flex items-center gap-2 ${isMobile ? 'gap-1' : 'gap-2'}`}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl hover:bg-background/80">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent 
-            align="start" 
-            className="rounded-xl bg-popover shadow-lg border z-50 min-w-[160px]"
-          >
-            <DropdownMenuItem 
-              onClick={() => window.open(document.url, '_blank')}
-              className="text-right justify-end rounded-lg"
-            >
-              צפייה
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={handleDownload}
-              className="text-right justify-end rounded-lg"
-            >
-              הורדה
-              <Download className="w-4 h-4 mr-2" />
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => onSendWhatsApp(document)}
-              className="text-right justify-end rounded-lg"
-            >
-              שליחה בוואטסאפ
-              <MessageCircle className="w-4 h-4 mr-2" />
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => onToggleTemplate(document.id, !isTemplate)}
-              className="text-right justify-end rounded-lg"
-            >
-              {isTemplate ? (
-                <>
-                  הסרה מתבניות
-                  <StarOff className="w-4 h-4 mr-2" />
-                </>
-              ) : (
-                <>
-                  שמירה כתבנית
-                  <Star className="w-4 h-4 mr-2" />
-                </>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => onDelete(document.id)}
-              disabled={isDeleting}
-              className="text-red-600 text-right justify-end rounded-lg"
-            >
-              מחיקה
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* Icon */}
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${getIconBgColor(document.type)}`}>
+        <DocumentTypeIcon type={document.type} className="w-6 h-6" />
       </div>
-      
-      <div className="flex items-center gap-3 text-right flex-1 min-w-0">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-end gap-2 mb-1">
-            <h3 className="font-semibold text-lg text-gray-800">
-              {getDocumentTypeLabel(document.type)}
-            </h3>
-            {isTemplate && <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
-          </div>
-          
-          <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-1">
-            <span>{new Date(document.created_at).toLocaleDateString('he-IL')}</span>
-            {isTemplate && (
-              <>
-                <span>•</span>
-                <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800">
-                  תבנית
-                </Badge>
-              </>
-            )}
-          </div>
-          
-          {(document.entity_id && document.entity_type) && (
-            <div className="flex items-center justify-end text-xs text-blue-600 gap-1">
-              <span className="truncate font-medium">{getEntityLabel(document.entity_id, document.entity_type, leads, cars)}</span>
-              <LinkIcon className="h-3 w-3 flex-shrink-0" />
-            </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0 text-right">
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl hover:bg-muted flex-shrink-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="rounded-xl bg-popover shadow-lg border z-50 min-w-[160px]">
+              <DropdownMenuItem onClick={() => window.open(document.url, '_blank')} className="text-right justify-end rounded-lg">
+                צפייה
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownload} className="text-right justify-end rounded-lg">
+                הורדה
+                <Download className="w-4 h-4 mr-2" />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSendWhatsApp(document)} className="text-right justify-end rounded-lg">
+                שליחה בוואטסאפ
+                <MessageCircle className="w-4 h-4 mr-2" />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onToggleTemplate(document.id, !isTemplate)} className="text-right justify-end rounded-lg">
+                {isTemplate ? (
+                  <>הסרה מתבניות<StarOff className="w-4 h-4 mr-2" /></>
+                ) : (
+                  <>שמירה כתבנית<Star className="w-4 h-4 mr-2" /></>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onDelete(document.id)} disabled={isDeleting} className="text-red-600 text-right justify-end rounded-lg">
+                מחיקה
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <h3 className="font-semibold text-base text-foreground truncate flex-1">
+            {document.name}
+          </h3>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 mb-2">
+          <Badge variant="secondary" className={`text-xs border-0 ${getTypeBadgeClasses(document.type)}`}>
+            {getDocumentTypeLabel(document.type)}
+          </Badge>
+          {isTemplate && (
+            <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800 border-0">
+              <Star className="w-3 h-3 ml-1" />
+              תבנית
+            </Badge>
           )}
         </div>
-        <DocumentTypeIcon type={document.type} className="w-8 h-8 flex-shrink-0" />
+
+        <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+          {document.created_at && (
+            <span className="flex items-center gap-1">
+              {new Date(document.created_at).toLocaleDateString('he-IL')}
+              <Calendar className="w-3.5 h-3.5" />
+            </span>
+          )}
+          {entityLabel && (
+            <span className="flex items-center gap-1 text-primary/80 font-medium truncate">
+              {entityLabel}
+              <LinkIcon className="w-3.5 h-3.5 flex-shrink-0" />
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
