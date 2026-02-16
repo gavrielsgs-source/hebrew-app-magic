@@ -25,6 +25,7 @@ import { useUploadProductionDocument } from "@/hooks/use-upload-production-docum
 import { generatePriceQuotePDF } from "@/utils/pdf/price-quote-pdf";
 
 const priceQuoteSchema = z.object({
+  title: z.string().min(1, "כותרת נדרשת"),
   date: z.string().min(1, "תאריך נדרש"),
   leadId: z.string().optional(),
   customerId: z.string().optional(),
@@ -68,6 +69,7 @@ export default function PriceQuote() {
   const form = useForm<PriceQuoteFormValues>({
     resolver: zodResolver(priceQuoteSchema),
     defaultValues: {
+      title: 'הצעת מחיר',
       date: new Date().toISOString().split('T')[0],
       includeVAT: true,
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
@@ -333,6 +335,16 @@ export default function PriceQuote() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title-mobile" className="text-sm">כותרת</Label>
+                  <Input
+                    id="title-mobile"
+                    {...form.register("title")}
+                    className="text-right h-11 rounded-xl"
+                    placeholder="הצעת מחיר"
+                  />
+                  {form.formState.errors.title && <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="date" className="text-sm">תאריך</Label>
@@ -559,6 +571,7 @@ export default function PriceQuote() {
                       id="includeVAT-mobile"
                       checked={form.watch("includeVAT")}
                       onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
+                      dir="ltr"
                     />
                   </div>
 
@@ -657,6 +670,16 @@ export default function PriceQuote() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title-desktop">כותרת</Label>
+                  <Input
+                    id="title-desktop"
+                    {...form.register("title")}
+                    className="text-right rounded-xl"
+                    placeholder="הצעת מחיר"
+                  />
+                  {form.formState.errors.title && <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="date">תאריך</Label>
@@ -994,6 +1017,7 @@ export default function PriceQuote() {
                         id="includeVAT-desktop"
                         checked={form.watch("includeVAT")}
                         onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
+                        dir="ltr"
                       />
                     </div>
 
