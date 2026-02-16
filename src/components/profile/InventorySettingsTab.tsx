@@ -31,7 +31,7 @@ export function InventorySettingsTab() {
   });
   const [slugError, setSlugError] = useState("");
 
-  const baseUrl = "https://carsleadapp.com";
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : "https://carsleadapp.com";
   const inventoryUrl = slug ? `${baseUrl}/inventory/${slug}` : "";
 
   useEffect(() => {
