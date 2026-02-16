@@ -1,26 +1,48 @@
 
-# Fix: Inventory URL always points to production domain
 
-## Problem
-The current code uses `window.location.origin` to build the public inventory link. This means:
-- In development/preview: users see `https://id-preview--xxx.lovable.app/inventory/slug`
-- Only in production they'd see the correct `https://carsleadapp.com/inventory/slug`
+## שדרוג עמוד "כל המסמכים" - עיצוב מחדש
 
-Every dealer who copies the link from the settings page would get an incorrect URL that won't work for their customers.
+### מה הבעיה היום?
+הכרטיסיות של המסמכים נראות צפופות ולא מקצועיות:
+- גובה קבוע ונמוך (`h-24`) שחונק את התוכן
+- שם המסמך לא מוצג - רק סוג המסמך (חוזה, חשבונית וכו')
+- האייקון קטן ולא בולט
+- אין הפרדה ויזואלית ברורה בין המידע
+- התאריך והשיוך נדחסים ביחד
 
-## Solution
-Hardcode the production URL back to `https://carsleadapp.com` so the inventory link always points to the correct, permanent address regardless of which environment the dealer is using.
+### מה נשנה?
 
-## Technical Details
-**File:** `src/components/profile/InventorySettingsTab.tsx`
+#### 1. עיצוב מחדש של DocumentCard
+- הסרת הגובה הקבוע, מתן מרווח נוח לתוכן
+- הוספת אייקון גדול יותר עם רקע צבעוני עגול (בדומה לאייקון ב-StandardPageHeader)
+- הצגת **שם המסמך** כשורה ראשית בולטת
+- סוג המסמך יוצג כ-Badge צבעוני מתחת לשם
+- תאריך יוצג בשורה נפרדת ונקייה
+- שיוך (לקוח/רכב) יוצג בצורה ברורה עם אייקון
+- כפתור פעולות (שלוש נקודות) ישאר אבל יהיה מעוצב יותר
 
-Change line 34 from:
-```typescript
-const baseUrl = typeof window !== 'undefined' ? window.location.origin : "https://carsleadapp.com";
-```
-To:
-```typescript
-const baseUrl = "https://carsleadapp.com";
-```
+#### 2. שיפור הגריד
+- במובייל: כרטיס אחד ברוחב מלא
+- בדסקטופ: 2 עמודות (במקום 3 צפופות) עם gap גדול יותר
 
-This is a single-line change. The inventory page itself (`/inventory/:slug`) will continue to work on any domain since the data fetching uses the Supabase edge function directly.
+#### 3. שיפור מצב ריק
+- אייקון גדול ועיצוב יותר מזמין כשאין מסמכים
+
+### פרטים טכניים
+
+**קובץ: `src/components/documents/components/DocumentCard.tsx`**
+- הסרת `h-24` והחלפה ב-`p-5` עם מרווח טבעי
+- הוספת אייקון עם רקע צבעוני עגול (`w-12 h-12 rounded-xl`) בצד ימין
+- שם המסמך (`document.name`) יוצג כשורה ראשית (`font-semibold text-base truncate`)
+- סוג המסמך (`getDocumentTypeLabel`) יוצג כ-Badge קטן
+- תאריך ושיוך בשורות נפרדות עם אייקונים קטנים
+- שדרוג הצבעים ואפקט hover (`hover:shadow-lg`)
+- הוספת אייקון `Calendar` ליד התאריך
+
+**קובץ: `src/components/documents/DocumentsManager.tsx`**
+- שינוי הגריד בדסקטופ ל-`md:grid-cols-2` עם `gap-4`
+- שדרוג מצב ריק עם אייקון `FileText` גדול
+
+**קובץ: `src/components/documents/components/DocumentTypeIcon.tsx`**
+- הוספת פונקציית `getIconBgColor` שמחזירה צבע רקע לפי סוג מסמך (למשל כחול לחוזה, ירוק לביטוח) - לשימוש ברקע האייקון בכרטיס
+
