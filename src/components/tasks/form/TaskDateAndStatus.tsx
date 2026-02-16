@@ -93,32 +93,9 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
               </Popover>
               
               {field.value && (
-                <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50" dir="rtl">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">שעה (אופציונלי):</span>
-                  <Select value={timeHour} onValueChange={(hour) => handleTimeChange(hour, timeMinute)}>
-                    <SelectTrigger className="w-20 text-center [&>span]:w-full [&>span]:text-center">
-                      <SelectValue placeholder="--" />
-                    </SelectTrigger>
-                    <SelectContent 
-                      dir="rtl" 
-                      side="bottom" 
-                      align="end" 
-                      avoidCollisions={false}
-                      sideOffset={4}
-                      className="z-[200] bg-background max-h-[200px] overflow-y-auto"
-                    >
-                      <SelectItem value="none" className="text-center justify-end">ללא</SelectItem>
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString().padStart(2, '0')} className="text-center justify-end">
-                          {i.toString().padStart(2, '0')}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <span className="text-sm">:</span>
+                <div className="flex items-center justify-end gap-2 p-2 border rounded-md bg-muted/50">
                   <Select value={timeMinute} onValueChange={(minute) => handleTimeChange(timeHour, minute)}>
-                    <SelectTrigger className="w-20 text-center [&>span]:w-full [&>span]:text-center">
+                    <SelectTrigger className="w-20 text-right [&>span]:w-full [&>span]:text-right">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent 
@@ -130,12 +107,35 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                       className="z-[200] bg-background"
                     >
                       {["00", "15", "30", "45"].map((minute) => (
-                        <SelectItem key={minute} value={minute} className="text-center justify-end">
+                        <SelectItem key={minute} value={minute} className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">
                           {minute}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <span className="text-sm">:</span>
+                  <Select value={timeHour} onValueChange={(hour) => handleTimeChange(hour, timeMinute)}>
+                    <SelectTrigger className="w-20 text-right [&>span]:w-full [&>span]:text-right">
+                      <SelectValue placeholder="--" />
+                    </SelectTrigger>
+                    <SelectContent 
+                      dir="rtl" 
+                      side="bottom" 
+                      align="end" 
+                      avoidCollisions={false}
+                      sideOffset={4}
+                      className="z-[200] bg-background max-h-[200px] overflow-y-auto"
+                    >
+                      <SelectItem value="none" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">ללא</SelectItem>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString().padStart(2, '0')} className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">
+                          {i.toString().padStart(2, '0')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-muted-foreground">:שעה (אופציונלי)</span>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                 </div>
               )}
             </div>
@@ -165,10 +165,10 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                   sideOffset={4}
                   className="z-[200] min-w-[var(--radix-select-trigger-width)] bg-background"
                 >
-                  <SelectItem value="pending" className="text-center">ממתין</SelectItem>
-                  <SelectItem value="in_progress" className="text-center">בביצוע</SelectItem>
-                  <SelectItem value="completed" className="text-center">הושלם</SelectItem>
-                  <SelectItem value="cancelled" className="text-center">בוטל</SelectItem>
+                  <SelectItem value="pending" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">ממתין</SelectItem>
+                  <SelectItem value="in_progress" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">בביצוע</SelectItem>
+                  <SelectItem value="completed" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">הושלם</SelectItem>
+                  <SelectItem value="cancelled" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">בוטל</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
