@@ -150,7 +150,7 @@ export default function TaxInvoiceReceipt() {
         description: '',
         quantity: 1,
         unitPrice: 0,
-        vatRate: 17,
+        vatRate: 18,
         discount: 0,
         total: 0,
         includeVat: true
@@ -220,7 +220,7 @@ export default function TaxInvoiceReceipt() {
             const unitPrice = item.unitPrice || 0;
             const discount = item.discount || 0;
             const includeVat = item.includeVat !== false;
-            const vatRate = item.vatRate || 17;
+            const vatRate = item.vatRate || 18;
             
             let subtotal = quantity * unitPrice;
             let total = subtotal - discount;
@@ -260,7 +260,7 @@ export default function TaxInvoiceReceipt() {
     });
     
     const amountAfterDiscount = subtotal - generalDiscount;
-    const vatAmount = (amountAfterDiscount - itemsWithoutVat) * 0.17;
+    const vatAmount = (amountAfterDiscount - itemsWithoutVat) * 0.18;
     const totalAmount = amountAfterDiscount + vatAmount;
     
     return {
@@ -617,7 +617,7 @@ export default function TaxInvoiceReceipt() {
                         description: '',
                         quantity: 1,
                         unitPrice: 0,
-                        vatRate: 17,
+                        vatRate: 18,
                         discount: 0,
                         total: 0,
                         includeVat: true
@@ -1163,7 +1163,7 @@ export default function TaxInvoiceReceipt() {
                       description: '',
                       quantity: 1,
                       unitPrice: 0,
-                      vatRate: 17,
+                      vatRate: 18,
                       discount: 0,
                       total: 0,
                       includeVat: true
@@ -1595,7 +1595,7 @@ export default function TaxInvoiceReceipt() {
                       <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.generalDiscount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>מע"מ (17%)</span>
+                      <span>מע"מ (18%)</span>
                       <span>{watchedFields.currency === 'ILS' ? '₪' : '$'}{financialSummary.vatAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
