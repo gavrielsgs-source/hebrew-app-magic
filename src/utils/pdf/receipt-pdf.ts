@@ -1,5 +1,6 @@
 import { generatePDF, wrapInHTMLDocument, formatCurrency, formatDate } from '../pdf-helper';
 import type { ReceiptData } from '@/types/receipt';
+import { getCompanyTypeBadgeHTML, getCompanyTypeFooter } from '../company-type-utils';
 
 const PAYMENT_TYPE_LABELS: Record<string, string> = {
   cash: 'מזומן',
@@ -42,7 +43,7 @@ function createReceiptHTML(data: ReceiptData): string {
         <div class="info-row"><span class="info-label">ח.פ:</span><span class="info-value">${data.company.hp}</span></div>
         <div class="info-row"><span class="info-label">טלפון:</span><span class="info-value">${data.company.phone}</span></div>
         <div class="info-row"><span class="info-label">כתובת:</span><span class="info-value">${data.company.address}</span></div>
-        ${data.company.authorizedDealer ? '<div style="margin-top:5px;font-size:11px;color:#2b6cb0;font-weight:bold">✓ עוסק מורשה</div>' : ''}
+        ${getCompanyTypeBadgeHTML(data.company.companyType, data.company.authorizedDealer)}
       </div>
       <div class="info-box">
         <div class="info-box-title">פרטי הלקוח</div>
@@ -89,7 +90,7 @@ function createReceiptHTML(data: ReceiptData): string {
     ` : ''}
 
     <div class="footer">
-      מסמך זה הופק באופן אוטומטי | ${data.company.name}${data.company.authorizedDealer ? ' | עוסק מורשה' : ''}
+      מסמך זה הופק באופן אוטומטי | ${data.company.name}${getCompanyTypeFooter(data.company.companyType, data.company.authorizedDealer)}
     </div>
   `;
   return wrapInHTMLDocument(body);

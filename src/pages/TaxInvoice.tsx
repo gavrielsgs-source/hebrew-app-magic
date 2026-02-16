@@ -103,10 +103,10 @@ export default function TaxInvoice() {
       title: 'חשבונית מס',
       currency: 'ILS',
       companyName: profile?.company_name || 'חברתי',
-      companyAddress: 'כתובת החברה',
-      companyHp: '123456789',
+      companyAddress: profile?.company_address || 'כתובת החברה',
+      companyHp: profile?.company_hp || '123456789',
       companyPhone: profile?.phone || '050-1234567',
-      companyAuthorizedDealer: false,
+      companyAuthorizedDealer: profile?.company_authorized_dealer || false,
       customerType: 'individual' as const,
       customerName: '',
       customerAddress: '',
@@ -135,6 +135,17 @@ export default function TaxInvoice() {
     control: form.control,
     name: 'items'
   });
+
+  // Load profile data into form when profile loads
+  useEffect(() => {
+    if (profile) {
+      form.setValue('companyName', profile.company_name || '');
+      form.setValue('companyAddress', profile.company_address || '');
+      form.setValue('companyHp', profile.company_hp || '');
+      form.setValue('companyPhone', profile.phone || '');
+      form.setValue('companyAuthorizedDealer', profile.company_authorized_dealer || false);
+    }
+  }, [profile, form]);
 
   const watchedFields = form.watch();
   const selectedLead = leads.find(lead => lead.id === watchedFields.leadId);
@@ -214,7 +225,9 @@ export default function TaxInvoice() {
       address: watchedFields.companyAddress,
       hp: watchedFields.companyHp,
       phone: watchedFields.companyPhone,
-      authorizedDealer: watchedFields.companyAuthorizedDealer
+      authorizedDealer: watchedFields.companyAuthorizedDealer,
+      logoUrl: profile?.company_logo_url || undefined,
+      companyType: profile?.company_type || undefined,
     },
     customer: {
       name: watchedFields.customerType === 'business' && watchedFields.customerCompanyName 
@@ -247,7 +260,9 @@ export default function TaxInvoice() {
           address: data.companyAddress,
           hp: data.companyHp,
           phone: data.companyPhone,
-          authorizedDealer: data.companyAuthorizedDealer
+          authorizedDealer: data.companyAuthorizedDealer,
+          logoUrl: profile?.company_logo_url || undefined,
+          companyType: profile?.company_type || undefined,
         },
         customer: {
           name: data.customerType === 'business' && data.customerCompanyName 

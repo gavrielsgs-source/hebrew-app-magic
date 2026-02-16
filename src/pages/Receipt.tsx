@@ -233,6 +233,7 @@ export default function Receipt() {
           phone: data.companyPhone,
           authorizedDealer: data.companyAuthorizedDealer,
           logoUrl: profile?.company_logo_url || undefined,
+          companyType: profile?.company_type || undefined,
         },
         customer: {
           name: data.customerName,
@@ -318,6 +319,7 @@ export default function Receipt() {
           phone: form.getValues('companyPhone'),
           authorizedDealer: form.getValues('companyAuthorizedDealer'),
           logoUrl: profile?.company_logo_url || undefined,
+          companyType: profile?.company_type || undefined,
         },
         customer: {
           name: form.getValues('customerName'),

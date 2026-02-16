@@ -49,16 +49,19 @@ export function CompanyLogoUpload({ currentLogoUrl, onLogoChange }: CompanyLogoU
         throw uploadError;
       }
 
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
+      // Get a signed URL (bucket is private, so getPublicUrl won't work)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('documents')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year
 
-      // Add timestamp to bust cache
-      const urlWithTimestamp = `${publicUrl}?t=${Date.now()}`;
+      if (signedUrlError || !signedUrlData?.signedUrl) {
+        throw signedUrlError || new Error('Failed to get signed URL');
+      }
+
+      const signedUrl = signedUrlData.signedUrl;
       
-      setPreviewUrl(urlWithTimestamp);
-      onLogoChange(urlWithTimestamp);
+      setPreviewUrl(signedUrl);
+      onLogoChange(signedUrl);
       toast.success('הלוגו הועלה בהצלחה');
     } catch (error) {
       console.error('Error uploading logo:', error);

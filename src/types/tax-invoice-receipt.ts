@@ -34,6 +34,7 @@ export interface TaxInvoiceReceiptData {
     phone: string;
     authorizedDealer: boolean;
     logoUrl?: string;
+    companyType?: string;
   };
 
   // Customer Information

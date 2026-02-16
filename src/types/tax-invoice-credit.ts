@@ -12,6 +12,7 @@ export interface TaxInvoiceCreditData {
     phone: string;
     authorizedDealer: boolean;
     logoUrl?: string;
+    companyType?: string;
   };
 
   // Customer Information
