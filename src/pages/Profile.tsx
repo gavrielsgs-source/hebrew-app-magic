@@ -29,6 +29,7 @@ export default function Profile() {
     company_hp: "",
     company_authorized_dealer: false,
     company_logo_url: null as string | null,
+    company_type: "" as string,
   });
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export default function Profile() {
         company_hp: profile.company_hp || "",
         company_authorized_dealer: profile.company_authorized_dealer || false,
         company_logo_url: profile.company_logo_url || null,
+        company_type: profile.company_type || (profile.company_authorized_dealer ? "authorized_dealer" : ""),
       });
     }
   }, [profile]);
@@ -50,7 +52,13 @@ export default function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateProfile.mutateAsync(formData);
+      // Derive company_authorized_dealer from company_type for backward compatibility
+      const dataToSave = {
+        ...formData,
+        company_authorized_dealer: formData.company_type === 'authorized_dealer',
+        company_type: formData.company_type || null,
+      };
+      await updateProfile.mutateAsync(dataToSave as any);
       toast({
         title: "הפרופיל עודכן",
         description: "הפרטים שלך נשמרו בהצלחה",
@@ -499,27 +507,23 @@ export default function Profile() {
                       />
                     </div>
 
-                    {/* Authorized Dealer */}
+                    {/* Company Type */}
                     <div className="space-y-2 flex flex-col justify-end">
-                      <div 
-                        className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                          formData.company_authorized_dealer 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                        onClick={() => setFormData({ ...formData, company_authorized_dealer: !formData.company_authorized_dealer })}
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2 justify-end">
+                        סוג עוסק
+                        <CheckCircle className="h-4 w-4 text-primary" />
+                      </Label>
+                      <select
+                        value={formData.company_type}
+                        onChange={(e) => setFormData({ ...formData, company_type: e.target.value })}
+                        className="h-12 rounded-xl border-2 border-border bg-background text-foreground text-right px-4 focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        dir="rtl"
                       >
-                        <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
-                          formData.company_authorized_dealer 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-muted'
-                        }`}>
-                          {formData.company_authorized_dealer && <CheckCircle className="h-4 w-4" />}
-                        </div>
-                        <Label className="text-sm font-medium text-foreground cursor-pointer">
-                          עוסק מורשה
-                        </Label>
-                      </div>
+                        <option value="">לא צוין</option>
+                        <option value="authorized_dealer">עוסק מורשה</option>
+                        <option value="ltd">חברה בע"מ</option>
+                        <option value="exempt">עוסק פטור</option>
+                      </select>
                     </div>
 
                     {/* Company Logo */}

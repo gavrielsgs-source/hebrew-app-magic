@@ -33,6 +33,7 @@ export interface ReceiptData {
     phone: string;
     authorizedDealer: boolean;
     logoUrl?: string;
+    companyType?: string;
   };
 
   // Customer Information

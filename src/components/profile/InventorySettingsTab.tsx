@@ -170,14 +170,16 @@ export function InventorySettingsTab() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Enable Toggle */}
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg" dir="rtl">
             <div>
               <Label className="font-medium">הפעל דף מלאי</Label>
               <p className="text-sm text-muted-foreground">
                 כאשר מופעל, הדף יהיה נגיש לכל אחד עם הקישור
               </p>
             </div>
-            <Switch checked={enabled} onCheckedChange={setEnabled} />
+            <div dir="ltr">
+              <Switch checked={enabled} onCheckedChange={setEnabled} />
+            </div>
           </div>
 
           {/* Slug Input */}
@@ -263,17 +265,19 @@ export function InventorySettingsTab() {
               </p>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" dir="rtl">
               <div>
                 <Label>הצג טלפון בדף</Label>
                 <p className="text-sm text-muted-foreground">
                   האם להציג את כפתור יצירת הקשר בדף
                 </p>
               </div>
-              <Switch 
-                checked={settings.show_phone !== false} 
-                onCheckedChange={(checked) => setSettings({ ...settings, show_phone: checked })}
-              />
+              <div dir="ltr">
+                <Switch 
+                  checked={settings.show_phone !== false} 
+                  onCheckedChange={(checked) => setSettings({ ...settings, show_phone: checked })}
+                />
+              </div>
             </div>
           </div>
 

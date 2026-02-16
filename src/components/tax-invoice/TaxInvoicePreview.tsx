@@ -39,10 +39,13 @@ export function TaxInvoicePreview({ data }: TaxInvoicePreviewProps) {
             <div className="space-y-2">
               <div><strong>שם החברה:</strong> {data.company.name}</div>
               <div><strong>כתובת:</strong> {data.company.address}</div>
-              <div><strong>עוסק מורשה:</strong> {data.company.hp}</div>
+              <div><strong>ח.פ / עוסק מורשה:</strong> {data.company.hp}</div>
               <div><strong>טלפון:</strong> {data.company.phone}</div>
-              {data.company.authorizedDealer && (
-                <Badge variant="secondary">עוסק מורשה</Badge>
+              {(data.company.companyType || data.company.authorizedDealer) && (
+                <Badge variant="secondary">
+                  {data.company.companyType === 'ltd' ? 'חברה בע"מ' : 
+                   data.company.companyType === 'exempt' ? 'עוסק פטור' : 'עוסק מורשה'}
+                </Badge>
               )}
             </div>
           </div>

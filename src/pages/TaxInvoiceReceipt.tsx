@@ -274,7 +274,8 @@ export default function TaxInvoiceReceipt() {
           hp: data.companyHp,
           phone: data.companyPhone,
           authorizedDealer: data.companyAuthorizedDealer,
-          logoUrl: profile?.company_logo_url || undefined
+          logoUrl: profile?.company_logo_url || undefined,
+          companyType: profile?.company_type || undefined,
         },
         customer: {
           type: data.customerType,
@@ -382,7 +383,8 @@ export default function TaxInvoiceReceipt() {
           hp: form.getValues('companyHp'),
           phone: form.getValues('companyPhone'),
           authorizedDealer: form.getValues('companyAuthorizedDealer'),
-          logoUrl: profile?.company_logo_url || undefined
+          logoUrl: profile?.company_logo_url || undefined,
+          companyType: profile?.company_type || undefined,
         },
         customer: {
           type: form.getValues('customerType'),

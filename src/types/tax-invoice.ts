@@ -23,6 +23,7 @@ export interface TaxInvoiceData {
     phone: string;
     authorizedDealer: boolean;
     logoUrl?: string;
+    companyType?: string; // 'authorized_dealer' | 'ltd' | 'exempt'
   };
 
   // Customer Information
