@@ -131,7 +131,7 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              className="w-48 bg-background border-2 shadow-2xl text-right"
             >
               <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סטטוס</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
@@ -162,7 +162,7 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              className="w-48 bg-background border-2 shadow-2xl text-right"
             >
               <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי עדיפות</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
@@ -193,7 +193,7 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              className="w-48 bg-background border-2 shadow-2xl text-right"
             >
               <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סוג</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
@@ -257,7 +257,7 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              className="w-48 bg-background border-2 shadow-2xl text-right"
             >
               <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סטטוס</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
@@ -288,7 +288,7 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              className="w-48 bg-background border-2 shadow-2xl text-right"
             >
               <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי עדיפות</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
@@ -319,7 +319,7 @@ export function TaskFiltersAndSearch({ tasks, onTasksFilter }: TaskFiltersAndSea
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-48 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+              className="w-48 bg-background border-2 shadow-2xl text-right"
             >
               <DropdownMenuLabel className="text-right font-medium text-muted-foreground">סינון לפי סוג</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border/50" />
