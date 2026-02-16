@@ -50,10 +50,23 @@ const paymentMethodSchema = z.object({
   amount: z.number().min(0, 'סכום חייב להיות חיובי'),
   date: z.date(),
   reference: z.string().optional(),
+  // Check fields
   checkAccountNumber: z.string().optional(),
   checkBranchNumber: z.string().optional(),
   checkBankNumber: z.string().optional(),
   checkNumber: z.string().optional(),
+  // Credit card fields
+  lastFourDigits: z.string().optional(),
+  expiryDate: z.string().optional(),
+  cardType: z.string().optional(),
+  idNumber: z.string().optional(),
+  installments: z.number().optional(),
+  // Bank transfer fields
+  bankAccountNumber: z.string().optional(),
+  bankBranchNumber: z.string().optional(),
+  bankNumber: z.string().optional(),
+  // Other
+  paymentTypeName: z.string().optional(),
 });
 
 const taxInvoiceReceiptSchema = z.object({
@@ -85,8 +98,8 @@ const taxInvoiceReceiptSchema = z.object({
   // Payments
   payments: z.array(paymentMethodSchema),
   
-  // Issue number
-  issueNumber: z.string().min(1, 'מספר הנפקה נדרש'),
+  // Issue number (optional)
+  issueNumber: z.string().optional(),
   
   // General discount
   generalDiscount: z.number().min(0, 'הנחה כללית חייבת להיות חיובית'),
@@ -308,6 +321,15 @@ export default function TaxInvoiceReceipt() {
           checkBranchNumber: p.checkBranchNumber,
           checkBankNumber: p.checkBankNumber,
           checkNumber: p.checkNumber,
+          lastFourDigits: p.lastFourDigits,
+          expiryDate: p.expiryDate,
+          cardType: p.cardType,
+          idNumber: p.idNumber,
+          installments: p.installments,
+          bankAccountNumber: p.bankAccountNumber,
+          bankBranchNumber: p.bankBranchNumber,
+          bankNumber: p.bankNumber,
+          paymentTypeName: p.paymentTypeName,
         })),
         issueNumber: data.issueNumber,
         lastPaymentDate: data.lastPaymentDate?.toISOString(),
@@ -1283,21 +1305,119 @@ export default function TaxInvoiceReceipt() {
                       </div>
                     )}
 
-                    {/* Cash/other fields */}
-                    {watchedFields.payments?.[index]?.type !== 'check' && (
-                      <FormField
-                        control={form.control}
-                        name={`payments.${index}.reference`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-right">אסמכתא</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="מספר אסמכתא" className="text-right rounded-xl" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    {/* Credit card fields */}
+                    {watchedFields.payments?.[index]?.type === 'credit_card' && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-dashed">
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">4 ספרות אחרונות</Label>
+                          <Input
+                            {...form.register(`payments.${index}.lastFourDigits`)}
+                            maxLength={4}
+                            inputMode="numeric"
+                            className="text-right rounded-xl h-10"
+                            placeholder="1234"
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                              form.setValue(`payments.${index}.lastFourDigits`, val);
+                            }}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">תוקף (MM/YY)</Label>
+                          <Input
+                            {...form.register(`payments.${index}.expiryDate`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="MM/YY"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">סוג כרטיס</Label>
+                          <Select
+                            value={watchedFields.payments?.[index]?.cardType || ''}
+                            onValueChange={(val) => form.setValue(`payments.${index}.cardType`, val)}
+                          >
+                            <SelectTrigger className="rounded-xl h-10">
+                              <SelectValue placeholder="בחר סוג" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Mastercard">מאסטרקארד</SelectItem>
+                              <SelectItem value="Visa">ויזה</SelectItem>
+                              <SelectItem value="Diners">דיינרס קלאב</SelectItem>
+                              <SelectItem value="American Express">אמריקן אקספרס</SelectItem>
+                              <SelectItem value="Maestro">מאסטרו</SelectItem>
+                              <SelectItem value="Isracard">ישראכרט</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">ת.ז/ח.פ</Label>
+                          <Input
+                            {...form.register(`payments.${index}.idNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="ת.ז/ח.פ"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">תשלומים</Label>
+                          <Select
+                            value={String(watchedFields.payments?.[index]?.installments || 1)}
+                            onValueChange={(val) => form.setValue(`payments.${index}.installments`, parseInt(val))}
+                          >
+                            <SelectTrigger className="rounded-xl h-10">
+                              <SelectValue placeholder="תשלומים" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              {Array.from({ length: 120 }, (_, i) => i + 1).map((n) => (
+                                <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Bank transfer fields */}
+                    {watchedFields.payments?.[index]?.type === 'bank_transfer' && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-xl border border-dashed">
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">מספר חשבון</Label>
+                          <Input
+                            {...form.register(`payments.${index}.bankAccountNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="מספר חשבון"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">מספר סניף</Label>
+                          <Input
+                            {...form.register(`payments.${index}.bankBranchNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="מספר סניף"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">מספר בנק</Label>
+                          <Input
+                            {...form.register(`payments.${index}.bankNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="מספר בנק"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Other payment type */}
+                    {watchedFields.payments?.[index]?.type === 'other' && (
+                      <div className="p-4 bg-muted/30 rounded-xl border border-dashed">
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">סוג תשלום</Label>
+                          <Input
+                            {...form.register(`payments.${index}.paymentTypeName`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="פייפאל/פייבוקס/ביט"
+                          />
+                        </div>
+                      </div>
                     )}
 
                     <FormField
