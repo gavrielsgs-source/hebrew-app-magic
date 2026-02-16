@@ -13,7 +13,7 @@ import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, Ma
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
-import { CompanyLogoUpload } from "@/components/profile/CompanyLogoUpload";
+
 
 export default function Profile() {
   const { profile, updateProfile, isLoading } = useProfile();
@@ -143,9 +143,9 @@ export default function Profile() {
             <TabsContent value="profile" className="space-y-4">
               <Card className="shadow-lg rounded-2xl border-2">
                 <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
-                <CardTitle className="text-lg flex items-center gap-2 flex-row-reverse justify-end">
-                    <User className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg flex items-center gap-2 justify-end">
                     עריכת פרטים אישיים
+                    <User className="h-5 w-5 text-primary" />
                   </CardTitle>
                   <p className="text-sm text-muted-foreground text-right">
                     עדכן את הפרטים האישיים שלך כאן. המידע ישמר באופן מאובטח במערכת.
@@ -327,9 +327,9 @@ export default function Profile() {
           <TabsContent value="profile">
             <Card className="shadow-lg rounded-2xl border-2">
               <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
-              <CardTitle className="text-xl flex items-center gap-2 flex-row-reverse justify-end">
-                  <User className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl flex items-center gap-2 justify-end">
                   עריכת פרטים אישיים
+                  <User className="h-5 w-5 text-primary" />
                 </CardTitle>
                 <p className="text-sm text-muted-foreground text-right">
                   עדכן את הפרטים האישיים שלך כאן. המידע ישמר באופן מאובטח במערכת.
@@ -436,9 +436,9 @@ export default function Profile() {
           <TabsContent value="company">
             <Card className="shadow-lg rounded-2xl border-2">
               <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-4">
-              <CardTitle className="text-xl flex items-center gap-2 flex-row-reverse justify-end">
-                  <FileText className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl flex items-center gap-2 justify-end">
                   פרטי חברה למסמכים
+                  <FileText className="h-5 w-5 text-primary" />
                 </CardTitle>
                 <p className="text-sm text-muted-foreground text-right">
                   פרטים אלו יופיעו בכל המסמכים שתפיק (חשבוניות, קבלות, הצעות מחיר וכו')
@@ -526,13 +526,6 @@ export default function Profile() {
                       </select>
                     </div>
 
-                    {/* Company Logo */}
-                    <div className="md:col-span-2">
-                      <CompanyLogoUpload
-                        currentLogoUrl={formData.company_logo_url}
-                        onLogoChange={(url) => setFormData({ ...formData, company_logo_url: url })}
-                      />
-                    </div>
                   </div>
 
                   <div className="pt-6 border-t flex justify-end">

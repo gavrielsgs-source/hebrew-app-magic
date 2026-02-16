@@ -31,8 +31,7 @@ function createReceiptHTML(data: ReceiptData): string {
         <div class="doc-subtitle">מספר: ${data.receiptNumber} | תאריך: ${formatDate(data.date)}</div>
       </div>
       <div class="logo-area">
-        ${data.company.logoUrl ? `<img src="${data.company.logoUrl}" alt="logo" />` : 
-          `<div style="font-size:18px;font-weight:bold;color:#1a365d">${data.company.name}</div>`}
+        <div style="font-size:18px;font-weight:bold;color:#1a365d">${data.company.name}</div>
       </div>
     </div>
 

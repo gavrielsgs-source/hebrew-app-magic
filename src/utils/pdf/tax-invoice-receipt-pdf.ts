@@ -41,8 +41,7 @@ function createTaxInvoiceReceiptHTML(data: TaxInvoiceReceiptData): string {
         <div class="doc-subtitle">מספר: ${data.invoiceNumber} | תאריך: ${formatDate(data.date)}</div>
       </div>
       <div class="logo-area">
-        ${data.company.logoUrl ? `<img src="${data.company.logoUrl}" alt="logo" />` : 
-          `<div style="font-size:18px;font-weight:bold;color:#1a365d">${data.company.name}</div>`}
+        <div style="font-size:18px;font-weight:bold;color:#1a365d">${data.company.name}</div>
       </div>
     </div>
 
