@@ -47,7 +47,7 @@ export function TaskFilters({
         </DropdownMenuTrigger>
         <DropdownMenuContent 
           align="end"
-          className="w-44 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+          className="w-44 bg-background border-2 shadow-2xl text-right"
         >
           {allStatuses.map(status => (
             <DropdownMenuCheckboxItem
@@ -80,7 +80,7 @@ export function TaskFilters({
         </DropdownMenuTrigger>
         <DropdownMenuContent 
           align="end"
-          className="w-44 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+          className="w-44 bg-background border-2 shadow-2xl text-right"
         >
           {allTypes.map(type => (
             <DropdownMenuCheckboxItem
