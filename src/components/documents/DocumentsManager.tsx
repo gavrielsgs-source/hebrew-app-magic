@@ -149,13 +149,16 @@ export function DocumentsManager({ entityId, entityType, filterTemplates = false
           <p className="text-muted-foreground">טוען מסמכים...</p>
         </div>
       ) : filteredDocuments?.length === 0 ? (
-        <div className="text-center rounded-2xl p-8 bg-muted/30">
-          <p className="text-muted-foreground mb-2">לא נמצאו מסמכים</p>
+      <div className="text-center rounded-2xl p-12 bg-muted/20 border border-dashed border-border/50">
+          <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
+            <span className="text-muted-foreground text-3xl">📄</span>
+          </div>
+          <p className="text-muted-foreground font-medium mb-1">לא נמצאו מסמכים</p>
           <p className="text-sm text-muted-foreground">העלה מסמכים חדשים באמצעות כפתור "העלאת מסמך"</p>
         </div>
       ) : (
         <div className="rounded-2xl overflow-hidden">
-          <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
             {filteredDocuments?.map((document) => (
               <DocumentCard
                 key={document.id}
