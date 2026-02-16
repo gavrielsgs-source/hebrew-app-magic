@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Users, Car, CheckCircle, Download, Filter, Settings } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useDateRangeAnalytics } from "@/hooks/analytics/use-date-range-analytics";
 import { useAdvancedAnalytics } from "@/hooks/analytics/use-combined-analytics";
 import { SmartInsights } from "./SmartInsights";
@@ -10,6 +11,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
 export function CustomAnalytics() {
+  const isMobile = useIsMobile();
   const { data: dateRanges } = useDateRangeAnalytics();
   const currentPeriod = dateRanges?.thisMonth || { from: new Date(), to: new Date() };
   const previousPeriod = dateRanges?.lastMonth || { from: new Date(), to: new Date() };
@@ -124,23 +126,23 @@ export function CustomAnalytics() {
   return (
     <div className="space-y-6">
       {/* Header with custom controls */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="text-right">
           <h2 className="text-xl font-bold">אנליטיקה מותאמת אישית</h2>
           <p className="text-sm text-muted-foreground">דוחות מתקדמים ותחזיות</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="rounded-xl">
-            <Filter className="h-4 w-4 ml-2" />
-            מסנן מתקדם
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" className="rounded-xl text-xs sm:text-sm">
+            <Filter className="h-4 w-4 ml-1 sm:ml-2" />
+            מסנן
           </Button>
-          <Button variant="outline" size="sm" className="rounded-xl">
-            <Settings className="h-4 w-4 ml-2" />
-            הגדרות דוח
+          <Button variant="outline" size="sm" className="rounded-xl text-xs sm:text-sm">
+            <Settings className="h-4 w-4 ml-1 sm:ml-2" />
+            הגדרות
           </Button>
-          <Button size="sm" className="rounded-xl" onClick={handleExportData}>
-            <Download className="h-4 w-4 ml-2" />
-            ייצוא נתונים
+          <Button size="sm" className="rounded-xl text-xs sm:text-sm" onClick={handleExportData}>
+            <Download className="h-4 w-4 ml-1 sm:ml-2" />
+            ייצוא
           </Button>
         </div>
       </div>
@@ -215,16 +217,16 @@ export function CustomAnalytics() {
 
       <Tabs defaultValue="advanced" className="space-y-4">
         <div className="flex justify-end">
-          <TabsList className="rounded-xl bg-muted/50 p-1">
-            <TabsTrigger value="custom" className="rounded-lg">דוח מותאם</TabsTrigger>
-            <TabsTrigger value="roi" className="rounded-lg">ROI ורווחיות</TabsTrigger>
-            <TabsTrigger value="predictions" className="rounded-lg">תחזיות</TabsTrigger>
-            <TabsTrigger value="advanced" className="rounded-lg">ניתוח מתקדם</TabsTrigger>
+          <TabsList className="rounded-xl bg-muted/50 p-1 flex-wrap h-auto gap-1">
+            <TabsTrigger value="custom" className="rounded-lg text-xs sm:text-sm">דוח מותאם</TabsTrigger>
+            <TabsTrigger value="roi" className="rounded-lg text-xs sm:text-sm">ROI ורווחיות</TabsTrigger>
+            <TabsTrigger value="predictions" className="rounded-lg text-xs sm:text-sm">תחזיות</TabsTrigger>
+            <TabsTrigger value="advanced" className="rounded-lg text-xs sm:text-sm">ניתוח מתקדם</TabsTrigger>
           </TabsList>
         </div>
         
         <TabsContent value="advanced" className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             <Card className="rounded-2xl shadow-sm">
               <CardHeader className="text-right">
                 <CardTitle>מגמות מתקדמות</CardTitle>
@@ -237,7 +239,7 @@ export function CustomAnalytics() {
                     sales: { label: "מכירות", color: "hsl(var(--chart-2))" },
                     revenue: { label: "הכנסות", color: "hsl(var(--chart-3))" },
                   }}
-                  className="h-[300px]"
+                  className={isMobile ? "h-[220px]" : "h-[300px]"}
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={advancedLeadsData}>
@@ -263,7 +265,7 @@ export function CustomAnalytics() {
                   config={{
                     value: { label: "ערך", color: "hsl(var(--chart-4))" },
                   }}
-                  className="h-[300px]"
+                  className={isMobile ? "h-[220px]" : "h-[300px]"}
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -295,7 +297,7 @@ export function CustomAnalytics() {
               <CardDescription>תחזיות מבוססות בינה מלאכותית לשלושת החודשים הבאים</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-3 mb-6">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
                 {predictionData.map((item, index) => (
                   <div key={index} className="text-center p-4 bg-muted/50 rounded-xl">
                     <div className="text-lg font-semibold">{item.month}</div>
@@ -323,7 +325,7 @@ export function CustomAnalytics() {
                   revenue: { label: "הכנסות", color: "hsl(var(--chart-1))" },
                   cost: { label: "עלויות", color: "hsl(var(--chart-2))" },
                 }}
-                className="h-[300px]"
+                className={isMobile ? "h-[220px]" : "h-[300px]"}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={advancedLeadsData}>
