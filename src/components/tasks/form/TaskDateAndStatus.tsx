@@ -98,16 +98,9 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                     <SelectTrigger className="w-20 text-right [&>span]:w-full [&>span]:text-right">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent 
-                      dir="rtl" 
-                      side="bottom" 
-                      align="end" 
-                      avoidCollisions={false}
-                      sideOffset={4}
-                      className="z-[200] bg-background"
-                    >
+                    <SelectContent align="end" className="bg-background border-2 shadow-2xl z-50 text-right">
                       {["00", "15", "30", "45"].map((minute) => (
-                        <SelectItem key={minute} value={minute} className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">
+                        <SelectItem key={minute} value={minute} className="justify-end text-right">
                           {minute}
                         </SelectItem>
                       ))}
@@ -118,17 +111,10 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                     <SelectTrigger className="w-20 text-right [&>span]:w-full [&>span]:text-right">
                       <SelectValue placeholder="--" />
                     </SelectTrigger>
-                    <SelectContent 
-                      dir="rtl" 
-                      side="bottom" 
-                      align="end" 
-                      avoidCollisions={false}
-                      sideOffset={4}
-                      className="z-[200] bg-background max-h-[200px] overflow-y-auto"
-                    >
-                      <SelectItem value="none" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">ללא</SelectItem>
+                    <SelectContent align="end" className="bg-background border-2 shadow-2xl z-50 text-right max-h-[200px] overflow-y-auto">
+                      <SelectItem value="none" className="justify-end text-right">ללא</SelectItem>
                       {Array.from({ length: 24 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString().padStart(2, '0')} className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">
+                        <SelectItem key={i} value={i.toString().padStart(2, '0')} className="justify-end text-right">
                           {i.toString().padStart(2, '0')}
                         </SelectItem>
                       ))}
@@ -157,18 +143,11 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                     <SelectValue placeholder="בחר סטטוס" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent
-                  dir="rtl" 
-                  side="bottom" 
-                  align="end" 
-                  avoidCollisions={false} 
-                  sideOffset={4}
-                  className="z-[200] min-w-[var(--radix-select-trigger-width)] bg-background"
-                >
-                  <SelectItem value="pending" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">ממתין</SelectItem>
-                  <SelectItem value="in_progress" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">בביצוע</SelectItem>
-                  <SelectItem value="completed" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">הושלם</SelectItem>
-                  <SelectItem value="cancelled" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">בוטל</SelectItem>
+                <SelectContent align="end" className="bg-background border-2 shadow-2xl z-50 text-right min-w-[var(--radix-select-trigger-width)]">
+                  <SelectItem value="pending" className="justify-end text-right">ממתין</SelectItem>
+                  <SelectItem value="in_progress" className="justify-end text-right">בביצוע</SelectItem>
+                  <SelectItem value="completed" className="justify-end text-right">הושלם</SelectItem>
+                  <SelectItem value="cancelled" className="justify-end text-right">בוטל</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
