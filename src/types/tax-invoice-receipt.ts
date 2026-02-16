@@ -20,6 +20,18 @@ export interface PaymentMethod {
   checkBranchNumber?: string;
   checkBankNumber?: string;
   checkNumber?: string;
+  // Credit card fields
+  lastFourDigits?: string;
+  expiryDate?: string;
+  cardType?: string;
+  idNumber?: string;
+  installments?: number;
+  // Bank transfer fields
+  bankAccountNumber?: string;
+  bankBranchNumber?: string;
+  bankNumber?: string;
+  // Other
+  paymentTypeName?: string;
 }
 
 export interface TaxInvoiceReceiptData {
@@ -35,7 +47,7 @@ export interface TaxInvoiceReceiptData {
   company: {
     name: string;
     address: string;
-    hp: string; // חשבון פעילות
+    hp: string;
     phone: string;
     authorizedDealer: boolean;
     logoUrl?: string;
@@ -47,15 +59,15 @@ export interface TaxInvoiceReceiptData {
     type: 'new' | 'existing' | 'individual' | 'business';
     name: string;
     address: string;
-    hp: string; // ח.פ / ת.ז
+    hp: string;
     phone: string;
   };
 
   // Items
   items: TaxInvoiceReceiptItem[];
 
-  // Issue Number
-  issueNumber: string;
+  // Issue Number (optional)
+  issueNumber?: string;
 
   // Payment Methods
   payments: PaymentMethod[];
