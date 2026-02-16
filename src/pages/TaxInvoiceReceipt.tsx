@@ -50,6 +50,10 @@ const paymentMethodSchema = z.object({
   amount: z.number().min(0, 'סכום חייב להיות חיובי'),
   date: z.date(),
   reference: z.string().optional(),
+  checkAccountNumber: z.string().optional(),
+  checkBranchNumber: z.string().optional(),
+  checkBankNumber: z.string().optional(),
+  checkNumber: z.string().optional(),
 });
 
 const taxInvoiceReceiptSchema = z.object({
@@ -299,7 +303,11 @@ export default function TaxInvoiceReceipt() {
           type: p.type,
           amount: p.amount,
           date: p.date.toISOString(),
-          reference: p.reference
+          reference: p.reference,
+          checkAccountNumber: p.checkAccountNumber,
+          checkBranchNumber: p.checkBranchNumber,
+          checkBankNumber: p.checkBankNumber,
+          checkNumber: p.checkNumber,
         })),
         issueNumber: data.issueNumber,
         lastPaymentDate: data.lastPaymentDate?.toISOString(),
@@ -660,6 +668,7 @@ export default function TaxInvoiceReceipt() {
                             <Switch
                               checked={watchedFields.items?.[index]?.includeVat}
                               onCheckedChange={(checked) => form.setValue(`items.${index}.includeVat`, checked)}
+                              dir="ltr"
                             />
                           </div>
                         </div>
@@ -816,19 +825,19 @@ export default function TaxInvoiceReceipt() {
 
                     <FormField
                       control={form.control}
-                      name="type"
+                      name="currency"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-right">סוג</FormLabel>
+                          <FormLabel className="text-right">מטבע</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger className="rounded-xl">
-                                <SelectValue placeholder="בחר סוג" />
+                                <SelectValue placeholder="בחר מטבע" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent align="end" className="z-50 bg-popover text-right">
-                              <SelectItem value="primary">ראשוני</SelectItem>
-                              <SelectItem value="secondary">משני</SelectItem>
+                              <SelectItem value="ILS">שקלים (₪)</SelectItem>
+                              <SelectItem value="USD">דולר ($)</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -860,28 +869,6 @@ export default function TaxInvoiceReceipt() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="currency"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-right">מטבע</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="rounded-xl">
-                                <SelectValue placeholder="בחר מטבע" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent align="end" className="z-50 bg-popover text-right">
-                              <SelectItem value="ILS">שקלים (₪)</SelectItem>
-                              <SelectItem value="USD">דולר ($)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
                     <FormField
                       control={form.control}
                       name="title"
@@ -931,8 +918,6 @@ export default function TaxInvoiceReceipt() {
                             <SelectContent align="end" className="z-50 bg-popover text-right">
                               <SelectItem value="new">לקוח חדש</SelectItem>
                               <SelectItem value="existing">לקוח קיים</SelectItem>
-                              <SelectItem value="individual">פרטי</SelectItem>
-                              <SelectItem value="business">עסקי</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -1076,6 +1061,7 @@ export default function TaxInvoiceReceipt() {
                               <Switch
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
+                                dir="ltr"
                                 className="mx-auto"
                               />
                             </FormControl>
@@ -1191,7 +1177,7 @@ export default function TaxInvoiceReceipt() {
                       <span className="text-sm font-medium">תשלום {index + 1}</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name={`payments.${index}.type`}
@@ -1219,29 +1205,9 @@ export default function TaxInvoiceReceipt() {
 
                       <FormField
                         control={form.control}
-                        name={`payments.${index}.amount`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-right">סכום</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                className="text-right rounded-xl"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
                         name={`payments.${index}.date`}
                         render={({ field }) => (
-                          <FormItem className="flex flex-col">
+                          <FormItem>
                             <FormLabel className="text-right">תאריך</FormLabel>
                             <Popover>
                               <PopoverTrigger asChild>
@@ -1249,7 +1215,7 @@ export default function TaxInvoiceReceipt() {
                                   <Button
                                     variant="outline"
                                     className={cn(
-                                      "w-full pl-3 text-right font-normal justify-start rounded-xl",
+                                      "w-full pl-3 text-right font-normal justify-start rounded-xl h-10",
                                       !field.value && "text-muted-foreground"
                                     )}
                                   >
@@ -1277,7 +1243,48 @@ export default function TaxInvoiceReceipt() {
                           </FormItem>
                         )}
                       />
+                    </div>
 
+                    {/* Check-specific fields */}
+                    {watchedFields.payments?.[index]?.type === 'check' && (
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-xl border border-dashed">
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">מספר חשבון</Label>
+                          <Input
+                            {...form.register(`payments.${index}.checkAccountNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="מספר חשבון"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">מספר סניף</Label>
+                          <Input
+                            {...form.register(`payments.${index}.checkBranchNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="מספר סניף"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">מספר בנק</Label>
+                          <Input
+                            {...form.register(`payments.${index}.checkBankNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="מספר בנק"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-sm text-right block">מספר המחאה</Label>
+                          <Input
+                            {...form.register(`payments.${index}.checkNumber`)}
+                            className="text-right rounded-xl h-10"
+                            placeholder="מספר המחאה"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cash/other fields */}
+                    {watchedFields.payments?.[index]?.type !== 'check' && (
                       <FormField
                         control={form.control}
                         name={`payments.${index}.reference`}
@@ -1285,13 +1292,33 @@ export default function TaxInvoiceReceipt() {
                           <FormItem>
                             <FormLabel className="text-right">אסמכתא</FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder="מספר המחאה / 4 ספרות אחרונות" className="text-right rounded-xl" />
+                              <Input {...field} placeholder="מספר אסמכתא" className="text-right rounded-xl" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
+                    )}
+
+                    <FormField
+                      control={form.control}
+                      name={`payments.${index}.amount`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-right">סה"כ</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              className="text-right rounded-xl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 ))}
 
