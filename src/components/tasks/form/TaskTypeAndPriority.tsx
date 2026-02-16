@@ -22,8 +22,12 @@ export function TaskTypeAndPriority() {
                 </SelectTrigger>
               </FormControl>
               <SelectContent 
+                dir="rtl"
+                side="bottom"
                 align="end"
-                className="rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+                avoidCollisions={false}
+                sideOffset={4}
+                className="z-[200] rounded-xl border border-border/50 bg-background shadow-lg"
               >
                 <SelectItem value="task" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">משימה</SelectItem>
                 <SelectItem value="call" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">שיחת טלפון</SelectItem>
@@ -49,8 +53,12 @@ export function TaskTypeAndPriority() {
                 </SelectTrigger>
               </FormControl>
               <SelectContent 
+                dir="rtl"
+                side="bottom"
                 align="end"
-                className="rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+                avoidCollisions={false}
+                sideOffset={4}
+                className="z-[200] rounded-xl border border-border/50 bg-background shadow-lg"
               >
                 <SelectItem value="low" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">נמוכה</SelectItem>
                 <SelectItem value="medium" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">בינונית</SelectItem>

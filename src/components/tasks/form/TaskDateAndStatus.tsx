@@ -81,7 +81,7 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-[200] bg-background" align="end">
                   <Calendar
                     mode="single"
                     selected={field.value}
@@ -93,9 +93,9 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
               </Popover>
               
               {field.value && (
-                <div className="flex items-center gap-2 p-2 border rounded-md bg-gray-50" dir="rtl">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">שעה (אופציונלי):</span>
+                <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50" dir="rtl">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">שעה (אופציונלי):</span>
                   <Select value={timeHour} onValueChange={(hour) => handleTimeChange(hour, timeMinute)}>
                     <SelectTrigger className="w-20 text-center [&>span]:w-full [&>span]:text-center">
                       <SelectValue placeholder="--" />
@@ -103,12 +103,14 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                     <SelectContent 
                       dir="rtl" 
                       side="bottom" 
-                      align="center" 
-                      className="z-50 bg-background"
+                      align="end" 
+                      avoidCollisions={false}
+                      sideOffset={4}
+                      className="z-[200] bg-background max-h-[200px] overflow-y-auto"
                     >
-                      <SelectItem value="none" className="text-center">ללא</SelectItem>
+                      <SelectItem value="none" className="text-center justify-end">ללא</SelectItem>
                       {Array.from({ length: 24 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString().padStart(2, '0')} className="text-center">
+                        <SelectItem key={i} value={i.toString().padStart(2, '0')} className="text-center justify-end">
                           {i.toString().padStart(2, '0')}
                         </SelectItem>
                       ))}
@@ -122,11 +124,13 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                     <SelectContent 
                       dir="rtl" 
                       side="bottom" 
-                      align="center" 
-                      className="z-50 bg-background"
+                      align="end" 
+                      avoidCollisions={false}
+                      sideOffset={4}
+                      className="z-[200] bg-background"
                     >
                       {["00", "15", "30", "45"].map((minute) => (
-                        <SelectItem key={minute} value={minute} className="text-center">
+                        <SelectItem key={minute} value={minute} className="text-center justify-end">
                           {minute}
                         </SelectItem>
                       ))}
@@ -158,8 +162,8 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                   side="bottom" 
                   align="end" 
                   avoidCollisions={false} 
-                  sideOffset={6}
-                  className="z-50 min-w-[var(--radix-select-trigger-width)] bg-background"
+                  sideOffset={4}
+                  className="z-[200] min-w-[var(--radix-select-trigger-width)] bg-background"
                 >
                   <SelectItem value="pending" className="text-center">ממתין</SelectItem>
                   <SelectItem value="in_progress" className="text-center">בביצוע</SelectItem>
