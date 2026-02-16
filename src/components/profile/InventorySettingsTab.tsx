@@ -15,6 +15,7 @@ interface InventorySettings {
   primary_color?: string;
   contact_phone?: string;
   show_phone?: boolean;
+  show_prices?: boolean;
 }
 
 export function InventorySettingsTab() {
@@ -276,6 +277,22 @@ export function InventorySettingsTab() {
                 <Switch 
                   checked={settings.show_phone !== false} 
                   onCheckedChange={(checked) => setSettings({ ...settings, show_phone: checked })}
+                  dir="ltr"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between" dir="rtl">
+              <div>
+                <Label>הצג מחירים בדף</Label>
+                <p className="text-sm text-muted-foreground">
+                  האם להציג מחירי רכבים בדף המלאי הפומבי
+                </p>
+              </div>
+              <div>
+                <Switch 
+                  checked={settings.show_prices !== false} 
+                  onCheckedChange={(checked) => setSettings({ ...settings, show_prices: checked })}
                   dir="ltr"
                 />
               </div>
