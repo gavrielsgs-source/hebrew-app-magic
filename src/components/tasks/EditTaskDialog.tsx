@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, Dialog
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import { EditTaskForm } from "./form/EditTaskForm";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import type { Task } from "@/types/task";
 
 interface EditTaskDialogProps {
@@ -15,8 +17,8 @@ interface EditTaskDialogProps {
 
 export function EditTaskDialog({ task, children, open: controlledOpen, onOpenChange: controlledOnOpenChange }: EditTaskDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const isMobile = useIsMobile();
 
-  // Use controlled props if provided, otherwise use internal state
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setIsOpen = controlledOnOpenChange || setInternalOpen;
 
@@ -38,7 +40,10 @@ export function EditTaskDialog({ task, children, open: controlledOpen, onOpenCha
           {trigger}
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[480px] rounded-2xl border-2 shadow-xl">
+      <DialogContent className={cn(
+        "rounded-2xl border-2 shadow-xl",
+        isMobile ? "max-w-[95vw] max-h-[85vh] overflow-y-auto" : "sm:max-w-[480px]"
+      )}>
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-right">עריכת משימה</DialogTitle>
           <DialogDescription className="text-right text-muted-foreground">
@@ -49,6 +54,7 @@ export function EditTaskDialog({ task, children, open: controlledOpen, onOpenCha
         <EditTaskForm 
           task={task}
           onSuccess={handleSuccess}
+          isMobile={isMobile}
         />
       </DialogContent>
     </Dialog>
