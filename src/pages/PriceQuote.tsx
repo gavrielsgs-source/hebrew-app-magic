@@ -563,8 +563,8 @@ export default function PriceQuote() {
                     <span className="font-semibold">-{formatPrice(totalDiscount)}</span>
                   </div>
                   
-                  <div className="flex items-center justify-between py-2 px-3 bg-white/20 rounded-xl my-2">
-                    <Label htmlFor="includeVAT-mobile" className="text-white cursor-pointer">
+                  <div className="flex items-center justify-between py-1.5 px-3 bg-white/20 rounded-xl my-2">
+                    <Label htmlFor="includeVAT-mobile" className="text-white cursor-pointer text-sm">
                       {includeVAT ? "כולל מע״מ" : "ללא מע״מ"}
                     </Label>
                     <Switch
@@ -572,6 +572,7 @@ export default function PriceQuote() {
                       checked={form.watch("includeVAT")}
                       onCheckedChange={(checked) => form.setValue("includeVAT", checked)}
                       dir="ltr"
+                      className="scale-90"
                     />
                   </div>
 
