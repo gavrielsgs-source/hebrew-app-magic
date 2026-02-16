@@ -21,18 +21,11 @@ export function TaskTypeAndPriority() {
                   <SelectValue placeholder="בחר סוג" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent 
-                dir="rtl"
-                side="bottom"
-                align="end"
-                avoidCollisions={false}
-                sideOffset={4}
-                className="z-[200] rounded-xl border border-border/50 bg-background shadow-lg"
-              >
-                <SelectItem value="task" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">משימה</SelectItem>
-                <SelectItem value="call" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">שיחת טלפון</SelectItem>
-                <SelectItem value="meeting" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">פגישה</SelectItem>
-                <SelectItem value="follow_up" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">מעקב</SelectItem>
+              <SelectContent align="end" className="bg-background border-2 shadow-2xl z-50 text-right">
+                <SelectItem value="task" className="justify-end text-right">משימה</SelectItem>
+                <SelectItem value="call" className="justify-end text-right">שיחת טלפון</SelectItem>
+                <SelectItem value="meeting" className="justify-end text-right">פגישה</SelectItem>
+                <SelectItem value="follow_up" className="justify-end text-right">מעקב</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -52,17 +45,10 @@ export function TaskTypeAndPriority() {
                   <SelectValue placeholder="בחר עדיפות" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent 
-                dir="rtl"
-                side="bottom"
-                align="end"
-                avoidCollisions={false}
-                sideOffset={4}
-                className="z-[200] rounded-xl border border-border/50 bg-background shadow-lg"
-              >
-                <SelectItem value="low" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">נמוכה</SelectItem>
-                <SelectItem value="medium" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">בינונית</SelectItem>
-                <SelectItem value="high" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">גבוהה</SelectItem>
+              <SelectContent align="end" className="bg-background border-2 shadow-2xl z-50 text-right">
+                <SelectItem value="low" className="justify-end text-right">נמוכה</SelectItem>
+                <SelectItem value="medium" className="justify-end text-right">בינונית</SelectItem>
+                <SelectItem value="high" className="justify-end text-right">גבוהה</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
