@@ -16,9 +16,9 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       text-align: right;
       color: #1a202c;
       background: #fff;
-      font-size: 13px;
-      line-height: 1.6;
-      padding: 40px 45px;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 35px 40px;
     }
     /* Prevent page-break cuts */
     .section-box, .car-section, .terms-section, .signatures, .consent-box, .special-terms-box {
@@ -29,14 +29,14 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .title {
       text-align: center;
-      font-size: 28px;
+      font-size: 32px;
       font-weight: bold;
       color: #1a202c;
       margin-bottom: 6px;
     }
     .subtitle {
       text-align: center;
-      font-size: 13px;
+      font-size: 15px;
       color: #666;
       margin-bottom: 12px;
     }
@@ -47,7 +47,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .date-line {
       text-align: right;
-      font-size: 14px;
+      font-size: 15px;
       margin-bottom: 18px;
       color: #333;
     }
@@ -67,7 +67,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       background: #fef9e7;
     }
     .section-label {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       color: #2b6cb0;
       text-align: center;
@@ -75,7 +75,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .detail-line {
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
       margin-bottom: 4px;
       color: #333;
     }
@@ -84,7 +84,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .role-label {
       text-align: right;
-      font-size: 12px;
+      font-size: 13px;
       color: #666;
       margin-top: 8px;
     }
@@ -92,7 +92,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       margin-bottom: 16px;
     }
     .car-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       color: #2b6cb0;
       text-align: center;
@@ -100,7 +100,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .car-intro {
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
       color: #333;
       margin-bottom: 10px;
     }
@@ -111,9 +111,9 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .car-table th, .car-table td {
       border: 1px solid #e2e8f0;
-      padding: 8px 12px;
+      padding: 9px 14px;
       text-align: center;
-      font-size: 12px;
+      font-size: 14px;
     }
     .car-table th {
       background: #f7fafc;
@@ -125,7 +125,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .financial-line {
       text-align: center;
-      font-size: 14px;
+      font-size: 15px;
       margin-bottom: 5px;
       color: #333;
     }
@@ -137,7 +137,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       margin-bottom: 20px;
     }
     .terms-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       color: #2b6cb0;
       text-align: center;
@@ -150,9 +150,9 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
     }
     .terms-list li {
       counter-increment: terms-counter;
-      padding: 6px 0;
-      font-size: 12px;
-      line-height: 1.7;
+      padding: 7px 0;
+      font-size: 13px;
+      line-height: 1.8;
       color: #333;
       border-bottom: 1px solid #f0f0f0;
       text-align: right;
@@ -171,9 +171,9 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       border-radius: 8px;
       padding: 12px 16px;
       margin-top: 16px;
-      font-size: 11px;
+      font-size: 12px;
       color: #555;
-      line-height: 1.7;
+      line-height: 1.8;
     }
     .consent-box p {
       margin-bottom: 4px;
@@ -192,7 +192,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       border-top: 1px solid #333;
       margin-top: 60px;
       padding-top: 8px;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: bold;
       color: #333;
     }
@@ -212,7 +212,7 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
       font-weight: bold;
       color: #92400e;
       margin-bottom: 6px;
-      font-size: 14px;
+      font-size: 15px;
     }
   </style>
 </head>
