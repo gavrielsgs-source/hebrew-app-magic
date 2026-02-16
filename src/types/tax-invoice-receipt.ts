@@ -14,7 +14,12 @@ export interface PaymentMethod {
   type: 'cash' | 'check' | 'credit_card' | 'bank_transfer' | 'other';
   amount: number;
   date: string;
-  reference?: string; // מספר המחאה, 4 ספרות אחרונות של כרטיס וכו'
+  reference?: string;
+  // Check-specific fields
+  checkAccountNumber?: string;
+  checkBranchNumber?: string;
+  checkBankNumber?: string;
+  checkNumber?: string;
 }
 
 export interface TaxInvoiceReceiptData {
