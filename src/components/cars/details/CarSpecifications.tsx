@@ -1,5 +1,6 @@
 
 import { Gauge, Calendar, RotateCw, Fuel } from "lucide-react";
+import { translateTransmission, translateFuelType } from "@/lib/car-translations";
 
 interface CarSpecificationsProps {
   kilometers: number;
@@ -26,24 +27,13 @@ export function CarSpecifications({ kilometers, year, transmission, fuelType }: 
       <div className="flex flex-col items-center p-3 bg-muted/50 rounded-lg">
         <RotateCw className="h-6 w-6 mb-1 text-primary" />
         <span className="text-sm text-muted-foreground">תיבת הילוכים</span>
-        <span className="font-medium">
-          {transmission === 'manual' ? 'ידנית' : 
-           transmission === 'automatic' ? 'אוטומטית' : 
-           transmission === 'robotics' ? 'רובוטית' : 
-           transmission || 'לא צוין'}
-        </span>
+        <span className="font-medium">{translateTransmission(transmission)}</span>
       </div>
       
       <div className="flex flex-col items-center p-3 bg-muted/50 rounded-lg">
         <Fuel className="h-6 w-6 mb-1 text-primary" />
         <span className="text-sm text-muted-foreground">סוג דלק</span>
-        <span className="font-medium">
-          {fuelType === 'gasoline' ? 'בנזין' : 
-           fuelType === 'diesel' ? 'דיזל' : 
-           fuelType === 'hybrid' ? 'היברידי' : 
-           fuelType === 'electric' ? 'חשמלי' : 
-           fuelType || 'לא צוין'}
-        </span>
+        <span className="font-medium">{translateFuelType(fuelType)}</span>
       </div>
     </div>
   );

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2, Car, Phone, Search, Filter, X, Fuel, Gauge, Calendar } from "lucide-react";
+import { Loader2, Car, Phone, Search, Filter, X, Fuel, Gauge, Calendar, Paintbrush, Settings, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { translateTransmission, translateFuelType, translateColor } from "@/lib/car-translations";
 
 interface DealerInfo {
   name: string;
@@ -29,9 +30,14 @@ interface PublicCar {
   fuel_type: string;
   transmission: string;
   exterior_color: string;
+  interior_color: string | null;
+  engine_size: string | null;
   description: string;
   image_url: string | null;
   trim_level: string | null;
+  entry_date: string | null;
+  next_test_date: string | null;
+  ownership_history: string | null;
 }
 
 interface Pagination {
@@ -416,7 +422,7 @@ export default function PublicInventory() {
                     )}
                     
                     {/* Specs */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
                       <div className="flex items-center gap-1.5 text-sm text-gray-600">
                         <Gauge className="h-3.5 w-3.5 text-gray-400" />
                         <span>{formatKilometers(car.kilometers)} ק״מ</span>
@@ -424,16 +430,38 @@ export default function PublicInventory() {
                       {car.fuel_type && (
                         <div className="flex items-center gap-1.5 text-sm text-gray-600">
                           <Fuel className="h-3.5 w-3.5 text-gray-400" />
-                          <span>{car.fuel_type}</span>
+                          <span>{translateFuelType(car.fuel_type)}</span>
                         </div>
                       )}
                       {car.transmission && (
                         <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                          <span>{car.transmission}</span>
+                          <RotateCw className="h-3.5 w-3.5 text-gray-400" />
+                          <span>{translateTransmission(car.transmission)}</span>
+                        </div>
+                      )}
+                      {car.engine_size && (
+                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                          <Settings className="h-3.5 w-3.5 text-gray-400" />
+                          <span>{car.engine_size} סמ״ק</span>
+                        </div>
+                      )}
+                      {car.exterior_color && (
+                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                          <Paintbrush className="h-3.5 w-3.5 text-gray-400" />
+                          <span>צבע: {translateColor(car.exterior_color)}</span>
+                        </div>
+                      )}
+                      {car.ownership_history && (
+                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                          <Car className="h-3.5 w-3.5 text-gray-400" />
+                          <span>יד {car.ownership_history}</span>
                         </div>
                       )}
                     </div>
+
+                    {car.description && (
+                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">{car.description}</p>
+                    )}
                     
                     <Button 
                       className="w-full mt-4 gap-2 rounded-xl text-white font-medium shadow-sm" 

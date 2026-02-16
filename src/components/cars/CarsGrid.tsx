@@ -6,6 +6,7 @@ import { UserPlus, Send, Eye } from "lucide-react";
 import { CarGridSkeleton } from "./components/CarGridSkeleton";
 import { CarGridEmpty } from "./components/CarGridEmpty";
 import { getStatusBadgeColor, getStatusText } from "./components/CarStatusBadge";
+import { translateTransmission, translateFuelType } from "@/lib/car-translations";
 
 interface CarsGridProps {
   cars: any[];
@@ -46,13 +47,13 @@ export function CarsGrid({ cars, isLoading }: CarsGridProps) {
               {car.fuel_type && (
                 <>
                   <span className="text-muted-foreground">דלק:</span>
-                  <span>{car.fuel_type}</span>
+                  <span>{translateFuelType(car.fuel_type)}</span>
                 </>
               )}
               {car.transmission && (
                 <>
                   <span className="text-muted-foreground">תיבת הילוכים:</span>
-                  <span>{car.transmission}</span>
+                  <span>{translateTransmission(car.transmission)}</span>
                 </>
               )}
             </div>
