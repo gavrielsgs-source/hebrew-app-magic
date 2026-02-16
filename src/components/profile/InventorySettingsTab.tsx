@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, ExternalLink, Check, Loader2, QrCode, Link as LinkIcon } from "lucide-react";
+import { Copy, ExternalLink, Check, Loader2, Link as LinkIcon } from "lucide-react";
 import { Json } from "@/integrations/supabase/types";
 
 interface InventorySettings {
@@ -177,8 +177,8 @@ export function InventorySettingsTab() {
                 כאשר מופעל, הדף יהיה נגיש לכל אחד עם הקישור
               </p>
             </div>
-            <div dir="ltr">
-              <Switch checked={enabled} onCheckedChange={setEnabled} />
+            <div>
+              <Switch checked={enabled} onCheckedChange={setEnabled} dir="ltr" />
             </div>
           </div>
 
@@ -272,10 +272,11 @@ export function InventorySettingsTab() {
                   האם להציג את כפתור יצירת הקשר בדף
                 </p>
               </div>
-              <div dir="ltr">
+              <div>
                 <Switch 
                   checked={settings.show_phone !== false} 
                   onCheckedChange={(checked) => setSettings({ ...settings, show_phone: checked })}
+                  dir="ltr"
                 />
               </div>
             </div>
@@ -288,42 +289,6 @@ export function InventorySettingsTab() {
         </CardContent>
       </Card>
 
-      {/* QR Code Section */}
-      {slug && enabled && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 justify-end">
-              קוד QR
-              <QrCode className="h-5 w-5" />
-            </CardTitle>
-            <CardDescription>
-              הדפס או שתף את קוד ה-QR כדי שלקוחות יוכלו לגשת לדף המלאי בקלות
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-4 bg-white rounded-lg">
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inventoryUrl)}`}
-                alt="QR Code"
-                className="w-48 h-48"
-              />
-            </div>
-            <div className="flex justify-center mt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(inventoryUrl)}`;
-                  link.download = `qr-${slug}.png`;
-                  link.click();
-                }}
-              >
-                הורד קוד QR
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
