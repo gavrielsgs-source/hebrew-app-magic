@@ -9,7 +9,6 @@ import { NewCar } from "@/types/car";
  */
 export function useAddCar() {
   const queryClient = useQueryClient();
-  const defaultAgencyId = null; // Will be overridden by the passed agency_id
 
   return useMutation({
     mutationFn: async (car: NewCar) => {
@@ -17,9 +16,7 @@ export function useAddCar() {
         const { data: userData, error: userError } = await supabase.auth.getUser();
         
         if (userError || !userData.user) {
-          toast.error("לא ניתן להוסיף רכב", {
-            description: "המשתמש אינו מחובר"
-          });
+          toast.error("לא ניתן להוסיף רכב", { description: "המשתמש אינו מחובר" });
           throw userError || new Error("User not authenticated");
         }
 
@@ -42,54 +39,58 @@ export function useAddCar() {
             last_test_date: car.last_test_date || null,
             ownership_history: car.ownership_history || null,
             status: "available",
-            agency_id: car.agency_id || defaultAgencyId,
+            agency_id: car.agency_id || null,
             user_id: userData.user.id,
             entry_date: car.entry_date || null,
             license_number: car.license_number || null,
             chassis_number: car.chassis_number || null,
-            next_test_date: car.next_test_date || null
+            next_test_date: car.next_test_date || null,
+            // New wizard fields
+            car_type: car.car_type || 'regular',
+            owner_customer_id: car.owner_customer_id === "none" ? null : car.owner_customer_id || null,
+            origin_type: car.origin_type || null,
+            model_code: car.model_code || null,
+            engine_number: car.engine_number || null,
+            vat_paid: car.vat_paid || null,
+            asking_price: car.asking_price || null,
+            minimum_price: car.minimum_price || null,
+            list_price: car.list_price || null,
+            registration_fee: car.registration_fee || null,
+            is_pledged: car.is_pledged || false,
+            show_in_catalog: car.show_in_catalog || false,
+            dealer_price: car.dealer_price || null,
+            catalog_price: car.catalog_price || null,
+            purchase_cost: car.purchase_cost || null,
+            purchase_date: car.purchase_date || null,
+            supplier_name: car.supplier_name || null,
           })
           .select()
           .single();
 
         if (carError) {
-          toast.error("שגיאה בהוספת רכב", {
-            description: carError.message
-          });
+          toast.error("שגיאה בהוספת רכב", { description: carError.message });
           throw carError;
         }
 
-        // Upload images in background to improve performance
+        // Upload images in background
         if (car.images && car.images.length > 0 && data.id) {
           const carId = data.id;
-          
-          // Upload images in parallel for better performance
           const uploadPromises = car.images.map(async (image, index) => {
             const fileExt = image.name.split('.').pop();
             const filePath = `${carId}/${index}-${Date.now()}.${fileExt}`;
-            
             const { error: uploadError } = await supabase.storage
               .from('cars')
-              .upload(filePath, image, {
-                cacheControl: '3600',
-                upsert: false
-              });
-              
+              .upload(filePath, image, { cacheControl: '3600', upsert: false });
             if (uploadError) {
               console.error(`Error uploading image ${index + 1}:`, uploadError);
               return { success: false, error: uploadError };
             }
-            
             return { success: true, path: filePath };
           });
           
-          // Don't wait for image uploads to complete before showing success
-          Promise.all(uploadPromises).then((uploadResults) => {
-            const failedUploads = uploadResults.filter(result => !result.success).length;
-            
-            if (failedUploads > 0) {
-              toast.error(`${failedUploads} תמונות לא הועלו בהצלחה`);
-            }
+          Promise.all(uploadPromises).then((results) => {
+            const failed = results.filter(r => !r.success).length;
+            if (failed > 0) toast.error(`${failed} תמונות לא הועלו בהצלחה`);
           });
         }
 

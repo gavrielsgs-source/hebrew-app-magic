@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAddCar } from '@/hooks/cars/use-add-car';
 import { useCars } from '@/hooks/use-cars';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
-import { CarFormBase } from './CarFormBase';
+import { CarFormWizard } from './wizard/CarFormWizard';
 import { toast } from 'sonner';
 import { useTasks } from '@/hooks/use-tasks';
 
@@ -20,24 +20,18 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (values: any, images: File[]) => {
-    console.log('🔍 [AddCarForm] handleSubmit called with values:', values);
-    
     setIsSubmitting(true);
     try {
-      const currentCount = cars?.length || 0;
-      console.log('🔍 [AddCarForm] Current cars count:', currentCount);
+      // Count only active cars (not sold/removed)
+      const activeCars = cars?.filter(c => c.status !== 'sold' && c.status !== 'removed') || [];
+      const currentCount = activeCars.length;
       
-      // בדיקת מגבלות לפני יצירת הרכב
       const canProceed = checkAndNotifyLimit('car', currentCount);
-      
       if (!canProceed) {
-        console.log('🔍 [AddCarForm] Limit check failed, aborting submission');
         setIsSubmitting(false);
         return;
       }
 
-      console.log('🔍 [AddCarForm] Limit check passed, creating car');
-      
       const carData = {
         ...values,
         images
@@ -47,7 +41,6 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
         onSuccess: async (newCar) => {
           toast.success('רכב חדש נוסף בהצלחה!');
           
-          // Create task for next test date if provided
           if (values.next_test_date && newCar) {
             try {
               await addTask.mutateAsync({
@@ -61,23 +54,20 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
                 assigned_to: null,
                 agency_id: values.agency_id || null,
               });
-              console.log('✅ [AddCarForm] Test task created successfully');
             } catch (taskError) {
-              console.error('❌ [AddCarForm] Error creating test task:', taskError);
+              console.error('Error creating test task:', taskError);
             }
           }
           
-          if (onSuccess) {
-            onSuccess();
-          }
+          if (onSuccess) onSuccess();
         },
         onError: (error) => {
-          console.error('🔍 [AddCarForm] Error creating car:', error);
+          console.error('Error creating car:', error);
           toast.error('שגיאה בהוספת הרכב');
         }
       });
     } catch (error) {
-      console.error('🔍 [AddCarForm] Error creating car:', error);
+      console.error('Error creating car:', error);
       toast.error('שגיאה בהוספת הרכב');
     } finally {
       setIsSubmitting(false);
@@ -85,7 +75,7 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
   };
 
   return (
-    <CarFormBase
+    <CarFormWizard
       defaultValues={{
         make: '',
         model: '',
@@ -106,12 +96,28 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
         license_number: '',
         chassis_number: '',
         next_test_date: '',
-        agency_id: ''
+        agency_id: '',
+        purchase_cost: '',
+        purchase_date: '',
+        supplier_name: '',
+        car_type: 'regular',
+        owner_customer_id: '',
+        origin_type: '',
+        model_code: '',
+        engine_number: '',
+        vat_paid: '',
+        asking_price: '',
+        minimum_price: '',
+        list_price: '',
+        registration_fee: '',
+        is_pledged: 'false',
+        show_in_catalog: 'false',
+        dealer_price: '',
+        catalog_price: '',
       }}
       onSubmit={handleSubmit}
       submitLabel="הוסף רכב"
       isSubmitting={isLoading || isSubmitting}
-      className={className}
     />
   );
 }

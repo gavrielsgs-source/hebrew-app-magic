@@ -12,19 +12,13 @@ export function useUpdateCar() {
 
   return useMutation({
     mutationFn: async ({ id, ...car }: NewCar & { id: string }) => {
-      console.log("useUpdateCar - Starting car update with data:", { id, ...car });
-      
       try {
         const { data: userData, error: userError } = await supabase.auth.getUser();
-        
         if (userError || !userData.user) {
-          console.error("User authentication error:", userError);
           throw userError || new Error("User not authenticated");
         }
 
-        console.log("useUpdateCar - User authenticated:", userData.user.id);
-
-        const updateData = {
+        const updateData: Record<string, any> = {
           make: car.make,
           model: car.model,
           year: car.year,
@@ -45,10 +39,27 @@ export function useUpdateCar() {
           license_number: car.license_number || null,
           chassis_number: car.chassis_number || null,
           next_test_date: car.next_test_date || null,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         };
 
-        console.log("useUpdateCar - Updating car with data:", updateData);
+        // Add new wizard fields if provided
+        if (car.car_type !== undefined) updateData.car_type = car.car_type || 'regular';
+        if (car.owner_customer_id !== undefined) updateData.owner_customer_id = car.owner_customer_id || null;
+        if (car.origin_type !== undefined) updateData.origin_type = car.origin_type || null;
+        if (car.model_code !== undefined) updateData.model_code = car.model_code || null;
+        if (car.engine_number !== undefined) updateData.engine_number = car.engine_number || null;
+        if (car.vat_paid !== undefined) updateData.vat_paid = car.vat_paid || null;
+        if (car.asking_price !== undefined) updateData.asking_price = car.asking_price || null;
+        if (car.minimum_price !== undefined) updateData.minimum_price = car.minimum_price || null;
+        if (car.list_price !== undefined) updateData.list_price = car.list_price || null;
+        if (car.registration_fee !== undefined) updateData.registration_fee = car.registration_fee || null;
+        if (car.is_pledged !== undefined) updateData.is_pledged = car.is_pledged;
+        if (car.show_in_catalog !== undefined) updateData.show_in_catalog = car.show_in_catalog;
+        if (car.dealer_price !== undefined) updateData.dealer_price = car.dealer_price || null;
+        if (car.catalog_price !== undefined) updateData.catalog_price = car.catalog_price || null;
+        if (car.purchase_cost !== undefined) updateData.purchase_cost = car.purchase_cost || null;
+        if (car.purchase_date !== undefined) updateData.purchase_date = car.purchase_date || null;
+        if (car.supplier_name !== undefined) updateData.supplier_name = car.supplier_name || null;
 
         const { data, error: carError } = await supabase
           .from("cars")
@@ -57,75 +68,34 @@ export function useUpdateCar() {
           .select()
           .single();
 
-        if (carError) {
-          console.error("Car update error:", carError);
-          throw carError;
-        }
+        if (carError) throw carError;
 
-        console.log("useUpdateCar - Car updated successfully:", data);
-
-        // Handle image uploads if provided - with better error handling
+        // Handle image uploads if provided
         if (car.images && car.images.length > 0) {
-          console.log(`useUpdateCar - Uploading ${car.images.length} images for car ${id}`);
-          
           try {
-            // First, delete existing images for this car
-            const { data: existingFiles, error: listError } = await supabase
-              .storage
-              .from('cars')
-              .list(`${id}`);
-              
-            if (!listError && existingFiles && existingFiles.length > 0) {
+            const { data: existingFiles } = await supabase.storage.from('cars').list(`${id}`);
+            if (existingFiles && existingFiles.length > 0) {
               const filesToDelete = existingFiles.map(file => `${id}/${file.name}`);
-              const { error: deleteError } = await supabase
-                .storage
-                .from('cars')
-                .remove(filesToDelete);
-                
-              if (deleteError) {
-                console.warn("Error deleting existing images:", deleteError);
-              } else {
-                console.log("Deleted existing images successfully");
-              }
+              await supabase.storage.from('cars').remove(filesToDelete);
             }
 
             const uploadPromises = car.images.map(async (image, index) => {
               const fileExt = image.name.split('.').pop();
               const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
-              
-              console.log(`Uploading image ${index}:`, filePath);
-              
               const { error: uploadError } = await supabase.storage
                 .from('cars')
-                .upload(filePath, image, {
-                  cacheControl: '3600',
-                  upsert: false
-                });
-                
-              if (uploadError) {
-                console.error(`Image upload error for image ${index}:`, uploadError);
-                return { success: false, error: uploadError, index };
-              }
-              
-              console.log(`Image ${index} uploaded successfully:`, filePath);
+                .upload(filePath, image, { cacheControl: '3600', upsert: false });
+              if (uploadError) return { success: false, error: uploadError, index };
               return { success: true, path: filePath, index };
             });
             
-            const uploadResults = await Promise.all(uploadPromises);
-            const failedUploads = uploadResults.filter(result => !result.success);
-            const successfulUploads = uploadResults.filter(result => result.success);
-            
-            if (failedUploads.length > 0) {
-              console.warn(`${failedUploads.length} images failed to upload:`, failedUploads);
-              toast.error(`${failedUploads.length} תמונות לא הועלו בהצלחה`);
-            }
-            
-            if (successfulUploads.length > 0) {
-              console.log(`${successfulUploads.length} images uploaded successfully`);
-              toast.success(`${successfulUploads.length} תמונות הועלו בהצלחה`);
-            }
+            const results = await Promise.all(uploadPromises);
+            const failed = results.filter(r => !r.success);
+            const succeeded = results.filter(r => r.success);
+            if (failed.length > 0) toast.error(`${failed.length} תמונות לא הועלו בהצלחה`);
+            if (succeeded.length > 0) toast.success(`${succeeded.length} תמונות הועלו בהצלחה`);
           } catch (imageError) {
-            console.error("Error during image upload process:", imageError);
+            console.error("Error during image upload:", imageError);
             toast.error("שגיאה בהעלאת תמונות");
           }
         }
@@ -137,11 +107,10 @@ export function useUpdateCar() {
       }
     },
     onSuccess: () => {
-      console.log("useUpdateCar - Car update mutation successful, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ["cars"] });
     },
     onError: (error) => {
-      console.error("useUpdateCar - Car update mutation error:", error);
+      console.error("Car update mutation error:", error);
     }
   });
 }
