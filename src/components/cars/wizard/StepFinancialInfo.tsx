@@ -9,27 +9,31 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { CarFormValues } from "../car-form-schema";
+import { useEffect } from "react";
 
 interface StepFinancialInfoProps {
   form: UseFormReturn<CarFormValues>;
 }
 
-const VAT_RATE = 0.17;
+const VAT_RATE = 0.18;
 
 export function StepFinancialInfo({ form }: StepFinancialInfoProps) {
-  const handleCalcVat = () => {
-    const purchaseCost = form.getValues("purchase_cost");
-    if (purchaseCost) {
-      const cost = parseFloat(purchaseCost.replace(/,/g, ''));
-      if (!isNaN(cost)) {
+  const formValues = form.watch();
+  const includeVat = formValues.include_vat;
+  const purchaseCost = formValues.purchase_cost;
+
+  // Auto-calculate VAT when toggle is on or purchase cost changes
+  useEffect(() => {
+    if (includeVat === true || includeVat === "true") {
+      const cost = parseFloat((purchaseCost || "0").toString().replace(/,/g, ''));
+      if (!isNaN(cost) && cost > 0) {
         const vat = Math.round(cost * VAT_RATE);
         form.setValue("vat_paid", vat.toString());
       }
     }
-  };
+  }, [includeVat, purchaseCost, form]);
 
   return (
     <div className="space-y-6">
@@ -55,13 +59,33 @@ export function StepFinancialInfo({ form }: StepFinancialInfoProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>מע"מ ששולם</FormLabel>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <FormControl>
-                    <Input placeholder="0" type="text" {...field} />
+                    <Input 
+                      placeholder="0" 
+                      type="text" 
+                      {...field} 
+                      disabled={includeVat === true || includeVat === "true"}
+                    />
                   </FormControl>
-                  <Button type="button" variant="outline" size="sm" onClick={handleCalcVat} className="whitespace-nowrap">
-                    חשב מע"מ
-                  </Button>
+                  <FormField
+                    control={form.control}
+                    name="include_vat"
+                    render={({ field: vatField }) => (
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <Switch
+                          checked={vatField.value === true || vatField.value === "true"}
+                          onCheckedChange={(checked) => {
+                            vatField.onChange(checked);
+                            if (!checked) {
+                              form.setValue("vat_paid", "");
+                            }
+                          }}
+                        />
+                        <Label className="text-xs cursor-pointer !mt-0">18%</Label>
+                      </div>
+                    )}
+                  />
                 </div>
                 <FormMessage />
               </FormItem>
@@ -134,8 +158,8 @@ export function StepFinancialInfo({ form }: StepFinancialInfoProps) {
             <FormItem className="flex items-center gap-3 pt-8">
               <FormControl>
                 <Switch
-                  checked={field.value === "true" || field.value === true}
-                  onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
+                  checked={field.value === true || field.value === "true"}
+                  onCheckedChange={(checked) => field.onChange(checked)}
                 />
               </FormControl>
               <Label className="cursor-pointer !mt-0">רכב משועבד</Label>

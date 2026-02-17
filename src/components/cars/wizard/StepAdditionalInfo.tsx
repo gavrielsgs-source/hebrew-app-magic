@@ -27,8 +27,8 @@ export function StepAdditionalInfo({ form }: StepAdditionalInfoProps) {
           <FormItem className="flex items-center gap-3 rounded-lg border p-4 bg-muted/30">
             <FormControl>
               <Switch
-                checked={field.value === "true" || field.value === true}
-                onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
+                checked={field.value === true || field.value === "true"}
+                onCheckedChange={(checked) => field.onChange(checked)}
               />
             </FormControl>
             <div className="!mt-0">
