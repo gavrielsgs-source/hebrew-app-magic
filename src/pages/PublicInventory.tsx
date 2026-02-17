@@ -399,7 +399,7 @@ export default function PublicInventory() {
               {filteredCars.map((car, index) => (
                 <article 
                   key={car.id} 
-                  className="group rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                  className="group flex flex-col rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
                   {/* Image */}
@@ -421,7 +421,7 @@ export default function PublicInventory() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-5">
+                  <div className="p-5 flex-1 flex flex-col">
                     {/* Title row */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -478,14 +478,16 @@ export default function PublicInventory() {
                       </p>
                     )}
                     
-                    {/* CTA */}
-                    <button 
-                      className="w-full mt-4 h-10 rounded-full bg-[#1d1d1f] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#000] active:scale-[0.98] transition-all duration-200"
-                      onClick={() => handleWhatsAppClick(car)}
-                    >
-                      <Phone className="h-3.5 w-3.5" />
-                      {showPrices ? 'שלח הודעה' : 'לפרטים ומחיר'}
-                    </button>
+                    {/* CTA — pushed to bottom */}
+                    <div className="mt-auto pt-4">
+                      <button 
+                        className="w-full h-10 rounded-full bg-[#1d1d1f] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#000] active:scale-[0.98] transition-all duration-200"
+                        onClick={() => handleWhatsAppClick(car)}
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        {showPrices ? 'שלח הודעה' : 'לפרטים ומחיר'}
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}
