@@ -44,6 +44,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
               "100 הודעות וואטסאפ לחודש",
               "משימות ללא הגבלה",
               "הפקת מסמכים ללא הגבלה",
+              "אתר קטלוג רכבים מתעדכן אוטומטית",
               "דשבורד בסיסי",
               "תמיכה בוואטסאפ"
             ]}
@@ -62,6 +63,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
               "500 הודעות וואטסאפ לחודש",
               "משימות ללא הגבלה",
               "הפקת מסמכים ללא הגבלה",
+              "אתר קטלוג רכבים מתעדכן אוטומטית",
               "דשבורד מתקדם",
               "אנליטיקה מלאה",
               "תמיכה מועדפת"
@@ -81,6 +83,7 @@ export function PricingSection({ user, onPricingSelect }: PricingSectionProps) {
               "2000 הודעות וואטסאפ לחודש",
               "משימות ללא הגבלה",
               "הפקת מסמכים ללא הגבלה",
+              "אתר קטלוג רכבים מתעדכן אוטומטית",
               "אנליטיקה מותאמת אישית",
               "API מלא",
               "תמיכה VIP",
