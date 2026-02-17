@@ -399,7 +399,7 @@ export default function PublicInventory() {
               {filteredCars.map((car, index) => (
                 <article 
                   key={car.id} 
-                  className="group flex flex-col rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                  className="group flex flex-col h-full rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
                   {/* Image */}
