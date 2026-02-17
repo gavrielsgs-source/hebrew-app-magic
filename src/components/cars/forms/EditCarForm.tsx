@@ -1,11 +1,9 @@
 
-import { useState } from "react";
 import { toast } from "sonner";
 import { Car } from "@/types/car";
 import { CarFormValues } from "../car-form-schema";
-import { CarFormBase } from "../CarFormBase";
+import { CarFormWizard } from "../wizard/CarFormWizard";
 import { useUpdateCar } from "@/hooks/cars/use-update-car";
-import { useAuthContext } from "@/contexts/auth-context";
 import { createDefaultFormValues } from "./CarFormValues";
 import { useTasks } from "@/hooks/use-tasks";
 
@@ -16,26 +14,13 @@ interface EditCarFormProps {
 
 export function EditCarForm({ car, onCancel }: EditCarFormProps) {
   const updateCar = useUpdateCar();
-  const { agencies } = useAuthContext();
   const { addTask } = useTasks();
   const defaultValues = createDefaultFormValues(car);
 
-  console.log("EditCarForm - Rendering with car:", car.id);
-  console.log("EditCarForm - updateCar.isPending:", updateCar.isPending);
-
   const onSubmit = async (values: CarFormValues, images: File[]) => {
-    console.log("EditCarForm - onSubmit called with values:", values);
-    console.log("EditCarForm - Images provided:", images?.length || 0);
-    console.log("EditCarForm - Current isPending state:", updateCar.isPending);
-    
-    if (updateCar.isPending) {
-      console.log("EditCarForm - Already submitting, ignoring request");
-      return;
-    }
+    if (updateCar.isPending) return;
     
     try {
-      console.log("EditCarForm - Preparing update data...");
-      
       const updateData = {
         id: car.id,
         make: values.make,
@@ -56,7 +41,6 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         status: car.status,
         agency_id: values.agency_id || null,
         images: images && images.length > 0 ? images : undefined,
-        // New fields
         entry_date: values.entry_date || null,
         license_number: values.license_number || null,
         chassis_number: values.chassis_number || null,
@@ -64,13 +48,26 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
         purchase_cost: values.purchase_cost ? parseFloat(values.purchase_cost as string) : null,
         purchase_date: values.purchase_date || null,
         supplier_name: values.supplier_name || null,
+        // New wizard fields
+        car_type: values.car_type || 'regular',
+        owner_customer_id: values.owner_customer_id === "none" ? null : values.owner_customer_id || null,
+        origin_type: values.origin_type || null,
+        model_code: values.model_code || null,
+        engine_number: values.engine_number || null,
+        vat_paid: values.vat_paid ? parseFloat(values.vat_paid as string) : null,
+        asking_price: values.asking_price ? parseFloat(values.asking_price as string) : null,
+        minimum_price: values.minimum_price ? parseFloat(values.minimum_price as string) : null,
+        list_price: values.list_price ? parseFloat(values.list_price as string) : null,
+        registration_fee: values.registration_fee ? parseFloat(values.registration_fee as string) : null,
+        is_pledged: values.is_pledged === "true" || values.is_pledged === true,
+        show_in_catalog: values.show_in_catalog === "true" || values.show_in_catalog === true,
+        dealer_price: values.dealer_price ? parseFloat(values.dealer_price as string) : null,
+        catalog_price: values.catalog_price ? parseFloat(values.catalog_price as string) : null,
       };
 
-      console.log("EditCarForm - About to call updateCar.mutateAsync with data:", updateData);
+      await updateCar.mutateAsync(updateData);
       
-      const result = await updateCar.mutateAsync(updateData);
-      
-      // Create task for next test date if provided and different from previous
+      // Create task for next test date if changed
       if (values.next_test_date && values.next_test_date !== car.next_test_date) {
         try {
           await addTask.mutateAsync({
@@ -84,46 +81,27 @@ export function EditCarForm({ car, onCancel }: EditCarFormProps) {
             assigned_to: null,
             agency_id: values.agency_id || null,
           });
-          console.log("EditCarForm - Test task created successfully");
         } catch (taskError) {
-          console.error("EditCarForm - Error creating test task:", taskError);
+          console.error("Error creating test task:", taskError);
         }
       }
       
-      console.log("EditCarForm - Update successful, result:", result);
       toast.success("הרכב עודכן בהצלחה");
-      
-      console.log("EditCarForm - Calling onCancel to close form");
       onCancel();
-      
     } catch (error) {
-      console.error("EditCarForm - Error updating car:", error);
-      
+      console.error("Error updating car:", error);
       if (error instanceof Error) {
-        if (error.message.includes('auth')) {
-          toast.error("שגיאת הזדהות - אנא התחבר מחדש");
-        } else if (error.message.includes('network')) {
-          toast.error("שגיאת רשת - בדוק את החיבור לאינטרנט");
-        } else {
-          toast.error(`שגיאה בעדכון הרכב: ${error.message}`);
-        }
+        toast.error(`שגיאה בעדכון הרכב: ${error.message}`);
       } else {
         toast.error("אירעה שגיאה בעדכון הרכב");
       }
-      
       throw error;
     }
   };
 
-  console.log("EditCarForm - About to render CarFormBase with props:", {
-    submitLabel: "שמור שינויים",
-    isSubmitting: updateCar.isPending,
-    hasOnCancel: !!onCancel
-  });
-
   return (
     <div>
-      <CarFormBase
+      <CarFormWizard
         defaultValues={defaultValues}
         onSubmit={onSubmit}
         isSubmitting={updateCar.isPending}

@@ -25,7 +25,7 @@ export const carFormSchema = z.object({
     .regex(/^\d+$/, "יש להזין מספרים בלבד"),
   price: z.string()
     .regex(/^[\d,]+$/, "יש להזין מספרים ופסיקים בלבד")
-    .transform((val) => val.replace(/,/g, '')), // Remove commas for processing
+    .transform((val) => val.replace(/,/g, '')),
   description: z.string()
     .optional()
     .transform((val) => val ? sanitizeInput(val) : val),
@@ -47,21 +47,35 @@ export const carFormSchema = z.object({
   registration_year: z.string()
     .regex(/^\d+$/, "יש להזין מספרים בלבד")
     .optional()
-    .or(z.literal("")), // Allow empty string
-  last_test_date: z.string().optional().or(z.literal("")), // Allow empty string
-  ownership_history: z.string().optional().or(z.literal("")), // Allow empty string
-  agency_id: z.string().optional().nullable().or(z.literal("")), // Allow null, empty string, or undefined
-  // New fields
-  entry_date: z.string().optional().or(z.literal("")), // Allow empty string
-  license_number: z.string().optional().or(z.literal("")), // Allow empty string
-  chassis_number: z.string().optional().or(z.literal("")), // Allow empty string
-  next_test_date: z.string().optional().or(z.literal("")), // Allow empty string
+    .or(z.literal("")),
+  last_test_date: z.string().optional().or(z.literal("")),
+  ownership_history: z.string().optional().or(z.literal("")),
+  agency_id: z.string().optional().nullable().or(z.literal("")),
+  entry_date: z.string().optional().or(z.literal("")),
+  license_number: z.string().optional().or(z.literal("")),
+  chassis_number: z.string().optional().or(z.literal("")),
+  next_test_date: z.string().optional().or(z.literal("")),
   // Purchase fields
-  purchase_cost: z.string().optional().or(z.literal("")), // Allow empty string
-  purchase_date: z.string().optional().or(z.literal("")), // Allow empty string
+  purchase_cost: z.string().optional().or(z.literal("")),
+  purchase_date: z.string().optional().or(z.literal("")),
   supplier_name: z.string()
     .optional()
     .transform((val) => val ? sanitizeInput(val) : val),
+  // New wizard fields
+  car_type: z.string().optional().or(z.literal("")),
+  owner_customer_id: z.string().optional().nullable().or(z.literal("")),
+  origin_type: z.string().optional().or(z.literal("")),
+  model_code: z.string().optional().or(z.literal("")),
+  engine_number: z.string().optional().or(z.literal("")),
+  vat_paid: z.string().optional().or(z.literal("")),
+  minimum_price: z.string().optional().or(z.literal("")),
+  list_price: z.string().optional().or(z.literal("")),
+  registration_fee: z.string().optional().or(z.literal("")),
+  is_pledged: z.any().optional(),
+  show_in_catalog: z.any().optional(),
+  dealer_price: z.string().optional().or(z.literal("")),
+  catalog_price: z.string().optional().or(z.literal("")),
+  asking_price: z.string().optional().or(z.literal("")),
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;

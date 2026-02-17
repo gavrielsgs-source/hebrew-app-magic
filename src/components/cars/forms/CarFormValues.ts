@@ -3,9 +3,7 @@ import { Car } from "@/types/car";
 import { CarFormValues } from "../car-form-schema";
 
 export function createDefaultFormValues(car: Car): CarFormValues {
-  console.log("createDefaultFormValues - Input car:", car);
-  
-  const defaultValues: CarFormValues = {
+  return {
     make: car.make || "",
     model: car.model || "",
     trim_level: car.trim_level || "",
@@ -21,14 +19,28 @@ export function createDefaultFormValues(car: Car): CarFormValues {
     registration_year: car.registration_year?.toString() || "",
     last_test_date: car.last_test_date || "",
     ownership_history: car.ownership_history || "",
-    agency_id: car.agency_id || "", // Convert null to empty string
-    // New fields
+    agency_id: car.agency_id || "",
     entry_date: car.entry_date || "",
     license_number: car.license_number || "",
     chassis_number: car.chassis_number || "",
     next_test_date: car.next_test_date || "",
+    purchase_cost: car.purchase_cost?.toString() || "",
+    purchase_date: car.purchase_date || "",
+    supplier_name: car.supplier_name || "",
+    // New wizard fields
+    car_type: car.car_type || "regular",
+    owner_customer_id: car.owner_customer_id || "",
+    origin_type: car.origin_type || "",
+    model_code: car.model_code || "",
+    engine_number: car.engine_number || "",
+    vat_paid: car.vat_paid?.toString() || "",
+    asking_price: car.asking_price?.toString() || "",
+    minimum_price: car.minimum_price?.toString() || "",
+    list_price: car.list_price?.toString() || "",
+    registration_fee: car.registration_fee?.toString() || "",
+    is_pledged: car.is_pledged ? "true" : "false",
+    show_in_catalog: car.show_in_catalog ? "true" : "false",
+    dealer_price: car.dealer_price?.toString() || "",
+    catalog_price: car.catalog_price?.toString() || "",
   };
-
-  console.log("createDefaultFormValues - Output defaultValues:", defaultValues);
-  return defaultValues;
 }

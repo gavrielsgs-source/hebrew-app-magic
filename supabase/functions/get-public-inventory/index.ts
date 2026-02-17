@@ -65,9 +65,10 @@ serve(async (req) => {
     // Build cars query with filters
     let carsQuery = supabase
       .from('cars')
-      .select('id, make, model, year, price, kilometers, fuel_type, transmission, exterior_color, interior_color, engine_size, description, status, created_at, trim_level, entry_date, next_test_date, ownership_history', { count: 'exact' })
+      .select('id, make, model, year, price, kilometers, fuel_type, transmission, exterior_color, interior_color, engine_size, description, status, created_at, trim_level, entry_date, next_test_date, ownership_history, catalog_price', { count: 'exact' })
       .eq('user_id', profile.id)
       .eq('status', 'available')
+      .eq('show_in_catalog', true)
       .order('created_at', { ascending: false });
 
     // Apply filters

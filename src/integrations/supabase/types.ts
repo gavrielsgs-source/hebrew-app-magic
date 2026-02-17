@@ -200,9 +200,14 @@ export type Database = {
       cars: {
         Row: {
           agency_id: string | null
+          asking_price: number | null
+          car_type: string | null
+          catalog_price: number | null
           chassis_number: string | null
           created_at: string | null
+          dealer_price: number | null
           description: string | null
+          engine_number: string | null
           engine_size: string | null
           entry_date: string | null
           exterior_color: string | null
@@ -210,30 +215,44 @@ export type Database = {
           fuel_type: string | null
           id: string
           interior_color: string | null
+          is_pledged: boolean | null
           kilometers: number
           last_test_date: string | null
           license_number: string | null
+          list_price: number | null
           make: string
+          minimum_price: number | null
           model: string
+          model_code: string | null
           next_test_date: string | null
+          origin_type: string | null
+          owner_customer_id: string | null
           ownership_history: string | null
           price: number
           purchase_cost: number | null
           purchase_date: string | null
+          registration_fee: number | null
           registration_year: number | null
+          show_in_catalog: boolean | null
           status: string | null
           supplier_name: string | null
           transmission: string | null
           trim_level: string | null
           updated_at: string | null
           user_id: string
+          vat_paid: number | null
           year: number
         }
         Insert: {
           agency_id?: string | null
+          asking_price?: number | null
+          car_type?: string | null
+          catalog_price?: number | null
           chassis_number?: string | null
           created_at?: string | null
+          dealer_price?: number | null
           description?: string | null
+          engine_number?: string | null
           engine_size?: string | null
           entry_date?: string | null
           exterior_color?: string | null
@@ -241,30 +260,44 @@ export type Database = {
           fuel_type?: string | null
           id?: string
           interior_color?: string | null
+          is_pledged?: boolean | null
           kilometers: number
           last_test_date?: string | null
           license_number?: string | null
+          list_price?: number | null
           make: string
+          minimum_price?: number | null
           model: string
+          model_code?: string | null
           next_test_date?: string | null
+          origin_type?: string | null
+          owner_customer_id?: string | null
           ownership_history?: string | null
           price: number
           purchase_cost?: number | null
           purchase_date?: string | null
+          registration_fee?: number | null
           registration_year?: number | null
+          show_in_catalog?: boolean | null
           status?: string | null
           supplier_name?: string | null
           transmission?: string | null
           trim_level?: string | null
           updated_at?: string | null
           user_id: string
+          vat_paid?: number | null
           year: number
         }
         Update: {
           agency_id?: string | null
+          asking_price?: number | null
+          car_type?: string | null
+          catalog_price?: number | null
           chassis_number?: string | null
           created_at?: string | null
+          dealer_price?: number | null
           description?: string | null
+          engine_number?: string | null
           engine_size?: string | null
           entry_date?: string | null
           exterior_color?: string | null
@@ -272,23 +305,32 @@ export type Database = {
           fuel_type?: string | null
           id?: string
           interior_color?: string | null
+          is_pledged?: boolean | null
           kilometers?: number
           last_test_date?: string | null
           license_number?: string | null
+          list_price?: number | null
           make?: string
+          minimum_price?: number | null
           model?: string
+          model_code?: string | null
           next_test_date?: string | null
+          origin_type?: string | null
+          owner_customer_id?: string | null
           ownership_history?: string | null
           price?: number
           purchase_cost?: number | null
           purchase_date?: string | null
+          registration_fee?: number | null
           registration_year?: number | null
+          show_in_catalog?: boolean | null
           status?: string | null
           supplier_name?: string | null
           transmission?: string | null
           trim_level?: string | null
           updated_at?: string | null
           user_id?: string
+          vat_paid?: number | null
           year?: number
         }
         Relationships: [
@@ -297,6 +339,13 @@ export type Database = {
             columns: ["agency_id"]
             isOneToOne: false
             referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cars_owner_customer_id_fkey"
+            columns: ["owner_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
