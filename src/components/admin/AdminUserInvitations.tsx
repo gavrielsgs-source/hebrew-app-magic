@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCompanies } from "@/hooks/use-companies";
+import { AdminCreateUser } from "./AdminCreateUser";
 
 const emailSchema = z.object({
   email: z.string().email("נא להזין כתובת אימייל תקינה")
@@ -222,13 +223,15 @@ export function AdminUserInvitations() {
             </CardDescription>
           </div>
           
-          <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90">
-                <UserPlus className="h-4 w-4 mr-2" />
-                שלח הזמנה
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <AdminCreateUser />
+            <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  שלח הזמנה
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]" dir="rtl">
               <DialogHeader>
                 <DialogTitle>הזמנת משתמש חדש</DialogTitle>
@@ -294,7 +297,8 @@ export function AdminUserInvitations() {
                 </Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
       </CardHeader>
 
