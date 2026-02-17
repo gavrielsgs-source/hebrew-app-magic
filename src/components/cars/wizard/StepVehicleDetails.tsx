@@ -6,16 +6,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CarFormValues } from "../car-form-schema";
+import { ImageUploadInput } from "../ImageUploadInput";
 
 interface StepVehicleDetailsProps {
   form: UseFormReturn<CarFormValues>;
+  images: File[];
+  onImagesChange: (files: FileList | null | File[]) => void;
 }
 
-export function StepVehicleDetails({ form }: StepVehicleDetailsProps) {
+export function StepVehicleDetails({ form, images, onImagesChange }: StepVehicleDetailsProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -256,6 +260,19 @@ export function StepVehicleDetails({ form }: StepVehicleDetailsProps) {
             </FormItem>
           )}
         />
+      </div>
+
+      {/* Image Upload Section */}
+      <div className="border-t pt-6 mt-6">
+        <FormItem>
+          <FormLabel className="text-base font-medium">תמונות הרכב</FormLabel>
+          <FormDescription>
+            העלה תמונות של הרכב (PNG / JPG בלבד). גרור לשינוי סדר.
+          </FormDescription>
+          <FormControl>
+            <ImageUploadInput onChange={onImagesChange} value={images} />
+          </FormControl>
+        </FormItem>
       </div>
     </div>
   );

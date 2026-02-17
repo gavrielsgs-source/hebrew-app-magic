@@ -11,7 +11,6 @@ import { StepBasicInfo } from "./StepBasicInfo";
 import { StepVehicleDetails } from "./StepVehicleDetails";
 import { StepFinancialInfo } from "./StepFinancialInfo";
 import { StepAdditionalInfo } from "./StepAdditionalInfo";
-import { StepImages } from "./StepImages";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const STEPS = [
@@ -19,7 +18,6 @@ const STEPS = [
   { label: "פרטי הרכב" },
   { label: "מידע פיננסי" },
   { label: "מידע נוסף" },
-  { label: "תמונות" },
 ];
 
 // Fields required for each step (for validation before moving forward)
@@ -28,7 +26,6 @@ const STEP_FIELDS: (keyof CarFormValues)[][] = [
   ["make", "model", "year", "kilometers"],
   ["price"],
   ["description", "model_code", "show_in_catalog"],
-  [],
 ];
 
 interface CarFormWizardProps {
@@ -117,10 +114,9 @@ export function CarFormWizard({
             <h3 className="text-lg font-semibold mb-4">{STEPS[currentStep].label}</h3>
             
             {currentStep === 0 && <StepBasicInfo form={form} />}
-            {currentStep === 1 && <StepVehicleDetails form={form} />}
+            {currentStep === 1 && <StepVehicleDetails form={form} images={images} onImagesChange={handleImageChange} />}
             {currentStep === 2 && <StepFinancialInfo form={form} />}
             {currentStep === 3 && <StepAdditionalInfo form={form} />}
-            {currentStep === 4 && <StepImages images={images} onImagesChange={handleImageChange} />}
           </CardContent>
         </Card>
 
