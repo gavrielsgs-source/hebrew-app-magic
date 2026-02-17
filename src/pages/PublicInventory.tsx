@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2, Car, Phone, Search, Filter, X, Fuel, Gauge, Calendar, Paintbrush, Settings, RotateCw } from "lucide-react";
+import { Loader2, Phone, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { translateTransmission, translateFuelType, translateColor } from "@/lib/car-translations";
 
@@ -167,94 +166,98 @@ export default function PublicInventory() {
     );
   });
 
-  const primaryColor = dealer?.settings?.primary_color || '#3b82f6';
-
+  // Loading state
   if (loading && !dealer) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-[#fbfbfd]">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto" style={{ color: primaryColor }} />
-          <p className="mt-4 text-gray-500 font-medium">טוען מלאי...</p>
+          <div className="h-10 w-10 mx-auto mb-4">
+            <Loader2 className="h-10 w-10 animate-spin text-[#1d1d1f]/30" />
+          </div>
+          <p className="text-[#86868b] text-sm font-medium tracking-tight">טוען מלאי...</p>
         </div>
       </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="text-center p-8">
-          <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <Car className="h-10 w-10 text-gray-400" />
+      <div className="min-h-screen flex items-center justify-center bg-[#fbfbfd]">
+        <div className="text-center px-6 max-w-sm">
+          <div className="h-16 w-16 rounded-full bg-[#f5f5f7] flex items-center justify-center mx-auto mb-5">
+            <svg className="h-8 w-8 text-[#86868b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">דף המלאי לא נמצא</h1>
-          <p className="text-gray-500">{error}</p>
+          <h1 className="text-2xl font-semibold text-[#1d1d1f] tracking-tight mb-2">דף המלאי לא נמצא</h1>
+          <p className="text-[#86868b] text-base leading-relaxed">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Hero Header */}
-      <header className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)` }}>
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {dealer?.settings?.logo_url ? (
-                <img 
-                  src={dealer.settings.logo_url} 
-                  alt={dealer.name} 
-                  className="h-14 w-auto object-contain bg-white/20 backdrop-blur-sm rounded-xl p-2"
-                />
-              ) : (
-                <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-2xl">
-                  {dealer?.name?.charAt(0)}
-                </div>
-              )}
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">{dealer?.name}</h1>
-                <p className="text-white/80 text-sm mt-0.5">
-                  {pagination?.total || 0} רכבים זמינים
-                </p>
-              </div>
-            </div>
-            
-            {dealer?.phone && dealer.settings?.show_phone !== false && (
-              <Button 
-                onClick={() => handleWhatsAppClick()} 
-                className="gap-2 rounded-xl shadow-lg text-white border-0"
-                style={{ backgroundColor: '#25D366' }}
-              >
-                <Phone className="h-4 w-4" />
-                <span className="hidden sm:inline">WhatsApp</span>
-              </Button>
+    <div className="min-h-screen bg-[#fbfbfd]" dir="rtl">
+      
+      {/* ── Apple-style Nav Bar ── */}
+      <nav className="sticky top-0 z-50 bg-[rgba(251,251,253,0.8)] backdrop-blur-2xl backdrop-saturate-[1.8] border-b border-[#d2d2d7]/60">
+        <div className="max-w-[1120px] mx-auto px-5 h-12 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {dealer?.settings?.logo_url ? (
+              <img 
+                src={dealer.settings.logo_url} 
+                alt={dealer.name} 
+                className="h-7 w-auto object-contain"
+              />
+            ) : (
+              <span className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight">
+                {dealer?.name}
+              </span>
             )}
           </div>
+          
+          {dealer?.phone && dealer.settings?.show_phone !== false && (
+            <button 
+              onClick={() => handleWhatsAppClick()} 
+              className="text-[#0071e3] text-sm font-medium hover:underline underline-offset-2 transition-all"
+            >
+              צור קשר
+            </button>
+          )}
         </div>
-      </header>
+      </nav>
 
-      {/* Search and Filters */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+      {/* ── Hero Section ── */}
+      <section className="pt-12 pb-6 sm:pt-20 sm:pb-10 text-center px-5">
+        <h1 className="text-[32px] sm:text-[48px] lg:text-[56px] font-semibold text-[#1d1d1f] tracking-[-0.003em] leading-[1.08] max-w-3xl mx-auto">
+          {dealer?.name}
+        </h1>
+        <p className="mt-3 sm:mt-4 text-[17px] sm:text-[21px] text-[#86868b] font-normal leading-relaxed max-w-xl mx-auto">
+          {pagination?.total || 0} רכבים זמינים במלאי
+        </p>
+      </section>
+
+      {/* ── Search & Filter Bar ── */}
+      <div className="sticky top-12 z-40 bg-[rgba(251,251,253,0.72)] backdrop-blur-2xl backdrop-saturate-[1.8]">
+        <div className="max-w-[1120px] mx-auto px-5 py-3">
           <div className="flex gap-2 items-center">
+            {/* Search */}
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="חיפוש רכב..."
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
+              <input
+                type="text"
+                placeholder="חיפוש..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10 rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white transition-colors"
+                className="w-full h-9 pr-10 pl-4 rounded-lg bg-[#e8e8ed]/60 border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40 transition-all"
               />
             </div>
-            
-            {/* Desktop Filters */}
+
+            {/* Desktop filters */}
             <div className="hidden md:flex gap-2 items-center">
               <Select value={selectedMake || "all"} onValueChange={(val) => setSelectedMake(val === "all" ? "" : val)}>
-                <SelectTrigger className="w-[140px] rounded-xl border-gray-200">
+                <SelectTrigger className="w-[130px] h-9 rounded-lg border-0 bg-[#e8e8ed]/60 text-[14px] text-[#1d1d1f] focus:ring-2 focus:ring-[#0071e3]/40">
                   <SelectValue placeholder="יצרן" />
                 </SelectTrigger>
                 <SelectContent>
@@ -267,50 +270,54 @@ export default function PublicInventory() {
               
               {showPrices && (
                 <>
-                  <Input
+                  <input
                     type="number"
                     placeholder="מחיר מ-"
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-[110px] rounded-xl border-gray-200"
+                    className="w-[100px] h-9 px-3 rounded-lg bg-[#e8e8ed]/60 border-0 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40"
                   />
-                  <Input
+                  <input
                     type="number"
                     placeholder="מחיר עד"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
-                    className="w-[110px] rounded-xl border-gray-200"
+                    className="w-[100px] h-9 px-3 rounded-lg bg-[#e8e8ed]/60 border-0 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40"
                   />
                 </>
               )}
 
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="rounded-xl text-gray-500">
-                  <X className="h-4 w-4 ml-1" />
+                <button 
+                  onClick={clearFilters} 
+                  className="h-9 px-3 rounded-lg text-[14px] text-[#0071e3] hover:bg-[#0071e3]/10 transition-colors flex items-center gap-1"
+                >
+                  <X className="h-3.5 w-3.5" />
                   נקה
-                </Button>
+                </button>
               )}
             </div>
 
-            {/* Mobile Filter Button */}
+            {/* Mobile filter trigger */}
             <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden relative rounded-xl border-gray-200">
-                  <Filter className="h-4 w-4" />
+                <button className="md:hidden h-9 w-9 rounded-lg bg-[#e8e8ed]/60 flex items-center justify-center relative">
+                  <SlidersHorizontal className="h-4 w-4 text-[#1d1d1f]" />
                   {hasActiveFilters && (
-                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full" style={{ backgroundColor: primaryColor }} />
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#0071e3]" />
                   )}
-                </Button>
+                </button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px]">
+              <SheetContent side="bottom" className="rounded-t-[20px] pb-8 border-0">
+                <div className="w-9 h-1 rounded-full bg-[#d2d2d7] mx-auto mb-4 mt-2" />
                 <SheetHeader>
-                  <SheetTitle>סינון רכבים</SheetTitle>
+                  <SheetTitle className="text-[20px] font-semibold text-[#1d1d1f] tracking-tight text-center">סינון</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6 space-y-4">
+                <div className="mt-6 space-y-5 px-1">
                   <div>
-                    <label className="text-sm font-medium mb-2 block">יצרן</label>
+                    <label className="text-[13px] font-medium text-[#86868b] uppercase tracking-wide mb-2 block">יצרן</label>
                     <Select value={selectedMake || "all"} onValueChange={(val) => setSelectedMake(val === "all" ? "" : val)}>
-                      <SelectTrigger className="rounded-xl">
+                      <SelectTrigger className="rounded-xl h-11 bg-[#f5f5f7] border-0 text-[15px]">
                         <SelectValue placeholder="בחר יצרן" />
                       </SelectTrigger>
                       <SelectContent>
@@ -324,30 +331,40 @@ export default function PublicInventory() {
                   
                   {showPrices && (
                     <div>
-                      <label className="text-sm font-medium mb-2 block">טווח מחירים</label>
+                      <label className="text-[13px] font-medium text-[#86868b] uppercase tracking-wide mb-2 block">טווח מחירים</label>
                       <div className="flex gap-2">
-                        <Input type="number" placeholder="מינימום" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="rounded-xl" />
-                        <Input type="number" placeholder="מקסימום" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="rounded-xl" />
+                        <input type="number" placeholder="מינימום" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} 
+                          className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
+                        <input type="number" placeholder="מקסימום" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} 
+                          className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
                       </div>
                     </div>
                   )}
                   
                   <div>
-                    <label className="text-sm font-medium mb-2 block">טווח שנים</label>
+                    <label className="text-[13px] font-medium text-[#86868b] uppercase tracking-wide mb-2 block">טווח שנים</label>
                     <div className="flex gap-2">
-                      <Input type="number" placeholder="משנה" value={minYear} onChange={(e) => setMinYear(e.target.value)} className="rounded-xl" />
-                      <Input type="number" placeholder="עד שנה" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} className="rounded-xl" />
+                      <input type="number" placeholder="משנה" value={minYear} onChange={(e) => setMinYear(e.target.value)} 
+                        className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
+                      <input type="number" placeholder="עד שנה" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} 
+                        className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-4">
-                    <Button onClick={() => setFiltersOpen(false)} className="flex-1 rounded-xl" style={{ backgroundColor: primaryColor }}>
+                  <div className="flex gap-3 pt-2">
+                    <button 
+                      onClick={() => setFiltersOpen(false)} 
+                      className="flex-1 h-12 rounded-full bg-[#0071e3] text-white text-[15px] font-medium hover:bg-[#0077ed] active:scale-[0.98] transition-all"
+                    >
                       הצג תוצאות
-                    </Button>
+                    </button>
                     {hasActiveFilters && (
-                      <Button variant="outline" onClick={clearFilters} className="rounded-xl">
+                      <button 
+                        onClick={clearFilters} 
+                        className="h-12 px-6 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[15px] font-medium hover:bg-[#e8e8ed] active:scale-[0.98] transition-all"
+                      >
                         נקה
-                      </Button>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -357,158 +374,165 @@ export default function PublicInventory() {
         </div>
       </div>
 
-      {/* Cars Grid */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      {/* ── Cars Grid ── */}
+      <main className="max-w-[1120px] mx-auto px-5 pt-6 pb-16">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" style={{ color: primaryColor }} />
+          <div className="flex justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-[#86868b]" />
           </div>
         ) : filteredCars.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <Car className="h-10 w-10 text-gray-400" />
+          <div className="text-center py-20 px-6">
+            <div className="h-16 w-16 rounded-full bg-[#f5f5f7] flex items-center justify-center mx-auto mb-4">
+              <Search className="h-7 w-7 text-[#86868b]" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-700">לא נמצאו רכבים</h2>
-            <p className="text-gray-500 mt-2">נסה לשנות את הסינון או החיפוש</p>
+            <h2 className="text-[22px] font-semibold text-[#1d1d1f] tracking-tight">לא נמצאו רכבים</h2>
+            <p className="text-[#86868b] text-[15px] mt-2">נסה לשנות את הסינון או החיפוש</p>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters} className="mt-4 rounded-xl">
+              <button onClick={clearFilters} className="mt-4 text-[#0071e3] text-[15px] font-medium hover:underline">
                 נקה סינון
-              </Button>
+              </button>
             )}
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredCars.map(car => (
-                <div 
+              {filteredCars.map((car, index) => (
+                <article 
                   key={car.id} 
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
+                  className="group rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                  style={{ animationDelay: `${index * 60}ms` }}
                 >
                   {/* Image */}
-                  <div className="aspect-[16/10] relative bg-gradient-to-br from-gray-100 to-gray-50 overflow-hidden">
+                  <div className="aspect-[4/3] relative bg-[#f5f5f7] overflow-hidden">
                     {car.image_url ? (
                       <img
                         src={car.image_url}
                         alt={`${car.make} ${car.model}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                         loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Car className="h-16 w-16 text-gray-300" />
-                      </div>
-                    )}
-                    <div className="absolute top-3 right-3 flex gap-2">
-                      <Badge className="rounded-lg text-white shadow-md font-semibold px-3" style={{ backgroundColor: primaryColor }}>
-                        {car.year}
-                      </Badge>
-                    </div>
-                    {showPrices && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-8">
-                        <p className="text-white font-bold text-xl drop-shadow-sm">
-                          {formatPrice(car.price)}
-                        </p>
+                        <svg className="h-12 w-12 text-[#d2d2d7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 00-.621-1.828l-2.073-2.592A4.5 4.5 0 0015.862 8.5H6.638a4.5 4.5 0 00-3.516 1.679L1.049 12.77A2.999 2.999 0 00.428 14.6v2.776C.428 17.996.932 18.5 1.553 18.5H3" />
+                        </svg>
                       </div>
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="p-4">
-                    <h3 className="font-bold text-lg text-gray-900">
-                      {car.make} {car.model}
-                    </h3>
-                    {car.trim_level && (
-                      <p className="text-sm text-gray-500 mt-0.5">{car.trim_level}</p>
-                    )}
-                    
-                    {/* Specs */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
-                      <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                        <Gauge className="h-3.5 w-3.5 text-gray-400" />
-                        <span>{formatKilometers(car.kilometers)} ק״מ</span>
+                  <div className="p-5">
+                    {/* Title row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight leading-tight truncate">
+                          {car.make} {car.model}
+                        </h3>
+                        <p className="text-[13px] text-[#86868b] mt-0.5">
+                          {car.year}{car.trim_level ? ` · ${car.trim_level}` : ''}
+                        </p>
                       </div>
-                      {car.fuel_type && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Fuel className="h-3.5 w-3.5 text-gray-400" />
-                          <span>{translateFuelType(car.fuel_type)}</span>
-                        </div>
-                      )}
-                      {car.transmission && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <RotateCw className="h-3.5 w-3.5 text-gray-400" />
-                          <span>{translateTransmission(car.transmission)}</span>
-                        </div>
-                      )}
-                      {car.engine_size && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Settings className="h-3.5 w-3.5 text-gray-400" />
-                          <span>{car.engine_size} סמ״ק</span>
-                        </div>
-                      )}
-                      {car.exterior_color && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Paintbrush className="h-3.5 w-3.5 text-gray-400" />
-                          <span>צבע: {translateColor(car.exterior_color)}</span>
-                        </div>
-                      )}
-                      {car.ownership_history && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Car className="h-3.5 w-3.5 text-gray-400" />
-                          <span>יד {car.ownership_history}</span>
-                        </div>
+                      {showPrices && (
+                        <span className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight whitespace-nowrap">
+                          {formatPrice(car.price)}
+                        </span>
                       )}
                     </div>
 
+                    {/* Specs — clean pill tags */}
+                    <div className="flex flex-wrap gap-1.5 mt-4">
+                      <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
+                        {formatKilometers(car.kilometers)} ק״מ
+                      </span>
+                      {car.fuel_type && (
+                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
+                          {translateFuelType(car.fuel_type)}
+                        </span>
+                      )}
+                      {car.transmission && (
+                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
+                          {translateTransmission(car.transmission)}
+                        </span>
+                      )}
+                      {car.engine_size && (
+                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
+                          {car.engine_size} סמ״ק
+                        </span>
+                      )}
+                      {car.exterior_color && (
+                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
+                          {translateColor(car.exterior_color)}
+                        </span>
+                      )}
+                      {car.ownership_history && (
+                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
+                          יד {car.ownership_history}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Description */}
                     {car.description && (
-                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">{car.description}</p>
+                      <p className="text-[13px] text-[#86868b] mt-3 leading-relaxed line-clamp-2">
+                        {car.description}
+                      </p>
                     )}
                     
-                    <Button 
-                      className="w-full mt-4 gap-2 rounded-xl text-white font-medium shadow-sm" 
+                    {/* CTA */}
+                    <button 
+                      className="w-full mt-4 h-10 rounded-full bg-[#1d1d1f] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#000] active:scale-[0.98] transition-all duration-200"
                       onClick={() => handleWhatsAppClick(car)}
-                      style={{ backgroundColor: '#25D366' }}
                     >
-                      <Phone className="h-4 w-4" />
+                      <Phone className="h-3.5 w-3.5" />
                       {showPrices ? 'שלח הודעה' : 'לפרטים ומחיר'}
-                    </Button>
+                    </button>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-8">
-                <Button
-                  variant="outline"
-                  className="rounded-xl"
+              <div className="flex items-center justify-center gap-1 mt-12">
+                <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
+                  className="h-9 w-9 rounded-full flex items-center justify-center text-[#1d1d1f] hover:bg-[#f5f5f7] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 >
-                  הקודם
-                </Button>
-                <span className="flex items-center px-4 text-sm text-gray-500 font-medium">
-                  {currentPage} / {pagination.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  className="rounded-xl"
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`h-9 w-9 rounded-full text-[14px] font-medium transition-all ${
+                      page === currentPage 
+                        ? 'bg-[#1d1d1f] text-white' 
+                        : 'text-[#1d1d1f] hover:bg-[#f5f5f7]'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
                   onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
                   disabled={currentPage === pagination.totalPages}
+                  className="h-9 w-9 rounded-full flex items-center justify-center text-[#1d1d1f] hover:bg-[#f5f5f7] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 >
-                  הבא
-                </Button>
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
               </div>
             )}
           </>
         )}
       </main>
 
-      {/* Floating WhatsApp */}
+      {/* ── Floating WhatsApp ── */}
       <button
         onClick={() => handleWhatsAppClick()}
-        className="fixed bottom-6 left-6 h-14 w-14 rounded-2xl shadow-lg flex items-center justify-center text-white hover:scale-110 transition-transform z-50"
-        style={{ backgroundColor: '#25D366' }}
+        className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-[0_4px_14px_rgba(37,211,102,0.4)] flex items-center justify-center text-white bg-[#25D366] hover:bg-[#22c55e] hover:scale-110 active:scale-95 transition-all duration-300 z-50"
         aria-label="צור קשר בוואטסאפ"
       >
         <svg viewBox="0 0 24 24" className="h-7 w-7 fill-current">
@@ -516,12 +540,15 @@ export default function PublicInventory() {
         </svg>
       </button>
 
-      {/* Footer */}
-      <footer className="bg-white border-t mt-12 py-6">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">
-          <p>© {new Date().getFullYear()} {dealer?.name}</p>
-          <p className="mt-1">
-            מופעל על ידי <a href="https://carsleadapp.com" className="hover:underline" style={{ color: primaryColor }}>CarsLead</a>
+      {/* ── Footer ── */}
+      <footer className="border-t border-[#d2d2d7]/40 bg-[#f5f5f7]">
+        <div className="max-w-[1120px] mx-auto px-5 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-[12px] text-[#86868b]">© {new Date().getFullYear()} {dealer?.name}</p>
+          <p className="text-[12px] text-[#86868b]">
+            מופעל על ידי{' '}
+            <a href="https://carsleadapp.com" className="text-[#0071e3] hover:underline underline-offset-2">
+              CarsLead
+            </a>
           </p>
         </div>
       </footer>
