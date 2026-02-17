@@ -66,6 +66,9 @@ verify_jwt = true
 [functions.get-next-document-number]
 verify_jwt = true
 
+[functions.admin-create-user]
+verify_jwt = false
+
 [functions.send-invitation]
 verify_jwt = true
 
