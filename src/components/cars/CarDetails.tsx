@@ -2,17 +2,17 @@ import { useState, useEffect } from "react";
 import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
 import { getCarImages } from "@/lib/image-utils";
-import { Separator } from "@/components/ui/separator";
 import { Edit } from "lucide-react";
 import { EditCarForm } from "./forms/EditCarForm";
 import { CarImagesCarousel } from "./details/CarImagesCarousel";
 import { CarHeader } from "./details/CarHeader";
-import { CarSpecifications } from "./details/CarSpecifications";
-import { CarDescription } from "./details/CarDescription";
-import { CarAdditionalDetails } from "./details/CarAdditionalDetails";
-import { CarTestDate } from "./details/CarTestDate";
+import { CarGeneralTab } from "./details/CarGeneralTab";
+import { CarOwnerTab } from "./details/CarOwnerTab";
+import { CarDocumentsTab } from "./details/CarDocumentsTab";
 import { SwipeDialog } from "@/components/ui/swipe-dialog";
 import { DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 
 interface CarDetailsProps {
   car: Car;
@@ -27,9 +27,7 @@ export function CarDetails({ car }: CarDetailsProps) {
     const fetchImages = async () => {
       try {
         setLoadingImages(true);
-        console.log("Fetching images for car:", car.id);
         const imageUrls = await getCarImages(car.id);
-        console.log("Fetched images:", imageUrls);
         setImages(imageUrls);
       } catch (error) {
         console.error("Error fetching car images:", error);
@@ -37,20 +35,23 @@ export function CarDetails({ car }: CarDetailsProps) {
         setLoadingImages(false);
       }
     };
-
     fetchImages();
   }, [car.id]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
+    <div className="space-y-4" dir="rtl">
+      {/* Header row: title + edit button */}
+      <div className="flex justify-between items-center">
+        <CarHeader
+          make={car.make}
+          model={car.model}
+          year={car.year}
+          price={car.price}
+          status={car.status}
+        />
         <SwipeDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
               <Edit className="h-4 w-4" />
               ערוך רכב
             </Button>
@@ -63,41 +64,40 @@ export function CarDetails({ car }: CarDetailsProps) {
           </DialogContent>
         </SwipeDialog>
       </div>
-      
-      <CarImagesCarousel 
-        images={images} 
-        loadingImages={loadingImages} 
-        carMake={car.make} 
-        carModel={car.model} 
-      />
-      
-      <CarHeader 
-        make={car.make} 
-        model={car.model} 
-        year={car.year}
-        price={car.price}
-        status={car.status}
-      />
 
-      <Separator />
-      
-      <CarSpecifications
-        kilometers={car.kilometers}
-        year={car.year}
-        transmission={car.transmission}
-        fuelType={car.fuel_type}
-      />
-      
-      <CarDescription description={car.description} />
-      
-      <CarAdditionalDetails
-        exteriorColor={car.exterior_color}
-        interiorColor={car.interior_color}
-        engineSize={car.engine_size}
-        registrationYear={car.registration_year}
-      />
-      
-      <CarTestDate lastTestDate={car.last_test_date} />
+      {/* Tabs */}
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="w-full justify-start bg-muted/50 rounded-lg">
+          <TabsTrigger value="general" className="flex-1 sm:flex-none">כללי</TabsTrigger>
+          <TabsTrigger value="owner" className="flex-1 sm:flex-none">מוכר וקונה</TabsTrigger>
+          <TabsTrigger value="documents" className="flex-1 sm:flex-none">מסמכים</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="general" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left side: details grid */}
+            <CarGeneralTab car={car} />
+
+            {/* Right side: images + notes */}
+            <div className="space-y-4">
+              <CarImagesCarousel
+                images={images}
+                loadingImages={loadingImages}
+                carMake={car.make}
+                carModel={car.model}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="owner" className="mt-4">
+          <CarOwnerTab ownerCustomerId={car.owner_customer_id} />
+        </TabsContent>
+
+        <TabsContent value="documents" className="mt-4">
+          <CarDocumentsTab carId={car.id} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
