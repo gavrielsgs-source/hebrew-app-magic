@@ -155,8 +155,8 @@ export function StepFinancialInfo({ form }: StepFinancialInfoProps) {
           control={form.control}
           name="is_pledged"
           render={({ field }) => (
-            <FormItem className="flex items-center gap-3 pt-8">
-              <FormControl>
+            <FormItem className="flex items-center gap-3 pt-8 overflow-visible">
+              <FormControl className="overflow-visible">
                 <Switch
                   checked={field.value === true || field.value === "true"}
                   onCheckedChange={(checked) => field.onChange(checked)}

@@ -90,13 +90,10 @@ export function CarFormWizard({
 
   return (
     <Form {...form}>
-      <form
+        <form
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          if (isLastStep) {
-            form.handleSubmit(handleSubmit)();
-          }
         }}
         className="space-y-6"
         dir="rtl"
@@ -138,7 +135,8 @@ export function CarFormWizard({
           <div>
             {isLastStep ? (
               <Button
-                type="submit"
+                type="button"
+                onClick={() => form.handleSubmit(handleSubmit)()}
                 disabled={isSubmitting || form.formState.isSubmitting}
                 className="min-w-[140px]"
               >
