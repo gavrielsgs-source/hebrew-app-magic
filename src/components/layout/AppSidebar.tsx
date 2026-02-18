@@ -304,6 +304,17 @@ export function AppSidebar() {
               </button>
             </SidebarMenuItem>
           </SidebarMenu>
+
+          {/* Support contact */}
+          <div className="mt-2 px-3 py-3 rounded-md bg-white/5 border border-white/10 text-xs text-gray-400 space-y-1 group-data-[collapsible=icon]:hidden">
+            <p className="font-medium text-gray-300">צריכים עזרה?</p>
+            <a href="mailto:itscarslead@gmail.com" className="block hover:text-white transition-colors truncate">
+              itscarslead@gmail.com
+            </a>
+            <a href="tel:0502710262" className="block hover:text-white transition-colors">
+              050-271-0262
+            </a>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>
