@@ -1,12 +1,12 @@
 
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, MailCheck } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -18,7 +18,10 @@ export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  const pendingEmailConfirmation = location.state?.message?.includes('אשר את האימייל');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +70,17 @@ export default function LoginForm() {
 
   return (
     <div className="space-y-6 w-full">
+      {/* Email confirmation banner */}
+      {pendingEmailConfirmation && (
+        <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <MailCheck className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-blue-800 font-medium text-sm">אמת את כתובת המייל שלך</p>
+            <p className="text-blue-700 text-xs mt-1">שלחנו לך מייל אימות. יש לאשר אותו לפני ההתחברות. אם לא קיבלת — בדוק בספאם.</p>
+          </div>
+        </div>
+      )}
+
       {/* Google Login Button */}
       <GoogleAuthButton mode="login" />
       
