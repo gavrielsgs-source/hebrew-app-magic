@@ -52,14 +52,14 @@ export function StepFinancialInfo({ form }: StepFinancialInfoProps) {
           )}
         />
 
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-visible">
           <FormField
             control={form.control}
             name="vat_paid"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="overflow-visible">
                 <FormLabel>מע"מ ששולם</FormLabel>
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center overflow-visible">
                   <FormControl>
                     <Input 
                       placeholder="0" 
@@ -72,7 +72,7 @@ export function StepFinancialInfo({ form }: StepFinancialInfoProps) {
                     control={form.control}
                     name="include_vat"
                     render={({ field: vatField }) => (
-                      <div className="flex items-center gap-2 whitespace-nowrap">
+                      <div className="flex items-center gap-2 whitespace-nowrap overflow-visible">
                         <Switch
                           checked={vatField.value === true || vatField.value === "true"}
                           onCheckedChange={(checked) => {
