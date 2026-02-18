@@ -31,6 +31,11 @@ export function CarsTable() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
+  // Always derive from live cache so dialogs reflect latest data after updates
+  const currentSelectedCar = selectedCar
+    ? cars.find(c => c.id === selectedCar.id) ?? selectedCar
+    : null;
+
   return (
     <div dir="rtl">
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
@@ -160,7 +165,7 @@ export function CarsTable() {
           <DialogHeader>
             <DialogTitle>שליחת פרטי רכב בוואטסאפ</DialogTitle>
           </DialogHeader>
-          {selectedCar && (
+          {currentSelectedCar && (
             <WhatsappTemplateSelector 
               selectedTemplateId=""
               customizedTemplate=""
@@ -177,8 +182,8 @@ export function CarsTable() {
           <DialogHeader>
             <DialogTitle>פרטי רכב</DialogTitle>
           </DialogHeader>
-          {selectedCar && (
-            <CarDetails car={selectedCar} />
+          {currentSelectedCar && (
+            <CarDetails car={currentSelectedCar} />
           )}
         </DialogContent>
       </Dialog>
@@ -189,8 +194,8 @@ export function CarsTable() {
           <SheetHeader>
             <SheetTitle>עריכת רכב</SheetTitle>
           </SheetHeader>
-          {selectedCar && (
-            <EditCarForm car={selectedCar} onCancel={() => setIsEditOpen(false)} />
+          {currentSelectedCar && (
+            <EditCarForm car={currentSelectedCar} onCancel={() => setIsEditOpen(false)} />
           )}
         </SheetContent>
       </Sheet>

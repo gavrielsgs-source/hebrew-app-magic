@@ -106,8 +106,10 @@ export function useUpdateCar() {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
+      queryClient.invalidateQueries({ queryKey: ["customer"] });
+      queryClient.invalidateQueries({ queryKey: ["documents", "car", variables.id] });
     },
     onError: (error) => {
       console.error("Car update mutation error:", error);

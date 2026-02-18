@@ -66,7 +66,7 @@ export function CarDetails({ car }: CarDetailsProps) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="general" className="w-full">
+      <Tabs key={car.id} defaultValue="general" className="w-full">
         <TabsList className="w-full justify-start bg-muted/50 rounded-lg">
           <TabsTrigger value="general" className="flex-1 sm:flex-none">כללי</TabsTrigger>
           <TabsTrigger value="owner" className="flex-1 sm:flex-none">מוכר וקונה</TabsTrigger>
