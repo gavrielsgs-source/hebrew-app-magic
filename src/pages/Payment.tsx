@@ -177,7 +177,7 @@ export default function Payment() {
         <div>
           <h1 className={`font-bold ${isMobile ? "text-2xl" : "text-3xl"}`}>בחר את החבילה שלך</h1>
           <p className={`text-muted-foreground mt-2 ${isMobile ? "text-sm" : ""}`}>
-            14 ימי ניסיון חינם - ללא כרטיס אשראי!
+            14 ימי ניסיון חינם!
           </p>
         </div>
         <Button variant="outline" onClick={() => navigate("/")} className={isMobile ? "self-start" : ""}>
