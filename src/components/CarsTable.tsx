@@ -70,7 +70,13 @@ export function CarsTable() {
                   key={car.id}
                   className="hover:bg-primary/5 transition-colors border-b border-gray-100/50"
                 >
-                  <TableCell className="font-medium text-right py-5 px-8">
+                  <TableCell 
+                    className="font-medium text-right py-5 px-8 cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => {
+                      setSelectedCar(car);
+                      setIsDetailsOpen(true);
+                    }}
+                  >
                     {car.make} {car.model}
                   </TableCell>
                   <TableCell className="text-right py-5 px-8">{car.year}</TableCell>
