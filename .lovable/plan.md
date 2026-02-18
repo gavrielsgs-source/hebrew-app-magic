@@ -1,89 +1,71 @@
 
-# תיקון 3 בעיות בתצוגת הרכבים
+# תיקון סנכרון כרטסת רכב - לקוח ומסמכים
 
-## בעיה 1: Switch גולש מחוץ לגבולות (מע"מ / רכב משועבד)
+## הבעיות הנוכחיות
 
-### שורש הבעיה
-ב-`StepFinancialInfo.tsx`, ה-`FormItem` של "רכב משועבד" מוגדר עם:
+### בעיה 1: שיוך לקוח לא מתעדכן אוטומטית
+כשעורכים רכב ושומרים (`EditCarForm` → `useUpdateCar`), מתבצע:
 ```
-className="flex items-center gap-3 pt-8"
+queryClient.invalidateQueries({ queryKey: ["cars"] })
 ```
-ה-`FormControl` עוטף את ה-`Switch` בלי `overflow-visible`, וזה גורם לעיגול הלבן (thumb) לצאת מחוץ לגבולות הקונטיינר.
+זה מרענן את רשימת הרכבים, אבל ה-`Dialog` בטבלה עדיין מחזיק את ה-`selectedCar` הישן (ה-object הישן עם `owner_customer_id` הקודם).
 
-### פתרון
-להוסיף `overflow-visible` ל-`FormItem` של ה-Switch ולהפריד את ה-Label מה-`FormItem` לטיפול נכון יותר:
+ה-`CarDetails` מקבל `car` כ-prop ולא מקשיב לשינויים ב-cache — כך שהטאב "מוכר וקונה" מציג מידע ישן עד שסוגרים ופותחים מחדש.
 
-**ב-`StepFinancialInfo.tsx`** - שתי תיקונים:
-1. Switch של מע"מ 18%: לעטוף ב-`div` עם `overflow-visible`
-2. Switch של "רכב משועבד": להוסיף `overflow-visible` ל-`FormItem`
+**פתרון:**
+- ב-`CarsTable.tsx`: לקרוא ל-`useCars()` ולגזור את הרכב הנבחר מהנתונים המעודכנים עם `useMemo` לפי `selectedCar.id` — כך כשה-cache מתרענן, הרכב בדיאלוג מקבל אוטומטית את הנתונים החדשים.
+- ב-`useUpdateCar.ts`: להוסיף גם `invalidateQueries({ queryKey: ["customer"] })` כך שהמידע בטאב הלקוח יתרענן.
 
----
+### בעיה 2: מסמכים לא מסתנכרנים
+`CarDocumentsTab` משתמש ב-`useDocuments("car", carId)` שמביא רק מסמכים מטבלת `documents` עם `entity_type='car'` ו-`entity_id=carId`.
 
-## בעיה 2: שלב "מידע נוסף" מגיש את הטופס אוטומטית
+**הבעיה:** מסמכים שנוצרים מחוץ לזרימת "רכב" (למשל מסמך שנוצר ממסך לקוח) לא יופיעו, כי ה-`entity_type` שלהם הוא `'customer'` ולא `'car'`.
 
-### שורש הבעיה
-ב-`CarFormWizard.tsx` שורה 94-100:
-```tsx
-onSubmit={(e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (isLastStep) {
-    form.handleSubmit(handleSubmit)();
-  }
-}}
-```
-כשמגיעים לשלב 4 (האחרון), כל לחיצה/Enter מפעיל `form.handleSubmit` **אוטומטית** כי `isLastStep === true`. אין כפתור "הבא" בשלב זה - הכפתור "שמור" הוא `type="submit"`, מה שגורם לטופס לשלוח מיד.
-
-### פתרון
-להוסיף `useState` נפרד `isReadyToSubmit` שמאפשר שמירה רק כשהמשתמש לוחץ **במפורש** על כפתור השמירה, ולא כשרק מגיעים לשלב האחרון.
-
-**ב-`CarFormWizard.tsx`**:
-- להסיר את ה-`onSubmit` מה-`form` לחלוטין (להשאיר `e.preventDefault()`)
-- כפתור "שמור" ישנה ל-`type="button"` עם `onClick` מפורש שקורא ל-`form.handleSubmit(handleSubmit)()`
-- כך השלב האחרון ישאר מוצג בלי לשלוח עד שלחיצה על "שמור"
-
----
-
-## בעיה 3: לחיצה על שם הרכב בתצוגת טבלה לא פותחת כרטסת
-
-### שורש הבעיה
-ב-`CarsTable.tsx` שורה 73-75:
-```tsx
-<TableCell className="font-medium text-right py-5 px-8">
-  {car.make} {car.model}
-</TableCell>
-```
-אין `onClick` על התא - השם הוא טקסט רגיל ללא interactivity.
-
-### פתרון
-להפוך את שם הרכב ל-clickable שפותח את **דיאלוג הפרטים** (אותו דיאלוג שנפתח דרך כפתור "צפה"):
-
-```tsx
-<TableCell 
-  className="font-medium text-right py-5 px-8 cursor-pointer hover:text-primary transition-colors"
-  onClick={() => {
-    setSelectedCar(car);
-    setIsDetailsOpen(true);
-  }}
->
-  {car.make} {car.model}
-</TableCell>
-```
-
----
+**פתרון:**
+- לוודא שמסמכים שנוצרים עם `entity_type='car'` מבוצעים עם `invalidateQueries` כדי שטאב המסמכים מתרענן מייד.
+- ב-`useUpdateCar.ts`: להוסיף `invalidateQueries({ queryKey: ["documents", "car", id] })` כך שאחרי עדכון רכב, רשימת המסמכים מתרענן.
+- ב-`CarDetails.tsx`: להוסיף `key={car.id}` ל-Tabs כדי לאפס את הקומפוננט כשמחליפים רכב.
 
 ## קבצים לשינוי
 
-1. **`src/components/CarsTable.tsx`** - הוספת `onClick` + `cursor-pointer` לתא שם הרכב
-2. **`src/components/cars/wizard/CarFormWizard.tsx`** - שינוי כפתור "שמור" ל-`type="button"` עם `onClick` מפורש
-3. **`src/components/cars/wizard/StepFinancialInfo.tsx`** - הוספת `overflow-visible` לקונטיינרים של Switch
+### 1. `src/components/CarsTable.tsx`
+גזירת `currentSelectedCar` מהרשימה החיה לפי `selectedCar?.id`:
 
----
+```tsx
+// הוספה:
+const currentSelectedCar = selectedCar
+  ? cars.find(c => c.id === selectedCar.id) ?? selectedCar
+  : null;
 
-## סיכום השינויים
+// בדיאלוגים: שימוש ב-currentSelectedCar במקום selectedCar
+<CarDetails car={currentSelectedCar} />
+<EditCarForm car={currentSelectedCar} ... />
+```
 
-| קובץ | שינוי |
-|------|-------|
-| `CarsTable.tsx` | תא שם רכב = clickable → פותח דיאלוג פרטים |
-| `CarFormWizard.tsx` | כפתור שמור = `type="button"` עם `onClick` מפורש |
-| `StepFinancialInfo.tsx` | `overflow-visible` לתיקון גלישת ה-Switch |
+כך ברגע שה-`cars` query מתרענן, הרכב שמוצג בדיאלוג עדכני אוטומטית.
+
+### 2. `src/hooks/cars/use-update-car.ts`
+הוספת invalidation נוספים ב-`onSuccess`:
+
+```tsx
+onSuccess: (data, variables) => {
+  queryClient.invalidateQueries({ queryKey: ["cars"] });
+  queryClient.invalidateQueries({ queryKey: ["customer"] });
+  queryClient.invalidateQueries({ queryKey: ["documents", "car", variables.id] });
+},
+```
+
+### 3. `src/components/cars/CarDetails.tsx`
+הוספת `key={car.id}` ל-Tabs לאיפוס מצב כשמחליפים רכב:
+
+```tsx
+<Tabs key={car.id} defaultValue="general" className="w-full">
+```
+
+## סיכום
+
+| בעיה | שורש | פתרון |
+|------|-------|--------|
+| לקוח לא מתעדכן בדיאלוג | `selectedCar` הוא object ישן | גזירת הרכב מ-cache החי לפי ID |
+| מסמכים לא מתרענן | אין `invalidateQueries` לאחר עדכון | הוספת invalidation ל-`documents` |
+| Dialog מציג מידע ישן | אין `key` prop לאיפוס | הוספת `key={car.id}` ל-Tabs |
