@@ -1,87 +1,89 @@
 
-# תיקון Race Condition בדף PaymentSuccess
+# תיקון 3 בעיות בתצוגת הרכבים
 
-## הבעיה
-כשהמשתמש מגיע ל-`/subscription/payment-success`, הדף קורא `refreshSubscription()` מיד. אבל ה-webhook של טרנזילה מגיע לשרת **בנפרד ובאיחור** - לכן יש סיכוי שכשהמשתמש מגיע לדף, ה-DB עדיין לא עודכן ו-`refreshSubscription()` מחזיר את המנוי הישן.
+## בעיה 1: Switch גולש מחוץ לגבולות (מע"מ / רכב משועבד)
 
-## הפתרון - Polling חכם
+### שורש הבעיה
+ב-`StepFinancialInfo.tsx`, ה-`FormItem` של "רכב משועבד" מוגדר עם:
+```
+className="flex items-center gap-3 pt-8"
+```
+ה-`FormControl` עוטף את ה-`Switch` בלי `overflow-visible`, וזה גורם לעיגול הלבן (thumb) לצאת מחוץ לגבולות הקונטיינר.
 
-במקום לקרוא `refreshSubscription()` פעם אחת ולקוות לטוב, נוסיף polling שמנסה כל 2 שניות עד 10 ניסיונות (20 שניות סה"כ):
+### פתרון
+להוסיף `overflow-visible` ל-`FormItem` של ה-Switch ולהפריד את ה-Label מה-`FormItem` לטיפול נכון יותר:
 
-1. בדיקה ראשונה מיידית
-2. אם המנוי עדיין לא עודכן - בדיקה נוספת כל 2 שניות
-3. אחרי שהמנוי עודכן (status = 'active') - הצג הצלחה
-4. אם אחרי 20 שניות עדיין לא עודכן - הצג הצלחה בכל מקרה (הטרנזקציה כבר הצליחה)
+**ב-`StepFinancialInfo.tsx`** - שתי תיקונים:
+1. Switch של מע"מ 18%: לעטוף ב-`div` עם `overflow-visible`
+2. Switch של "רכב משועבד": להוסיף `overflow-visible` ל-`FormItem`
 
-## שינויים טכניים
+---
 
-### קובץ יחיד לעדכון: `src/pages/PaymentSuccess.tsx`
+## בעיה 2: שלב "מידע נוסף" מגיש את הטופס אוטומטית
 
-שינוי ה-`useEffect` הנוכחי:
+### שורש הבעיה
+ב-`CarFormWizard.tsx` שורה 94-100:
+```tsx
+onSubmit={(e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (isLastStep) {
+    form.handleSubmit(handleSubmit)();
+  }
+}}
+```
+כשמגיעים לשלב 4 (האחרון), כל לחיצה/Enter מפעיל `form.handleSubmit` **אוטומטית** כי `isLastStep === true`. אין כפתור "הבא" בשלב זה - הכפתור "שמור" הוא `type="submit"`, מה שגורם לטופס לשלוח מיד.
 
-**לפני:**
-```ts
-useEffect(() => {
-  const handleSuccess = async () => {
-    try {
-      setLoading(true);
-      await refreshSubscription();
-      toast.success('המנוי שודרג בהצלחה!');
-    } catch (error) {
-      ...
-    } finally {
-      setLoading(false);
-    }
-  };
-  handleSuccess();
-}, [refreshSubscription]);
+### פתרון
+להוסיף `useState` נפרד `isReadyToSubmit` שמאפשר שמירה רק כשהמשתמש לוחץ **במפורש** על כפתור השמירה, ולא כשרק מגיעים לשלב האחרון.
+
+**ב-`CarFormWizard.tsx`**:
+- להסיר את ה-`onSubmit` מה-`form` לחלוטין (להשאיר `e.preventDefault()`)
+- כפתור "שמור" ישנה ל-`type="button"` עם `onClick` מפורש שקורא ל-`form.handleSubmit(handleSubmit)()`
+- כך השלב האחרון ישאר מוצג בלי לשלוח עד שלחיצה על "שמור"
+
+---
+
+## בעיה 3: לחיצה על שם הרכב בתצוגת טבלה לא פותחת כרטסת
+
+### שורש הבעיה
+ב-`CarsTable.tsx` שורה 73-75:
+```tsx
+<TableCell className="font-medium text-right py-5 px-8">
+  {car.make} {car.model}
+</TableCell>
+```
+אין `onClick` על התא - השם הוא טקסט רגיל ללא interactivity.
+
+### פתרון
+להפוך את שם הרכב ל-clickable שפותח את **דיאלוג הפרטים** (אותו דיאלוג שנפתח דרך כפתור "צפה"):
+
+```tsx
+<TableCell 
+  className="font-medium text-right py-5 px-8 cursor-pointer hover:text-primary transition-colors"
+  onClick={() => {
+    setSelectedCar(car);
+    setIsDetailsOpen(true);
+  }}
+>
+  {car.make} {car.model}
+</TableCell>
 ```
 
-**אחרי - Polling עד 10 ניסיונות:**
-```ts
-useEffect(() => {
-  let attempts = 0;
-  const MAX_ATTEMPTS = 10;
-  const INTERVAL_MS = 2000;
+---
 
-  const pollSubscription = async () => {
-    attempts++;
-    await refreshSubscription();
+## קבצים לשינוי
 
-    // בדיקה אם המנוי עודכן לפי ה-planId שבURL
-    const currentStatus = subscription?.subscription_status;
-    const currentTier = subscription?.tier;
+1. **`src/components/CarsTable.tsx`** - הוספת `onClick` + `cursor-pointer` לתא שם הרכב
+2. **`src/components/cars/wizard/CarFormWizard.tsx`** - שינוי כפתור "שמור" ל-`type="button"` עם `onClick` מפורש
+3. **`src/components/cars/wizard/StepFinancialInfo.tsx`** - הוספת `overflow-visible` לקונטיינרים של Switch
 
-    if (currentStatus === 'active' && currentTier === planId) {
-      // הצלחה - המנוי עודכן
-      setLoading(false);
-      toast.success('המנוי שודרג בהצלחה!');
-      return;
-    }
+---
 
-    if (attempts >= MAX_ATTEMPTS) {
-      // אחרי 20 שניות - סיים בכל מקרה
-      setLoading(false);
-      toast.success('התשלום התקבל! המנוי יתעדכן בקרוב.');
-      return;
-    }
+## סיכום השינויים
 
-    // ניסיון נוסף
-    setTimeout(pollSubscription, INTERVAL_MS);
-  };
-
-  setLoading(true);
-  pollSubscription();
-
-  return () => { attempts = MAX_ATTEMPTS; }; // cleanup
-}, []); // רק פעם אחת בטעינה
-```
-
-## תוספות UI
-
-- **מחוון טעינה** עם טקסט "מאמת תשלום..." במקום loading spinner סתמי
-- **progress bar** קטן שמציג את ההתקדמות עד לאישור
-- אחרי אישור - כפתורי הניווט מופעלים
-
-## קובץ לשינוי
-- `src/pages/PaymentSuccess.tsx` - עדכון ה-useEffect עם polling + שיפור UI של מסך טעינה
+| קובץ | שינוי |
+|------|-------|
+| `CarsTable.tsx` | תא שם רכב = clickable → פותח דיאלוג פרטים |
+| `CarFormWizard.tsx` | כפתור שמור = `type="button"` עם `onClick` מפורש |
+| `StepFinancialInfo.tsx` | `overflow-visible` לתיקון גלישת ה-Switch |
