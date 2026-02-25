@@ -150,23 +150,56 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     }
   });
 
-  // Warnings for unmapped types
+  // Normalize key helper: lowercase, trim, replace hyphens with underscores
+  const normalizeKey = (key: string) => key?.toLowerCase().trim().replace(/-/g, '_') || '';
+
+  // Build normalized mapping lookup (handle tax-invoice vs tax_invoice etc.)
+  const normalizedMappingLookup: Record<string, { code: string; description?: string; enabled: boolean }> = {};
+  Object.entries(mappingByInternal).forEach(([key, val]) => {
+    normalizedMappingLookup[normalizeKey(key)] = val;
+  });
+
+  // Warnings for unmapped types + per-type counters for debug
   const unmappedTypes = new Set<string>();
+  const unmappedTypeCounts: Record<string, { count: number; amount: number }> = {};
+  const matchedTypeCounts: Record<string, { count: number; amount: number; code: string }> = {};
 
   activeDocs.forEach((doc: any) => {
-    const mapping = mappingByInternal[doc.type];
+    const rawType = doc.type;
+    const normType = normalizeKey(rawType);
+    // Try exact match first, then normalized
+    const mapping = mappingByInternal[rawType] || normalizedMappingLookup[normType];
     if (mapping && mapping.enabled) {
       const code = mapping.code;
       if (!aggregated[code]) {
-        aggregated[code] = { code, label: mapping.description || doc.type, managed: true, count: 0, amount: 0 };
+        aggregated[code] = { code, label: mapping.description || rawType, managed: true, count: 0, amount: 0 };
       }
       aggregated[code].count++;
       aggregated[code].amount += Number(doc.amount || 0);
       aggregated[code].managed = true;
+      // Track matched
+      if (!matchedTypeCounts[rawType]) matchedTypeCounts[rawType] = { count: 0, amount: 0, code };
+      matchedTypeCounts[rawType].count++;
+      matchedTypeCounts[rawType].amount += Number(doc.amount || 0);
     } else {
-      unmappedTypes.add(doc.type);
+      unmappedTypes.add(rawType);
+      if (!unmappedTypeCounts[rawType]) unmappedTypeCounts[rawType] = { count: 0, amount: 0 };
+      unmappedTypeCounts[rawType].count++;
+      unmappedTypeCounts[rawType].amount += Number(doc.amount || 0);
     }
   });
+
+  // Debug logging for admin troubleshooting
+  console.group('[Report 2.6 Debug]');
+  console.log('Export Run ID:', exportRunId);
+  console.log('User ID:', user?.id);
+  console.log('Date Range:', dateRange);
+  console.log('Mappings loaded:', (mappings || []).length, mappings);
+  console.log('Active docs in period:', activeDocs.length, '(cancelled excluded:', cancelledCount, ')');
+  console.log('Internal doc types found:', [...new Set(activeDocs.map((d: any) => d.type))]);
+  console.log('Matched types:', matchedTypeCounts);
+  console.log('Unmatched types:', unmappedTypeCounts);
+  console.groupEnd();
 
   const sortedRows = Object.values(aggregated).sort((a, b) => a.code.localeCompare(b.code));
   const totalDocCount = sortedRows.reduce((s, r) => s + r.count, 0);
@@ -253,9 +286,29 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         <Alert variant="destructive" className="print:hidden">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>⚠ סוגי מסמכים ללא מיפוי (חוסם!):</strong> {Array.from(unmappedTypes).join(', ')} — מסמכים אלו לא נכללים בסיכום. 
-            <br />
-            <span className="text-sm">יש להוסיף מיפוי בטאב "מיפוי מסמכים" כדי שהם ייכללו בדוח ובייצוא.</span>
+            <strong>⚠ סוגי מסמכים ללא מיפוי (חוסם!):</strong>
+            <ul className="mt-1 mr-4 list-disc text-sm">
+              {Object.entries(unmappedTypeCounts).map(([type, info]) => (
+                <li key={type}>
+                  <code>{type}</code> — {info.count} מסמכים, סכום ₪{info.amount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1 text-sm">מסמכים אלו <strong>לא נכללים</strong> בסיכום. יש להוסיף מיפוי בטאב "מיפוי מסמכים".</p>
+            {(mappings || []).length === 0 && (
+              <p className="mt-1 text-sm font-bold text-red-800">
+                ⚠ לא נמצאו מיפויים כלל! יש להגדיר מיפוי לפחות עבור סוגי המסמכים הקיימים.
+              </p>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {(mappings || []).length === 0 && unmappedTypes.size === 0 && activeDocs.length === 0 && (
+        <Alert className="print:hidden">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            לא נמצאו מסמכים בטווח התאריכים של ריצת הייצוא הנבחרת.
           </AlertDescription>
         </Alert>
       )}
@@ -338,17 +391,34 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         <Section26 title="בדיקת הצלבה">
           <div className="space-y-1 text-sm">
             <Row26 label="כמות רשומות 100C בייצוא" value={count100C.toString()} />
-            <Row26 label='סה״כ מסמכים בדוח 2.6' value={totalDocCount.toString()} />
+            <Row26 label='סה״כ מסמכים ממופים בדוח 2.6' value={totalDocCount.toString()} />
+            {unmappedTypes.size > 0 && (
+              <Row26 label='מסמכים לא ממופים (לא נספרו)' value={Object.values(unmappedTypeCounts).reduce((s, v) => s + v.count, 0).toString()} />
+            )}
+            {cancelledCount > 0 && (
+              <Row26 label='מסמכים מבוטלים (הוחרגו)' value={cancelledCount.toString()} />
+            )}
             <div className="flex items-baseline gap-2 py-0.5">
               <span className="font-semibold min-w-[180px] shrink-0">התאמה:</span>
-              {count100C === totalDocCount ? (
-                <span className="text-green-700 font-bold">✔ תואם</span>
-              ) : (
-                <span className="text-red-600 font-bold">
-                  ✘ אי-התאמה ({count100C} לעומת {totalDocCount})
-                  {unmappedTypes.size > 0 && ' — ייתכן שנובע ממיפויים חסרים'}
-                </span>
-              )}
+              {(() => {
+                const unmappedCount = Object.values(unmappedTypeCounts).reduce((s, v) => s + v.count, 0);
+                const expectedMatch = totalDocCount + unmappedCount;
+                if (count100C === totalDocCount && unmappedCount === 0) {
+                  return <span className="text-green-700 font-bold">✔ תואם</span>;
+                } else if (count100C === expectedMatch) {
+                  return (
+                    <span className="text-amber-600 font-bold">
+                      ⚠ תואם חלקית — {unmappedCount} מסמכים לא ממופים ({Array.from(unmappedTypes).join(', ')})
+                    </span>
+                  );
+                } else {
+                  return (
+                    <span className="text-red-600 font-bold">
+                      ✘ אי-התאמה (100C: {count100C}, ממופים: {totalDocCount}, לא ממופים: {unmappedCount}, מבוטלים: {cancelledCount})
+                    </span>
+                  );
+                }
+              })()}
             </div>
           </div>
         </Section26>
@@ -370,9 +440,16 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
           <ul className="space-y-1 text-xs text-gray-600">
             {unmappedTypes.size > 0 && (
               <li className="text-red-700 font-bold text-sm">
-                ⚠ חוסם! סוגי מסמכים ללא מיפוי: {Array.from(unmappedTypes).join(', ')} — 
-                {Array.from(unmappedTypes).reduce((sum, t) => sum + activeDocs.filter((d: any) => d.type === t).length, 0)} מסמכים לא נכללו בסיכום.
-                יש להגדיר מיפוי בטאב "מיפוי מסמכים".
+                ⚠ חוסם! סוגי מסמכים ללא מיפוי:
+                {Object.entries(unmappedTypeCounts).map(([t, info]) => (
+                  <span key={t}> "{t}" ({info.count} מסמכים)</span>
+                ))}
+                {' — '}לא נכללו בסיכום. יש להגדיר מיפוי בטאב "מיפוי מסמכים".
+              </li>
+            )}
+            {(mappings || []).length === 0 && (
+              <li className="text-red-700 font-bold text-sm">
+                ⚠ לא הוגדרו מיפויי סוגי מסמכים כלל — כל המסמכים יוחרגו מהדוח. יש להגדיר מיפויים בטאב "מיפוי מסמכים".
               </li>
             )}
             {!config?.software_registration_number && (
@@ -383,6 +460,9 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
             )}
             <li>ℹ סכומים מוצגים במטבע ראשי (₪ ILS). מסמכים במטבעות אחרים (אם קיימים) אינם מנורמלים.</li>
             <li>ℹ בדיקת הסימולטור והגשה לרשות המיסים מתבצעות בנפרד.</li>
+            <li className="text-xs text-gray-400 mt-2">
+              🔍 מיפויים שנטענו: {(mappings || []).length} | מסמכים פעילים בטווח: {activeDocs.length} | ממופים: {Object.keys(matchedTypeCounts).length} סוגים | לא ממופים: {unmappedTypes.size} סוגים
+            </li>
           </ul>
         </Section26>
 
