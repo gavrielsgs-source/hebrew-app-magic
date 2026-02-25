@@ -63,6 +63,30 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     enabled: !!user,
   });
 
+  // Fetch debug manifest from storage — contains exact exported document IDs and mappings used
+  const { data: manifestData, isLoading: manifestLoading } = useQuery({
+    queryKey: ['report26-manifest', exportRunId],
+    queryFn: async () => {
+      const { data: artifacts, error: artErr } = await supabase
+        .from('open_format_artifacts')
+        .select('storage_path')
+        .eq('export_run_id', exportRunId)
+        .eq('artifact_type', 'DEBUG_MANIFEST')
+        .single();
+      if (artErr || !artifacts?.storage_path) return null;
+      const { data: fileData, error: dlErr } = await supabase.storage
+        .from('open-format-exports')
+        .download(artifacts.storage_path);
+      if (dlErr || !fileData) return null;
+      const text = await fileData.text();
+      return JSON.parse(text);
+    },
+    enabled: !!exportRunId,
+  });
+
+  const exportedDocIds: string[] = manifestData?.documents_included || [];
+  const exportMappingsUsed: Record<string, string> = manifestData?.doc_type_mappings_used || {};
+
   // Build effective run context
   const effectiveRun = run || (resultData ? {
     mode: 'single_year',
@@ -79,7 +103,40 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
 
   const dateRange = getDateRange(effectiveRun);
 
-  // Fetch document totals for the export run period
+  // Fetch the EXACT exported documents by their IDs (source of truth for 2.6 totals)
+  const { data: exportedDocs, isLoading: exportedDocsLoading } = useQuery({
+    queryKey: ['report26-exported-docs', exportRunId, exportedDocIds.length],
+    queryFn: async () => {
+      if (exportedDocIds.length === 0) return [];
+      const allDocs: any[] = [];
+      const batchSize = 100;
+      for (let i = 0; i < exportedDocIds.length; i += batchSize) {
+        const batch = exportedDocIds.slice(i, i + batchSize);
+        const { data: custDocs } = await supabase
+          .from('customer_documents')
+          .select('id, type, amount, status')
+          .in('id', batch);
+        if (custDocs) allDocs.push(...custDocs);
+        const { data: taxDocs } = await supabase
+          .from('tax_invoices')
+          .select('id, title, total_amount, vat_amount, subtotal')
+          .in('id', batch);
+        if (taxDocs) {
+          allDocs.push(...taxDocs.map(t => ({
+            id: t.id,
+            type: 'tax-invoice',
+            amount: t.total_amount || 0,
+            status: 'active',
+            _source: 'tax_invoices',
+          })));
+        }
+      }
+      return allDocs;
+    },
+    enabled: exportedDocIds.length > 0,
+  });
+
+  // Informational: ALL docs in period (for context, not for cross-check)
   const { data: docTotals, isLoading: docTotalsLoading } = useQuery({
     queryKey: ['report26-doc-totals', user?.id, exportRunId, dateRange?.start, dateRange?.end],
     queryFn: async () => {
@@ -103,128 +160,91 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
   } else if (dbCounts) {
     dbCounts.forEach((c: any) => { recordCounts[c.record_type_code] = c.count; });
   }
-  const count100C = recordCounts['100C'] || 0;
+  const count100C = recordCounts['100C'] || recordCounts['C100'] || 0;
 
   // ===================================================================
-  // SOURCE OF TRUTH: open_format_doc_type_mappings ONLY
+  // SOURCE OF TRUTH: Exact exported document set from debug manifest
   // ===================================================================
-  // Build normalized mapping lookup from user's CONFIGURED mappings (DB)
-  const mappingByNormalized: Record<string, { code: string; description?: string; enabled: boolean; originalKey: string }> = {};
+  const effectiveMappings = exportMappingsUsed;
+  const effectiveMappingsCount = Object.keys(effectiveMappings).length;
   const dbMappingsList = mappings || [];
-  dbMappingsList.forEach((m: any) => {
-    const norm = normalizeKey(m.internal_type);
-    mappingByNormalized[norm] = {
-      code: m.tax_authority_code,
-      description: m.description,
-      enabled: m.enabled,
-      originalKey: m.internal_type,
-    };
-  });
-
-  // Cancelled document policy: status='cancelled' excluded from mapped totals
-  const allDocs = docTotals || [];
-  const activeDocs = allDocs.filter((d: any) => d.status !== 'cancelled');
-  const cancelledDocs = allDocs.filter((d: any) => d.status === 'cancelled');
-  const cancelledCount = cancelledDocs.length;
-  // Count how many cancelled docs WOULD have been mapped (for cross-check)
-  const cancelledMappedCount = cancelledDocs.filter((d: any) => {
-    const norm = normalizeKey(d.type);
-    const mapping = mappingByNormalized[norm];
-    return mapping && mapping.enabled && mapping.code !== '000';
-  }).length;
 
   // ===================================================================
-  // AGGREGATION: only from actual documents + configured mappings
-  // No pre-populated catalog rows. Only rows with data or explicit mapping.
+  // AGGREGATION: from exact exported documents only
   // ===================================================================
   const aggregated: Record<string, { code: string; label: string; managed: boolean; count: number; amount: number }> = {};
+  const exportedDocSet = exportedDocs || [];
 
-  // Pre-populate rows from DB mappings (so mapped types with 0 docs still show as managed)
-  dbMappingsList.forEach((m: any) => {
-    if (m.enabled && m.tax_authority_code && m.tax_authority_code !== '000') {
-      const code = m.tax_authority_code;
+  // Pre-populate rows from effective mappings used in this export run
+  Object.entries(effectiveMappings).forEach(([internalType, code]) => {
+    if (code && code !== '000') {
       if (!aggregated[code]) {
-        aggregated[code] = { code, label: m.description || m.internal_type, managed: true, count: 0, amount: 0 };
-      } else {
-        aggregated[code].managed = true;
+        aggregated[code] = { code, label: internalType, managed: true, count: 0, amount: 0 };
       }
     }
   });
 
-  // Track matched vs unmapped vs excluded-000
+  // Count exported docs
+  exportedDocSet.forEach((doc: any) => {
+    const rawType = doc.type || 'tax-invoice';
+    const code = effectiveMappings[rawType] || effectiveMappings[normalizeKey(rawType)];
+    if (code && code !== '000') {
+      if (!aggregated[code]) {
+        aggregated[code] = { code, label: rawType, managed: true, count: 0, amount: 0 };
+      }
+      aggregated[code].count++;
+      aggregated[code].amount += Number(doc.amount || 0);
+    }
+  });
+
+  // Informational: period context
+  const allDocsInPeriod = docTotals || [];
+  const cancelledInPeriod = allDocsInPeriod.filter((d: any) => d.status === 'cancelled').length;
+  const activeInPeriod = allDocsInPeriod.length - cancelledInPeriod;
+  const allInternalTypes = [...new Set(allDocsInPeriod.map((d: any) => d.type))];
+
+  // Informational: unmapped types in period
   const unmappedTypes = new Set<string>();
   const unmappedTypeCounts: Record<string, { count: number; amount: number }> = {};
-  const matchedTypeCounts: Record<string, { count: number; amount: number; code: string }> = {};
-  const excluded000Types: Record<string, { count: number; amount: number }> = {};
-
-  activeDocs.forEach((doc: any) => {
-    const rawType = doc.type;
-    const normType = normalizeKey(rawType);
-    const mapping = mappingByNormalized[normType];
-
-    if (mapping) {
-      if (mapping.code === '000' || !mapping.enabled) {
-        // Mapped to 000 or disabled = explicitly excluded
-        if (!excluded000Types[rawType]) excluded000Types[rawType] = { count: 0, amount: 0 };
-        excluded000Types[rawType].count++;
-        excluded000Types[rawType].amount += Number(doc.amount || 0);
-      } else {
-        // Mapped and enabled — count it
-        const code = mapping.code;
-        if (!aggregated[code]) {
-          aggregated[code] = { code, label: mapping.description || rawType, managed: true, count: 0, amount: 0 };
-        }
-        aggregated[code].count++;
-        aggregated[code].amount += Number(doc.amount || 0);
-        aggregated[code].managed = true;
-
-        if (!matchedTypeCounts[rawType]) matchedTypeCounts[rawType] = { count: 0, amount: 0, code };
-        matchedTypeCounts[rawType].count++;
-        matchedTypeCounts[rawType].amount += Number(doc.amount || 0);
+  allDocsInPeriod
+    .filter((d: any) => d.status !== 'cancelled')
+    .forEach((doc: any) => {
+      const rawType = doc.type;
+      const normType = normalizeKey(rawType);
+      const code = effectiveMappings[rawType] || effectiveMappings[normType];
+      const dbMapping = dbMappingsList.find((m: any) => normalizeKey(m.internal_type) === normType);
+      if (!code && !dbMapping) {
+        unmappedTypes.add(rawType);
+        if (!unmappedTypeCounts[rawType]) unmappedTypeCounts[rawType] = { count: 0, amount: 0 };
+        unmappedTypeCounts[rawType].count++;
+        unmappedTypeCounts[rawType].amount += Number(doc.amount || 0);
       }
-    } else {
-      // No mapping at all = unmapped
-      unmappedTypes.add(rawType);
-      if (!unmappedTypeCounts[rawType]) unmappedTypeCounts[rawType] = { count: 0, amount: 0 };
-      unmappedTypeCounts[rawType].count++;
-      unmappedTypeCounts[rawType].amount += Number(doc.amount || 0);
-    }
-  });
-
-  // All unique internal types in period
-  const allInternalTypes = [...new Set((docTotals || []).map((d: any) => d.type))];
+    });
 
   // Totals
   const sortedRows = Object.values(aggregated).sort((a, b) => a.code.localeCompare(b.code));
+  const totalExportedDocs = exportedDocIds.length;
   const totalMappedCount = sortedRows.reduce((s, r) => s + r.count, 0);
   const totalMappedAmount = sortedRows.reduce((s, r) => s + r.amount, 0);
   const unmappedTotalCount = Object.values(unmappedTypeCounts).reduce((s, v) => s + v.count, 0);
-  const unmappedTotalAmount = Object.values(unmappedTypeCounts).reduce((s, v) => s + v.amount, 0);
-  const excluded000TotalCount = Object.values(excluded000Types).reduce((s, v) => s + v.count, 0);
 
-  // Cross-check formula (SUBTRACTION based):
-  // mapped_raw = totalMappedCount (active, mapped, enabled, code!=000)
-  //            + cancelledMappedCount (cancelled docs that WOULD have been mapped)
-  // net_included = mapped_raw - cancelledMappedCount - unmapped - excluded000
-  // Compare: count100C vs net_included
-  const mappedRaw = totalMappedCount + cancelledMappedCount;
-  const netIncluded = mappedRaw - cancelledMappedCount - unmappedTotalCount - excluded000TotalCount;
-  const crossCheckPass = count100C === netIncluded;
-  const crossCheckFormula = `net_included = mapped_raw(${mappedRaw}) - cancelled(${cancelledMappedCount}) - unmapped(${unmappedTotalCount}) - excluded_000(${excluded000TotalCount}) = ${netIncluded}`;
+  // Cross-check: exported doc IDs count vs 100C count — must be equal
+  const crossCheckPass = count100C === totalExportedDocs;
+  const crossCheckFormula = `100C(${count100C}) ?= exported_doc_ids(${totalExportedDocs})`;
 
   // Debug logging
   console.group('[Report 2.6 Debug]');
   console.log('Export Run ID:', exportRunId);
   console.log('User ID:', user?.id);
   console.log('Date Range:', dateRange);
+  console.log('Manifest loaded:', !!manifestData);
+  console.log('Exported doc IDs count:', exportedDocIds.length);
+  console.log('Effective mappings used in export:', effectiveMappings);
   console.log('DB Mappings loaded:', dbMappingsList.length);
-  console.log('DB Mapping keys:', dbMappingsList.map((m: any) => `${m.internal_type}→${m.tax_authority_code}(${m.enabled ? 'on' : 'off'})`));
-  console.log('Total docs in period:', (docTotals || []).length, '| Active:', activeDocs.length, '| Cancelled:', cancelledCount);
+  console.log('Total docs in period:', allDocsInPeriod.length, '| Active:', activeInPeriod, '| Cancelled:', cancelledInPeriod);
   console.log('Internal doc types found:', allInternalTypes);
-  console.log('Matched types:', matchedTypeCounts);
-  console.log('Unmatched types:', unmappedTypeCounts);
-  console.log('Excluded (000/disabled):', excluded000Types);
-  console.log('Cross-check formula:', crossCheckFormula);
+  console.log('Unmatched types in period:', unmappedTypeCounts);
+  console.log('Cross-check:', crossCheckFormula, '→', crossCheckPass ? 'PASS' : 'FAIL');
   console.groupEnd();
 
   const now = new Date().toLocaleString('he-IL');
@@ -281,6 +301,8 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     );
   }
 
+  const isLoading = manifestLoading || exportedDocsLoading || docTotalsLoading;
+
   return (
     <div className="space-y-4">
       {/* Action Buttons */}
@@ -304,26 +326,26 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         </Alert>
       )}
 
-      {/* No mappings at all - critical warning */}
-      {dbMappingsList.length === 0 && activeDocs.length > 0 && (
+      {/* No manifest — critical warning */}
+      {!manifestLoading && !manifestData && (
         <Alert variant="destructive" className="print:hidden">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>⚠ לא הוגדרו מיפויי סוגי מסמכים כלל!</strong>
+            <strong>⚠ לא נמצא קובץ manifest עבור ריצת ייצוא זו!</strong>
             <p className="text-sm mt-1">
-              נמצאו {activeDocs.length} מסמכים פעילים בטווח אך אין מיפוי לאף סוג מסמך.
-              כל המסמכים מוחרגים מהסיכום. יש להגדיר מיפויים בטאב "מיפוי מסמכים".
+              דוח 2.6 דורש את קובץ ה-manifest שנוצר בזמן הייצוא כדי להציג נתונים מדויקים.
+              ייתכן שהייצוא נכשל או שנוצר בגרסה ישנה.
             </p>
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Unmapped types warning */}
+      {/* Unmapped types warning (informational) */}
       {unmappedTypes.size > 0 && (
         <Alert variant="destructive" className="print:hidden">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>⚠ סוגי מסמכים ללא מיפוי (חוסם!):</strong>
+            <strong>⚠ סוגי מסמכים ללא מיפוי בתקופה (לא יוצאו):</strong>
             <ul className="mt-1 mr-4 list-disc text-sm">
               {Object.entries(unmappedTypeCounts).map(([type, info]) => (
                 <li key={type}>
@@ -331,16 +353,16 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
                 </li>
               ))}
             </ul>
-            <p className="mt-1 text-sm">מסמכים אלו <strong>לא נכללים</strong> בסיכום. יש להוסיף מיפוי בטאב "מיפוי מסמכים".</p>
+            <p className="mt-1 text-sm">מסמכים אלו <strong>לא נכללו בייצוא</strong>. לכלילה בעתיד — הגדר מיפוי בטאב "מיפוי מסמכים".</p>
           </AlertDescription>
         </Alert>
       )}
 
-      {activeDocs.length === 0 && (
+      {totalExportedDocs === 0 && !isLoading && (
         <Alert className="print:hidden">
           <Info className="h-4 w-4" />
           <AlertDescription>
-            לא נמצאו מסמכים פעילים בטווח התאריכים של ריצת הייצוא הנבחרת ({dateRange?.start} — {dateRange?.end}).
+            לא נמצאו מסמכים מיוצאים עבור ריצת הייצוא הנבחרת.
           </AlertDescription>
         </Alert>
       )}
@@ -359,33 +381,47 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
             <div><strong>User ID:</strong> {user?.id}</div>
             <div><strong>Date Range:</strong> {dateRange ? `${dateRange.start} → ${dateRange.end}` : 'N/A'}</div>
             <div><strong>Mode:</strong> {mode}</div>
-            <div><strong>DB Mappings loaded:</strong> {dbMappingsList.length}</div>
-            <div><strong>DB Mapping details:</strong></div>
+            <div className="border-t border-muted pt-1 mt-1">
+              <strong>📦 Manifest Data (Source of Truth):</strong>
+            </div>
+            <div><strong>Manifest loaded:</strong> {manifestData ? '✔ כן' : '✘ לא'}</div>
+            <div><strong>Exported doc IDs count:</strong> {exportedDocIds.length}</div>
+            <div><strong>Fetched exported docs:</strong> {exportedDocSet.length}</div>
+            <div><strong>Effective mappings used in export ({effectiveMappingsCount}):</strong></div>
+            {effectiveMappingsCount > 0 ? (
+              <ul className="mr-4 list-disc">
+                {Object.entries(effectiveMappings).map(([type, code]) => (
+                  <li key={type}>{type} → {code}</li>
+                ))}
+              </ul>
+            ) : <div className="text-red-600">(no mappings in manifest)</div>}
+            <div className="border-t border-muted pt-1 mt-1">
+              <strong>📋 DB Mappings (current config, {dbMappingsList.length}):</strong>
+            </div>
             {dbMappingsList.length > 0 ? (
               <ul className="mr-4 list-disc">
                 {dbMappingsList.map((m: any) => (
                   <li key={m.id || m.internal_type}>
-                    {m.internal_type} → {m.tax_authority_code} ({m.enabled ? 'enabled' : 'disabled'}) {m.description && `"${m.description}"`}
+                    {m.internal_type} → {m.tax_authority_code} ({m.enabled ? 'enabled' : 'disabled'})
                   </li>
                 ))}
               </ul>
-            ) : <div className="text-red-600">(no mappings configured!)</div>}
-            <div><strong>Normalized keys:</strong> {Object.keys(mappingByNormalized).join(', ') || '(none)'}</div>
-            <div><strong>Total docs in period:</strong> {(docTotals || []).length}</div>
-            <div><strong>Active docs:</strong> {activeDocs.length}</div>
-            <div><strong>Cancelled (excluded):</strong> {cancelledCount}</div>
+            ) : <div className="text-amber-600">(no DB mappings configured)</div>}
+            <div className="border-t border-muted pt-1 mt-1">
+              <strong>📊 Period info (informational):</strong>
+            </div>
+            <div><strong>Total docs in period (customer_documents):</strong> {allDocsInPeriod.length}</div>
+            <div><strong>Active in period:</strong> {activeInPeriod}</div>
+            <div><strong>Cancelled in period:</strong> {cancelledInPeriod}</div>
             <div><strong>Internal types found:</strong> {allInternalTypes.join(', ') || '(none)'}</div>
-            <div className="text-green-700"><strong>Matched:</strong> {Object.entries(matchedTypeCounts).map(([t, v]) => `${t}→${v.code}(${v.count})`).join(', ') || '(none)'}</div>
-            <div className="text-red-700"><strong>Unmatched:</strong> {Object.entries(unmappedTypeCounts).map(([t, v]) => `${t}(${v.count})`).join(', ') || '(none)'}</div>
-            <div className="text-amber-700"><strong>Excluded (000/disabled):</strong> {Object.entries(excluded000Types).map(([t, v]) => `${t}(${v.count})`).join(', ') || '(none)'}</div>
+            <div className="text-red-700"><strong>Unmapped in period:</strong> {Object.entries(unmappedTypeCounts).map(([t, v]) => `${t}(${v.count})`).join(', ') || '(none)'}</div>
             <div className="border-t border-muted pt-1 mt-1">
               <strong>Cross-check formula:</strong>
-              <div className="text-blue-700">{crossCheckFormula}</div>
+              <div className="text-blue-700">{crossCheckFormula} → {crossCheckPass ? '✔ PASS' : '✘ FAIL'}</div>
             </div>
             <div><strong>100C from export:</strong> {count100C}</div>
-            <div><strong>Mapped included total:</strong> {totalMappedCount}</div>
-            <div><strong>Unmapped total:</strong> {unmappedTotalCount}</div>
-            <div><strong>Excluded 000 total:</strong> {excluded000TotalCount}</div>
+            <div><strong>Exported doc IDs:</strong> {totalExportedDocs}</div>
+            <div><strong>Aggregated from exported docs:</strong> {totalMappedCount}</div>
           </div>
         </CollapsibleContent>
       </Collapsible>
@@ -415,16 +451,17 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
           <Row26 label="טווח תאריכים" value={dateRange ? `${dateRange.start} — ${dateRange.end}` : undefined} />
           <Row26 label="סטטוס הפקה" value={status === 'success' ? '✔ הצלחה' : status === 'failed' ? '✘ נכשל' : status} />
           <Row26 label="נתיב שמירה לוגי" value={logicalPath} mono />
+          <Row26 label="מקור נתונים" value={manifestData ? 'manifest (מדויק)' : 'חישוב עצמאי (לא מדויק)'} />
         </Section26>
 
-        {/* C) Document Totals Table — ONLY from configured mappings */}
-        <Section26 title="סיכום מסמכים לפי סוג מסמך (מיפויים מוגדרים)">
-          {docTotalsLoading ? (
+        {/* C) Document Totals Table — from exact exported documents */}
+        <Section26 title="סיכום מסמכים לפי סוג מסמך (מתוך הייצוא בפועל)">
+          {isLoading ? (
             <p className="text-gray-500">טוען נתוני מסמכים...</p>
           ) : (
             <>
               {sortedRows.length === 0 ? (
-                <p className="text-gray-500 italic">אין מיפויים מוגדרים — אין שורות להציג. הגדר מיפויים בטאב "מיפוי מסמכים".</p>
+                <p className="text-gray-500 italic">אין מסמכים מיוצאים בריצה זו.</p>
               ) : (
                 <table className="w-full border-collapse text-sm mb-2">
                   <thead>
@@ -449,7 +486,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
                       </tr>
                     ))}
                     <tr className="bg-gray-50 font-bold">
-                      <td className="border border-gray-400 px-2 py-1.5" colSpan={3}>סה״כ (ממופים ומנוהלים)</td>
+                      <td className="border border-gray-400 px-2 py-1.5" colSpan={3}>סה״כ (מיוצאים)</td>
                       <td className="border border-gray-400 px-2 py-1.5 text-center">{totalMappedCount}</td>
                       <td className="border border-gray-400 px-2 py-1.5 text-center">
                         {totalMappedAmount > 0 ? `₪${totalMappedAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}` : '—'}
@@ -459,22 +496,10 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
                 </table>
               )}
 
-              {/* Excluded 000 / disabled types */}
-              {Object.keys(excluded000Types).length > 0 && (
-                <div className="border border-amber-300 bg-amber-50 rounded p-2 mb-2">
-                  <p className="font-bold text-amber-700 text-sm mb-1">סוגי מסמכים ממופים לקוד 000 / מושבתים (לא מיוצאים):</p>
-                  <ul className="text-xs mr-4 list-disc">
-                    {Object.entries(excluded000Types).map(([type, info]) => (
-                      <li key={type}><code>{type}</code> — {info.count} מסמכים, ₪{info.amount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Unmapped types inline in report */}
+              {/* Unmapped types in period (informational) */}
               {unmappedTypes.size > 0 && (
                 <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
-                  <p className="font-bold text-red-700 text-sm mb-1">⚠ סוגי מסמכים ללא מיפוי (לא נכללו בסיכום):</p>
+                  <p className="font-bold text-red-700 text-sm mb-1">⚠ סוגי מסמכים ללא מיפוי בתקופה (לא נכללו בייצוא):</p>
                   <table className="w-full text-xs border-collapse">
                     <thead>
                       <tr>
@@ -493,15 +518,24 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
                       ))}
                     </tbody>
                   </table>
-                  <p className="text-xs text-red-600 mt-1">יש להגדיר מיפוי בטאב "מיפוי מסמכים" כדי לכלול מסמכים אלו.</p>
+                  <p className="text-xs text-red-600 mt-1">יש להגדיר מיפוי בטאב "מיפוי מסמכים" כדי לכלול מסמכים אלו בייצואים עתידיים.</p>
                 </div>
               )}
 
-              {cancelledCount > 0 && (
+              {cancelledInPeriod > 0 && (
                 <p className="text-xs text-gray-500">
-                  * {cancelledCount} מסמכים מבוטלים הוחרגו מהסיכום (מדיניות: מסמכים עם סטטוס "cancelled" אינם נספרים).
+                  * {cancelledInPeriod} מסמכים מבוטלים בתקופה (הייצוא מטפל בהם לפי הגדרות הייצוא).
                 </p>
               )}
+
+              {/* Period context (informational) */}
+              <div className="bg-gray-50 border rounded p-2 mt-2 text-xs">
+                <strong>הקשר תקופתי (מידע רקע):</strong>
+                <span className="mr-2">סה״כ מסמכים בתקופה: {allDocsInPeriod.length}</span>
+                <span className="mr-2">| פעילים: {activeInPeriod}</span>
+                <span className="mr-2">| מבוטלים: {cancelledInPeriod}</span>
+                <span className="mr-2">| ללא מיפוי: {unmappedTotalCount}</span>
+              </div>
             </>
           )}
         </Section26>
@@ -510,45 +544,63 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         <Section26 title="בדיקת הצלבה">
           <div className="space-y-1 text-sm">
             <Row26 label="כמות רשומות 100C בייצוא" value={count100C.toString()} />
-            <Row26 label='סה״כ מסמכים ממופים (גולמי, כולל מבוטלים)' value={mappedRaw.toString()} />
-            <Row26 label='סה״כ מסמכים ממופים (פעילים בלבד)' value={totalMappedCount.toString()} />
-            {cancelledMappedCount > 0 && (
-              <Row26 label='מסמכים מבוטלים ממופים (הופחתו)' value={`-${cancelledMappedCount}`} />
-            )}
-            {unmappedTotalCount > 0 && (
-              <Row26 label='מסמכים ללא מיפוי (הופחתו)' value={`-${unmappedTotalCount} (${Array.from(unmappedTypes).join(', ')})`} />
-            )}
-            {excluded000TotalCount > 0 && (
-              <Row26 label='מסמכים ממופים ל-000/מושבתים (הופחתו)' value={`-${excluded000TotalCount}`} />
-            )}
-            {cancelledCount > 0 && (
-              <Row26 label='סה״כ מסמכים מבוטלים בתקופה' value={cancelledCount.toString()} />
-            )}
-            <Row26 label='סה״כ נטו לייצוא (net_included)' value={netIncluded.toString()} />
+            <Row26 label='כמות מסמכים מיוצאים (מתוך manifest)' value={totalExportedDocs.toString()} />
+            <Row26 label='כמות מסמכים מאוגדים בדוח' value={totalMappedCount.toString()} />
             <div className="bg-gray-50 border rounded p-2 mt-2 text-xs font-mono">
               <strong>נוסחת הצלבה:</strong><br />
-              net_included = mapped_raw({mappedRaw}) − cancelled({cancelledMappedCount}) − unmapped({unmappedTotalCount}) − excluded_000({excluded000TotalCount}) = <strong>{netIncluded}</strong><br />
-              100C = <strong>{count100C}</strong><br />
-              100C({count100C}) {crossCheckPass ? '==' : '!='} net_included({netIncluded}) → <strong>{crossCheckPass ? 'התאמה ✔' : 'אי-התאמה ✘'}</strong>
+              100C = <strong>{count100C}</strong> (רשומות C100 בקובץ BKMVDATA)<br />
+              exported_doc_ids = <strong>{totalExportedDocs}</strong> (מזהי מסמכים ב-manifest)<br />
+              100C({count100C}) {crossCheckPass ? '==' : '!='} exported_doc_ids({totalExportedDocs}) → <strong>{crossCheckPass ? 'התאמה ✔' : 'אי-התאמה ✘'}</strong>
             </div>
             <div className="flex items-baseline gap-2 py-0.5 mt-2">
               <span className="font-semibold min-w-[180px] shrink-0">התאמה:</span>
               {crossCheckPass ? (
-                <span className="text-green-700 font-bold">✔ התאמה: כן — 100C({count100C}) = net_included({netIncluded})</span>
-              ) : count100C > 0 && totalMappedCount === 0 ? (
-                <span className="text-red-600 font-bold">
-                  ✘ אין מסמכים ממופים — {unmappedTotalCount} חסרי מיפוי, 100C={count100C}. יש להגדיר מיפויים.
+                <span className="text-green-700 font-bold">✔ התאמה: כן — 100C({count100C}) = exported_docs({totalExportedDocs})</span>
+              ) : !manifestData ? (
+                <span className="text-amber-600 font-bold">
+                  ⚠ אין manifest — לא ניתן לבצע הצלבה מדויקת. הרץ ייצוא מחדש.
                 </span>
               ) : (
                 <span className="text-red-600 font-bold">
-                  ✘ אי-התאמה — 100C: {count100C}, net_included: {netIncluded}, פער: {Math.abs(count100C - netIncluded)}
+                  ✘ אי-התאמה — 100C: {count100C}, exported_docs: {totalExportedDocs}, פער: {Math.abs(count100C - totalExportedDocs)}
                 </span>
               )}
             </div>
           </div>
         </Section26>
 
-        {/* E) Accounting Placeholder */}
+        {/* E) Effective Mappings for this Run */}
+        <Section26 title="מיפויים שהופעלו בריצה זו">
+          {effectiveMappingsCount > 0 ? (
+            <table className="w-full border-collapse text-xs mb-2">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-400 px-2 py-1 text-right">סוג פנימי</th>
+                  <th className="border border-gray-400 px-2 py-1 text-center w-20">קוד מס</th>
+                  <th className="border border-gray-400 px-2 py-1 text-center w-20">מקור</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(effectiveMappings).map(([type, code]) => {
+                  const dbMatch = dbMappingsList.find((m: any) => normalizeKey(m.internal_type) === normalizeKey(type));
+                  return (
+                    <tr key={type}>
+                      <td className="border border-gray-300 px-2 py-1 font-mono">{type}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center font-mono">{code}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {dbMatch ? 'DB' : 'ברירת מחדל'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-500 italic text-xs">אין נתוני מיפויים ב-manifest.</p>
+          )}
+        </Section26>
+
+        {/* F) Accounting Placeholder */}
         <Section26 title="מאזן בוחן תנועות (הנהלת חשבונות)">
           <div className="bg-gray-50 border border-gray-300 rounded p-4 text-center">
             <p className="font-semibold text-gray-500">טרם מיושם</p>
@@ -558,33 +610,30 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
           </div>
         </Section26>
 
-        {/* F) Warnings */}
+        {/* G) Warnings */}
         <Section26 title="הערות ואזהרות">
           <ul className="space-y-1 text-xs text-gray-600">
-            {unmappedTypes.size > 0 && (
+            {!manifestData && (
               <li className="text-red-700 font-bold text-sm">
-                ⚠ חוסם! סוגי מסמכים ללא מיפוי:
-                {Object.entries(unmappedTypeCounts).map(([t, info]) => (
-                  <span key={t}> "{t}" ({info.count} מסמכים, ₪{info.amount.toLocaleString('he-IL')})</span>
-                ))}
-                {' — '}לא נכללו בסיכום. יש להגדיר מיפוי בטאב "מיפוי מסמכים".
+                ⚠ קובץ manifest לא נמצא — הנתונים עלולים להיות לא מדויקים. הרץ ייצוא מחדש.
               </li>
             )}
-            {dbMappingsList.length === 0 && (
-              <li className="text-red-700 font-bold text-sm">
-                ⚠ לא הוגדרו מיפויי סוגי מסמכים כלל — כל המסמכים יוחרגו מהדוח.
+            {unmappedTypes.size > 0 && (
+              <li className="text-amber-700 text-sm">
+                ℹ סוגי מסמכים ללא מיפוי בתקופה:
+                {Object.entries(unmappedTypeCounts).map(([t, info]) => (
+                  <span key={t}> "{t}" ({info.count})</span>
+                ))}
+                {' — '}לא נכללו בייצוא. הגדר מיפוי בטאב "מיפוי מסמכים".
               </li>
             )}
             {!config?.software_registration_number && (
               <li>⚠ מספר רישום תוכנה ברשות המיסים חסר — נדרש לפני הגשה.</li>
             )}
-            {cancelledCount > 0 && (
-              <li>ℹ {cancelledCount} מסמכים מבוטלים הוחרגו מהספירה.</li>
-            )}
-            <li>ℹ סכומים מוצגים במטבע ראשי (₪ ILS). מסמכים במטבעות אחרים (אם קיימים) אינם מנורמלים.</li>
+            <li>ℹ סכומים מוצגים במטבע ראשי (₪ ILS).</li>
             <li>ℹ בדיקת הסימולטור והגשה לרשות המיסים מתבצעות בנפרד.</li>
             <li className="text-xs text-gray-400 mt-2">
-              🔍 מיפויים מוגדרים: {dbMappingsList.length} | מסמכים פעילים: {activeDocs.length} | ממופים: {totalMappedCount} | לא ממופים: {unmappedTotalCount} | 000/מושבתים: {excluded000TotalCount}
+              🔍 מיפויים בייצוא: {effectiveMappingsCount} | מסמכים מיוצאים: {totalExportedDocs} | 100C: {count100C} | מאוגדים: {totalMappedCount}
             </li>
           </ul>
         </Section26>
