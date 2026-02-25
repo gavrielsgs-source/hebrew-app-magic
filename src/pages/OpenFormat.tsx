@@ -15,9 +15,18 @@ export default function OpenFormat() {
 
   useEffect(() => {
     if (!isLoading && !isAdmin()) {
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     }
   }, [isAdmin, isLoading, navigate]);
+
+  if (!isLoading && !isAdmin()) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4" dir="rtl">
+        <p className="text-xl font-semibold text-destructive">אין הרשאה</p>
+        <p className="text-muted-foreground">עמוד זה מיועד למנהלי מערכת בלבד.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
