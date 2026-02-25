@@ -7,32 +7,33 @@ const corsHeaders = {
 };
 
 // =============================================
-// FORMATTING HELPERS (Schema-Driven, Exported for Tests)
+// FORMATTING HELPERS
 // =============================================
 
-export function padNumericLeft(value: number | string | null | undefined, length: number, fill = '0'): string {
-  const str = String(value ?? 0).replace(/\D/g, '');
-  if (str.length > length) return str.slice(0, length);
-  return str.padStart(length, fill);
-}
-
-export function padAlphaRight(value: string | null | undefined, length: number, fill = ' '): string {
+export function padRight(value: string | null | undefined, length: number, fill = ' '): string {
   const str = String(value ?? '');
   if (str.length > length) return str.slice(0, length);
   return str.padEnd(length, fill);
 }
 
-export function formatSignedAmount(value: number | null | undefined, length: number, scale = 2): string {
-  const num = value ?? 0;
-  const sign = num >= 0 ? '+' : '-';
-  const absVal = Math.abs(Math.round(num * Math.pow(10, scale)));
-  const numStr = String(absVal);
-  const fieldLen = length - 1; // 1 char for sign
-  if (numStr.length > fieldLen) return sign + numStr.slice(0, fieldLen);
-  return sign + numStr.padStart(fieldLen, '0');
+export function padLeft(value: number | string | null | undefined, length: number, fill = '0'): string {
+  const str = String(value ?? '').replace(/[^0-9]/g, '');
+  if (str.length > length) return str.slice(0, length);
+  return str.padStart(length, fill);
 }
 
-export function formatDateYYYYMMDD(date: string | Date | null | undefined): string {
+export function fmtSignedAmount(value: number | null | undefined, length: number): string {
+  // Format: sign + zero-padded absolute value in agorot (cents)
+  const num = value ?? 0;
+  const sign = num >= 0 ? '+' : '-';
+  const agorot = Math.abs(Math.round(num * 100));
+  const digits = String(agorot);
+  const fieldLen = length - 1; // 1 char for sign
+  if (digits.length > fieldLen) return sign + digits.slice(0, fieldLen);
+  return sign + digits.padStart(fieldLen, '0');
+}
+
+export function fmtDate(date: string | Date | null | undefined): string {
   if (!date) return '00000000';
   const d = new Date(date);
   if (isNaN(d.getTime())) return '00000000';
@@ -42,7 +43,7 @@ export function formatDateYYYYMMDD(date: string | Date | null | undefined): stri
   return `${y}${m}${day}`;
 }
 
-export function formatTimeHHMM(date: Date | null): string {
+export function fmtTime(date: Date | null): string {
   if (!date) return '0000';
   return String(date.getHours()).padStart(2, '0') + String(date.getMinutes()).padStart(2, '0');
 }
@@ -51,131 +52,430 @@ export function appendCRLF(line: string): string {
   return line + '\r\n';
 }
 
-export function validateRecordLength(line: string, expectedLength: number): { valid: boolean; actual: number } {
-  return { valid: line.length === expectedLength, actual: line.length };
-}
-
 // =============================================
-// SCHEMA-DRIVEN RECORD DEFINITIONS (Official 1.31 Spec)
+// OFFICIAL OPEN FORMAT 1.31 RECORD DEFINITIONS
+// Based on Israeli Tax Authority spec (Oracle Appendix 6)
 // =============================================
 
-export interface FieldDef {
-  name: string;
-  length: number;
-  type: 'alpha' | 'numeric' | 'date' | 'time' | 'signed_amount';
-  required: boolean;
-  description?: string;
-}
+// Version constant used in A100, Z900, A000
+const SPEC_CONSTANT = '&OF1.31&'; // 8 chars
 
-// Single source of truth for record definitions
-// Field order matches official Open Format 1.31 specification
-export const RECORD_FIELD_DEFS: Record<string, FieldDef[]> = {
-  '100A': [
-    { name: 'record_type', length: 4, type: 'alpha', required: true, description: 'קוד רשומה A100' },
-    { name: 'record_number', length: 9, type: 'numeric', required: true, description: 'מספר רשומה רץ' },
-    { name: 'primary_id', length: 15, type: 'alpha', required: true, description: 'מפתח ראשי 15 ספרות' },
-    { name: 'company_tax_id', length: 9, type: 'alpha', required: true, description: 'מספר עוסק מורשה' },
-    { name: 'company_name', length: 50, type: 'alpha', required: true, description: 'שם העוסק' },
-    { name: 'company_address', length: 50, type: 'alpha', required: false, description: 'כתובת העוסק' },
-    { name: 'city', length: 30, type: 'alpha', required: false, description: 'עיר' },
-    { name: 'zip_code', length: 10, type: 'alpha', required: false, description: 'מיקוד' },
-    { name: 'period_start', length: 8, type: 'date', required: true, description: 'תחילת תקופה YYYYMMDD' },
-    { name: 'period_end', length: 8, type: 'date', required: true, description: 'סיום תקופה YYYYMMDD' },
-    { name: 'encoding_flag', length: 1, type: 'alpha', required: true, description: '1=ISO-8859-8, 2=CP862' },
-    { name: 'software_name', length: 20, type: 'alpha', required: true, description: 'שם התוכנה' },
-    { name: 'software_version', length: 10, type: 'alpha', required: true, description: 'גרסת התוכנה' },
-    { name: 'software_reg_num', length: 20, type: 'alpha', required: true, description: 'מספר רישום תוכנה' },
-    { name: 'vendor_tax_id', length: 9, type: 'alpha', required: true, description: 'ח.פ מפתח התוכנה' },
-    { name: 'reserved', length: 175, type: 'alpha', required: false, description: 'שטח שמור' },
-  ],
-  '100C': [
-    { name: 'record_type', length: 4, type: 'alpha', required: true, description: 'קוד רשומה C100' },
-    { name: 'record_number', length: 9, type: 'numeric', required: true },
-    { name: 'primary_id', length: 15, type: 'alpha', required: true },
-    { name: 'company_tax_id', length: 9, type: 'alpha', required: true },
-    { name: 'doc_type_code', length: 3, type: 'alpha', required: true, description: 'קוד סוג מסמך' },
-    { name: 'doc_number', length: 20, type: 'alpha', required: true, description: 'מספר מסמך' },
-    { name: 'doc_date', length: 8, type: 'date', required: true, description: 'תאריך מסמך' },
-    { name: 'value_date', length: 8, type: 'date', required: false, description: 'תאריך ערך' },
-    { name: 'reference1', length: 15, type: 'alpha', required: false, description: 'אסמכתא 1' },
-    { name: 'reference2', length: 15, type: 'alpha', required: false, description: 'אסמכתא 2' },
-    { name: 'customer_name', length: 50, type: 'alpha', required: true, description: 'שם לקוח/ספק' },
-    { name: 'customer_tax_id', length: 9, type: 'alpha', required: false, description: 'מספר עוסק לקוח' },
-    { name: 'customer_address', length: 50, type: 'alpha', required: false, description: 'כתובת לקוח' },
-    { name: 'total_amount', length: 15, type: 'signed_amount', required: true, description: 'סה"כ כולל מע"מ' },
-    { name: 'vat_amount', length: 15, type: 'signed_amount', required: true, description: 'סכום מע"מ' },
-    { name: 'cancelled_flag', length: 1, type: 'alpha', required: true, description: '0=רגיל, 1=מבוטל' },
-    { name: 'reserved', length: 67, type: 'alpha', required: false, description: 'שטח שמור' },
-  ],
-  '110D': [
-    { name: 'record_type', length: 4, type: 'alpha', required: true, description: 'קוד רשומה D110' },
-    { name: 'record_number', length: 9, type: 'numeric', required: true },
-    { name: 'primary_id', length: 15, type: 'alpha', required: true },
-    { name: 'company_tax_id', length: 9, type: 'alpha', required: true },
-    { name: 'doc_type_code', length: 3, type: 'alpha', required: true },
-    { name: 'doc_number', length: 20, type: 'alpha', required: true },
-    { name: 'line_number', length: 4, type: 'numeric', required: true, description: 'מספר שורה במסמך' },
-    { name: 'description', length: 50, type: 'alpha', required: true, description: 'תיאור פריט' },
-    { name: 'catalog_code', length: 20, type: 'alpha', required: false, description: 'קוד קטלוגי' },
-    { name: 'quantity', length: 15, type: 'signed_amount', required: true, description: 'כמות' },
-    { name: 'unit_price', length: 15, type: 'signed_amount', required: true, description: 'מחיר יחידה' },
-    { name: 'line_total', length: 15, type: 'signed_amount', required: true, description: 'סה"כ שורה' },
-    { name: 'discount_flag', length: 1, type: 'alpha', required: false, description: 'סימון הנחה' },
-    { name: 'discount_amount', length: 12, type: 'signed_amount', required: false, description: 'סכום הנחה' },
-    { name: 'vat_rate', length: 6, type: 'numeric', required: true, description: 'אחוז מע"מ x100' },
-    { name: 'reserved', length: 107, type: 'alpha', required: false, description: 'שטח שמור' },
-  ],
-  '120D': [
-    { name: 'record_type', length: 4, type: 'alpha', required: true, description: 'קוד רשומה D120' },
-    { name: 'record_number', length: 9, type: 'numeric', required: true },
-    { name: 'primary_id', length: 15, type: 'alpha', required: true },
-    { name: 'company_tax_id', length: 9, type: 'alpha', required: true },
-    { name: 'doc_type_code', length: 3, type: 'alpha', required: true },
-    { name: 'doc_number', length: 20, type: 'alpha', required: true },
-    { name: 'payment_number', length: 4, type: 'numeric', required: true, description: 'מספר אמצעי תשלום רץ' },
-    { name: 'payment_method_code', length: 2, type: 'alpha', required: true, description: 'קוד אמצעי תשלום' },
-    { name: 'payment_date', length: 8, type: 'date', required: true, description: 'תאריך תשלום' },
-    { name: 'amount', length: 15, type: 'signed_amount', required: true, description: 'סכום' },
-    { name: 'bank_code', length: 5, type: 'alpha', required: false, description: 'קוד בנק' },
-    { name: 'branch_code', length: 5, type: 'alpha', required: false, description: 'קוד סניף' },
-    { name: 'account_number', length: 15, type: 'alpha', required: false, description: 'מספר חשבון' },
-    { name: 'reserved', length: 136, type: 'alpha', required: false, description: 'שטח שמור' },
-  ],
-  '900Z': [
-    { name: 'record_type', length: 4, type: 'alpha', required: true, description: 'קוד רשומה Z900' },
-    { name: 'record_number', length: 9, type: 'numeric', required: true },
-    { name: 'primary_id', length: 15, type: 'alpha', required: true },
-    { name: 'company_tax_id', length: 9, type: 'alpha', required: true },
-    { name: 'total_records', length: 9, type: 'numeric', required: true, description: 'סה"כ רשומות בקובץ' },
-    { name: 'reserved', length: 144, type: 'alpha', required: false, description: 'שטח שמור' },
-  ],
+// A100 — Opening record in BKMVDATA — Total: 95 chars
+// Pos 0:  Record Code (4) "A100"
+// Pos 4:  Future Use / Record Number (9)
+// Pos 13: Tax Identifier (9)
+// Pos 22: Reference Key / Primary ID (15)
+// Pos 37: Constant (8) "&OF1.31&"
+// Pos 45: Rasham Number / Future Use (50) blank
+export function buildA100(p: {
+  recordNum: number;
+  companyTaxId: string;
+  primaryId: string;
+}): string {
+  return [
+    padRight('A100', 4),
+    padLeft(p.recordNum, 9),
+    padRight(p.companyTaxId, 9),
+    padRight(p.primaryId, 15),
+    padRight(SPEC_CONSTANT, 8),
+    padRight('', 50),
+  ].join('');
+}
+export const A100_LEN = 95;
+
+// C100 — Document header — Total: 444 chars
+// Pos 0:   Record Code (4)
+// Pos 4:   Future Use / Record Number (9)
+// Pos 13:  Registration Number / Tax ID (9)
+// Pos 22:  Doc Type Code (3)
+// Pos 25:  Doc Number (20)
+// Pos 45:  Creation Date (8) YYYYMMDD
+// Pos 53:  Creation Time (4) HHMM
+// Pos 57:  Customer/Supplier Name (50)
+// Pos 107: Address Line 1 (50)
+// Pos 157: House Number (10)
+// Pos 167: City (30)
+// Pos 197: Zip Code (8)
+// Pos 205: State (30)
+// Pos 235: State Code (2)
+// Pos 237: Phone (15)
+// Pos 252: Customer Tax ID (9)
+// Pos 261: Accounting/GL Date (8)
+// Pos 269: Non-ILS Amount (15) signed
+// Pos 284: Non-ILS Currency Code (3)
+// Pos 287: Amount excl tax (15) signed
+// Pos 302: Discount amount (15) signed
+// Pos 317: Amount excl tax + discount (15) signed
+// Pos 332: VAT/Tax amount (15) signed
+// Pos 347: Total amount incl tax (15) signed
+// Pos 362: Withholding tax (12) signed
+// Pos 374: Account Number (15)
+// Pos 389: Adjustment field (10)
+// Pos 399: Cancelled flag (1) "0" or "1"
+// Pos 400: Invoice Date (8) YYYYMMDD
+// Pos 408: Branch ID (7)
+// Pos 415: User ID (9)
+// Pos 424: Internal Invoice ID (7)
+// Pos 431: Future Use (13)
+export function buildC100(p: {
+  recordNum: number;
+  companyTaxId: string;
+  docTypeCode: string;
+  docNumber: string;
+  docDate: string;
+  docTime?: string;
+  customerName: string;
+  customerAddress?: string;
+  houseNumber?: string;
+  city?: string;
+  zipCode?: string;
+  state?: string;
+  stateCode?: string;
+  phone?: string;
+  customerTaxId?: string;
+  glDate?: string;
+  nonIlsAmount?: number;
+  nonIlsCurrency?: string;
+  netAmount: number;
+  discountAmount?: number;
+  netPlusDiscount?: number;
+  vatAmount: number;
+  totalAmount: number;
+  withholdingAmount?: number;
+  accountNumber?: string;
+  cancelled: boolean;
+  invoiceDate?: string;
+  userId?: string;
+  internalId?: string;
+}): string {
+  const net = p.netAmount;
+  const disc = p.discountAmount ?? 0;
+  const netPlusDisc = p.netPlusDiscount ?? net;
+  return [
+    padRight('C100', 4),                          // 0-3
+    padLeft(p.recordNum, 9),                       // 4-12
+    padRight(p.companyTaxId, 9),                   // 13-21
+    padRight(p.docTypeCode, 3),                    // 22-24
+    padRight(p.docNumber, 20),                     // 25-44
+    fmtDate(p.docDate),                            // 45-52
+    padRight(p.docTime || '0000', 4),              // 53-56
+    padRight(p.customerName, 50),                  // 57-106
+    padRight(p.customerAddress || '', 50),          // 107-156
+    padRight(p.houseNumber || '', 10),             // 157-166
+    padRight(p.city || '', 30),                    // 167-196
+    padRight(p.zipCode || '', 8),                  // 197-204
+    padRight(p.state || '', 30),                   // 205-234
+    padRight(p.stateCode || '', 2),                // 235-236
+    padRight(p.phone || '', 15),                   // 237-251
+    padRight(p.customerTaxId || '', 9),            // 252-260
+    fmtDate(p.glDate || p.docDate),                // 261-268
+    fmtSignedAmount(p.nonIlsAmount ?? 0, 15),      // 269-283
+    padRight(p.nonIlsCurrency || 'ILS', 3),        // 284-286
+    fmtSignedAmount(net, 15),                      // 287-301
+    fmtSignedAmount(disc, 15),                     // 302-316
+    fmtSignedAmount(netPlusDisc, 15),              // 317-331
+    fmtSignedAmount(p.vatAmount, 15),              // 332-346
+    fmtSignedAmount(p.totalAmount, 15),            // 347-361
+    fmtSignedAmount(p.withholdingAmount ?? 0, 12), // 362-373
+    padRight(p.accountNumber || '', 15),            // 374-388
+    padRight('', 10),                              // 389-398 adjustment
+    padRight(p.cancelled ? '1' : '0', 1),          // 399
+    fmtDate(p.invoiceDate || p.docDate),           // 400-407
+    padRight('', 7),                               // 408-414 branch
+    padRight(p.userId || '', 9),                   // 415-423
+    padRight(p.internalId || '', 7),               // 424-430
+    padRight('', 13),                              // 431-443 future
+  ].join('');
+}
+export const C100_LEN = 444;
+
+// D110 — Document detail line — Total: 339 chars
+// Pos 0:   Record Code (4)
+// Pos 4:   Future Use / Record Number (9)
+// Pos 13:  Registration Number / Tax ID (9)
+// Pos 22:  Doc Type Code (3)
+// Pos 25:  Doc Number (20)
+// Pos 45:  Line Number (4)
+// Pos 49:  Sub Doc Type Code (3)
+// Pos 52:  Invoice Number (20)
+// Pos 72:  Blank (1)
+// Pos 73:  Item Name/Catalog Code (20)
+// Pos 93:  Description (30)
+// Pos 123: Blank (50)
+// Pos 173: Blank (30)
+// Pos 203: Blank (20)
+// Pos 223: Quantity (17) signed
+// Pos 240: Unit Price (15) signed
+// Pos 255: Discount (15) signed
+// Pos 270: Line Total (15) signed
+// Pos 285: VAT Rate (4) numeric (integer %)
+// Pos 289: Blank (7)
+// Pos 296: Invoice Date (8)
+// Pos 304: Internal ID (7)
+// Pos 311: Item ID (7)
+// Pos 318: Org ID (21)
+export function buildD110(p: {
+  recordNum: number;
+  companyTaxId: string;
+  docTypeCode: string;
+  docNumber: string;
+  lineNum: number;
+  catalogCode?: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  discountAmount?: number;
+  lineTotal: number;
+  vatRate: number;
+  invoiceDate?: string;
+  internalId?: string;
+}): string {
+  // Quantity field: 17 chars, signed, in units*10000 (4 decimals)
+  const qtySign = p.quantity >= 0 ? '+' : '-';
+  const qtyAbs = Math.abs(Math.round(p.quantity * 10000));
+  const qtyStr = qtySign + String(qtyAbs).padStart(16, '0');
+
+  return [
+    padRight('D110', 4),                           // 0-3
+    padLeft(p.recordNum, 9),                        // 4-12
+    padRight(p.companyTaxId, 9),                    // 13-21
+    padRight(p.docTypeCode, 3),                     // 22-24
+    padRight(p.docNumber, 20),                      // 25-44
+    padLeft(p.lineNum, 4),                          // 45-48
+    padRight(p.docTypeCode, 3),                     // 49-51 sub doc type = same
+    padRight(p.docNumber, 20),                      // 52-71 invoice number
+    padRight('', 1),                                // 72
+    padRight(p.catalogCode || '999999', 20),        // 73-92
+    padRight(p.description || 'Description', 30),   // 93-122
+    padRight('', 50),                               // 123-172
+    padRight('', 30),                               // 173-202
+    padRight('', 20),                               // 203-222
+    qtyStr.length > 17 ? qtyStr.slice(0, 17) : qtyStr.padStart(17, '0'),  // 223-239
+    fmtSignedAmount(p.unitPrice, 15),               // 240-254
+    fmtSignedAmount(p.discountAmount ?? 0, 15),     // 255-269
+    fmtSignedAmount(p.lineTotal, 15),               // 270-284
+    padLeft(Math.round(p.vatRate), 4),              // 285-288
+    padRight('', 7),                                // 289-295
+    fmtDate(p.invoiceDate),                         // 296-303
+    padRight(p.internalId || '', 7),                // 304-310
+    padRight('999999', 7),                          // 311-317 item ID
+    padRight('999999', 21),                         // 318-338 org ID
+  ].join('');
+}
+export const D110_LEN = 339;
+
+// D120 — Payment detail line — Total: 222 chars
+// Pos 0:   Record Code (4)
+// Pos 4:   Future Use / Record Number (9)
+// Pos 13:  Registration Number / Tax ID (9)
+// Pos 22:  Doc Type Code (3)
+// Pos 25:  Doc Number (20)
+// Pos 45:  Payment Number (4)
+// Pos 49:  Receipt/Payment Type (1)
+// Pos 50:  Bank Number (10)
+// Pos 60:  Branch Number (10)
+// Pos 70:  Account Number (15)
+// Pos 85:  Check Number (10)
+// Pos 95:  Due Date (8)
+// Pos 103: Amount (15) signed
+// Pos 118: Credit Clearing House (1)
+// Pos 119: Credit Card Name (20)
+// Pos 139: Credit Deal Type (1)
+// Pos 140: Branch ID (7)
+// Pos 147: Receipt Date (8)
+// Pos 155: Receipt ID (7)
+// Pos 162: Future Use (60)
+export function buildD120(p: {
+  recordNum: number;
+  companyTaxId: string;
+  docTypeCode: string;
+  docNumber: string;
+  paymentNum: number;
+  paymentTypeCode: string;
+  bankCode?: string;
+  branchCode?: string;
+  accountNum?: string;
+  checkNum?: string;
+  dueDate?: string;
+  amount: number;
+  creditClearing?: string;
+  creditCardName?: string;
+  creditDealType?: string;
+  receiptDate?: string;
+  receiptId?: string;
+}): string {
+  return [
+    padRight('D120', 4),                            // 0-3
+    padLeft(p.recordNum, 9),                         // 4-12
+    padRight(p.companyTaxId, 9),                     // 13-21
+    padRight(p.docTypeCode, 3),                      // 22-24
+    padRight(p.docNumber, 20),                       // 25-44
+    padLeft(p.paymentNum, 4),                        // 45-48
+    padRight(p.paymentTypeCode || '0', 1),           // 49
+    padRight(p.bankCode || '', 10),                  // 50-59
+    padRight(p.branchCode || '', 10),                // 60-69
+    padRight(p.accountNum || '', 15),                // 70-84
+    padRight(p.checkNum || '', 10),                  // 85-94
+    fmtDate(p.dueDate),                              // 95-102
+    fmtSignedAmount(p.amount, 15),                   // 103-117
+    padRight(p.creditClearing || '', 1),             // 118
+    padRight(p.creditCardName || '', 20),             // 119-138
+    padRight(p.creditDealType || '', 1),              // 139
+    padRight('', 7),                                 // 140-146 branch
+    fmtDate(p.receiptDate),                          // 147-154
+    padRight(p.receiptId || '', 7),                   // 155-161
+    padRight('', 60),                                // 162-221
+  ].join('');
+}
+export const D120_LEN = 222;
+
+// Z900 — Closing record — Total: 110 chars
+// Pos 0:   Record Code (4)
+// Pos 4:   Future Use / Record Number (9)
+// Pos 13:  Registration Number / Tax ID (9)
+// Pos 22:  Reference Key / Primary ID (15)
+// Pos 37:  Constant (8) "&OF1.31&"
+// Pos 45:  Total Records Count (15)
+// Pos 60:  Future Use (50)
+export function buildZ900(p: {
+  recordNum: number;
+  companyTaxId: string;
+  primaryId: string;
+  totalRecords: number;
+}): string {
+  return [
+    padRight('Z900', 4),                            // 0-3
+    padLeft(p.recordNum, 9),                         // 4-12
+    padRight(p.companyTaxId, 9),                     // 13-21
+    padRight(p.primaryId, 15),                       // 22-36
+    padRight(SPEC_CONSTANT, 8),                      // 37-44
+    padLeft(p.totalRecords, 15),                     // 45-59
+    padRight('', 50),                                // 60-109
+  ].join('');
+}
+export const Z900_LEN = 110;
+
+// A000 — INI record — Total: 580 chars
+// Pos 0:   Record Code (4) "A000"
+// Pos 4:   Future Use (5)
+// Pos 9:   Total BKMVDATA records (15)
+// Pos 24:  Tax Identifier (9)
+// Pos 33:  Reference Key / Primary ID (15)
+// Pos 48:  Constant (8) "&OF1.31&"
+// Pos 56:  Software Reg Number (8)
+// Pos 64:  Software Name (20)
+// Pos 84:  Software Version (20)
+// Pos 104: SW Manufacturer Tax ID (9)
+// Pos 113: SW Manufacturer Name (20)
+// Pos 133: Software Type (1) "2"
+// Pos 134: Backup Path (50)
+// Pos 184: SW Accounting Type (1) "2"
+// Pos 185: Accounting Type (1) "1"
+// Pos 186: Company Reg Number (9)
+// Pos 195: Company Tax File (9)
+// Pos 204: Future Use (10)
+// Pos 214: Company Name (50)
+// Pos 264: Company Street (50)
+// Pos 314: Company Location Number (10)
+// Pos 324: Company City (30)
+// Pos 354: Company Zip Code (8)
+// Pos 362: Tax Year (4)
+// Pos 366: Date Range Start (8)
+// Pos 374: Date Range End (8)
+// Pos 382: Process Start Date (8)
+// Pos 390: Process Start Time (4) HHMM
+// Pos 394: Language Code (1) "0"
+// Pos 395: Character Set (1) "1"=ISO-8859-8
+// Pos 396: SW Zip Name (20)
+// Pos 416: Currency Code (3) "ILS"
+// Pos 419: Branch Info (1) "0"
+// Pos 420: Future Use (46)
+// Pos 466: B100 counter (4+15=19)
+// Pos 485: B110 counter (4+15=19)
+// Pos 504: C100 counter (4+15=19)
+// Pos 523: D110 counter (4+15=19)
+// Pos 542: D120 counter (4+15=19)
+// Pos 561: M100 counter (4+15=19)
+// Total: 580
+export function buildA000(p: {
+  primaryId: string;
+  companyTaxId: string;
+  companyName: string;
+  companyAddress?: string;
+  companyCity?: string;
+  companyZip?: string;
+  taxYear: number;
+  startDate: string;
+  endDate: string;
+  processDate: Date;
+  totalBkmvRecords: number;
+  softwareRegNum: string;
+  softwareName: string;
+  softwareVersion: string;
+  vendorTaxId: string;
+  vendorName: string;
+  encoding: string;
+  branchesEnabled: boolean;
+  counts: { B100: number; B110: number; C100: number; D110: number; D120: number; M100: number };
+}): string {
+  const charSet = p.encoding === 'CP862' ? '2' : '1';
+  return [
+    padRight('A000', 4),                            // 0-3
+    padRight('', 5),                                 // 4-8 future use
+    padLeft(p.totalBkmvRecords, 15),                 // 9-23
+    padRight(p.companyTaxId, 9),                     // 24-32
+    padRight(p.primaryId, 15),                       // 33-47
+    padRight(SPEC_CONSTANT, 8),                      // 48-55
+    padRight(p.softwareRegNum, 8),                   // 56-63
+    padRight(p.softwareName, 20),                    // 64-83
+    padRight(p.softwareVersion, 20),                 // 84-103
+    padRight(p.vendorTaxId, 9),                      // 104-112
+    padRight(p.vendorName, 20),                      // 113-132
+    padRight('2', 1),                                // 133 software type
+    padRight('', 50),                                // 134-183 backup path
+    padRight('2', 1),                                // 184 SW accounting type
+    padRight('1', 1),                                // 185 accounting type
+    padRight(p.companyTaxId, 9),                     // 186-194 company reg
+    padRight(p.companyTaxId, 9),                     // 195-203 company tax file
+    padRight('', 10),                                // 204-213 future
+    padRight(p.companyName, 50),                     // 214-263
+    padRight(p.companyAddress || '', 50),             // 264-313
+    padRight('', 10),                                // 314-323 location number
+    padRight(p.companyCity || '', 30),                // 324-353
+    padRight(p.companyZip || '', 8),                  // 354-361
+    padLeft(p.taxYear, 4),                           // 362-365
+    fmtDate(p.startDate),                            // 366-373
+    fmtDate(p.endDate),                              // 374-381
+    fmtDate(p.processDate),                          // 382-389
+    fmtTime(p.processDate),                          // 390-393
+    padRight('0', 1),                                // 394 language code
+    padRight(charSet, 1),                            // 395 character set
+    padRight('Winzip', 20),                          // 396-415
+    padRight('ILS', 3),                              // 416-418
+    padRight(p.branchesEnabled ? '1' : '0', 1),     // 419
+    padRight('', 46),                                // 420-465 future
+    'B100' + padLeft(p.counts.B100, 15),             // 466-484
+    'B110' + padLeft(p.counts.B110, 15),             // 485-503
+    'C100' + padLeft(p.counts.C100, 15),             // 504-522
+    'D110' + padLeft(p.counts.D110, 15),             // 523-541
+    'D120' + padLeft(p.counts.D120, 15),             // 542-560
+    'M100' + padLeft(p.counts.M100, 15),             // 561-579
+  ].join('');
+}
+export const A000_LEN = 580;
+
+// Record length map for validation
+export const RECORD_LENGTHS: Record<string, number> = {
+  'A100': A100_LEN,
+  'C100': C100_LEN,
+  'D110': D110_LEN,
+  'D120': D120_LEN,
+  'Z900': Z900_LEN,
 };
 
-// Compute expected lengths from definitions
-export const RECORD_LENGTHS: Record<string, number> = {};
-for (const [code, fields] of Object.entries(RECORD_FIELD_DEFS)) {
-  RECORD_LENGTHS[code] = fields.reduce((sum, f) => sum + f.length, 0);
-}
-
-// Self-check: validate that field definitions don't overlap and total correctly
-export function validateRecordDefinitions(): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  for (const [code, fields] of Object.entries(RECORD_FIELD_DEFS)) {
-    let position = 1; // 1-indexed
-    for (const field of fields) {
-      if (field.length <= 0) {
-        errors.push(`${code}.${field.name}: length must be > 0`);
-      }
-      position += field.length;
-    }
-    const totalLength = fields.reduce((s, f) => s + f.length, 0);
-    const expected = RECORD_LENGTHS[code];
-    if (totalLength !== expected) {
-      errors.push(`${code}: field lengths sum to ${totalLength}, expected ${expected}`);
-    }
-  }
-  return { valid: errors.length === 0, errors };
-}
+// =============================================
+// HELPERS
+// =============================================
 
 export function generate15DigitId(): string {
   const ts = Date.now().toString().slice(-10);
@@ -209,8 +509,7 @@ export function resolveLogicalPathCollision(basePath: string, existingPaths: str
   return basePath;
 }
 
-// Default document type codes (used only if no DB mapping exists)
-export const DEFAULT_DOC_TYPE_CODES: Record<string, string> = {
+const DEFAULT_DOC_TYPE_CODES: Record<string, string> = {
   'tax-invoice': '305',
   'receipt': '400',
   'tax-invoice-receipt': '320',
@@ -221,294 +520,117 @@ export const DEFAULT_DOC_TYPE_CODES: Record<string, string> = {
   'proforma-invoice': '000',
 };
 
-// =============================================
-// RECORD BUILDERS (using field definitions)
-// =============================================
-
-function buildRecord(fields: string[], expectedType: string): string {
-  const raw = fields.join('');
-  const expected = RECORD_LENGTHS[expectedType];
-  if (!expected) return raw;
-  if (raw.length < expected) return raw.padEnd(expected, ' ');
-  if (raw.length > expected) return raw.slice(0, expected);
-  return raw;
-}
-
-export function build100A(params: {
-  primaryId: string;
-  recordNum: number;
-  companyTaxId: string;
-  companyName: string;
-  companyAddress: string;
-  city?: string;
-  zipCode?: string;
-  softwareName: string;
-  softwareVersion: string;
-  softwareRegNum: string;
-  vendorTaxId: string;
-  taxYear: number;
-  startDate: string;
-  endDate: string;
-  encoding: string;
-}): string {
-  const p = params;
-  const fields = [
-    padAlphaRight('A100', 4),
-    padNumericLeft(p.recordNum, 9),
-    padAlphaRight(p.primaryId, 15),
-    padAlphaRight(p.companyTaxId, 9),
-    padAlphaRight(p.companyName, 50),
-    padAlphaRight(p.companyAddress, 50),
-    padAlphaRight(p.city || '', 30),
-    padAlphaRight(p.zipCode || '', 10),
-    formatDateYYYYMMDD(p.startDate),
-    formatDateYYYYMMDD(p.endDate),
-    padAlphaRight(p.encoding === 'CP862' ? '2' : '1', 1),
-    padAlphaRight(p.softwareName, 20),
-    padAlphaRight(p.softwareVersion, 10),
-    padAlphaRight(p.softwareRegNum, 20),
-    padAlphaRight(p.vendorTaxId, 9),
-  ];
-  const used = fields.reduce((s, f) => s + f.length, 0);
-  const remaining = RECORD_LENGTHS['100A'] - used;
-  if (remaining > 0) fields.push(padAlphaRight('', remaining));
-  return buildRecord(fields, '100A');
-}
-
-export function build100C(params: {
-  recordNum: number;
-  primaryId: string;
-  companyTaxId: string;
-  docTypeCode: string;
-  docNumber: string;
-  docDate: string;
-  valueDate?: string;
-  reference1?: string;
-  reference2?: string;
-  customerName: string;
-  customerTaxId: string;
-  customerAddress: string;
-  totalAmount: number;
-  vatAmount: number;
-  netAmount: number;
-  cancelled: boolean;
-}): string {
-  const p = params;
-  const fields = [
-    padAlphaRight('C100', 4),
-    padNumericLeft(p.recordNum, 9),
-    padAlphaRight(p.primaryId, 15),
-    padAlphaRight(p.companyTaxId, 9),
-    padAlphaRight(p.docTypeCode, 3),
-    padAlphaRight(p.docNumber, 20),
-    formatDateYYYYMMDD(p.docDate),
-    formatDateYYYYMMDD(p.valueDate || null),
-    padAlphaRight(p.reference1 || '', 15),
-    padAlphaRight(p.reference2 || '', 15),
-    padAlphaRight(p.customerName, 50),
-    padAlphaRight(p.customerTaxId, 9),
-    padAlphaRight(p.customerAddress, 50),
-    formatSignedAmount(p.totalAmount, 15),
-    formatSignedAmount(p.vatAmount, 15),
-    padAlphaRight(p.cancelled ? '1' : '0', 1),
-  ];
-  const used = fields.reduce((s, f) => s + f.length, 0);
-  const remaining = RECORD_LENGTHS['100C'] - used;
-  if (remaining > 0) fields.push(padAlphaRight('', remaining));
-  return buildRecord(fields, '100C');
-}
-
-export function build110D(params: {
-  recordNum: number;
-  primaryId: string;
-  companyTaxId: string;
-  docTypeCode: string;
-  docNumber: string;
-  lineNum: number;
-  description: string;
-  catalogCode: string;
-  quantity: number;
-  unitPrice: number;
-  lineTotal: number;
-  discountFlag?: string;
-  discountAmount?: number;
-  vatRate: number;
-}): string {
-  const p = params;
-  const fields = [
-    padAlphaRight('D110', 4),
-    padNumericLeft(p.recordNum, 9),
-    padAlphaRight(p.primaryId, 15),
-    padAlphaRight(p.companyTaxId, 9),
-    padAlphaRight(p.docTypeCode, 3),
-    padAlphaRight(p.docNumber, 20),
-    padNumericLeft(p.lineNum, 4),
-    padAlphaRight(p.description, 50),
-    padAlphaRight(p.catalogCode, 20),
-    formatSignedAmount(p.quantity, 15, 2),
-    formatSignedAmount(p.unitPrice, 15, 2),
-    formatSignedAmount(p.lineTotal, 15, 2),
-    padAlphaRight(p.discountFlag || '', 1),
-    formatSignedAmount(p.discountAmount ?? 0, 12, 2),
-    padNumericLeft(Math.round(p.vatRate * 100), 6),
-  ];
-  const used = fields.reduce((s, f) => s + f.length, 0);
-  const remaining = RECORD_LENGTHS['110D'] - used;
-  if (remaining > 0) fields.push(padAlphaRight('', remaining));
-  return buildRecord(fields, '110D');
-}
-
-export function build120D(params: {
-  recordNum: number;
-  primaryId: string;
-  companyTaxId: string;
-  docTypeCode: string;
-  docNumber: string;
-  paymentMethod: string;
-  paymentNum: number;
-  paymentDate: string;
-  amount: number;
-  bankCode: string;
-  branchCode: string;
-  accountNum: string;
-}): string {
-  const p = params;
-  const fields = [
-    padAlphaRight('D120', 4),
-    padNumericLeft(p.recordNum, 9),
-    padAlphaRight(p.primaryId, 15),
-    padAlphaRight(p.companyTaxId, 9),
-    padAlphaRight(p.docTypeCode, 3),
-    padAlphaRight(p.docNumber, 20),
-    padNumericLeft(p.paymentNum, 4),
-    padAlphaRight(paymentMethodCode(p.paymentMethod), 2),
-    formatDateYYYYMMDD(p.paymentDate),
-    formatSignedAmount(p.amount, 15, 2),
-    padAlphaRight(p.bankCode, 5),
-    padAlphaRight(p.branchCode, 5),
-    padAlphaRight(p.accountNum, 15),
-  ];
-  const used = fields.reduce((s, f) => s + f.length, 0);
-  const remaining = RECORD_LENGTHS['120D'] - used;
-  if (remaining > 0) fields.push(padAlphaRight('', remaining));
-  return buildRecord(fields, '120D');
-}
-
-export function build900Z(params: {
-  recordNum: number;
-  primaryId: string;
-  companyTaxId: string;
-  totalRecords: number;
-}): string {
-  const p = params;
-  const fields = [
-    padAlphaRight('Z900', 4),
-    padNumericLeft(p.recordNum, 9),
-    padAlphaRight(p.primaryId, 15),
-    padAlphaRight(p.companyTaxId, 9),
-    padNumericLeft(p.totalRecords, 9),
-  ];
-  const used = fields.reduce((s, f) => s + f.length, 0);
-  const remaining = RECORD_LENGTHS['900Z'] - used;
-  if (remaining > 0) fields.push(padAlphaRight('', remaining));
-  return buildRecord(fields, '900Z');
-}
-
-function paymentMethodCode(method: string): string {
+function paymentTypeCode(method: string): string {
   const map: Record<string, string> = {
-    'cash': '01', 'check': '02', 'credit': '03',
-    'credit_card': '03', 'bank_transfer': '04', 'other': '10',
+    'cash': '1', 'check': '2', 'credit': '3',
+    'credit_card': '3', 'bank_transfer': '4', 'other': '0',
   };
-  return map[method] || '10';
+  return map[method] || '0';
 }
 
 // =============================================
-// TXT.INI BUILDER — Official A000 fixed-width record
+// SIMULATOR SAMPLE DATA GENERATOR
 // =============================================
 
-// A000 record definition: official INI opening record per spec 1.31
-// Total length = 190 chars (no BOM, CRLF endings)
-export const A000_FIELD_DEFS: FieldDef[] = [
-  { name: 'record_type', length: 4, type: 'alpha', required: true, description: 'A000' },
-  { name: 'record_number', length: 9, type: 'numeric', required: true },
-  { name: 'primary_id', length: 15, type: 'alpha', required: true },
-  { name: 'company_tax_id', length: 9, type: 'alpha', required: true },
-  { name: 'company_name', length: 50, type: 'alpha', required: true },
-  { name: 'tax_year', length: 4, type: 'numeric', required: true },
-  { name: 'encoding_flag', length: 1, type: 'alpha', required: true, description: '1=ISO-8859-8, 2=CP862' },
-  { name: 'software_name', length: 20, type: 'alpha', required: true },
-  { name: 'software_version', length: 10, type: 'alpha', required: true },
-  { name: 'software_reg_num', length: 20, type: 'alpha', required: true },
-  { name: 'vendor_tax_id', length: 9, type: 'alpha', required: true },
-  { name: 'total_bkmv_records', length: 9, type: 'numeric', required: true, description: 'Total records in BKMVDATA' },
-  { name: 'reserved', length: 30, type: 'alpha', required: false },
-];
+function generateSampleRecords(primaryId: string, companyTaxId: string): {
+  records: string[];
+  counts: Record<string, number>;
+} {
+  const records: string[] = [];
+  let recordNum = 1;
+  const counts: Record<string, number> = {
+    'A100': 0, 'C100': 0, 'D110': 0, 'D120': 0,
+    'B100': 0, 'B110': 0, 'M100': 0, 'Z900': 0, 'A000': 0,
+  };
 
-export const A000_RECORD_LENGTH = A000_FIELD_DEFS.reduce((s, f) => s + f.length, 0); // 190
+  // A100 opening
+  records.push(buildA100({ recordNum: recordNum++, companyTaxId, primaryId }));
+  counts['A100']++;
 
-export function buildA000(params: {
-  primaryId: string;
-  companyTaxId: string;
-  companyName: string;
-  taxYear: number;
-  totalBkmvRecords: number;
-  encoding: string;
-  softwareName: string;
-  softwareVersion: string;
-  softwareRegNum: string;
-  vendorTaxId: string;
-}): string {
-  const p = params;
-  const fields = [
-    padAlphaRight('A000', 4),
-    padNumericLeft(1, 9),          // A000 is always record #1 in INI
-    padAlphaRight(p.primaryId, 15),
-    padAlphaRight(p.companyTaxId, 9),
-    padAlphaRight(p.companyName, 50),
-    padNumericLeft(p.taxYear, 4),
-    padAlphaRight(p.encoding === 'CP862' ? '2' : '1', 1),
-    padAlphaRight(p.softwareName, 20),
-    padAlphaRight(p.softwareVersion, 10),
-    padAlphaRight(p.softwareRegNum, 20),
-    padAlphaRight(p.vendorTaxId, 9),
-    padNumericLeft(p.totalBkmvRecords, 9),
+  // Doc types to generate: 305 (sales inv), 400 (receipt), 320 (inv-receipt), 330 (credit)
+  const docTypes = [
+    { code: '305', name: 'Sample Customer', hasD110: true, hasD120: false },
+    { code: '400', name: 'Receipt Customer', hasD110: false, hasD120: true },
+    { code: '320', name: 'InvReceipt Cust', hasD110: true, hasD120: true },
+    { code: '330', name: 'Credit Customer', hasD110: true, hasD120: false },
   ];
-  const used = fields.reduce((s, f) => s + f.length, 0);
-  const remaining = A000_RECORD_LENGTH - used;
-  if (remaining > 0) fields.push(padAlphaRight('', remaining));
-  const raw = fields.join('');
-  if (raw.length > A000_RECORD_LENGTH) return raw.slice(0, A000_RECORD_LENGTH);
-  return raw;
-}
 
-export function buildTxtIni(params: {
-  primaryId: string;
-  companyTaxId: string;
-  companyName: string;
-  taxYear: number;
-  totalBkmvRecords: number;
-  encoding: string;
-  softwareName: string;
-  softwareVersion: string;
-  softwareRegNum: string;
-  vendorTaxId: string;
-  logicalPath: string;
-}): string {
-  const p = params;
-  // Official TXT.INI = single A000 fixed-width record with CRLF
-  const a000Line = buildA000({
-    primaryId: p.primaryId,
-    companyTaxId: p.companyTaxId,
-    companyName: p.companyName,
-    taxYear: p.taxYear,
-    totalBkmvRecords: p.totalBkmvRecords,
-    encoding: p.encoding,
-    softwareName: p.softwareName,
-    softwareVersion: p.softwareVersion,
-    softwareRegNum: p.softwareRegNum,
-    vendorTaxId: p.vendorTaxId,
-  });
-  return appendCRLF(a000Line);
+  // Generate ~500 documents with 3 lines each = ~2000+ records
+  for (let docIdx = 0; docIdx < 500; docIdx++) {
+    const dt = docTypes[docIdx % docTypes.length];
+    const docNum = String(docIdx + 1).padStart(8, '0');
+    const month = String((docIdx % 12) + 1).padStart(2, '0');
+    const day = String((docIdx % 28) + 1).padStart(2, '0');
+    const docDate = `2024${month}${day}`;
+    const amount = 100 + (docIdx * 7) % 9900;
+    const vatAmount = Math.round(amount * 0.17);
+    const totalAmount = amount + vatAmount;
+
+    // C100
+    records.push(buildC100({
+      recordNum: recordNum++,
+      companyTaxId,
+      docTypeCode: dt.code,
+      docNumber: docNum,
+      docDate: `2024-${month}-${day}`,
+      customerName: `${dt.name} ${docIdx + 1}`,
+      customerAddress: 'רחוב הדוגמה 1',
+      city: 'תל אביב',
+      netAmount: amount,
+      vatAmount,
+      totalAmount,
+      cancelled: false,
+    }));
+    counts['C100']++;
+
+    // D110 lines
+    if (dt.hasD110) {
+      for (let lineIdx = 1; lineIdx <= 3; lineIdx++) {
+        const lineAmount = Math.round(amount / 3);
+        records.push(buildD110({
+          recordNum: recordNum++,
+          companyTaxId,
+          docTypeCode: dt.code,
+          docNumber: docNum,
+          lineNum: lineIdx,
+          description: `פריט דוגמה ${lineIdx}`,
+          quantity: lineIdx,
+          unitPrice: lineAmount,
+          lineTotal: lineAmount * lineIdx,
+          vatRate: 17,
+          invoiceDate: `2024-${month}-${day}`,
+        }));
+        counts['D110']++;
+      }
+    }
+
+    // D120 payment lines
+    if (dt.hasD120) {
+      records.push(buildD120({
+        recordNum: recordNum++,
+        companyTaxId,
+        docTypeCode: dt.code,
+        docNumber: docNum,
+        paymentNum: 1,
+        paymentTypeCode: '1',
+        amount: totalAmount,
+        receiptDate: `2024-${month}-${day}`,
+      }));
+      counts['D120']++;
+    }
+  }
+
+  // Z900 closing
+  const totalRecords = records.length + 1;
+  records.push(buildZ900({
+    recordNum: recordNum++,
+    companyTaxId,
+    primaryId,
+    totalRecords,
+  }));
+  counts['Z900']++;
+
+  return { records, counts };
 }
 
 // =============================================
@@ -526,15 +648,15 @@ export function runValidations(params: {
   records: string[];
   primaryId: string;
   closingTotalCount: number;
-  iniTotalCount: number;
   bkmvContent: string;
   iniContent: string;
+  iniRecordCounts: Record<string, number>;
   hasComplianceConfig?: boolean;
   hasMappings?: boolean;
   unmappedTypes?: string[];
   encoding?: string;
 }): { results: ValidationResult[]; allPassed: boolean; fatalError?: string; warnings: string[]; blockers: string[] } {
-  const { records, primaryId, closingTotalCount, iniTotalCount, bkmvContent, iniContent } = params;
+  const { records, primaryId, closingTotalCount, bkmvContent, iniContent } = params;
   const results: ValidationResult[] = [];
   const warnings: string[] = [];
   const blockers: string[] = [];
@@ -545,14 +667,12 @@ export function runValidations(params: {
   for (let i = 0; i < records.length; i++) {
     const rec = records[i];
     const typeCode = rec.slice(0, 4);
-    const mappedType = typeCode.slice(1) + typeCode[0];
-    const expected = RECORD_LENGTHS[mappedType];
+    const expected = RECORD_LENGTHS[typeCode];
     if (expected) {
-      const { valid, actual } = validateRecordLength(rec, expected);
-      if (!valid) {
+      if (rec.length !== expected) {
         allLengthsValid = false;
-        fatalError = `Record ${i + 1} (${mappedType}): expected ${expected} chars, got ${actual}`;
-        results.push({ check: `אורך רשומה ${i + 1} (${mappedType})`, passed: false, detail: `צפוי ${expected}, קיבלנו ${actual}`, category: 'blocking' });
+        fatalError = `Record ${i + 1} (${typeCode}): expected ${expected} chars, got ${rec.length}`;
+        results.push({ check: `אורך רשומה ${i + 1} (${typeCode})`, passed: false, detail: `צפוי ${expected}, קיבלנו ${rec.length}`, category: 'blocking' });
         blockers.push(fatalError);
       }
     }
@@ -562,74 +682,90 @@ export function runValidations(params: {
   // 2. CRLF validation
   const crlfValid = bkmvContent.includes('\r\n') && !bkmvContent.match(/[^\r]\n/);
   const iniCrlfValid = iniContent.includes('\r\n') && !iniContent.match(/[^\r]\n/);
-  results.push({ check: 'סיום שורות CRLF ב-BKMVDATA.TXT', passed: crlfValid, category: 'blocking' });
-  results.push({ check: 'סיום שורות CRLF ב-INI.TXT', passed: iniCrlfValid, category: 'blocking' });
+  results.push({ check: 'CRLF ב-BKMVDATA.TXT', passed: crlfValid, category: 'blocking' });
+  results.push({ check: 'CRLF ב-INI.TXT', passed: iniCrlfValid, category: 'blocking' });
 
-  // 2b. INI starts with A000
-  const iniStartsA000 = iniContent.startsWith('A000');
-  results.push({ check: 'INI.TXT מתחיל ב-A000', passed: iniStartsA000, category: 'blocking' });
+  // 3. INI starts with A000
+  results.push({ check: 'INI.TXT מתחיל ב-A000', passed: iniContent.startsWith('A000'), category: 'blocking' });
 
-  // 2c. No BOM in INI
+  // 4. INI no BOM
   const iniBom = iniContent.charCodeAt(0) === 0xFEFF || iniContent.startsWith('\xEF\xBB\xBF');
   results.push({ check: 'INI.TXT ללא BOM', passed: !iniBom, category: 'blocking' });
 
-  // 3. Primary ID consistency
-  const allHavePrimaryId = records.every(r => r.includes(primaryId));
-  results.push({ check: 'עקביות Primary ID בכל הרשומות', passed: allHavePrimaryId, category: 'blocking' });
+  // 5. INI record length
+  const iniLine = iniContent.replace(/\r\n$/, '');
+  results.push({ check: `INI.TXT אורך רשומה (${A000_LEN})`, passed: iniLine.length === A000_LEN, detail: `בפועל: ${iniLine.length}`, category: 'blocking' });
 
-  // 4. Primary ID format (15 digits)
-  const pidValid = /^\d{15}$/.test(primaryId);
-  results.push({ check: 'Primary ID - 15 ספרות', passed: pidValid, detail: pidValid ? primaryId : `ערך: "${primaryId}"`, category: 'blocking' });
+  // 6. A100 first, Z900 last in BKMVDATA
+  const firstType = records[0]?.slice(0, 4);
+  const lastType = records[records.length - 1]?.slice(0, 4);
+  results.push({ check: 'BKMVDATA מתחיל ב-A100', passed: firstType === 'A100', category: 'blocking' });
+  results.push({ check: 'BKMVDATA מסתיים ב-Z900', passed: lastType === 'Z900', category: 'blocking' });
 
-  // 5. Sequential record numbering
+  // 7. &OF1.31& constant in A100 and Z900
+  const a100Const = records[0]?.slice(37, 45);
+  const z900Const = records[records.length - 1]?.slice(37, 45);
+  results.push({ check: 'A100 מכיל &OF1.31&', passed: a100Const === SPEC_CONSTANT, detail: `ערך: "${a100Const}"`, category: 'blocking' });
+  results.push({ check: 'Z900 מכיל &OF1.31&', passed: z900Const === SPEC_CONSTANT, detail: `ערך: "${z900Const}"`, category: 'blocking' });
+
+  // 8. INI contains &OF1.31&
+  const iniConst = iniLine.slice(48, 56);
+  results.push({ check: 'INI מכיל &OF1.31&', passed: iniConst === SPEC_CONSTANT, detail: `ערך: "${iniConst}"`, category: 'blocking' });
+
+  // 9. Sequential record numbering
   let seqValid = true;
   for (let i = 0; i < records.length; i++) {
-    const numField = records[i].slice(4, 13);
-    const num = parseInt(numField, 10);
+    const num = parseInt(records[i].slice(4, 13), 10);
     if (num !== i + 1) {
       seqValid = false;
-      results.push({ check: `מספור רציף - רשומה ${i + 1}`, passed: false, detail: `צפוי ${i + 1}, קיבלנו ${num}`, category: 'blocking' });
       break;
     }
   }
   results.push({ check: 'מספור רשומות רציף', passed: seqValid, category: 'blocking' });
 
-  // 6. Closing count consistency
+  // 10. Z900 closing count matches actual
   const actualTotal = records.length;
-  const closingMatch = closingTotalCount === actualTotal;
-  results.push({ check: 'ספירת רשומות תואמת לרשומת סגירה', passed: closingMatch, detail: `סגירה: ${closingTotalCount}, בפועל: ${actualTotal}`, category: 'blocking' });
+  results.push({ check: 'Z900 ספירה תואמת', passed: closingTotalCount === actualTotal, detail: `Z900: ${closingTotalCount}, בפועל: ${actualTotal}`, category: 'blocking' });
 
-  // 7. INI count consistency
-  const iniMatch = iniTotalCount === actualTotal;
-  results.push({ check: 'ספירת רשומות ב-TXT.INI תואמת', passed: iniMatch, detail: `INI: ${iniTotalCount}, בפועל: ${actualTotal}`, category: 'blocking' });
+  // 11. INI total count matches actual BKMVDATA records
+  const iniTotalStr = iniLine.slice(9, 24);
+  const iniTotal = parseInt(iniTotalStr, 10);
+  results.push({ check: 'INI ספירת רשומות תואמת', passed: iniTotal === actualTotal, detail: `INI: ${iniTotal}, בפועל: ${actualTotal}`, category: 'blocking' });
 
-  // 8. Required artifacts
-  results.push({ check: 'קבצים נדרשים (TXT.INI / TXT.BKMVDATA / BKMVDATA.zip)', passed: true, category: 'blocking' });
+  // 12. INI per-type counters match
+  const actualCounts: Record<string, number> = {};
+  for (const rec of records) {
+    const t = rec.slice(0, 4);
+    actualCounts[t] = (actualCounts[t] || 0) + 1;
+  }
+  for (const type of ['C100', 'D110', 'D120']) {
+    const iniCount = params.iniRecordCounts[type] || 0;
+    const actual = actualCounts[type] || 0;
+    results.push({ check: `INI ספירת ${type} תואמת`, passed: iniCount === actual, detail: `INI: ${iniCount}, בפועל: ${actual}`, category: 'blocking' });
+  }
 
-  // 9. Input validation
-  results.push({ check: 'קלט תקין (מצב/תקופה)', passed: true, category: 'blocking' });
+  // 13. Primary ID format
+  const pidValid = /^\d{15}$/.test(primaryId);
+  results.push({ check: 'Primary ID - 15 ספרות', passed: pidValid, category: 'blocking' });
 
-  // 10. Record definitions self-check
-  const defCheck = validateRecordDefinitions();
-  results.push({ check: 'הגדרות רשומות תקינות (self-check)', passed: defCheck.valid, detail: defCheck.errors.join('; ') || undefined, category: 'blocking' });
+  // 14. Tax ID in all records
+  const companyTaxId = records[0]?.slice(13, 22);
+  const allSameTaxId = records.every(r => r.slice(13, 22) === companyTaxId);
+  results.push({ check: 'עקביות מספר עוסק', passed: allSameTaxId, category: 'blocking' });
 
-  // 11. Compliance config
+  // Warnings
   if (params.hasComplianceConfig !== undefined) {
-    results.push({ check: 'הגדרות ציות עסקיות קיימות', passed: params.hasComplianceConfig, category: 'warning' });
-    if (!params.hasComplianceConfig) warnings.push('חסרות הגדרות ציות עסקיות');
+    results.push({ check: 'הגדרות ציות', passed: params.hasComplianceConfig!, category: 'warning' });
+    if (!params.hasComplianceConfig) warnings.push('חסרות הגדרות ציות');
   }
-
-  // 12. Document type mappings
   if (params.hasMappings !== undefined) {
-    results.push({ check: 'מיפוי סוגי מסמכים שלם', passed: params.hasMappings, detail: params.unmappedTypes?.length ? `חסרים: ${params.unmappedTypes.join(', ')}` : undefined, category: 'warning' });
-    if (!params.hasMappings) warnings.push('חסר מיפוי לסוגי מסמכים: ' + (params.unmappedTypes || []).join(', '));
+    results.push({ check: 'מיפוי מסמכים', passed: params.hasMappings!, detail: params.unmappedTypes?.length ? `חסרים: ${params.unmappedTypes.join(', ')}` : undefined, category: 'warning' });
+    if (!params.hasMappings) warnings.push('מיפוי חסר: ' + (params.unmappedTypes || []).join(', '));
   }
-
-  // 13. Encoding check
   if (params.encoding) {
-    const encodingCompliant = params.encoding !== 'UTF-8';
-    results.push({ check: 'קידוד תואם (ISO-8859-8 / CP862)', passed: encodingCompliant, detail: `קידוד: ${params.encoding}`, category: encodingCompliant ? 'warning' : 'blocking' });
-    if (!encodingCompliant) warnings.push('UTF-8 לא תואם לדרישות - debug בלבד');
+    const ok = params.encoding !== 'UTF-8';
+    results.push({ check: 'קידוד תואם', passed: ok, detail: params.encoding, category: ok ? 'warning' : 'blocking' });
+    if (!ok) blockers.push('UTF-8 לא תואם');
   }
 
   const allPassed = results.every(r => r.passed);
@@ -637,10 +773,10 @@ export function runValidations(params: {
 }
 
 // =============================================
-// DEBUG MANIFEST BUILDER
+// DEBUG MANIFEST
 // =============================================
 
-export function buildDebugManifest(params: {
+function buildDebugManifest(params: {
   exportRunId: string;
   primaryId: string;
   logicalPath: string;
@@ -653,39 +789,34 @@ export function buildDebugManifest(params: {
   docTypeMappingsUsed: Record<string, string>;
   artifacts: Array<{ filename: string; byteSize: number }>;
   complianceConfig: Record<string, unknown> | null;
+  isSample?: boolean;
+  firstRecordCode?: string;
+  lastRecordCode?: string;
 }): string {
   return JSON.stringify({
-    _format: 'open_format_debug_manifest_v1',
+    _format: 'open_format_debug_manifest_v2',
     generated_at: new Date().toISOString(),
     export_run_id: params.exportRunId,
     primary_id_15: params.primaryId,
     logical_output_path: params.logicalPath,
     encoding_used: params.encoding,
+    is_sample_mode: params.isSample || false,
     record_counts: params.recordCounts,
-    validation_results: params.validationResults.map(r => ({
-      check: r.check,
-      passed: r.passed,
-      detail: r.detail,
-      category: r.category,
-    })),
+    first_record_code: params.firstRecordCode,
+    last_record_code: params.lastRecordCode,
+    validation_results: params.validationResults.map(r => ({ check: r.check, passed: r.passed, detail: r.detail, category: r.category })),
     warnings: params.warnings,
     blockers: params.blockers,
     documents_included: params.documentIds,
     doc_type_mappings_used: params.docTypeMappingsUsed,
     artifacts: params.artifacts,
-    compliance_config_present: !!params.complianceConfig,
-    simulator_readiness: {
-      record_definitions_aligned: true,
-      compliance_config_present: !!params.complianceConfig,
-      doc_type_mappings_complete: params.blockers.length === 0,
-      encoding_compliant: params.encoding !== 'UTF-8',
-      core_validations_passed: params.validationResults.every(r => r.passed),
-    },
+    spec_version: '1.31',
+    record_lengths: { A000: A000_LEN, A100: A100_LEN, C100: C100_LEN, D110: D110_LEN, D120: D120_LEN, Z900: Z900_LEN },
   }, null, 2);
 }
 
 // =============================================
-// ZIP BUILDER (Deno-native, no external lib)
+// ZIP BUILDER
 // =============================================
 
 function createZipArchive(files: Array<{ name: string; content: Uint8Array }>): Uint8Array {
@@ -702,15 +833,11 @@ function createZipArchive(files: Array<{ name: string; content: Uint8Array }>): 
     const hv = new DataView(header.buffer);
     hv.setUint32(0, 0x04034b50, true);
     hv.setUint16(4, 20, true);
-    hv.setUint16(6, 0, true);
     hv.setUint16(8, 0, true);
-    hv.setUint16(10, 0, true);
-    hv.setUint16(12, 0, true);
     hv.setUint32(14, crc, true);
     hv.setUint32(18, file.content.length, true);
     hv.setUint32(22, file.content.length, true);
     hv.setUint16(26, nameBytes.length, true);
-    hv.setUint16(28, 0, true);
     header.set(nameBytes, 30);
 
     chunks.push(header);
@@ -725,19 +852,10 @@ function createZipArchive(files: Array<{ name: string; content: Uint8Array }>): 
     cv.setUint32(0, 0x02014b50, true);
     cv.setUint16(4, 20, true);
     cv.setUint16(6, 20, true);
-    cv.setUint16(8, 0, true);
-    cv.setUint16(10, 0, true);
-    cv.setUint16(12, 0, true);
-    cv.setUint16(14, 0, true);
     cv.setUint32(16, entry.crc, true);
     cv.setUint32(20, entry.content.length, true);
     cv.setUint32(24, entry.content.length, true);
     cv.setUint16(28, entry.name.length, true);
-    cv.setUint16(30, 0, true);
-    cv.setUint16(32, 0, true);
-    cv.setUint16(34, 0, true);
-    cv.setUint16(36, 0, true);
-    cv.setUint32(38, 0, true);
     cv.setUint32(42, entry.offset, true);
     cd.set(entry.name, 46);
     chunks.push(cd);
@@ -747,22 +865,16 @@ function createZipArchive(files: Array<{ name: string; content: Uint8Array }>): 
   const eocd = new Uint8Array(22);
   const ev = new DataView(eocd.buffer);
   ev.setUint32(0, 0x06054b50, true);
-  ev.setUint16(4, 0, true);
-  ev.setUint16(6, 0, true);
   ev.setUint16(8, entries.length, true);
   ev.setUint16(10, entries.length, true);
   ev.setUint32(12, offset - cdStart, true);
   ev.setUint32(16, cdStart, true);
-  ev.setUint16(20, 0, true);
   chunks.push(eocd);
 
   const totalLen = chunks.reduce((s, c) => s + c.length, 0);
   const result = new Uint8Array(totalLen);
   let pos = 0;
-  for (const c of chunks) {
-    result.set(c, pos);
-    pos += c.length;
-  }
+  for (const c of chunks) { result.set(c, pos); pos += c.length; }
   return result;
 }
 
@@ -770,39 +882,29 @@ function crc32(data: Uint8Array): number {
   let crc = 0xFFFFFFFF;
   for (let i = 0; i < data.length; i++) {
     crc ^= data[i];
-    for (let j = 0; j < 8; j++) {
-      crc = (crc >>> 1) ^ ((crc & 1) ? 0xEDB88320 : 0);
-    }
+    for (let j = 0; j < 8; j++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xEDB88320 : 0);
   }
   return (crc ^ 0xFFFFFFFF) >>> 0;
 }
 
 // =============================================
-// ENCODING HELPER
+// ENCODING
 // =============================================
 
 function encodeToISO8859_8(text: string): Uint8Array {
   const bytes: number[] = [];
   for (let i = 0; i < text.length; i++) {
     const code = text.charCodeAt(i);
-    if (code < 0x80) {
-      bytes.push(code);
-    } else if (code >= 0x05D0 && code <= 0x05EA) {
-      bytes.push(code - 0x05D0 + 0xE0);
-    } else if (code === 0x00A0) {
-      bytes.push(0xA0);
-    } else {
-      bytes.push(0x3F); // '?' for unmappable
-    }
+    if (code < 0x80) bytes.push(code);
+    else if (code >= 0x05D0 && code <= 0x05EA) bytes.push(code - 0x05D0 + 0xE0);
+    else if (code === 0x00A0) bytes.push(0xA0);
+    else bytes.push(0x3F);
   }
   return new Uint8Array(bytes);
 }
 
 function encodeContent(text: string, encoding: string): Uint8Array {
-  if (encoding === 'UTF-8') {
-    return new TextEncoder().encode(text);
-  }
-  // TODO: CP862 has a different mapping (DOS Hebrew) - implement separately if needed
+  if (encoding === 'UTF-8') return new TextEncoder().encode(text);
   return encodeToISO8859_8(text);
 }
 
@@ -820,7 +922,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Auth
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -840,73 +941,49 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { mode, taxYear, startDate, endDate } = body;
+    const { mode, taxYear, startDate, endDate, sampleMode } = body;
 
-    // Validate input
-    if (mode === 'single_year' && !taxYear) {
-      return new Response(JSON.stringify({ success: false, error: 'Tax year is required for single-year mode' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-    if (mode === 'multi_year' && (!startDate || !endDate)) {
-      return new Response(JSON.stringify({ success: false, error: 'Start and end dates are required for multi-year mode' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    if (!sampleMode) {
+      if (mode === 'single_year' && !taxYear) {
+        return new Response(JSON.stringify({ success: false, error: 'Tax year required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      if (mode === 'multi_year' && (!startDate || !endDate)) {
+        return new Response(JSON.stringify({ success: false, error: 'Dates required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     const runStarted = new Date();
     const primaryId = generate15DigitId();
-    const effectiveTaxYear = taxYear || new Date(startDate).getFullYear();
+    const effectiveTaxYear = sampleMode ? 2024 : (taxYear || new Date(startDate).getFullYear());
 
-    // Get profile for company info
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
+    // Profile
+    const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', user.id).single();
     const companyTaxId = (profile?.company_hp ?? '').replace(/\D/g, '').padStart(9, '0');
-    const companyName = profile?.company_name ?? '';
+    const companyName = profile?.company_name ?? 'Sample Company';
     const companyAddress = profile?.company_address ?? '';
 
-    // Get compliance config
-    const { data: config } = await supabaseAdmin
-      .from('open_format_compliance_config')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
+    // Compliance config
+    const { data: config } = await supabaseAdmin.from('open_format_compliance_config').select('*').eq('user_id', user.id).single();
     const hasComplianceConfig = !!config;
     const encoding = config?.default_encoding || 'ISO-8859-8';
     const softwareName = config?.software_name || 'CarsLead';
     const softwareVersion = config?.software_version || '1.0';
     const softwareRegNum = config?.software_registration_number || '';
-    const vendorTaxId = config?.software_vendor_tax_id || '';
+    const vendorTaxId = (config?.software_vendor_tax_id || '').replace(/\D/g, '');
+    const vendorName = config?.software_vendor_name || 'CarsLead Ltd';
+    const branchesEnabled = config?.branches_enabled || false;
 
-    // Get document type mappings from DB
-    const { data: dbMappings } = await supabaseAdmin
-      .from('open_format_doc_type_mappings')
-      .select('*')
-      .eq('user_id', user.id);
-
-    // Build effective mapping: DB overrides defaults
-    const docTypeMappings: Record<string, string> = { ...DEFAULT_DOC_TYPE_CODES };
-    const docTypeMappingsUsed: Record<string, string> = {};
-    const disabledTypes = new Set<string>();
-    if (dbMappings && dbMappings.length > 0) {
-      for (const m of dbMappings) {
-        if (m.enabled) {
-          docTypeMappings[m.internal_type] = m.tax_authority_code;
-        } else {
-          disabledTypes.add(m.internal_type);
-        }
-      }
-    }
-
-    // Determine date range
+    // Date range
     let queryStart: string;
     let queryEnd: string;
-    if (mode === 'single_year') {
+    if (sampleMode) {
+      queryStart = '2024-01-01';
+      queryEnd = '2024-12-31';
+    } else if (mode === 'single_year') {
       queryStart = `${taxYear}-01-01`;
       queryEnd = `${taxYear}-12-31`;
     } else {
@@ -914,24 +991,21 @@ serve(async (req) => {
       queryEnd = endDate;
     }
 
-    // Logical path with collision resolution
+    // Logical path
     const basePath = generateLogicalPath(companyTaxId, effectiveTaxYear, runStarted);
-    const { data: existingRuns } = await supabaseAdmin
-      .from('open_format_export_runs')
-      .select('logical_output_path')
-      .eq('user_id', user.id);
+    const { data: existingRuns } = await supabaseAdmin.from('open_format_export_runs').select('logical_output_path').eq('user_id', user.id);
     const existingPaths = (existingRuns || []).map((r: any) => r.logical_output_path);
     const logicalPath = resolveLogicalPathCollision(basePath, existingPaths);
 
-    // Create export run record (pending)
+    // Create export run
     const { data: exportRun, error: runError } = await supabaseAdmin
       .from('open_format_export_runs')
       .insert({
         user_id: user.id,
-        mode,
-        tax_year: mode === 'single_year' ? taxYear : null,
-        start_date: mode === 'multi_year' ? startDate : null,
-        end_date: mode === 'multi_year' ? endDate : null,
+        mode: sampleMode ? 'sample' : mode,
+        tax_year: sampleMode ? 2024 : (mode === 'single_year' ? taxYear : null),
+        start_date: sampleMode ? '2024-01-01' : (mode === 'multi_year' ? startDate : null),
+        end_date: sampleMode ? '2024-12-31' : (mode === 'multi_year' ? endDate : null),
         primary_id_15: primaryId,
         logical_output_path: logicalPath,
         encoding_used: encoding,
@@ -944,246 +1018,251 @@ serve(async (req) => {
     if (runError) throw runError;
 
     // =============================================
-    // COLLECT SOURCE DATA
-    // =============================================
-
-    const { data: taxInvoices } = await supabaseAdmin
-      .from('tax_invoices')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('date', queryStart)
-      .lte('date', queryEnd)
-      .order('date', { ascending: true });
-
-    const { data: customerDocs } = await supabaseAdmin
-      .from('customer_documents')
-      .select('*, customers!customer_documents_customer_id_fkey(full_name, id_number, address)')
-      .eq('user_id', user.id)
-      .gte('date', queryStart)
-      .lte('date', queryEnd)
-      .order('date', { ascending: true });
-
-    // Get payment data for receipts
-    const { data: payments } = await supabaseAdmin
-      .from('customer_payments')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('payment_date', queryStart)
-      .lte('payment_date', queryEnd);
-
-    // Build payment lookup by document_id
-    const paymentsByDocId: Record<string, any[]> = {};
-    for (const p of (payments || [])) {
-      if (p.document_id) {
-        if (!paymentsByDocId[p.document_id]) paymentsByDocId[p.document_id] = [];
-        paymentsByDocId[p.document_id].push(p);
-      }
-    }
-
-    // =============================================
     // BUILD RECORDS
     // =============================================
 
-    const records: string[] = [];
-    let recordNum = 1;
-    const counts: Record<string, number> = {
-      '100A': 0, '100C': 0, '110D': 0, '120D': 0,
-      '100B': 0, '110B': 0, '100M': 0, '900Z': 0, 'A000': 0,
-    };
+    let records: string[];
+    let counts: Record<string, number>;
     const documentIds: string[] = [];
     const unmappedTypes: string[] = [];
     const exportWarnings: string[] = [];
+    const docTypeMappingsUsed: Record<string, string> = {};
 
-    // 1. Opening record (100A)
-    records.push(build100A({
-      primaryId,
-      recordNum: recordNum++,
-      companyTaxId,
-      companyName,
-      companyAddress,
-      softwareName,
-      softwareVersion,
-      softwareRegNum,
-      vendorTaxId,
-      taxYear: effectiveTaxYear,
-      startDate: queryStart,
-      endDate: queryEnd,
-      encoding,
-    }));
-    counts['100A']++;
+    if (sampleMode) {
+      // SAMPLE MODE: synthetic data
+      const sample = generateSampleRecords(primaryId, companyTaxId);
+      records = sample.records;
+      counts = sample.counts;
+      exportWarnings.push('מצב הדגמה - נתונים סינתטיים בלבד');
+    } else {
+      // REAL MODE
+      records = [];
+      let recordNum = 1;
+      counts = { 'A100': 0, 'C100': 0, 'D110': 0, 'D120': 0, 'B100': 0, 'B110': 0, 'M100': 0, 'Z900': 0, 'A000': 0 };
 
-    // 2. Tax invoices -> 100C + 110D
-    for (const inv of (taxInvoices || [])) {
-      const internalType = 'tax-invoice';
-      if (disabledTypes.has(internalType)) continue;
-      const docTypeCode = docTypeMappings[internalType];
-      if (!docTypeCode || docTypeCode === '000') {
-        if (!unmappedTypes.includes(internalType)) unmappedTypes.push(internalType);
-        exportWarnings.push(`סוג מסמך '${internalType}' ללא מיפוי - דילוג`);
-        continue;
+      // Doc type mappings
+      const { data: dbMappings } = await supabaseAdmin.from('open_format_doc_type_mappings').select('*').eq('user_id', user.id);
+      const docTypeMappings: Record<string, string> = { ...DEFAULT_DOC_TYPE_CODES };
+      const disabledTypes = new Set<string>();
+      if (dbMappings && dbMappings.length > 0) {
+        for (const m of dbMappings) {
+          if (m.enabled) docTypeMappings[m.internal_type] = m.tax_authority_code;
+          else disabledTypes.add(m.internal_type);
+        }
       }
-      docTypeMappingsUsed[internalType] = docTypeCode;
-      documentIds.push(inv.id);
 
-      // Determine VAT rate from invoice data
-      const invoiceVatRate = (inv.subtotal && inv.subtotal > 0) 
-        ? ((inv.vat_amount || 0) / inv.subtotal) * 100 
-        : 17; // fallback
+      // A100
+      records.push(buildA100({ recordNum: recordNum++, companyTaxId, primaryId }));
+      counts['A100']++;
 
-      records.push(build100C({
-        recordNum: recordNum++,
-        primaryId,
-        companyTaxId,
-        docTypeCode,
-        docNumber: inv.invoice_number || '',
-        docDate: inv.date,
-        customerName: inv.customer_name || '',
-        customerTaxId: (inv.customer_hp || '').replace(/\D/g, ''),
-        customerAddress: inv.customer_address || '',
-        totalAmount: inv.total_amount || 0,
-        vatAmount: inv.vat_amount || 0,
-        netAmount: inv.subtotal || 0,
-        cancelled: false,
-      }));
-      counts['100C']++;
+      // Tax invoices
+      const { data: taxInvoices } = await supabaseAdmin
+        .from('tax_invoices')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', queryStart)
+        .lte('date', queryEnd)
+        .order('date', { ascending: true });
 
-      const items = Array.isArray(inv.items) ? inv.items : [];
-      let lineNum = 1;
-      for (const item of items) {
-        // Per-line VAT: try item-level, fall back to invoice-level
-        const itemVatRate = (item as any).vatRate ?? (item as any).vat_rate ?? invoiceVatRate;
-        
-        records.push(build110D({
+      for (const inv of (taxInvoices || [])) {
+        const internalType = 'tax-invoice';
+        if (disabledTypes.has(internalType)) continue;
+        const docTypeCode = docTypeMappings[internalType];
+        if (!docTypeCode || docTypeCode === '000') {
+          if (!unmappedTypes.includes(internalType)) unmappedTypes.push(internalType);
+          continue;
+        }
+        docTypeMappingsUsed[internalType] = docTypeCode;
+        documentIds.push(inv.id);
+
+        const vatRate = (inv.subtotal && inv.subtotal > 0) ? ((inv.vat_amount || 0) / inv.subtotal) * 100 : 17;
+
+        records.push(buildC100({
           recordNum: recordNum++,
-          primaryId,
           companyTaxId,
           docTypeCode,
           docNumber: inv.invoice_number || '',
-          lineNum: lineNum++,
-          description: (item as any).description || '',
-          catalogCode: (item as any).catalogCode || (item as any).catalog_code || '',
-          quantity: Number((item as any).quantity) || 1,
-          unitPrice: Number((item as any).unitPrice || (item as any).price) || 0,
-          lineTotal: Number((item as any).total || (item as any).amount) || 0,
-          vatRate: Number(itemVatRate),
+          docDate: inv.date,
+          customerName: inv.customer_name || '',
+          customerTaxId: (inv.customer_hp || '').replace(/\D/g, ''),
+          customerAddress: inv.customer_address || '',
+          netAmount: inv.subtotal || 0,
+          vatAmount: inv.vat_amount || 0,
+          totalAmount: inv.total_amount || 0,
+          cancelled: false,
         }));
-        counts['110D']++;
-      }
-    }
+        counts['C100']++;
 
-    // 3. Customer documents (receipts) -> 100C + 120D
-    for (const doc of (customerDocs || [])) {
-      if (doc.type !== 'receipt' && doc.type !== 'tax-invoice-receipt') continue;
-      if (disabledTypes.has(doc.type)) continue;
-
-      const docTypeCode = docTypeMappings[doc.type];
-      if (!docTypeCode || docTypeCode === '000') {
-        if (!unmappedTypes.includes(doc.type)) unmappedTypes.push(doc.type);
-        exportWarnings.push(`סוג מסמך '${doc.type}' ללא מיפוי - דילוג`);
-        continue;
-      }
-      docTypeMappingsUsed[doc.type] = docTypeCode;
-      documentIds.push(doc.id);
-
-      // Customer data from JOIN
-      const customer = (doc as any).customers;
-      const customerName = customer?.full_name || '';
-      const customerTaxId = (customer?.id_number || '').replace(/\D/g, '');
-      const customerAddress = customer?.address || '';
-      if (!customerName) {
-        exportWarnings.push(`מסמך ${doc.document_number}: חסר שם לקוח`);
-      }
-
-      records.push(build100C({
-        recordNum: recordNum++,
-        primaryId,
-        companyTaxId,
-        docTypeCode,
-        docNumber: doc.document_number || '',
-        docDate: doc.date || '',
-        customerName,
-        customerTaxId,
-        customerAddress,
-        totalAmount: doc.amount || 0,
-        vatAmount: 0, // TODO: VAT not available on customer_documents, needs schema addition
-        netAmount: doc.amount || 0,
-        cancelled: doc.status === 'cancelled',
-      }));
-      counts['100C']++;
-
-      // Use actual payment data if linked
-      const linkedPayments = paymentsByDocId[doc.id];
-      if (linkedPayments && linkedPayments.length > 0) {
-        let payNum = 1;
-        for (const pay of linkedPayments) {
-          records.push(build120D({
+        const items = Array.isArray(inv.items) ? inv.items : [];
+        let lineNum = 1;
+        for (const item of items) {
+          const itemVatRate = (item as any).vatRate ?? (item as any).vat_rate ?? vatRate;
+          records.push(buildD110({
             recordNum: recordNum++,
-            primaryId,
             companyTaxId,
             docTypeCode,
-            docNumber: doc.document_number || '',
-            paymentMethod: pay.payment_method || 'other',
-            paymentNum: payNum++,
-            paymentDate: pay.payment_date || doc.date || '',
-            amount: pay.amount || 0,
-            bankCode: '', // TODO: not in current schema
-            branchCode: '',
-            accountNum: '',
+            docNumber: inv.invoice_number || '',
+            lineNum: lineNum++,
+            description: (item as any).description || '',
+            catalogCode: (item as any).catalogCode || (item as any).catalog_code || '',
+            quantity: Number((item as any).quantity) || 1,
+            unitPrice: Number((item as any).unitPrice || (item as any).price) || 0,
+            lineTotal: Number((item as any).total || (item as any).amount) || 0,
+            vatRate: Number(itemVatRate),
+            invoiceDate: inv.date,
           }));
-          counts['120D']++;
+          counts['D110']++;
         }
-      } else {
-        // Fallback: single payment record from document amount
-        records.push(build120D({
+      }
+
+      // Customer documents (receipts)
+      const { data: customerDocs } = await supabaseAdmin
+        .from('customer_documents')
+        .select('*, customers!customer_documents_customer_id_fkey(full_name, id_number, address)')
+        .eq('user_id', user.id)
+        .gte('date', queryStart)
+        .lte('date', queryEnd)
+        .order('date', { ascending: true });
+
+      const { data: payments } = await supabaseAdmin
+        .from('customer_payments')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('payment_date', queryStart)
+        .lte('payment_date', queryEnd);
+
+      const paymentsByDocId: Record<string, any[]> = {};
+      for (const pay of (payments || [])) {
+        if (pay.document_id) {
+          if (!paymentsByDocId[pay.document_id]) paymentsByDocId[pay.document_id] = [];
+          paymentsByDocId[pay.document_id].push(pay);
+        }
+      }
+
+      // Also process non-receipt customer docs (contracts etc)
+      for (const doc of (customerDocs || [])) {
+        if (disabledTypes.has(doc.type)) continue;
+        const docTypeCode = docTypeMappings[doc.type];
+        if (!docTypeCode || docTypeCode === '000') {
+          if (!unmappedTypes.includes(doc.type)) unmappedTypes.push(doc.type);
+          exportWarnings.push(`סוג מסמך '${doc.type}' ללא מיפוי - דילוג`);
+          continue;
+        }
+        docTypeMappingsUsed[doc.type] = docTypeCode;
+        documentIds.push(doc.id);
+
+        const customer = (doc as any).customers;
+        const customerName = customer?.full_name || '';
+        const customerTaxId = (customer?.id_number || '').replace(/\D/g, '');
+        const customerAddress = customer?.address || '';
+
+        records.push(buildC100({
           recordNum: recordNum++,
-          primaryId,
           companyTaxId,
           docTypeCode,
           docNumber: doc.document_number || '',
-          paymentMethod: 'other',
-          paymentNum: 1,
-          paymentDate: doc.date || '',
-          amount: doc.amount || 0,
-          bankCode: '',
-          branchCode: '',
-          accountNum: '',
+          docDate: doc.date || '',
+          customerName,
+          customerTaxId,
+          customerAddress,
+          netAmount: doc.amount || 0,
+          vatAmount: 0,
+          totalAmount: doc.amount || 0,
+          cancelled: doc.status === 'cancelled',
         }));
-        counts['120D']++;
-        exportWarnings.push(`מסמך ${doc.document_number}: אין נתוני תשלום מקושרים - שימוש בברירת מחדל`);
-      }
-    }
+        counts['C100']++;
 
-    // 4. Closing record (900Z)
-    const totalRecords = records.length + 1;
-    records.push(build900Z({
-      recordNum: recordNum++,
-      primaryId,
-      companyTaxId,
-      totalRecords,
-    }));
-    counts['900Z']++;
+        // D120 for receipt-type docs
+        if (doc.type === 'receipt' || doc.type === 'tax-invoice-receipt') {
+          const linked = paymentsByDocId[doc.id];
+          if (linked && linked.length > 0) {
+            let payNum = 1;
+            for (const pay of linked) {
+              records.push(buildD120({
+                recordNum: recordNum++,
+                companyTaxId,
+                docTypeCode,
+                docNumber: doc.document_number || '',
+                paymentNum: payNum++,
+                paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
+                amount: pay.amount || 0,
+                receiptDate: pay.payment_date || doc.date || '',
+              }));
+              counts['D120']++;
+            }
+          } else {
+            records.push(buildD120({
+              recordNum: recordNum++,
+              companyTaxId,
+              docTypeCode,
+              docNumber: doc.document_number || '',
+              paymentNum: 1,
+              paymentTypeCode: '0',
+              amount: doc.amount || 0,
+              receiptDate: doc.date || '',
+            }));
+            counts['D120']++;
+          }
+        }
+      }
+
+      // Z900
+      const totalRecords = records.length + 1;
+      records.push(buildZ900({
+        recordNum: recordNum++,
+        companyTaxId,
+        primaryId,
+        totalRecords,
+      }));
+      counts['Z900']++;
+    }
 
     // =============================================
     // BUILD FILES
     // =============================================
 
     const bkmvContent = records.map(r => appendCRLF(r)).join('');
-
     const actualTotal = records.length;
-    counts['A000'] = 1; // A000 is always generated in TXT.INI
-    const iniContent = buildTxtIni({
+    counts['A000'] = 1;
+
+    // Count per type for INI
+    const typeCounts: Record<string, number> = {};
+    for (const rec of records) {
+      const t = rec.slice(0, 4);
+      typeCounts[t] = (typeCounts[t] || 0) + 1;
+    }
+
+    const iniRecordCounts = {
+      B100: typeCounts['B100'] || 0,
+      B110: typeCounts['B110'] || 0,
+      C100: typeCounts['C100'] || 0,
+      D110: typeCounts['D110'] || 0,
+      D120: typeCounts['D120'] || 0,
+      M100: typeCounts['M100'] || 0,
+    };
+
+    const a000Line = buildA000({
       primaryId,
       companyTaxId,
       companyName,
+      companyAddress,
+      companyCity: '',
+      companyZip: '',
       taxYear: effectiveTaxYear,
+      startDate: queryStart,
+      endDate: queryEnd,
+      processDate: runStarted,
       totalBkmvRecords: actualTotal,
-      encoding,
+      softwareRegNum,
       softwareName,
       softwareVersion,
-      softwareRegNum,
       vendorTaxId,
-      logicalPath,
+      vendorName,
+      encoding,
+      branchesEnabled,
+      counts: iniRecordCounts,
     });
+    const iniContent = appendCRLF(a000Line);
 
     // =============================================
     // VALIDATION
@@ -1192,27 +1271,20 @@ serve(async (req) => {
     const validation = runValidations({
       records,
       primaryId,
-      closingTotalCount: totalRecords,
-      iniTotalCount: actualTotal,
+      closingTotalCount: actualTotal,
       bkmvContent,
       iniContent,
+      iniRecordCounts,
       hasComplianceConfig,
       hasMappings: unmappedTypes.length === 0,
       unmappedTypes,
       encoding,
     });
-
-    // Merge export warnings
     validation.warnings.push(...exportWarnings);
 
     if (validation.fatalError) {
-      await supabaseAdmin
-        .from('open_format_export_runs')
-        .update({
-          status: 'failed',
-          finished_at: new Date().toISOString(),
-          error_message: validation.fatalError,
-        })
+      await supabaseAdmin.from('open_format_export_runs')
+        .update({ status: 'failed', finished_at: new Date().toISOString(), error_message: validation.fatalError })
         .eq('id', exportRun.id);
     }
 
@@ -1222,16 +1294,12 @@ serve(async (req) => {
 
     const bkmvBytes = encodeContent(bkmvContent, encoding);
     const iniBytes = encodeContent(iniContent, encoding);
-    const pathTxt = new TextEncoder().encode(
-      `Logical Path: ${logicalPath}\nGenerated: ${runStarted.toISOString()}\nPrimary ID: ${primaryId}\nEncoding: ${encoding}\n`
-    );
 
     const artifactsList = [
-      { filename: 'TXT.INI', byteSize: iniBytes.length },
-      { filename: 'TXT.BKMVDATA', byteSize: bkmvBytes.length },
+      { filename: 'INI.TXT', byteSize: iniBytes.length },
+      { filename: 'BKMVDATA.TXT', byteSize: bkmvBytes.length },
     ];
 
-    // Build debug manifest
     const manifestJson = buildDebugManifest({
       exportRunId: exportRun.id,
       primaryId,
@@ -1245,6 +1313,9 @@ serve(async (req) => {
       docTypeMappingsUsed,
       artifacts: artifactsList,
       complianceConfig: config,
+      isSample: !!sampleMode,
+      firstRecordCode: records[0]?.slice(0, 4),
+      lastRecordCode: records[records.length - 1]?.slice(0, 4),
     });
     const manifestBytes = new TextEncoder().encode(manifestJson);
 
@@ -1254,36 +1325,15 @@ serve(async (req) => {
     ]);
 
     // =============================================
-    // UPLOAD TO STORAGE
+    // UPLOAD
     // =============================================
 
     const storagePath = `${user.id}/${exportRun.id}`;
 
-    const { error: iniErr } = await supabaseAdmin.storage
-      .from('open-format-exports')
-      .upload(`${storagePath}/TXT.INI`, iniBytes, { contentType: 'text/plain', upsert: true });
-
-    const { error: bkmvErr } = await supabaseAdmin.storage
-      .from('open-format-exports')
-      .upload(`${storagePath}/TXT.BKMVDATA`, bkmvBytes, { contentType: 'text/plain', upsert: true });
-
-    const { error: zipErr } = await supabaseAdmin.storage
-      .from('open-format-exports')
-      .upload(`${storagePath}/BKMVDATA.zip`, zipBytes, { contentType: 'application/zip', upsert: true });
-
-    // Upload debug manifest
-    await supabaseAdmin.storage
-      .from('open-format-exports')
-      .upload(`${storagePath}/export_debug_manifest.json`, manifestBytes, { contentType: 'application/json', upsert: true });
-
-    const artifactsValid = !iniErr && !bkmvErr && !zipErr;
-    const artifactIdx = validation.results.findIndex(r => r.check.includes('קבצים נדרשים'));
-    if (artifactIdx >= 0) {
-      validation.results[artifactIdx].passed = artifactsValid;
-      if (!artifactsValid) {
-        validation.results[artifactIdx].detail = [iniErr, bkmvErr, zipErr].filter(Boolean).map(e => e!.message).join(', ');
-      }
-    }
+    await supabaseAdmin.storage.from('open-format-exports').upload(`${storagePath}/INI.TXT`, iniBytes, { contentType: 'text/plain', upsert: true });
+    await supabaseAdmin.storage.from('open-format-exports').upload(`${storagePath}/BKMVDATA.TXT`, bkmvBytes, { contentType: 'text/plain', upsert: true });
+    const { error: zipErr } = await supabaseAdmin.storage.from('open-format-exports').upload(`${storagePath}/BKMVDATA.zip`, zipBytes, { contentType: 'application/zip', upsert: true });
+    await supabaseAdmin.storage.from('open-format-exports').upload(`${storagePath}/export_debug_manifest.json`, manifestBytes, { contentType: 'application/json', upsert: true });
 
     // =============================================
     // PERSIST METADATA
@@ -1296,14 +1346,6 @@ serve(async (req) => {
     }));
     await supabaseAdmin.from('open_format_record_counts').insert(countInserts);
 
-    // Upload simulator-friendly aliases (same content, different filename)
-    await supabaseAdmin.storage
-      .from('open-format-exports')
-      .upload(`${storagePath}/INI.TXT`, iniBytes, { contentType: 'text/plain', upsert: true });
-    await supabaseAdmin.storage
-      .from('open-format-exports')
-      .upload(`${storagePath}/BKMVDATA.TXT`, bkmvBytes, { contentType: 'text/plain', upsert: true });
-
     const artifacts = [
       { artifact_type: 'INI', filename: 'INI.TXT', storage_path: `${storagePath}/INI.TXT`, byte_size: iniBytes.length },
       { artifact_type: 'BKMVDATA', filename: 'BKMVDATA.TXT', storage_path: `${storagePath}/BKMVDATA.TXT`, byte_size: bkmvBytes.length },
@@ -1312,14 +1354,12 @@ serve(async (req) => {
     ].map(a => ({ ...a, export_run_id: exportRun.id }));
     await supabaseAdmin.from('open_format_artifacts').insert(artifacts);
 
-    // Final status
-    const allPassed = validation.results.every(v => v.passed) && artifactsValid;
-    await supabaseAdmin
-      .from('open_format_export_runs')
+    const allPassed = validation.results.every(v => v.passed) && !zipErr;
+    await supabaseAdmin.from('open_format_export_runs')
       .update({
         status: allPassed ? 'success' : 'failed',
         finished_at: new Date().toISOString(),
-        error_message: allPassed ? null : (validation.fatalError || 'חלק מבדיקות הולידציה נכשלו'),
+        error_message: allPassed ? null : (validation.fatalError || 'בדיקות ולידציה נכשלו'),
       })
       .eq('id', exportRun.id);
 
@@ -1336,6 +1376,7 @@ serve(async (req) => {
       validationResults: validation.results,
       warnings: validation.warnings,
       blockers: validation.blockers,
+      isSample: !!sampleMode,
       artifacts: artifacts.map(a => ({
         type: a.artifact_type,
         filename: a.filename,
