@@ -8,7 +8,7 @@ export function useRoles() {
   const { user } = useAuth();
 
   // Fetch user roles with company and agency information
-  const { data: userRoles = [], isLoading } = useQuery({
+  const { data: userRoles = [], isLoading: isRolesLoading } = useQuery({
     queryKey: ["user-roles", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -69,7 +69,7 @@ export function useRoles() {
   });
 
   // Fallback: check admin_emails table (matches DB is_admin() function)
-  const { data: isAdminByEmail = false } = useQuery({
+  const { data: isAdminByEmail = false, isLoading: isAdminEmailLoading } = useQuery({
     queryKey: ["admin-email-check", user?.email],
     queryFn: async () => {
       if (!user?.email) return false;
@@ -126,6 +126,8 @@ export function useRoles() {
     });
     return Array.from(companyIds);
   };
+
+  const isLoading = isRolesLoading || isAdminEmailLoading;
 
   return {
     userRoles,
