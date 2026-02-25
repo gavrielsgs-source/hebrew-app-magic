@@ -1,12 +1,13 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Printer, Download, AlertTriangle, Info } from "lucide-react";
-import { useComplianceConfig, useExportRunCounts, useDocTypeMappings } from "@/hooks/use-open-format";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Printer, Download, AlertTriangle, Info, ChevronDown, Wand2 } from "lucide-react";
+import { useComplianceConfig, useExportRunCounts, useDocTypeMappings, useSaveDocTypeMapping } from "@/hooks/use-open-format";
 import type { ExportRunResult } from "@/hooks/use-open-format";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
@@ -36,13 +37,50 @@ const KNOWN_TAX_DOC_TYPES = [
   { code: '900', label: 'חשבון עסקה' },
 ];
 
+/**
+ * Default mapping suggestions for common internal document types.
+ * Used to seed mappings when user has none configured.
+ */
+const DEFAULT_MAPPING_SUGGESTIONS: Record<string, { code: string; description: string }> = {
+  'invoice': { code: '100', description: 'חשבונית מס' },
+  'tax_invoice': { code: '100', description: 'חשבונית מס' },
+  'tax_invoice_receipt': { code: '200', description: 'חשבונית מס / קבלה' },
+  'receipt': { code: '300', description: 'קבלה' },
+  'credit_note': { code: '400', description: 'חשבונית זיכוי' },
+  'credit_invoice': { code: '400', description: 'חשבונית זיכוי' },
+  'order': { code: '500', description: 'הזמנה' },
+  'delivery_note': { code: '600', description: 'תעודת משלוח' },
+  'quote': { code: '700', description: 'הצעת מחיר' },
+  'price_quote': { code: '700', description: 'הצעת מחיר' },
+  'contract': { code: '900', description: 'חשבון עסקה' },
+  'sale_agreement': { code: '900', description: 'חשבון עסקה' },
+  'agreement': { code: '900', description: 'חשבון עסקה' },
+  'proforma': { code: '900', description: 'חשבון עסקה' },
+  'transaction': { code: '900', description: 'חשבון עסקה' },
+};
+
+/** Normalize key: lowercase, trim, replace hyphens with underscores */
+function normalizeKey(key: string): string {
+  return key?.toLowerCase().trim().replace(/-/g, '_') || '';
+}
+
+/** Get suggested mapping for an internal type */
+function getSuggestedMapping(internalType: string): { code: string; description: string } | null {
+  const norm = normalizeKey(internalType);
+  return DEFAULT_MAPPING_SUGGESTIONS[norm] || null;
+}
+
 export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
   const reportRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const { data: config } = useComplianceConfig();
   const { data: mappings } = useDocTypeMappings();
   const { user } = useAuth();
+  const saveMapping = useSaveDocTypeMapping();
+  const queryClient = useQueryClient();
 
   // Fetch export run from DB if resultData not provided
   const { data: run } = useQuery({
@@ -76,7 +114,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     enabled: !!user,
   });
 
-  // Fetch document totals for the export run period
+  // Build effective run context
   const effectiveRun = run || (resultData ? {
     mode: 'single_year',
     tax_year: undefined,
@@ -90,43 +128,48 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     finished_at: resultData?.finishedAt,
   } : null) as any;
 
-  // Calculate date range for document query
   const dateRange = getDateRange(effectiveRun);
 
+  // Fetch document totals for the export run period
   const { data: docTotals, isLoading: docTotalsLoading } = useQuery({
     queryKey: ['report26-doc-totals', user?.id, exportRunId, dateRange?.start, dateRange?.end],
     queryFn: async () => {
       if (!dateRange) return [];
-      let query = supabase
+      const { data, error } = await supabase
         .from('customer_documents')
         .select('type, amount, status')
         .eq('user_id', user!.id)
         .gte('date', dateRange.start)
         .lte('date', dateRange.end);
-      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
     enabled: !!user && !!dateRange,
   });
 
-  // Build record counts
+  // Build record counts from export run
   const recordCounts: Record<string, number> = {};
   if (resultData?.recordCounts) {
     Object.assign(recordCounts, resultData.recordCounts);
   } else if (dbCounts) {
     dbCounts.forEach((c: any) => { recordCounts[c.record_type_code] = c.count; });
   }
-
   const count100C = recordCounts['100C'] || 0;
 
-  // Build document totals aggregated by Tax Authority code
-  const mappingByInternal: Record<string, { code: string; description?: string; enabled: boolean }> = {};
+  // === MAPPING RESOLUTION ===
+  // Build normalized mapping lookup from user's configured mappings
+  const mappingByNormalized: Record<string, { code: string; description?: string; enabled: boolean; originalKey: string }> = {};
   (mappings || []).forEach((m: any) => {
-    mappingByInternal[m.internal_type] = { code: m.tax_authority_code, description: m.description, enabled: m.enabled };
+    const norm = normalizeKey(m.internal_type);
+    mappingByNormalized[norm] = {
+      code: m.tax_authority_code,
+      description: m.description,
+      enabled: m.enabled,
+      originalKey: m.internal_type,
+    };
   });
 
-  // Cancelled document policy: documents with status 'cancelled' are EXCLUDED from totals
+  // Cancelled document policy: status='cancelled' excluded
   const activeDocs = (docTotals || []).filter((d: any) => d.status !== 'cancelled');
   const cancelledCount = (docTotals || []).length - activeDocs.length;
 
@@ -138,7 +181,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     aggregated[t.code] = { code: t.code, label: t.label, managed: false, count: 0, amount: 0 };
   });
 
-  // Also init from user mappings
+  // Mark mapped types as managed
   (mappings || []).forEach((m: any) => {
     if (m.enabled && m.tax_authority_code) {
       if (!aggregated[m.tax_authority_code]) {
@@ -150,16 +193,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     }
   });
 
-  // Normalize key helper: lowercase, trim, replace hyphens with underscores
-  const normalizeKey = (key: string) => key?.toLowerCase().trim().replace(/-/g, '_') || '';
-
-  // Build normalized mapping lookup (handle tax-invoice vs tax_invoice etc.)
-  const normalizedMappingLookup: Record<string, { code: string; description?: string; enabled: boolean }> = {};
-  Object.entries(mappingByInternal).forEach(([key, val]) => {
-    normalizedMappingLookup[normalizeKey(key)] = val;
-  });
-
-  // Warnings for unmapped types + per-type counters for debug
+  // Track matched vs unmapped
   const unmappedTypes = new Set<string>();
   const unmappedTypeCounts: Record<string, { count: number; amount: number }> = {};
   const matchedTypeCounts: Record<string, { count: number; amount: number; code: string }> = {};
@@ -167,8 +201,8 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
   activeDocs.forEach((doc: any) => {
     const rawType = doc.type;
     const normType = normalizeKey(rawType);
-    // Try exact match first, then normalized
-    const mapping = mappingByInternal[rawType] || normalizedMappingLookup[normType];
+    const mapping = mappingByNormalized[normType];
+
     if (mapping && mapping.enabled) {
       const code = mapping.code;
       if (!aggregated[code]) {
@@ -177,7 +211,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
       aggregated[code].count++;
       aggregated[code].amount += Number(doc.amount || 0);
       aggregated[code].managed = true;
-      // Track matched
+
       if (!matchedTypeCounts[rawType]) matchedTypeCounts[rawType] = { count: 0, amount: 0, code };
       matchedTypeCounts[rawType].count++;
       matchedTypeCounts[rawType].amount += Number(doc.amount || 0);
@@ -189,21 +223,27 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     }
   });
 
-  // Debug logging for admin troubleshooting
+  // All unique internal types in period
+  const allInternalTypes = [...new Set((docTotals || []).map((d: any) => d.type))];
+
+  // Debug logging
   console.group('[Report 2.6 Debug]');
   console.log('Export Run ID:', exportRunId);
   console.log('User ID:', user?.id);
   console.log('Date Range:', dateRange);
   console.log('Mappings loaded:', (mappings || []).length, mappings);
-  console.log('Active docs in period:', activeDocs.length, '(cancelled excluded:', cancelledCount, ')');
-  console.log('Internal doc types found:', [...new Set(activeDocs.map((d: any) => d.type))]);
+  console.log('Total docs in period:', (docTotals || []).length, '| Active:', activeDocs.length, '| Cancelled:', cancelledCount);
+  console.log('Internal doc types found:', allInternalTypes);
   console.log('Matched types:', matchedTypeCounts);
   console.log('Unmatched types:', unmappedTypeCounts);
+  console.log('Normalized mapping keys:', Object.keys(mappingByNormalized));
   console.groupEnd();
 
   const sortedRows = Object.values(aggregated).sort((a, b) => a.code.localeCompare(b.code));
   const totalDocCount = sortedRows.reduce((s, r) => s + r.count, 0);
   const totalAmount = sortedRows.reduce((s, r) => s + r.amount, 0);
+  const unmappedTotalCount = Object.values(unmappedTypeCounts).reduce((s, v) => s + v.count, 0);
+  const unmappedTotalAmount = Object.values(unmappedTypeCounts).reduce((s, v) => s + v.amount, 0);
 
   const now = new Date().toLocaleString('he-IL');
   const status = resultData?.status || effectiveRun?.status || 'unknown';
@@ -214,6 +254,38 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
   const missingFields: string[] = [];
   if (!config?.software_registration_number) missingFields.push('מספר רישום תוכנה');
   if (!profile?.company_name) missingFields.push('שם העסק');
+
+  // Seed default mappings for detected unmapped types
+  const handleSeedDefaults = async () => {
+    setSeeding(true);
+    let seeded = 0;
+    for (const rawType of Array.from(unmappedTypes)) {
+      const suggestion = getSuggestedMapping(rawType);
+      if (suggestion) {
+        try {
+          await saveMapping.mutateAsync({
+            internal_type: rawType,
+            tax_authority_code: suggestion.code,
+            description: suggestion.description,
+            enabled: true,
+            notes: 'נוצר אוטומטית — יש לבדוק ולאשר',
+          });
+          seeded++;
+        } catch (e) {
+          console.error('Failed to seed mapping for', rawType, e);
+        }
+      }
+    }
+    // Invalidate to refresh
+    queryClient.invalidateQueries({ queryKey: ['open-format-doc-mappings'] });
+    queryClient.invalidateQueries({ queryKey: ['report26-doc-totals'] });
+    setSeeding(false);
+    if (seeded > 0) {
+      toast.success(`נוצרו ${seeded} מיפויים ברירת מחדל. יש לרענן את הדוח.`);
+    } else {
+      toast.info('לא נמצאו הצעות מיפוי מוכרות לסוגים שנמצאו.');
+    }
+  };
 
   const handlePrint = () => window.print();
 
@@ -282,7 +354,39 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         </Alert>
       )}
 
-      {unmappedTypes.size > 0 && (
+      {/* No mappings at all - critical warning with seed action */}
+      {(mappings || []).length === 0 && activeDocs.length > 0 && (
+        <Alert variant="destructive" className="print:hidden">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>⚠ לא הוגדרו מיפויי סוגי מסמכים כלל!</strong>
+            <p className="text-sm mt-1">
+              נמצאו {activeDocs.length} מסמכים פעילים בטווח אך אין מיפוי לאף סוג מסמך.
+              כל המסמכים מוחרגים מהסיכום. יש להגדיר מיפויים בטאב "מיפוי מסמכים".
+            </p>
+            {unmappedTypes.size > 0 && (
+              <div className="mt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-red-300 text-red-800 hover:bg-red-50"
+                  onClick={handleSeedDefaults}
+                  disabled={seeding}
+                >
+                  <Wand2 className="h-4 w-4 ml-1" />
+                  {seeding ? 'יוצר מיפויים...' : 'צור מיפויי ברירת מחדל'}
+                </Button>
+                <span className="text-xs mr-2">
+                  (יצור מיפויים מוצעים עבור: {Array.from(unmappedTypes).join(', ')})
+                </span>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Unmapped types warning (when some mappings exist but some types are missing) */}
+      {(mappings || []).length > 0 && unmappedTypes.size > 0 && (
         <Alert variant="destructive" className="print:hidden">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
@@ -291,27 +395,64 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
               {Object.entries(unmappedTypeCounts).map(([type, info]) => (
                 <li key={type}>
                   <code>{type}</code> — {info.count} מסמכים, סכום ₪{info.amount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}
+                  {getSuggestedMapping(type) && (
+                    <span className="text-xs mr-1">(הצעה: קוד {getSuggestedMapping(type)!.code})</span>
+                  )}
                 </li>
               ))}
             </ul>
             <p className="mt-1 text-sm">מסמכים אלו <strong>לא נכללים</strong> בסיכום. יש להוסיף מיפוי בטאב "מיפוי מסמכים".</p>
-            {(mappings || []).length === 0 && (
-              <p className="mt-1 text-sm font-bold text-red-800">
-                ⚠ לא נמצאו מיפויים כלל! יש להגדיר מיפוי לפחות עבור סוגי המסמכים הקיימים.
-              </p>
-            )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-2 border-red-300 text-red-800 hover:bg-red-50"
+              onClick={handleSeedDefaults}
+              disabled={seeding}
+            >
+              <Wand2 className="h-4 w-4 ml-1" />
+              {seeding ? 'יוצר...' : 'צור מיפויי ברירת מחדל'}
+            </Button>
           </AlertDescription>
         </Alert>
       )}
 
-      {(mappings || []).length === 0 && unmappedTypes.size === 0 && activeDocs.length === 0 && (
+      {activeDocs.length === 0 && (
         <Alert className="print:hidden">
           <Info className="h-4 w-4" />
           <AlertDescription>
-            לא נמצאו מסמכים בטווח התאריכים של ריצת הייצוא הנבחרת.
+            לא נמצאו מסמכים פעילים בטווח התאריכים של ריצת הייצוא הנבחרת ({dateRange?.start} — {dateRange?.end}).
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Admin Debug Panel */}
+      <Collapsible open={debugOpen} onOpenChange={setDebugOpen} className="print:hidden">
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+            <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${debugOpen ? 'rotate-180' : ''}`} />
+            🔍 מידע דיבאג (2.6)
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="bg-muted/50 border rounded p-3 text-xs font-mono space-y-1 mt-1">
+            <div><strong>Export Run ID:</strong> {exportRunId}</div>
+            <div><strong>User ID:</strong> {user?.id}</div>
+            <div><strong>Date Range:</strong> {dateRange ? `${dateRange.start} → ${dateRange.end}` : 'N/A'}</div>
+            <div><strong>Mode:</strong> {mode}</div>
+            <div><strong>Mappings loaded:</strong> {(mappings || []).length}</div>
+            <div><strong>Normalized mapping keys:</strong> {Object.keys(mappingByNormalized).join(', ') || '(none)'}</div>
+            <div><strong>Total docs in period:</strong> {(docTotals || []).length}</div>
+            <div><strong>Active docs:</strong> {activeDocs.length}</div>
+            <div><strong>Cancelled (excluded):</strong> {cancelledCount}</div>
+            <div><strong>Internal types found:</strong> {allInternalTypes.join(', ') || '(none)'}</div>
+            <div className="text-green-700"><strong>Matched types:</strong> {Object.entries(matchedTypeCounts).map(([t, v]) => `${t}→${v.code}(${v.count})`).join(', ') || '(none)'}</div>
+            <div className="text-red-700"><strong>Unmatched types:</strong> {Object.entries(unmappedTypeCounts).map(([t, v]) => `${t}(${v.count})`).join(', ') || '(none)'}</div>
+            <div><strong>100C from export:</strong> {count100C}</div>
+            <div><strong>Mapped total:</strong> {totalDocCount}</div>
+            <div><strong>Unmapped total:</strong> {unmappedTotalCount}</div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Printable Report */}
       <div
@@ -335,7 +476,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
           <Row26 label="Primary ID" value={primaryId} mono />
           <Row26 label="מצב מערכת" value={mode === 'single_year' ? 'חד-שנתית' : 'רב-שנתית'} />
           {mode === 'single_year' && <Row26 label="שנת מס" value={effectiveRun?.tax_year?.toString()} />}
-          {mode === 'multi_year' && <Row26 label="טווח תאריכים" value={dateRange ? `${dateRange.start} — ${dateRange.end}` : undefined} />}
+          <Row26 label="טווח תאריכים" value={dateRange ? `${dateRange.start} — ${dateRange.end}` : undefined} />
           <Row26 label="סטטוס הפקה" value={status === 'success' ? '✔ הצלחה' : status === 'failed' ? '✘ נכשל' : status} />
           <Row26 label="נתיב שמירה לוגי" value={logicalPath} mono />
         </Section26>
@@ -369,7 +510,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
                     </tr>
                   ))}
                   <tr className="bg-gray-50 font-bold">
-                    <td className="border border-gray-400 px-2 py-1.5" colSpan={3}>סה״כ</td>
+                    <td className="border border-gray-400 px-2 py-1.5" colSpan={3}>סה״כ (ממופים)</td>
                     <td className="border border-gray-400 px-2 py-1.5 text-center">{totalDocCount}</td>
                     <td className="border border-gray-400 px-2 py-1.5 text-center">
                       {totalAmount > 0 ? `₪${totalAmount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}` : '—'}
@@ -377,6 +518,38 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
                   </tr>
                 </tbody>
               </table>
+
+              {/* Unmapped types inline in report */}
+              {unmappedTypes.size > 0 && (
+                <div className="border border-red-300 bg-red-50 rounded p-2 mb-2">
+                  <p className="font-bold text-red-700 text-sm mb-1">⚠ סוגי מסמכים ללא מיפוי (לא נכללו בסיכום):</p>
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="border border-red-200 px-2 py-1 text-right">סוג פנימי</th>
+                        <th className="border border-red-200 px-2 py-1 text-center">כמות</th>
+                        <th className="border border-red-200 px-2 py-1 text-center">סכום</th>
+                        <th className="border border-red-200 px-2 py-1 text-center">הצעת קוד</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(unmappedTypeCounts).map(([type, info]) => {
+                        const suggestion = getSuggestedMapping(type);
+                        return (
+                          <tr key={type}>
+                            <td className="border border-red-200 px-2 py-1 font-mono">{type}</td>
+                            <td className="border border-red-200 px-2 py-1 text-center">{info.count}</td>
+                            <td className="border border-red-200 px-2 py-1 text-center">₪{info.amount.toLocaleString('he-IL', { minimumFractionDigits: 2 })}</td>
+                            <td className="border border-red-200 px-2 py-1 text-center">
+                              {suggestion ? `${suggestion.code} (${suggestion.description})` : '—'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
               {cancelledCount > 0 && (
                 <p className="text-xs text-gray-500">
@@ -392,8 +565,8 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
           <div className="space-y-1 text-sm">
             <Row26 label="כמות רשומות 100C בייצוא" value={count100C.toString()} />
             <Row26 label='סה״כ מסמכים ממופים בדוח 2.6' value={totalDocCount.toString()} />
-            {unmappedTypes.size > 0 && (
-              <Row26 label='מסמכים לא ממופים (לא נספרו)' value={Object.values(unmappedTypeCounts).reduce((s, v) => s + v.count, 0).toString()} />
+            {unmappedTotalCount > 0 && (
+              <Row26 label='מסמכים לא ממופים (לא נספרו)' value={`${unmappedTotalCount} (${Array.from(unmappedTypes).join(', ')})`} />
             )}
             {cancelledCount > 0 && (
               <Row26 label='מסמכים מבוטלים (הוחרגו)' value={cancelledCount.toString()} />
@@ -401,20 +574,30 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
             <div className="flex items-baseline gap-2 py-0.5">
               <span className="font-semibold min-w-[180px] shrink-0">התאמה:</span>
               {(() => {
-                const unmappedCount = Object.values(unmappedTypeCounts).reduce((s, v) => s + v.count, 0);
-                const expectedMatch = totalDocCount + unmappedCount;
-                if (count100C === totalDocCount && unmappedCount === 0) {
-                  return <span className="text-green-700 font-bold">✔ תואם</span>;
-                } else if (count100C === expectedMatch) {
+                const accountedDocs = totalDocCount + unmappedTotalCount + cancelledCount;
+                if (count100C === totalDocCount && unmappedTotalCount === 0 && cancelledCount === 0) {
+                  return <span className="text-green-700 font-bold">✔ תואם מלא</span>;
+                } else if (count100C === totalDocCount && unmappedTotalCount === 0) {
+                  return <span className="text-green-700 font-bold">✔ תואם ({cancelledCount} מבוטלים הוחרגו)</span>;
+                } else if (count100C === accountedDocs) {
                   return (
                     <span className="text-amber-600 font-bold">
-                      ⚠ תואם חלקית — {unmappedCount} מסמכים לא ממופים ({Array.from(unmappedTypes).join(', ')})
+                      ⚠ תואם חלקית — 100C({count100C}) = ממופים({totalDocCount}) + לא ממופים({unmappedTotalCount}) + מבוטלים({cancelledCount})
+                    </span>
+                  );
+                } else if (count100C > 0 && totalDocCount === 0 && unmappedTotalCount > 0) {
+                  return (
+                    <span className="text-red-600 font-bold">
+                      ✘ אין מסמכים ממופים — כל {unmappedTotalCount} המסמכים חסרי מיפוי. 100C={count100C} בייצוא.
+                      {cancelledCount > 0 && ` ${cancelledCount} מבוטלים הוחרגו.`}
+                      {' '}יש להגדיר מיפויים בטאב "מיפוי מסמכים".
                     </span>
                   );
                 } else {
                   return (
                     <span className="text-red-600 font-bold">
-                      ✘ אי-התאמה (100C: {count100C}, ממופים: {totalDocCount}, לא ממופים: {unmappedCount}, מבוטלים: {cancelledCount})
+                      ✘ אי-התאמה — 100C: {count100C}, ממופים: {totalDocCount}, לא ממופים: {unmappedTotalCount}, מבוטלים: {cancelledCount}
+                      {count100C !== accountedDocs && ` (פער: ${Math.abs(count100C - accountedDocs)})`}
                     </span>
                   );
                 }
@@ -442,14 +625,14 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
               <li className="text-red-700 font-bold text-sm">
                 ⚠ חוסם! סוגי מסמכים ללא מיפוי:
                 {Object.entries(unmappedTypeCounts).map(([t, info]) => (
-                  <span key={t}> "{t}" ({info.count} מסמכים)</span>
+                  <span key={t}> "{t}" ({info.count} מסמכים, ₪{info.amount.toLocaleString('he-IL')})</span>
                 ))}
                 {' — '}לא נכללו בסיכום. יש להגדיר מיפוי בטאב "מיפוי מסמכים".
               </li>
             )}
             {(mappings || []).length === 0 && (
               <li className="text-red-700 font-bold text-sm">
-                ⚠ לא הוגדרו מיפויי סוגי מסמכים כלל — כל המסמכים יוחרגו מהדוח. יש להגדיר מיפויים בטאב "מיפוי מסמכים".
+                ⚠ לא הוגדרו מיפויי סוגי מסמכים כלל — כל המסמכים יוחרגו מהדוח.
               </li>
             )}
             {!config?.software_registration_number && (
@@ -461,7 +644,7 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
             <li>ℹ סכומים מוצגים במטבע ראשי (₪ ILS). מסמכים במטבעות אחרים (אם קיימים) אינם מנורמלים.</li>
             <li>ℹ בדיקת הסימולטור והגשה לרשות המיסים מתבצעות בנפרד.</li>
             <li className="text-xs text-gray-400 mt-2">
-              🔍 מיפויים שנטענו: {(mappings || []).length} | מסמכים פעילים בטווח: {activeDocs.length} | ממופים: {Object.keys(matchedTypeCounts).length} סוגים | לא ממופים: {unmappedTypes.size} סוגים
+              🔍 מיפויים: {(mappings || []).length} | פעילים: {activeDocs.length} | ממופים: {Object.keys(matchedTypeCounts).length} סוגים | לא ממופים: {unmappedTypes.size} סוגים
             </li>
           </ul>
         </Section26>
@@ -485,7 +668,6 @@ function getDateRange(run: any): { start: string; end: string } | null {
   if (run.start_date && run.end_date) {
     return { start: run.start_date, end: run.end_date };
   }
-  // fallback for resultData
   if (run.tax_year) {
     return { start: `${run.tax_year}-01-01`, end: `${run.tax_year}-12-31` };
   }
