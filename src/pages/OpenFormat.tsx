@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { useRoles } from "@/hooks/use-roles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -7,31 +6,24 @@ import { ExportWizard } from "@/components/open-format/ExportWizard";
 import { ExportHistory } from "@/components/open-format/ExportHistory";
 import { ComplianceConfig } from "@/components/open-format/ComplianceConfig";
 import { DocTypeMappings } from "@/components/open-format/DocTypeMappings";
-import { useEffect } from "react";
+
 
 export default function OpenFormat() {
   const { isAdmin, isLoading } = useRoles();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && !isAdmin()) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [isAdmin, isLoading, navigate]);
-
-  if (!isLoading && !isAdmin()) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4" dir="rtl">
-        <p className="text-xl font-semibold text-destructive">אין הרשאה</p>
-        <p className="text-muted-foreground">עמוד זה מיועד למנהלי מערכת בלבד.</p>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-xl text-muted-foreground">טוען הרשאות...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin()) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4" dir="rtl">
+        <p className="text-xl font-semibold text-destructive">אין הרשאה</p>
+        <p className="text-muted-foreground">עמוד זה מיועד למנהלי מערכת בלבד.</p>
       </div>
     );
   }
