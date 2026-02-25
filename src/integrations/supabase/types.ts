@@ -1146,6 +1146,42 @@ export type Database = {
         }
         Relationships: []
       }
+      open_format_doc_type_mappings: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          internal_type: string
+          notes: string | null
+          tax_authority_code: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          internal_type: string
+          notes?: string | null
+          tax_authority_code: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          internal_type?: string
+          notes?: string | null
+          tax_authority_code?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       open_format_export_runs: {
         Row: {
           compression_name: string

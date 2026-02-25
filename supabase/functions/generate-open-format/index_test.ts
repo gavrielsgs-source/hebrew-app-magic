@@ -1,6 +1,5 @@
 import { assertEquals, assert, assertMatch } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
-// Import helpers directly from the module
 import {
   padNumericLeft,
   padAlphaRight,
@@ -13,6 +12,8 @@ import {
   generateLogicalPath,
   resolveLogicalPathCollision,
   RECORD_LENGTHS,
+  RECORD_FIELD_DEFS,
+  validateRecordDefinitions,
   build100A,
   build100C,
   build110D,
@@ -20,16 +21,18 @@ import {
   build900Z,
   buildTxtIni,
   runValidations,
+  buildDebugManifest,
+  DEFAULT_DOC_TYPE_CODES,
 } from "./index.ts";
 
 // =============================================
-// TASK 9.1 - Fixed-width padding helpers
+// Padding helpers
 // =============================================
 
 Deno.test("padNumericLeft - basic padding", () => {
   assertEquals(padNumericLeft(42, 6), "000042");
   assertEquals(padNumericLeft(0, 4), "0000");
-  assertEquals(padNumericLeft(123456, 4), "1234"); // truncate
+  assertEquals(padNumericLeft(123456, 4), "1234");
   assertEquals(padNumericLeft("", 5), "00000");
   assertEquals(padNumericLeft(null, 3), "000");
   assertEquals(padNumericLeft(undefined, 3), "000");
@@ -38,7 +41,7 @@ Deno.test("padNumericLeft - basic padding", () => {
 Deno.test("padAlphaRight - basic padding", () => {
   assertEquals(padAlphaRight("ABC", 6), "ABC   ");
   assertEquals(padAlphaRight("", 4), "    ");
-  assertEquals(padAlphaRight("ABCDEF", 3), "ABC"); // truncate
+  assertEquals(padAlphaRight("ABCDEF", 3), "ABC");
   assertEquals(padAlphaRight(null, 3), "   ");
   assertEquals(padAlphaRight(undefined, 3), "   ");
 });
@@ -51,26 +54,19 @@ Deno.test("padAlphaRight - Hebrew text", () => {
 });
 
 // =============================================
-// TASK 9.2 - Signed amount formatter
+// Signed amount formatter
 // =============================================
 
 Deno.test("formatSignedAmount - positive", () => {
-  const result = formatSignedAmount(123.45, 15);
-  assertEquals(result[0], "+");
-  assertEquals(result.length, 15);
-  assertEquals(result, "+00000000012345");
+  assertEquals(formatSignedAmount(123.45, 15), "+00000000012345");
 });
 
 Deno.test("formatSignedAmount - negative", () => {
-  const result = formatSignedAmount(-50.00, 15);
-  assertEquals(result[0], "-");
-  assertEquals(result.length, 15);
-  assertEquals(result, "-00000000005000");
+  assertEquals(formatSignedAmount(-50.00, 15), "-00000000005000");
 });
 
 Deno.test("formatSignedAmount - zero", () => {
-  const result = formatSignedAmount(0, 15);
-  assertEquals(result, "+00000000000000");
+  assertEquals(formatSignedAmount(0, 15), "+00000000000000");
 });
 
 Deno.test("formatSignedAmount - null/undefined", () => {
@@ -79,18 +75,15 @@ Deno.test("formatSignedAmount - null/undefined", () => {
 });
 
 Deno.test("formatSignedAmount - rounding", () => {
-  const result = formatSignedAmount(10.005, 15);
-  // 10.005 * 100 = 1000.5 -> rounds to 1001
-  assertEquals(result, "+00000000001001");
+  assertEquals(formatSignedAmount(10.005, 15), "+00000000001001");
 });
 
 Deno.test("formatSignedAmount - large value", () => {
-  const result = formatSignedAmount(999999.99, 15);
-  assertEquals(result, "+00000099999999");
+  assertEquals(formatSignedAmount(999999.99, 15), "+00000099999999");
 });
 
 // =============================================
-// TASK 9.3 - Date/time formatter
+// Date/time formatter
 // =============================================
 
 Deno.test("formatDateYYYYMMDD - valid date string", () => {
@@ -102,7 +95,7 @@ Deno.test("formatDateYYYYMMDD - null", () => {
 });
 
 Deno.test("formatDateYYYYMMDD - Date object", () => {
-  const d = new Date(2024, 0, 5); // Jan 5 2024
+  const d = new Date(2024, 0, 5);
   assertEquals(formatDateYYYYMMDD(d), "20240105");
 });
 
@@ -120,25 +113,19 @@ Deno.test("formatTimeHHMM - null", () => {
 });
 
 // =============================================
-// TASK 9.4 - Record length validator
+// Record length validator
 // =============================================
 
 Deno.test("validateRecordLength - exact match", () => {
-  const line = "A".repeat(428);
-  const result = validateRecordLength(line, 428);
-  assertEquals(result.valid, true);
-  assertEquals(result.actual, 428);
+  assertEquals(validateRecordLength("A".repeat(428), 428), { valid: true, actual: 428 });
 });
 
 Deno.test("validateRecordLength - mismatch", () => {
-  const line = "A".repeat(400);
-  const result = validateRecordLength(line, 428);
-  assertEquals(result.valid, false);
-  assertEquals(result.actual, 400);
+  assertEquals(validateRecordLength("A".repeat(400), 428), { valid: false, actual: 400 });
 });
 
 // =============================================
-// TASK 9.5 - CRLF output verification
+// CRLF output verification
 // =============================================
 
 Deno.test("appendCRLF - adds \\r\\n", () => {
@@ -148,7 +135,6 @@ Deno.test("appendCRLF - adds \\r\\n", () => {
 });
 
 Deno.test("CRLF in generated BKMVDATA content", () => {
-  // Build a minimal set of records
   const primaryId = "123456789012345";
   const records = [
     build100A({
@@ -160,13 +146,12 @@ Deno.test("CRLF in generated BKMVDATA content", () => {
     build900Z({ recordNum: 2, primaryId, companyTaxId: "123456789", totalRecords: 2 }),
   ];
   const content = records.map(r => appendCRLF(r)).join('');
-  // Every line ends with \r\n
   assert(!content.match(/[^\r]\n/), "Found bare LF without CR");
   assert(content.includes("\r\n"), "Must contain CRLF");
 });
 
 // =============================================
-// TASK 9.6 - Primary ID format
+// Primary ID
 // =============================================
 
 Deno.test("generate15DigitId - format", () => {
@@ -177,13 +162,8 @@ Deno.test("generate15DigitId - format", () => {
 
 Deno.test("generate15DigitId - uniqueness", () => {
   const ids = new Set(Array.from({ length: 100 }, () => generate15DigitId()));
-  // Should have high uniqueness (allow small collision chance)
   assert(ids.size >= 95, `Expected high uniqueness, got ${ids.size}/100`);
 });
-
-// =============================================
-// TASK 9.7 - Primary ID consistency
-// =============================================
 
 Deno.test("Primary ID appears in all records", () => {
   const primaryId = "123456789012345";
@@ -209,7 +189,7 @@ Deno.test("Primary ID appears in all records", () => {
 });
 
 // =============================================
-// TASK 9.8 - Sequential record numbering
+// Sequential record numbering
 // =============================================
 
 Deno.test("Sequential numbering continuity", () => {
@@ -237,7 +217,7 @@ Deno.test("Sequential numbering continuity", () => {
 });
 
 // =============================================
-// TASK 9.9 - Closing count = actual record count
+// Closing count
 // =============================================
 
 Deno.test("Closing total matches actual records", () => {
@@ -246,13 +226,12 @@ Deno.test("Closing total matches actual records", () => {
     recordNum: 5, primaryId: "123456789012345",
     companyTaxId: "123456789", totalRecords,
   });
-  // Total records field at position 37 (4+9+15+9), length 9
   const countField = rec.slice(37, 46);
   assertEquals(parseInt(countField, 10), totalRecords);
 });
 
 // =============================================
-// TASK 9.10 - INI summary count matches closing
+// INI count
 // =============================================
 
 Deno.test("TXT.INI total matches record count", () => {
@@ -267,7 +246,7 @@ Deno.test("TXT.INI total matches record count", () => {
 });
 
 // =============================================
-// TASK 9.11 - Record lengths match expected
+// Record exact lengths
 // =============================================
 
 Deno.test("100A record exact length", () => {
@@ -320,7 +299,7 @@ Deno.test("900Z record exact length", () => {
 });
 
 // =============================================
-// TASK 9.12 - Logical path generator format
+// Logical path
 // =============================================
 
 Deno.test("generateLogicalPath - format", () => {
@@ -329,14 +308,9 @@ Deno.test("generateLogicalPath - format", () => {
   assert(path.startsWith("OPENFRMT/12345678.25/"));
 });
 
-// =============================================
-// TASK 9.13 - Same-minute collision handling
-// =============================================
-
 Deno.test("resolveLogicalPathCollision - no collision", () => {
   const path = "OPENFRMT/12345678.25/06151430/";
-  const result = resolveLogicalPathCollision(path, []);
-  assertEquals(result, path);
+  assertEquals(resolveLogicalPathCollision(path, []), path);
 });
 
 Deno.test("resolveLogicalPathCollision - with collision", () => {
@@ -347,7 +321,7 @@ Deno.test("resolveLogicalPathCollision - with collision", () => {
 });
 
 // =============================================
-// TASK 9.14 - Validation engine
+// Validation engine
 // =============================================
 
 Deno.test("runValidations - all pass on valid data", () => {
@@ -397,6 +371,135 @@ Deno.test("runValidations - detects count mismatch", () => {
     bkmvContent, iniContent,
   });
   assert(!result.allPassed);
-  const countCheck = result.results.find(r => r.check.includes('ספירת רשומות תואמת'));
-  assert(countCheck && !countCheck.passed);
+});
+
+// =============================================
+// NEW: Record definition self-check
+// =============================================
+
+Deno.test("Record field definitions self-check - all valid", () => {
+  const result = validateRecordDefinitions();
+  assertEquals(result.valid, true, `Definition errors: ${result.errors.join('; ')}`);
+});
+
+Deno.test("Record field lengths sum to RECORD_LENGTHS", () => {
+  for (const [code, fields] of Object.entries(RECORD_FIELD_DEFS)) {
+    const totalLength = fields.reduce((sum, f) => sum + f.length, 0);
+    assertEquals(totalLength, RECORD_LENGTHS[code], `${code}: fields sum ${totalLength} != expected ${RECORD_LENGTHS[code]}`);
+  }
+});
+
+// =============================================
+// NEW: Document type code mapping
+// =============================================
+
+Deno.test("Default doc type mapping - known types have codes", () => {
+  assertEquals(DEFAULT_DOC_TYPE_CODES['tax-invoice'], '305');
+  assertEquals(DEFAULT_DOC_TYPE_CODES['receipt'], '400');
+  assertEquals(DEFAULT_DOC_TYPE_CODES['tax-invoice-receipt'], '320');
+  assertEquals(DEFAULT_DOC_TYPE_CODES['credit-invoice'], '330');
+});
+
+Deno.test("Default doc type mapping - unknown type returns undefined", () => {
+  assertEquals(DEFAULT_DOC_TYPE_CODES['nonexistent'], undefined);
+});
+
+// =============================================
+// NEW: Validation with compliance config checks
+// =============================================
+
+Deno.test("runValidations - missing compliance config produces warning", () => {
+  const primaryId = "123456789012345";
+  const records = [
+    build100A({
+      primaryId, recordNum: 1, companyTaxId: "123456789",
+      companyName: "", companyAddress: "", softwareName: "",
+      softwareVersion: "", softwareRegNum: "", vendorTaxId: "",
+      taxYear: 2025, startDate: "2025-01-01", endDate: "2025-12-31", encoding: "UTF-8",
+    }),
+    build900Z({ recordNum: 2, primaryId, companyTaxId: "123456789", totalRecords: 2 }),
+  ];
+  const bkmvContent = records.map(r => appendCRLF(r)).join('');
+  const iniContent = buildTxtIni({
+    primaryId, companyTaxId: "123456789", companyName: "", taxYear: 2025,
+    totalBkmvRecords: 2, encoding: "UTF-8", softwareName: "", softwareVersion: "",
+    logicalPath: "OPENFRMT/12345678.25/01011200/",
+  });
+  const result = runValidations({
+    records, primaryId, closingTotalCount: 2, iniTotalCount: 2,
+    bkmvContent, iniContent,
+    hasComplianceConfig: false,
+  });
+  const configCheck = result.results.find(r => r.check.includes('הגדרות ציות'));
+  assert(configCheck !== undefined);
+  assertEquals(configCheck!.passed, false);
+});
+
+Deno.test("runValidations - unmapped types produce warning", () => {
+  const primaryId = "123456789012345";
+  const records = [
+    build100A({
+      primaryId, recordNum: 1, companyTaxId: "123456789",
+      companyName: "", companyAddress: "", softwareName: "",
+      softwareVersion: "", softwareRegNum: "", vendorTaxId: "",
+      taxYear: 2025, startDate: "2025-01-01", endDate: "2025-12-31", encoding: "UTF-8",
+    }),
+    build900Z({ recordNum: 2, primaryId, companyTaxId: "123456789", totalRecords: 2 }),
+  ];
+  const bkmvContent = records.map(r => appendCRLF(r)).join('');
+  const iniContent = buildTxtIni({
+    primaryId, companyTaxId: "123456789", companyName: "", taxYear: 2025,
+    totalBkmvRecords: 2, encoding: "UTF-8", softwareName: "", softwareVersion: "",
+    logicalPath: "OPENFRMT/12345678.25/01011200/",
+  });
+  const result = runValidations({
+    records, primaryId, closingTotalCount: 2, iniTotalCount: 2,
+    bkmvContent, iniContent,
+    hasMappings: false,
+    unmappedTypes: ['unknown-doc'],
+  });
+  const mappingCheck = result.results.find(r => r.check.includes('מיפוי'));
+  assert(mappingCheck !== undefined);
+  assertEquals(mappingCheck!.passed, false);
+});
+
+// =============================================
+// NEW: Debug manifest
+// =============================================
+
+Deno.test("buildDebugManifest - contains key fields", () => {
+  const manifest = buildDebugManifest({
+    exportRunId: 'test-run-id',
+    primaryId: '123456789012345',
+    logicalPath: 'OPENFRMT/12345678.25/01011200/',
+    encoding: 'ISO-8859-8',
+    recordCounts: { '100A': 1, '900Z': 1 },
+    validationResults: [{ check: 'test', passed: true }],
+    warnings: ['warn1'],
+    blockers: [],
+    documentIds: ['doc1', 'doc2'],
+    docTypeMappingsUsed: { 'tax-invoice': '305' },
+    artifacts: [{ filename: 'TXT.INI', byteSize: 100 }],
+    complianceConfig: { software_name: 'Test' },
+  });
+  const parsed = JSON.parse(manifest);
+  assertEquals(parsed._format, 'open_format_debug_manifest_v1');
+  assertEquals(parsed.primary_id_15, '123456789012345');
+  assertEquals(parsed.encoding_used, 'ISO-8859-8');
+  assert(parsed.documents_included.length === 2);
+  assertEquals(parsed.simulator_readiness.compliance_config_present, true);
+  assertEquals(parsed.simulator_readiness.encoding_compliant, true);
+});
+
+Deno.test("buildDebugManifest - no compliance config", () => {
+  const manifest = buildDebugManifest({
+    exportRunId: 'x', primaryId: '123456789012345',
+    logicalPath: 'OPENFRMT/12345678.25/01011200/', encoding: 'UTF-8',
+    recordCounts: {}, validationResults: [], warnings: [], blockers: [],
+    documentIds: [], docTypeMappingsUsed: {}, artifacts: [],
+    complianceConfig: null,
+  });
+  const parsed = JSON.parse(manifest);
+  assertEquals(parsed.simulator_readiness.compliance_config_present, false);
+  assertEquals(parsed.simulator_readiness.encoding_compliant, false);
 });

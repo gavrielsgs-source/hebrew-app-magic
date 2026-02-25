@@ -2,10 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useRoles } from "@/hooks/use-roles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileSpreadsheet, FileDown, History, Settings, FileText, BarChart3 } from "lucide-react";
+import { FileSpreadsheet, FileDown, History, Settings, FileText, BarChart3, MapPin } from "lucide-react";
 import { ExportWizard } from "@/components/open-format/ExportWizard";
 import { ExportHistory } from "@/components/open-format/ExportHistory";
 import { ComplianceConfig } from "@/components/open-format/ComplianceConfig";
+import { DocTypeMappings } from "@/components/open-format/DocTypeMappings";
 import { useEffect } from "react";
 
 export default function OpenFormat() {
@@ -30,7 +31,7 @@ export default function OpenFormat() {
       </div>
 
       <Tabs defaultValue="wizard" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="wizard" className="flex items-center gap-2">
             <FileDown className="h-4 w-4" />
             אשף ייצוא
@@ -38,6 +39,10 @@ export default function OpenFormat() {
           <TabsTrigger value="history" className="flex items-center gap-2">
             <History className="h-4 w-4" />
             היסטוריה
+          </TabsTrigger>
+          <TabsTrigger value="mappings" className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            מיפוי מסמכים
           </TabsTrigger>
           <TabsTrigger value="config" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -61,6 +66,10 @@ export default function OpenFormat() {
 
         <TabsContent value="history">
           <ExportHistory />
+        </TabsContent>
+
+        <TabsContent value="mappings">
+          <DocTypeMappings />
         </TabsContent>
 
         <TabsContent value="config">

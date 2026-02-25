@@ -2,9 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle2, XCircle, Download, FileText, Archive, Copy, AlertTriangle } from "lucide-react";
+import { CheckCircle2, XCircle, Download, FileText, Archive, Copy, AlertTriangle, Bug } from "lucide-react";
 import { ExportRunResult, downloadArtifact } from "@/hooks/use-open-format";
 import { ValidationChecklist } from "./ValidationChecklist";
+import { SimulatorReadiness } from "./SimulatorReadiness";
 import { toast } from "sonner";
 
 const RECORD_TYPE_LABELS: Record<string, string> = {
@@ -25,7 +26,6 @@ interface ExportResultsProps {
 
 export function ExportResults({ result }: ExportResultsProps) {
   const isSuccess = result.status === 'success';
-  const statusColor = isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 
   const copyPrimaryId = () => {
     navigator.clipboard.writeText(result.primaryId);
@@ -39,7 +39,7 @@ export function ExportResults({ result }: ExportResultsProps) {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>תוצאות ייצוא</span>
-            <Badge className={statusColor}>
+            <Badge variant={isSuccess ? 'default' : 'destructive'}>
               {isSuccess ? 'הצלחה' : 'נכשל'}
             </Badge>
           </CardTitle>
@@ -83,7 +83,6 @@ export function ExportResults({ result }: ExportResultsProps) {
             </div>
           </div>
 
-          {/* Error details for failed runs */}
           {result.error && (
             <div className="mt-4 p-3 rounded-md bg-destructive/10 border border-destructive/20">
               <div className="flex items-center gap-2 text-sm font-medium text-destructive mb-1">
@@ -95,6 +94,14 @@ export function ExportResults({ result }: ExportResultsProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Simulator Readiness */}
+      <SimulatorReadiness
+        validationResults={result.validationResults}
+        warnings={result.warnings}
+        blockers={result.blockers}
+        encoding={result.encoding}
+      />
 
       {/* Record Counts */}
       <Card>
@@ -143,11 +150,14 @@ export function ExportResults({ result }: ExportResultsProps) {
             {result.artifacts.map((artifact) => (
               <Button
                 key={artifact.type}
-                variant="outline"
+                variant={artifact.type === 'DEBUG_MANIFEST' ? 'ghost' : 'outline'}
                 onClick={() => downloadArtifact(artifact.storagePath, artifact.filename)}
+                size={artifact.type === 'DEBUG_MANIFEST' ? 'sm' : 'default'}
               >
                 {artifact.type === 'ZIP' ? (
                   <Archive className="h-4 w-4 ml-2" />
+                ) : artifact.type === 'DEBUG_MANIFEST' ? (
+                  <Bug className="h-4 w-4 ml-2" />
                 ) : (
                   <FileText className="h-4 w-4 ml-2" />
                 )}
