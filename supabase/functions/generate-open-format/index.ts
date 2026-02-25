@@ -125,7 +125,7 @@ export function buildC100(p: {
     padRight(p.state || '', 30),
     padRight(p.stateCode || '', 2),
     padRight(p.phone || '', 15),
-    padRight(p.customerTaxId || '', 9),
+    padRight(p.customerTaxId && luhnCheckDigitValid(p.customerTaxId) ? p.customerTaxId : '', 9),
     fmtDate(p.glDate || p.docDate),
     fmtSignedAmount(p.nonIlsAmount ?? 0, 15),
     padRight(p.nonIlsCurrency || 'ILS', 3),
@@ -243,27 +243,30 @@ export function buildD120(p: {
 export const D120_LEN = 222;
 
 // B110 — Account balance card — 376 chars (OF1.31)
-// Pos 0-3: Record Code (4)
-// Pos 4-12: Record Number (9)
-// Pos 13-21: Tax ID (9)
-// Pos 22-36: Account Value (15)
-// Pos 37-86: Account Description (50)
-// Pos 87-101: Opening Balance (15) signed
-// Pos 102-116: Non-ILS Opening Balance (15) signed
-// Pos 117-131: Debit Turnover (15) signed
-// Pos 132-146: Non-ILS Debit Turnover (15) signed
-// Pos 147-161: Credit Turnover (15) signed
-// Pos 162-176: Non-ILS Credit Turnover (15) signed
-// Pos 177-191: Closing Balance (15) signed – calculated: opening + debit - credit
-// Pos 192-206: Non-ILS Closing Balance (15) signed
-// Pos 207-221: Balance Indicator (15) signed
-// Pos 222-321: Future Use (100)
-// Pos 322-325: Accounting Classification (4)
-// Pos 326-334: Customer/Supplier Tax ID (9)
-// Pos 335-341: Branch ID (7)
-// Pos 342-356: Future (15)
-// Pos 357-359: Currency Code (3)
-// Pos 360-375: Future (16)
+// Spec positions per Oracle Appendix 6:
+// 0-3: Record Code (4)
+// 4-12: Record Number (9)
+// 13-21: Tax ID (9)
+// 22-36: Account Value (15)
+// 37-86: Account Description (50)
+// 87-101: Balancing Segment Qualifier (15) blank
+// 102-131: Account Description 2 (30) blank
+// 132-181: Customer/Vendor Street (50) blank
+// 182-191: House Number (10) blank
+// 192-221: City (30) blank
+// 222-229: Zip Code (8) blank
+// 230-259: State (30) blank
+// 260-261: State Code (2) blank
+// 262-276: Summary Account (15) blank
+// 277-291: Opening Balance (15) signed  ← FIELD 1414
+// 292-306: Sum Accounted Debits (15) signed
+// 307-321: Sum Accounted Credits (15) signed
+// 322-325: Accounting Classification (4) blank
+// 326-334: Customer/Supplier Tax ID (9)
+// 335-341: Branch ID (7) blank
+// 342-356: Non-ILS Opening Balance (15)
+// 357-359: Currency Code (3)
+// 360-375: Future Use (16) blank
 export function buildB110(p: {
   recordNum: number;
   companyTaxId: string;
@@ -281,22 +284,24 @@ export function buildB110(p: {
     padRight(p.companyTaxId, 9),       // 13-21
     padRight(p.accountValue, 15),      // 22-36
     padRight(p.accountDescription, 50),// 37-86
-    fmtSignedAmount(p.openingBalance, 15),   // 87-101
-    fmtSignedAmount(0, 15),            // 102-116 non-ILS opening (ILS only = 0)
-    fmtSignedAmount(p.debitTurnover, 15),    // 117-131
-    fmtSignedAmount(0, 15),            // 132-146 non-ILS debit
-    fmtSignedAmount(p.creditTurnover, 15),   // 147-161
-    fmtSignedAmount(0, 15),            // 162-176 non-ILS credit
-    fmtSignedAmount(p.closingBalance, 15),   // 177-191
-    fmtSignedAmount(0, 15),            // 192-206 non-ILS closing
-    fmtSignedAmount(0, 15),            // 207-221 balance indicator
-    padRight('', 100),                 // 222-321 future
-    padRight('', 4),                   // 322-325 accounting classification
-    padRight(p.customerTaxId || '', 9),// 326-334
-    padRight('', 7),                   // 335-341 branch
-    padRight('', 15),                  // 342-356 future
-    padRight('ILS', 3),                // 357-359
-    padRight('', 16),                  // 360-375 future
+    padRight('', 15),                  // 87-101  Balancing Segment Qualifier (blank)
+    padRight('', 30),                  // 102-131 Account Description 2 (blank)
+    padRight('', 50),                  // 132-181 Customer/Vendor Street (blank)
+    padRight('', 10),                  // 182-191 House Number (blank)
+    padRight('', 30),                  // 192-221 City (blank)
+    padRight('', 8),                   // 222-229 Zip Code (blank)
+    padRight('', 30),                  // 230-259 State (blank)
+    padRight('', 2),                   // 260-261 State Code (blank)
+    padRight('', 15),                  // 262-276 Summary Account (blank)
+    fmtSignedAmount(p.openingBalance, 15),  // 277-291 Opening Balance (FIELD 1414)
+    fmtSignedAmount(p.debitTurnover, 15),   // 292-306 Sum Accounted Debits
+    fmtSignedAmount(p.creditTurnover, 15),  // 307-321 Sum Accounted Credits
+    padRight('', 4),                   // 322-325 Accounting Classification (blank)
+    padRight(p.customerTaxId || '', 9),// 326-334 Customer/Supplier Tax ID
+    padRight('', 7),                   // 335-341 Branch ID (blank)
+    fmtSignedAmount(0, 15),            // 342-356 Non-ILS Opening Balance
+    padRight('ILS', 3),                // 357-359 Currency Code
+    padRight('', 16),                  // 360-375 Future Use (blank)
   ].join('');
 }
 export const B110_LEN = 376;
@@ -320,7 +325,7 @@ export function buildZ900(p: {
 }
 export const Z900_LEN = 110;
 
-// A000 — INI record — 580 chars
+// A000 — INI record — 470 chars (count lines are SEPARATE in INI.TXT)
 export function buildA000(p: {
   primaryId: string;
   companyTaxId: string;
@@ -340,7 +345,6 @@ export function buildA000(p: {
   vendorName: string;
   encoding: string;
   branchesEnabled: boolean;
-  counts: { B100: number; B110: number; C100: number; D110: number; D120: number; M100: number };
 }): string {
   const charSet = p.encoding === 'CP862' ? '2' : '1';
   return [
@@ -377,16 +381,24 @@ export function buildA000(p: {
     padRight('Winzip', 20),
     padRight('ILS', 3),
     padRight(p.branchesEnabled ? '1' : '0', 1),
-    padRight('', 46),
-    'B100' + padLeft(p.counts.B100, 15),
-    'B110' + padLeft(p.counts.B110, 15),
-    'C100' + padLeft(p.counts.C100, 15),
-    'D110' + padLeft(p.counts.D110, 15),
-    'D120' + padLeft(p.counts.D120, 15),
-    'M100' + padLeft(p.counts.M100, 15),
+    padRight('', 50),  // 50 chars future use (total = 470)
   ].join('');
 }
-export const A000_LEN = 580;
+export const A000_LEN = 470;
+
+// Luhn check digit validation for Israeli tax IDs (9 digits)
+export function luhnCheckDigitValid(id: string): boolean {
+  const digits = id.replace(/\D/g, '');
+  if (digits.length !== 9) return false;
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    let d = parseInt(digits[i], 10);
+    if (i % 2 === 1) d *= 2;
+    if (d > 9) d -= 9;
+    sum += d;
+  }
+  return sum % 10 === 0;
+}
 
 // Record length map for validation
 export const RECORD_LENGTHS: Record<string, number> = {
@@ -524,9 +536,10 @@ export function runValidations(params: {
   const iniBom = iniContent.charCodeAt(0) === 0xFEFF || iniContent.startsWith('\xEF\xBB\xBF');
   results.push({ check: 'INI.TXT ללא BOM', passed: !iniBom, category: 'blocking' });
 
-  // 5. INI record length
-  const iniLine = iniContent.replace(/\r\n$/, '');
-  results.push({ check: `INI.TXT אורך רשומה (${A000_LEN})`, passed: iniLine.length === A000_LEN, detail: `בפועל: ${iniLine.length}`, category: 'blocking' });
+  // 5. INI A000 record length (first line only)
+  const iniLines = iniContent.split('\r\n').filter(l => l.length > 0);
+  const iniFirstLine = iniLines[0] || '';
+  results.push({ check: `INI.TXT אורך רשומת A000 (${A000_LEN})`, passed: iniFirstLine.length === A000_LEN, detail: `בפועל: ${iniFirstLine.length}`, category: 'blocking' });
 
   // 6. A100 first, Z900 last in BKMVDATA
   const firstType = records[0]?.slice(0, 4);
@@ -541,7 +554,7 @@ export function runValidations(params: {
   results.push({ check: 'Z900 מכיל &OF1.31&', passed: z900Const === SPEC_CONSTANT, detail: `ערך: "${z900Const}"`, category: 'blocking' });
 
   // 8. INI contains &OF1.31&
-  const iniConst = iniLine.slice(48, 56);
+  const iniConst = iniFirstLine.slice(48, 56);
   results.push({ check: 'INI מכיל &OF1.31&', passed: iniConst === SPEC_CONSTANT, detail: `ערך: "${iniConst}"`, category: 'blocking' });
 
   // 9. Sequential record numbering
@@ -557,18 +570,28 @@ export function runValidations(params: {
   results.push({ check: 'Z900 ספירה תואמת', passed: closingTotalCount === actualTotal, detail: `Z900: ${closingTotalCount}, בפועל: ${actualTotal}`, category: 'blocking' });
 
   // 11. INI total count matches
-  const iniTotalStr = iniLine.slice(9, 24);
+  const iniTotalStr = iniFirstLine.slice(9, 24);
   const iniTotal = parseInt(iniTotalStr, 10);
   results.push({ check: 'INI ספירת רשומות תואמת', passed: iniTotal === actualTotal, detail: `INI: ${iniTotal}, בפועל: ${actualTotal}`, category: 'blocking' });
 
-  // 12. INI per-type counters
+  // 12. INI per-type counters — parse from separate summary lines in INI
   const actualCounts: Record<string, number> = {};
   for (const rec of records) {
     const t = rec.slice(0, 4);
     actualCounts[t] = (actualCounts[t] || 0) + 1;
   }
+  // Parse INI summary lines (lines after A000)
+  const iniSummaryCounts: Record<string, number> = {};
+  for (let li = 1; li < iniLines.length; li++) {
+    const line = iniLines[li];
+    if (line.length >= 19) {
+      const typeCode = line.slice(0, 4);
+      const countVal = parseInt(line.slice(4, 19), 10);
+      iniSummaryCounts[typeCode] = countVal;
+    }
+  }
   for (const type of ['B110', 'C100', 'D110', 'D120']) {
-    const iniCount = params.iniRecordCounts[type] || 0;
+    const iniCount = iniSummaryCounts[type] || 0;
     const actual = actualCounts[type] || 0;
     results.push({ check: `INI ספירת ${type} תואמת`, passed: iniCount === actual, detail: `INI: ${iniCount}, בפועל: ${actual}`, category: 'blocking' });
   }
@@ -1207,9 +1230,18 @@ serve(async (req) => {
       vendorName,
       encoding,
       branchesEnabled,
-      counts: iniRecordCounts,
     });
-    const iniContent = appendCRLF(a000Line);
+
+    // INI.TXT: A000 line followed by 6 separate summary count lines
+    const summaryLines = [
+      'B100' + padLeft(iniRecordCounts.B100, 15),
+      'B110' + padLeft(iniRecordCounts.B110, 15),
+      'C100' + padLeft(iniRecordCounts.C100, 15),
+      'D110' + padLeft(iniRecordCounts.D110, 15),
+      'D120' + padLeft(iniRecordCounts.D120, 15),
+      'M100' + padLeft(iniRecordCounts.M100, 15),
+    ];
+    const iniContent = appendCRLF(a000Line) + summaryLines.map(l => appendCRLF(l)).join('');
 
     // =============================================
     // VALIDATION
