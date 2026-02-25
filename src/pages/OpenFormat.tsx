@@ -10,14 +10,22 @@ import { DocTypeMappings } from "@/components/open-format/DocTypeMappings";
 import { useEffect } from "react";
 
 export default function OpenFormat() {
-  const { isAdmin } = useRoles();
+  const { isAdmin, isLoading } = useRoles();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAdmin()) {
+    if (!isLoading && !isAdmin()) {
       navigate("/dashboard");
     }
-  }, [isAdmin, navigate]);
+  }, [isAdmin, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-xl text-muted-foreground">טוען הרשאות...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6" dir="rtl">
