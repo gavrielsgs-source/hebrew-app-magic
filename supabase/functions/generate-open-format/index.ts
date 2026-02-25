@@ -11,7 +11,7 @@ const corsHeaders = {
 // =============================================
 
 export function padRight(value: string | null | undefined, length: number, fill = ' '): string {
-  const str = String(value ?? '');
+  const str = String(value ?? '').replace(/[\r\n]/g, ' ');
   if (str.length > length) return str.slice(0, length);
   return str.padEnd(length, fill);
 }
