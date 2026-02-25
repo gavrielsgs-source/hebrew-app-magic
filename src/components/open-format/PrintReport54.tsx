@@ -14,7 +14,7 @@ import jsPDF from "jspdf";
 import { toast } from "sonner";
 
 const RECORD_TYPE_ROWS = [
-  { code: 'A000', label: 'רשומה כללית (TXT.INI)', future: true },
+  { code: 'A000', label: 'רשומה כללית (INI.TXT)', future: false },
   { code: '100A', label: 'רשומת פתיחה', future: false },
   { code: '100C', label: 'כותרת מסמך', future: false },
   { code: '110D', label: 'שורת פירוט מסמך', future: false },
@@ -26,10 +26,10 @@ const RECORD_TYPE_ROWS = [
 ];
 
 const ARTIFACT_CHECKS = [
-  { key: 'INI', label: 'TXT.INI' },
-  { key: 'BKMVDATA', label: 'TXT.BKMVDATA' },
-  { key: 'ZIP', label: 'BKMVDATA.zip' },
-  { key: 'DEBUG_MANIFEST', label: 'export_debug_manifest.json (פנימי)' },
+  { key: 'INI', label: 'INI.TXT', altKeys: ['TXT_INI'] },
+  { key: 'BKMVDATA', label: 'BKMVDATA.TXT', altKeys: ['TXT_BKMVDATA'] },
+  { key: 'ZIP', label: 'BKMVDATA.zip', altKeys: [] },
+  { key: 'DEBUG_MANIFEST', label: 'export_debug_manifest.json (פנימי)', altKeys: [] },
 ];
 
 interface PrintReport54Props {
@@ -325,9 +325,10 @@ export function PrintReport54({ exportRunId, resultData }: PrintReport54Props) {
             </thead>
             <tbody>
               {ARTIFACT_CHECKS.map(ac => {
-                const found = (artifacts as any[]).find((a: any) =>
-                  (a.artifact_type || a.type) === ac.key
-                );
+                const found = (artifacts as any[]).find((a: any) => {
+                  const aType = (a.artifact_type || a.type);
+                  return aType === ac.key || ac.altKeys?.includes(aType);
+                });
                 const size = found ? (found.byte_size || found.byteSize) : null;
                 return (
                   <tr key={ac.key}>

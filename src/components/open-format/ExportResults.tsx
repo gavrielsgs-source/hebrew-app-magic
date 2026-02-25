@@ -12,6 +12,7 @@ import { PrintReport26 } from "./PrintReport26";
 import { toast } from "sonner";
 
 const RECORD_TYPE_LABELS: Record<string, string> = {
+  'A000': 'רשומת INI (A000)',
   '100A': 'רשומת פתיחה (100A)',
   '100C': 'כותרת מסמך (100C)',
   '110D': 'שורת פירוט (110D)',
@@ -20,7 +21,6 @@ const RECORD_TYPE_LABELS: Record<string, string> = {
   '110B': 'תנועת יומן (110B) - עתידי',
   '100M': 'מלאי (100M) - עתידי',
   '900Z': 'רשומת סגירה (900Z)',
-  'A000': 'רשומה כללית (A000) - עתידי',
 };
 
 interface ExportResultsProps {
@@ -157,7 +157,7 @@ export function ExportResults({ result }: ExportResultsProps) {
             </TableHeader>
             <TableBody>
               {Object.entries(result.recordCounts).map(([code, count]) => {
-                const isFuture = ['100B', '110B', '100M', 'A000'].includes(code);
+                const isFuture = ['100B', '110B', '100M'].includes(code);
                 return (
                   <TableRow key={code} className={isFuture ? 'opacity-50' : ''}>
                     <TableCell>{RECORD_TYPE_LABELS[code] || code}</TableCell>

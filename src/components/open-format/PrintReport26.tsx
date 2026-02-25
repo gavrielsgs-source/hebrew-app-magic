@@ -253,7 +253,9 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         <Alert variant="destructive" className="print:hidden">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>סוגי מסמכים ללא מיפוי:</strong> {Array.from(unmappedTypes).join(', ')} — מסמכים אלו לא נכללים בסיכום.
+            <strong>⚠ סוגי מסמכים ללא מיפוי (חוסם!):</strong> {Array.from(unmappedTypes).join(', ')} — מסמכים אלו לא נכללים בסיכום. 
+            <br />
+            <span className="text-sm">יש להוסיף מיפוי בטאב "מיפוי מסמכים" כדי שהם ייכללו בדוח ובייצוא.</span>
           </AlertDescription>
         </Alert>
       )}
@@ -366,11 +368,15 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         {/* F) Warnings */}
         <Section26 title="הערות ואזהרות">
           <ul className="space-y-1 text-xs text-gray-600">
+            {unmappedTypes.size > 0 && (
+              <li className="text-red-700 font-bold text-sm">
+                ⚠ חוסם! סוגי מסמכים ללא מיפוי: {Array.from(unmappedTypes).join(', ')} — 
+                {Array.from(unmappedTypes).reduce((sum, t) => sum + activeDocs.filter((d: any) => d.type === t).length, 0)} מסמכים לא נכללו בסיכום.
+                יש להגדיר מיפוי בטאב "מיפוי מסמכים".
+              </li>
+            )}
             {!config?.software_registration_number && (
               <li>⚠ מספר רישום תוכנה ברשות המיסים חסר — נדרש לפני הגשה.</li>
-            )}
-            {unmappedTypes.size > 0 && (
-              <li>⚠ סוגי מסמכים ללא מיפוי: {Array.from(unmappedTypes).join(', ')}</li>
             )}
             {cancelledCount > 0 && (
               <li>ℹ {cancelledCount} מסמכים מבוטלים הוחרגו מהספירה.</li>
