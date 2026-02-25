@@ -14,7 +14,6 @@ export function useRoles() {
       if (!user?.id) return [];
 
       try {
-        // Use basic select to avoid foreign key issues
         const { data, error } = await supabase
           .from("user_roles")
           .select("*")
@@ -69,6 +68,25 @@ export function useRoles() {
     enabled: !!user?.id,
   });
 
+  // Fallback: check admin_emails table (matches DB is_admin() function)
+  const { data: isAdminByEmail = false } = useQuery({
+    queryKey: ["admin-email-check", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return false;
+      const { data, error } = await supabase
+        .from("admin_emails")
+        .select("id")
+        .eq("email", user.email)
+        .maybeSingle();
+      if (error) {
+        console.error("Error checking admin_emails:", error);
+        return false;
+      }
+      return !!data;
+    },
+    enabled: !!user?.email,
+  });
+
   // Check if user has specific role
   const hasRole = (role: UserRole, agencyId?: string, companyId?: string): boolean => {
     if (!userRoles.length) return false;
@@ -84,7 +102,7 @@ export function useRoles() {
   };
 
   // Role checking functions
-  const isAdmin = (): boolean => hasRole('admin');
+  const isAdmin = (): boolean => hasRole('admin') || isAdminByEmail;
   const isCompanyOwner = (companyId?: string): boolean => hasRole('company_owner', undefined, companyId);
   const isAgencyManager = (agencyId?: string): boolean => hasRole('agency_manager', agencyId);
   const isSalesAgent = (agencyId?: string): boolean => hasRole('sales_agent', agencyId);
