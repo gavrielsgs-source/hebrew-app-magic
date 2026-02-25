@@ -8,6 +8,7 @@ import { ExportRunResult, downloadArtifact } from "@/hooks/use-open-format";
 import { ValidationChecklist } from "./ValidationChecklist";
 import { SimulatorReadiness } from "./SimulatorReadiness";
 import { PrintReport54 } from "./PrintReport54";
+import { PrintReport26 } from "./PrintReport26";
 import { toast } from "sonner";
 
 const RECORD_TYPE_LABELS: Record<string, string> = {
@@ -28,6 +29,7 @@ interface ExportResultsProps {
 
 export function ExportResults({ result }: ExportResultsProps) {
   const [showReport54, setShowReport54] = useState(false);
+  const [showReport26, setShowReport26] = useState(false);
   const isSuccess = result.status === 'success';
 
   const copyPrimaryId = () => {
@@ -46,6 +48,17 @@ export function ExportResults({ result }: ExportResultsProps) {
     );
   }
 
+  if (showReport26) {
+    return (
+      <div className="space-y-4">
+        <Button variant="outline" onClick={() => setShowReport26(false)}>
+          ← חזרה לתוצאות הייצוא
+        </Button>
+        <PrintReport26 exportRunId={result.exportRunId} resultData={result} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Section 5.4 Report Button */}
@@ -53,6 +66,10 @@ export function ExportResults({ result }: ExportResultsProps) {
         <Button variant="outline" onClick={() => setShowReport54(true)}>
           <FileText className="h-4 w-4 ml-2" />
           הצג פלט 5.4
+        </Button>
+        <Button variant="outline" onClick={() => setShowReport26(true)}>
+          <FileText className="h-4 w-4 ml-2" />
+          הצג פלט 2.6
         </Button>
       </div>
       {/* Summary Card */}

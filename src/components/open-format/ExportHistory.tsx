@@ -5,14 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Search, Filter, FileText } from "lucide-react";
+import { Loader2, Download, Search, Filter, FileText, BarChart3 } from "lucide-react";
 import { useExportHistory, useExportRunArtifacts, downloadArtifact } from "@/hooks/use-open-format";
 import { PrintReport54 } from "./PrintReport54";
+import { PrintReport26 } from "./PrintReport26";
 
 export function ExportHistory() {
   const { data: runs, isLoading } = useExportHistory();
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [reportRunId, setReportRunId] = useState<string | null>(null);
+  const [report26RunId, setReport26RunId] = useState<string | null>(null);
   const { data: artifacts } = useExportRunArtifacts(selectedRunId);
   
   // Filters
@@ -158,6 +160,14 @@ export function ExportHistory() {
                       >
                         <FileText className="h-4 w-4" />
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReport26RunId(report26RunId === run.id ? null : run.id)}
+                        title="פלט 2.6"
+                      >
+                        <BarChart3 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -199,6 +209,17 @@ export function ExportHistory() {
               <Button variant="ghost" size="sm" onClick={() => setReportRunId(null)}>סגור</Button>
             </div>
             <PrintReport54 exportRunId={reportRunId} />
+          </div>
+        )}
+
+        {/* Section 2.6 Report Panel */}
+        {report26RunId && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">פלט מודפס 2.6:</p>
+              <Button variant="ghost" size="sm" onClick={() => setReport26RunId(null)}>סגור</Button>
+            </div>
+            <PrintReport26 exportRunId={report26RunId} />
           </div>
         )}
       </CardContent>

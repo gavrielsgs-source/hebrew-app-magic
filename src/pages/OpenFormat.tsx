@@ -7,26 +7,28 @@ import { ExportHistory } from "@/components/open-format/ExportHistory";
 import { ComplianceConfig } from "@/components/open-format/ComplianceConfig";
 import { DocTypeMappings } from "@/components/open-format/DocTypeMappings";
 import { PrintReport54 } from "@/components/open-format/PrintReport54";
+import { PrintReport26 } from "@/components/open-format/PrintReport26";
 import { useExportHistory } from "@/hooks/use-open-format";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
-function ReportTabContent() {
+function ReportTabContent({ reportType = '54' }: { reportType?: '54' | '26' }) {
   const { data: runs, isLoading } = useExportHistory();
   const [selectedRunId, setSelectedRunId] = useState<string>("");
 
   if (isLoading) return <p className="text-muted-foreground text-center py-8">טוען...</p>;
 
   const successRuns = (runs || []).filter((r: any) => r.status === 'success');
+  const label = reportType === '54' ? 'סעיף 5.4 (נספח 4)' : 'סעיף 2.6';
 
   return (
     <div className="space-y-4">
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          בחר ריצת ייצוא להצגת פלט מודפס סעיף 5.4 (נספח 4). ניתן גם לגשת לפלט מתוך תוצאות הייצוא או ההיסטוריה.
+          בחר ריצת ייצוא להצגת פלט מודפס {label}. ניתן גם לגשת לפלט מתוך תוצאות הייצוא או ההיסטוריה.
         </AlertDescription>
       </Alert>
       <div className="space-y-2">
@@ -48,7 +50,9 @@ function ReportTabContent() {
         </Select>
       </div>
       {selectedRunId && selectedRunId !== 'none' && (
-        <PrintReport54 exportRunId={selectedRunId} />
+        reportType === '54'
+          ? <PrintReport54 exportRunId={selectedRunId} />
+          : <PrintReport26 exportRunId={selectedRunId} />
       )}
     </div>
   );
@@ -108,10 +112,9 @@ export default function OpenFormat() {
             <Printer className="h-4 w-4" />
             פלט מודפס 5.4
           </TabsTrigger>
-          <TabsTrigger value="validation" disabled className="flex items-center gap-2">
+          <TabsTrigger value="report26" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            דוחות 2.6
-            <Badge variant="secondary" className="text-xs">בקרוב</Badge>
+            פלט מודפס 2.6
           </TabsTrigger>
         </TabsList>
 
@@ -132,7 +135,11 @@ export default function OpenFormat() {
         </TabsContent>
 
         <TabsContent value="report">
-          <ReportTabContent />
+          <ReportTabContent reportType="54" />
+        </TabsContent>
+
+        <TabsContent value="report26">
+          <ReportTabContent reportType="26" />
         </TabsContent>
       </Tabs>
     </div>
