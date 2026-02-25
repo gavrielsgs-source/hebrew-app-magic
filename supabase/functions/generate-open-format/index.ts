@@ -23,12 +23,11 @@ export function padLeft(value: number | string | null | undefined, length: numbe
 }
 
 export function fmtSignedAmount(value: number | null | undefined, length: number): string {
-  // Format: sign + zero-padded absolute value in agorot (cents)
   const num = value ?? 0;
   const sign = num >= 0 ? '+' : '-';
   const agorot = Math.abs(Math.round(num * 100));
   const digits = String(agorot);
-  const fieldLen = length - 1; // 1 char for sign
+  const fieldLen = length - 1;
   if (digits.length > fieldLen) return sign + digits.slice(0, fieldLen);
   return sign + digits.padStart(fieldLen, '0');
 }
@@ -54,19 +53,11 @@ export function appendCRLF(line: string): string {
 
 // =============================================
 // OFFICIAL OPEN FORMAT 1.31 RECORD DEFINITIONS
-// Based on Israeli Tax Authority spec (Oracle Appendix 6)
 // =============================================
 
-// Version constant used in A100, Z900, A000
-const SPEC_CONSTANT = '&OF1.31&'; // 8 chars
+const SPEC_CONSTANT = '&OF1.31&';
 
-// A100 — Opening record in BKMVDATA — Total: 95 chars
-// Pos 0:  Record Code (4) "A100"
-// Pos 4:  Future Use / Record Number (9)
-// Pos 13: Tax Identifier (9)
-// Pos 22: Reference Key / Primary ID (15)
-// Pos 37: Constant (8) "&OF1.31&"
-// Pos 45: Rasham Number / Future Use (50) blank
+// A100 — Opening record — 95 chars
 export function buildA100(p: {
   recordNum: number;
   companyTaxId: string;
@@ -83,40 +74,7 @@ export function buildA100(p: {
 }
 export const A100_LEN = 95;
 
-// C100 — Document header — Total: 444 chars
-// Pos 0:   Record Code (4)
-// Pos 4:   Future Use / Record Number (9)
-// Pos 13:  Registration Number / Tax ID (9)
-// Pos 22:  Doc Type Code (3)
-// Pos 25:  Doc Number (20)
-// Pos 45:  Creation Date (8) YYYYMMDD
-// Pos 53:  Creation Time (4) HHMM
-// Pos 57:  Customer/Supplier Name (50)
-// Pos 107: Address Line 1 (50)
-// Pos 157: House Number (10)
-// Pos 167: City (30)
-// Pos 197: Zip Code (8)
-// Pos 205: State (30)
-// Pos 235: State Code (2)
-// Pos 237: Phone (15)
-// Pos 252: Customer Tax ID (9)
-// Pos 261: Accounting/GL Date (8)
-// Pos 269: Non-ILS Amount (15) signed
-// Pos 284: Non-ILS Currency Code (3)
-// Pos 287: Amount excl tax (15) signed
-// Pos 302: Discount amount (15) signed
-// Pos 317: Amount excl tax + discount (15) signed
-// Pos 332: VAT/Tax amount (15) signed
-// Pos 347: Total amount incl tax (15) signed
-// Pos 362: Withholding tax (12) signed
-// Pos 374: Account Number (15)
-// Pos 389: Adjustment field (10)
-// Pos 399: Cancelled flag (1) "0" or "1"
-// Pos 400: Invoice Date (8) YYYYMMDD
-// Pos 408: Branch ID (7)
-// Pos 415: User ID (9)
-// Pos 424: Internal Invoice ID (7)
-// Pos 431: Future Use (13)
+// C100 — Document header — 444 chars
 export function buildC100(p: {
   recordNum: number;
   companyTaxId: string;
@@ -152,68 +110,44 @@ export function buildC100(p: {
   const disc = p.discountAmount ?? 0;
   const netPlusDisc = p.netPlusDiscount ?? net;
   return [
-    padRight('C100', 4),                          // 0-3
-    padLeft(p.recordNum, 9),                       // 4-12
-    padRight(p.companyTaxId, 9),                   // 13-21
-    padRight(p.docTypeCode, 3),                    // 22-24
-    padRight(p.docNumber, 20),                     // 25-44
-    fmtDate(p.docDate),                            // 45-52
-    padRight(p.docTime || '0000', 4),              // 53-56
-    padRight(p.customerName, 50),                  // 57-106
-    padRight(p.customerAddress || '', 50),          // 107-156
-    padRight(p.houseNumber || '', 10),             // 157-166
-    padRight(p.city || '', 30),                    // 167-196
-    padRight(p.zipCode || '', 8),                  // 197-204
-    padRight(p.state || '', 30),                   // 205-234
-    padRight(p.stateCode || '', 2),                // 235-236
-    padRight(p.phone || '', 15),                   // 237-251
-    padRight(p.customerTaxId || '', 9),            // 252-260
-    fmtDate(p.glDate || p.docDate),                // 261-268
-    fmtSignedAmount(p.nonIlsAmount ?? 0, 15),      // 269-283
-    padRight(p.nonIlsCurrency || 'ILS', 3),        // 284-286
-    fmtSignedAmount(net, 15),                      // 287-301
-    fmtSignedAmount(disc, 15),                     // 302-316
-    fmtSignedAmount(netPlusDisc, 15),              // 317-331
-    fmtSignedAmount(p.vatAmount, 15),              // 332-346
-    fmtSignedAmount(p.totalAmount, 15),            // 347-361
-    fmtSignedAmount(p.withholdingAmount ?? 0, 12), // 362-373
-    padRight(p.accountNumber || '', 15),            // 374-388
-    padRight('', 10),                              // 389-398 adjustment
-    padRight(p.cancelled ? '1' : '0', 1),          // 399
-    fmtDate(p.invoiceDate || p.docDate),           // 400-407
-    padRight('', 7),                               // 408-414 branch
-    padRight(p.userId || '', 9),                   // 415-423
-    padRight(p.internalId || '', 7),               // 424-430
-    padRight('', 13),                              // 431-443 future
+    padRight('C100', 4),
+    padLeft(p.recordNum, 9),
+    padRight(p.companyTaxId, 9),
+    padRight(p.docTypeCode, 3),
+    padRight(p.docNumber, 20),
+    fmtDate(p.docDate),
+    padRight(p.docTime || '0000', 4),
+    padRight(p.customerName, 50),
+    padRight(p.customerAddress || '', 50),
+    padRight(p.houseNumber || '', 10),
+    padRight(p.city || '', 30),
+    padRight(p.zipCode || '', 8),
+    padRight(p.state || '', 30),
+    padRight(p.stateCode || '', 2),
+    padRight(p.phone || '', 15),
+    padRight(p.customerTaxId || '', 9),
+    fmtDate(p.glDate || p.docDate),
+    fmtSignedAmount(p.nonIlsAmount ?? 0, 15),
+    padRight(p.nonIlsCurrency || 'ILS', 3),
+    fmtSignedAmount(net, 15),
+    fmtSignedAmount(disc, 15),
+    fmtSignedAmount(netPlusDisc, 15),
+    fmtSignedAmount(p.vatAmount, 15),
+    fmtSignedAmount(p.totalAmount, 15),
+    fmtSignedAmount(p.withholdingAmount ?? 0, 12),
+    padRight(p.accountNumber || '', 15),
+    padRight('', 10),
+    padRight(p.cancelled ? '1' : '0', 1),
+    fmtDate(p.invoiceDate || p.docDate),
+    padRight('', 7),
+    padRight(p.userId || '', 9),
+    padRight(p.internalId || '', 7),
+    padRight('', 13),
   ].join('');
 }
 export const C100_LEN = 444;
 
-// D110 — Document detail line — Total: 339 chars
-// Pos 0:   Record Code (4)
-// Pos 4:   Future Use / Record Number (9)
-// Pos 13:  Registration Number / Tax ID (9)
-// Pos 22:  Doc Type Code (3)
-// Pos 25:  Doc Number (20)
-// Pos 45:  Line Number (4)
-// Pos 49:  Sub Doc Type Code (3)
-// Pos 52:  Invoice Number (20)
-// Pos 72:  Blank (1)
-// Pos 73:  Item Name/Catalog Code (20)
-// Pos 93:  Description (30)
-// Pos 123: Blank (50)
-// Pos 173: Blank (30)
-// Pos 203: Blank (20)
-// Pos 223: Quantity (17) signed
-// Pos 240: Unit Price (15) signed
-// Pos 255: Discount (15) signed
-// Pos 270: Line Total (15) signed
-// Pos 285: VAT Rate (4) numeric (integer %)
-// Pos 289: Blank (7)
-// Pos 296: Invoice Date (8)
-// Pos 304: Internal ID (7)
-// Pos 311: Item ID (7)
-// Pos 318: Org ID (21)
+// D110 — Document detail line — 339 chars
 export function buildD110(p: {
   recordNum: number;
   companyTaxId: string;
@@ -230,61 +164,40 @@ export function buildD110(p: {
   invoiceDate?: string;
   internalId?: string;
 }): string {
-  // Quantity field: 17 chars, signed, in units*10000 (4 decimals)
   const qtySign = p.quantity >= 0 ? '+' : '-';
   const qtyAbs = Math.abs(Math.round(p.quantity * 10000));
   const qtyStr = qtySign + String(qtyAbs).padStart(16, '0');
 
   return [
-    padRight('D110', 4),                           // 0-3
-    padLeft(p.recordNum, 9),                        // 4-12
-    padRight(p.companyTaxId, 9),                    // 13-21
-    padRight(p.docTypeCode, 3),                     // 22-24
-    padRight(p.docNumber, 20),                      // 25-44
-    padLeft(p.lineNum, 4),                          // 45-48
-    padRight(p.docTypeCode, 3),                     // 49-51 sub doc type = same
-    padRight(p.docNumber, 20),                      // 52-71 invoice number
-    padRight('', 1),                                // 72
-    padRight(p.catalogCode || '999999', 20),        // 73-92
-    padRight(p.description || 'Description', 30),   // 93-122
-    padRight('', 50),                               // 123-172
-    padRight('', 30),                               // 173-202
-    padRight('', 20),                               // 203-222
-    qtyStr.length > 17 ? qtyStr.slice(0, 17) : qtyStr.padStart(17, '0'),  // 223-239
-    fmtSignedAmount(p.unitPrice, 15),               // 240-254
-    fmtSignedAmount(p.discountAmount ?? 0, 15),     // 255-269
-    fmtSignedAmount(p.lineTotal, 15),               // 270-284
-    padLeft(Math.round(p.vatRate), 4),              // 285-288
-    padRight('', 7),                                // 289-295
-    fmtDate(p.invoiceDate),                         // 296-303
-    padRight(p.internalId || '', 7),                // 304-310
-    padRight('999999', 7),                          // 311-317 item ID
-    padRight('999999', 21),                         // 318-338 org ID
+    padRight('D110', 4),
+    padLeft(p.recordNum, 9),
+    padRight(p.companyTaxId, 9),
+    padRight(p.docTypeCode, 3),
+    padRight(p.docNumber, 20),
+    padLeft(p.lineNum, 4),
+    padRight(p.docTypeCode, 3),
+    padRight(p.docNumber, 20),
+    padRight('', 1),
+    padRight(p.catalogCode || '999999', 20),
+    padRight(p.description || 'Description', 30),
+    padRight('', 50),
+    padRight('', 30),
+    padRight('', 20),
+    qtyStr.length > 17 ? qtyStr.slice(0, 17) : qtyStr.padStart(17, '0'),
+    fmtSignedAmount(p.unitPrice, 15),
+    fmtSignedAmount(p.discountAmount ?? 0, 15),
+    fmtSignedAmount(p.lineTotal, 15),
+    padLeft(Math.round(p.vatRate), 4),
+    padRight('', 7),
+    fmtDate(p.invoiceDate),
+    padRight(p.internalId || '', 7),
+    padRight('999999', 7),
+    padRight('999999', 21),
   ].join('');
 }
 export const D110_LEN = 339;
 
-// D120 — Payment detail line — Total: 222 chars
-// Pos 0:   Record Code (4)
-// Pos 4:   Future Use / Record Number (9)
-// Pos 13:  Registration Number / Tax ID (9)
-// Pos 22:  Doc Type Code (3)
-// Pos 25:  Doc Number (20)
-// Pos 45:  Payment Number (4)
-// Pos 49:  Receipt/Payment Type (1)
-// Pos 50:  Bank Number (10)
-// Pos 60:  Branch Number (10)
-// Pos 70:  Account Number (15)
-// Pos 85:  Check Number (10)
-// Pos 95:  Due Date (8)
-// Pos 103: Amount (15) signed
-// Pos 118: Credit Clearing House (1)
-// Pos 119: Credit Card Name (20)
-// Pos 139: Credit Deal Type (1)
-// Pos 140: Branch ID (7)
-// Pos 147: Receipt Date (8)
-// Pos 155: Receipt ID (7)
-// Pos 162: Future Use (60)
+// D120 — Payment detail line — 222 chars
 export function buildD120(p: {
   recordNum: number;
   companyTaxId: string;
@@ -305,38 +218,90 @@ export function buildD120(p: {
   receiptId?: string;
 }): string {
   return [
-    padRight('D120', 4),                            // 0-3
-    padLeft(p.recordNum, 9),                         // 4-12
-    padRight(p.companyTaxId, 9),                     // 13-21
-    padRight(p.docTypeCode, 3),                      // 22-24
-    padRight(p.docNumber, 20),                       // 25-44
-    padLeft(p.paymentNum, 4),                        // 45-48
-    padRight(p.paymentTypeCode || '0', 1),           // 49
-    padRight(p.bankCode || '', 10),                  // 50-59
-    padRight(p.branchCode || '', 10),                // 60-69
-    padRight(p.accountNum || '', 15),                // 70-84
-    padRight(p.checkNum || '', 10),                  // 85-94
-    fmtDate(p.dueDate),                              // 95-102
-    fmtSignedAmount(p.amount, 15),                   // 103-117
-    padRight(p.creditClearing || '', 1),             // 118
-    padRight(p.creditCardName || '', 20),             // 119-138
-    padRight(p.creditDealType || '', 1),              // 139
-    padRight('', 7),                                 // 140-146 branch
-    fmtDate(p.receiptDate),                          // 147-154
-    padRight(p.receiptId || '', 7),                   // 155-161
-    padRight('', 60),                                // 162-221
+    padRight('D120', 4),
+    padLeft(p.recordNum, 9),
+    padRight(p.companyTaxId, 9),
+    padRight(p.docTypeCode, 3),
+    padRight(p.docNumber, 20),
+    padLeft(p.paymentNum, 4),
+    padRight(p.paymentTypeCode || '0', 1),
+    padRight(p.bankCode || '', 10),
+    padRight(p.branchCode || '', 10),
+    padRight(p.accountNum || '', 15),
+    padRight(p.checkNum || '', 10),
+    fmtDate(p.dueDate),
+    fmtSignedAmount(p.amount, 15),
+    padRight(p.creditClearing || '', 1),
+    padRight(p.creditCardName || '', 20),
+    padRight(p.creditDealType || '', 1),
+    padRight('', 7),
+    fmtDate(p.receiptDate),
+    padRight(p.receiptId || '', 7),
+    padRight('', 60),
   ].join('');
 }
 export const D120_LEN = 222;
 
-// Z900 — Closing record — Total: 110 chars
-// Pos 0:   Record Code (4)
-// Pos 4:   Future Use / Record Number (9)
-// Pos 13:  Registration Number / Tax ID (9)
-// Pos 22:  Reference Key / Primary ID (15)
-// Pos 37:  Constant (8) "&OF1.31&"
-// Pos 45:  Total Records Count (15)
-// Pos 60:  Future Use (50)
+// B110 — Account balance card — 376 chars (OF1.31)
+// Pos 0-3: Record Code (4)
+// Pos 4-12: Record Number (9)
+// Pos 13-21: Tax ID (9)
+// Pos 22-36: Account Value (15)
+// Pos 37-86: Account Description (50)
+// Pos 87-101: Opening Balance (15) signed
+// Pos 102-116: Non-ILS Opening Balance (15) signed
+// Pos 117-131: Debit Turnover (15) signed
+// Pos 132-146: Non-ILS Debit Turnover (15) signed
+// Pos 147-161: Credit Turnover (15) signed
+// Pos 162-176: Non-ILS Credit Turnover (15) signed
+// Pos 177-191: Closing Balance (15) signed – calculated: opening + debit - credit
+// Pos 192-206: Non-ILS Closing Balance (15) signed
+// Pos 207-221: Balance Indicator (15) signed
+// Pos 222-321: Future Use (100)
+// Pos 322-325: Accounting Classification (4)
+// Pos 326-334: Customer/Supplier Tax ID (9)
+// Pos 335-341: Branch ID (7)
+// Pos 342-356: Future (15)
+// Pos 357-359: Currency Code (3)
+// Pos 360-375: Future (16)
+export function buildB110(p: {
+  recordNum: number;
+  companyTaxId: string;
+  accountValue: string;
+  accountDescription: string;
+  openingBalance: number;
+  debitTurnover: number;
+  creditTurnover: number;
+  closingBalance: number;
+  customerTaxId?: string;
+}): string {
+  return [
+    padRight('B110', 4),              // 0-3
+    padLeft(p.recordNum, 9),           // 4-12
+    padRight(p.companyTaxId, 9),       // 13-21
+    padRight(p.accountValue, 15),      // 22-36
+    padRight(p.accountDescription, 50),// 37-86
+    fmtSignedAmount(p.openingBalance, 15),   // 87-101
+    fmtSignedAmount(0, 15),            // 102-116 non-ILS opening (ILS only = 0)
+    fmtSignedAmount(p.debitTurnover, 15),    // 117-131
+    fmtSignedAmount(0, 15),            // 132-146 non-ILS debit
+    fmtSignedAmount(p.creditTurnover, 15),   // 147-161
+    fmtSignedAmount(0, 15),            // 162-176 non-ILS credit
+    fmtSignedAmount(p.closingBalance, 15),   // 177-191
+    fmtSignedAmount(0, 15),            // 192-206 non-ILS closing
+    fmtSignedAmount(0, 15),            // 207-221 balance indicator
+    padRight('', 100),                 // 222-321 future
+    padRight('', 4),                   // 322-325 accounting classification
+    padRight(p.customerTaxId || '', 9),// 326-334
+    padRight('', 7),                   // 335-341 branch
+    padRight('', 15),                  // 342-356 future
+    padRight('ILS', 3),                // 357-359
+    padRight('', 16),                  // 360-375 future
+  ].join('');
+}
+export const B110_LEN = 376;
+
+// Z900 — Closing record — 110 chars
 export function buildZ900(p: {
   recordNum: number;
   companyTaxId: string;
@@ -344,59 +309,18 @@ export function buildZ900(p: {
   totalRecords: number;
 }): string {
   return [
-    padRight('Z900', 4),                            // 0-3
-    padLeft(p.recordNum, 9),                         // 4-12
-    padRight(p.companyTaxId, 9),                     // 13-21
-    padRight(p.primaryId, 15),                       // 22-36
-    padRight(SPEC_CONSTANT, 8),                      // 37-44
-    padLeft(p.totalRecords, 15),                     // 45-59
-    padRight('', 50),                                // 60-109
+    padRight('Z900', 4),
+    padLeft(p.recordNum, 9),
+    padRight(p.companyTaxId, 9),
+    padRight(p.primaryId, 15),
+    padRight(SPEC_CONSTANT, 8),
+    padLeft(p.totalRecords, 15),
+    padRight('', 50),
   ].join('');
 }
 export const Z900_LEN = 110;
 
-// A000 — INI record — Total: 580 chars
-// Pos 0:   Record Code (4) "A000"
-// Pos 4:   Future Use (5)
-// Pos 9:   Total BKMVDATA records (15)
-// Pos 24:  Tax Identifier (9)
-// Pos 33:  Reference Key / Primary ID (15)
-// Pos 48:  Constant (8) "&OF1.31&"
-// Pos 56:  Software Reg Number (8)
-// Pos 64:  Software Name (20)
-// Pos 84:  Software Version (20)
-// Pos 104: SW Manufacturer Tax ID (9)
-// Pos 113: SW Manufacturer Name (20)
-// Pos 133: Software Type (1) "2"
-// Pos 134: Backup Path (50)
-// Pos 184: SW Accounting Type (1) "2"
-// Pos 185: Accounting Type (1) "1"
-// Pos 186: Company Reg Number (9)
-// Pos 195: Company Tax File (9)
-// Pos 204: Future Use (10)
-// Pos 214: Company Name (50)
-// Pos 264: Company Street (50)
-// Pos 314: Company Location Number (10)
-// Pos 324: Company City (30)
-// Pos 354: Company Zip Code (8)
-// Pos 362: Tax Year (4)
-// Pos 366: Date Range Start (8)
-// Pos 374: Date Range End (8)
-// Pos 382: Process Start Date (8)
-// Pos 390: Process Start Time (4) HHMM
-// Pos 394: Language Code (1) "0"
-// Pos 395: Character Set (1) "1"=ISO-8859-8
-// Pos 396: SW Zip Name (20)
-// Pos 416: Currency Code (3) "ILS"
-// Pos 419: Branch Info (1) "0"
-// Pos 420: Future Use (46)
-// Pos 466: B100 counter (4+15=19)
-// Pos 485: B110 counter (4+15=19)
-// Pos 504: C100 counter (4+15=19)
-// Pos 523: D110 counter (4+15=19)
-// Pos 542: D120 counter (4+15=19)
-// Pos 561: M100 counter (4+15=19)
-// Total: 580
+// A000 — INI record — 580 chars
 export function buildA000(p: {
   primaryId: string;
   companyTaxId: string;
@@ -420,46 +344,46 @@ export function buildA000(p: {
 }): string {
   const charSet = p.encoding === 'CP862' ? '2' : '1';
   return [
-    padRight('A000', 4),                            // 0-3
-    padRight('', 5),                                 // 4-8 future use
-    padLeft(p.totalBkmvRecords, 15),                 // 9-23
-    padRight(p.companyTaxId, 9),                     // 24-32
-    padRight(p.primaryId, 15),                       // 33-47
-    padRight(SPEC_CONSTANT, 8),                      // 48-55
-    padRight(p.softwareRegNum, 8),                   // 56-63
-    padRight(p.softwareName, 20),                    // 64-83
-    padRight(p.softwareVersion, 20),                 // 84-103
-    padRight(p.vendorTaxId, 9),                      // 104-112
-    padRight(p.vendorName, 20),                      // 113-132
-    padRight('2', 1),                                // 133 software type
-    padRight('', 50),                                // 134-183 backup path
-    padRight('2', 1),                                // 184 SW accounting type
-    padRight('1', 1),                                // 185 accounting type
-    padRight(p.companyTaxId, 9),                     // 186-194 company reg
-    padRight(p.companyTaxId, 9),                     // 195-203 company tax file
-    padRight('', 10),                                // 204-213 future
-    padRight(p.companyName, 50),                     // 214-263
-    padRight(p.companyAddress || '', 50),             // 264-313
-    padRight('', 10),                                // 314-323 location number
-    padRight(p.companyCity || '', 30),                // 324-353
-    padRight(p.companyZip || '', 8),                  // 354-361
-    padLeft(p.taxYear, 4),                           // 362-365
-    fmtDate(p.startDate),                            // 366-373
-    fmtDate(p.endDate),                              // 374-381
-    fmtDate(p.processDate),                          // 382-389
-    fmtTime(p.processDate),                          // 390-393
-    padRight('0', 1),                                // 394 language code
-    padRight(charSet, 1),                            // 395 character set
-    padRight('Winzip', 20),                          // 396-415
-    padRight('ILS', 3),                              // 416-418
-    padRight(p.branchesEnabled ? '1' : '0', 1),     // 419
-    padRight('', 46),                                // 420-465 future
-    'B100' + padLeft(p.counts.B100, 15),             // 466-484
-    'B110' + padLeft(p.counts.B110, 15),             // 485-503
-    'C100' + padLeft(p.counts.C100, 15),             // 504-522
-    'D110' + padLeft(p.counts.D110, 15),             // 523-541
-    'D120' + padLeft(p.counts.D120, 15),             // 542-560
-    'M100' + padLeft(p.counts.M100, 15),             // 561-579
+    padRight('A000', 4),
+    padRight('', 5),
+    padLeft(p.totalBkmvRecords, 15),
+    padRight(p.companyTaxId, 9),
+    padRight(p.primaryId, 15),
+    padRight(SPEC_CONSTANT, 8),
+    padRight(p.softwareRegNum, 8),
+    padRight(p.softwareName, 20),
+    padRight(p.softwareVersion, 20),
+    padRight(p.vendorTaxId, 9),
+    padRight(p.vendorName, 20),
+    padRight('2', 1),
+    padRight('', 50),
+    padRight('2', 1),
+    padRight('1', 1),
+    padRight(p.companyTaxId, 9),
+    padRight(p.companyTaxId, 9),
+    padRight('', 10),
+    padRight(p.companyName, 50),
+    padRight(p.companyAddress || '', 50),
+    padRight('', 10),
+    padRight(p.companyCity || '', 30),
+    padRight(p.companyZip || '', 8),
+    padLeft(p.taxYear, 4),
+    fmtDate(p.startDate),
+    fmtDate(p.endDate),
+    fmtDate(p.processDate),
+    fmtTime(p.processDate),
+    padRight('0', 1),
+    padRight(charSet, 1),
+    padRight('Winzip', 20),
+    padRight('ILS', 3),
+    padRight(p.branchesEnabled ? '1' : '0', 1),
+    padRight('', 46),
+    'B100' + padLeft(p.counts.B100, 15),
+    'B110' + padLeft(p.counts.B110, 15),
+    'C100' + padLeft(p.counts.C100, 15),
+    'D110' + padLeft(p.counts.D110, 15),
+    'D120' + padLeft(p.counts.D120, 15),
+    'M100' + padLeft(p.counts.M100, 15),
   ].join('');
 }
 export const A000_LEN = 580;
@@ -467,6 +391,7 @@ export const A000_LEN = 580;
 // Record length map for validation
 export const RECORD_LENGTHS: Record<string, number> = {
   'A100': A100_LEN,
+  'B110': B110_LEN,
   'C100': C100_LEN,
   'D110': D110_LEN,
   'D120': D120_LEN,
@@ -497,13 +422,13 @@ export function resolveLogicalPathCollision(basePath: string, existingPaths: str
   if (!existingPaths.includes(basePath)) return basePath;
   const match = basePath.match(/^(OPENFRMT\/\d{8}\.\d{2}\/)(\d{4})(\d{2})(\d{2})\/$/);
   if (!match) return basePath;
-  const [, prefix, MMDD, hh, mm] = match;
+  const [, prefix, _MMDD, hh, mm] = match;
   let newMm = parseInt(mm, 10);
   let newHh = parseInt(hh, 10);
   for (let i = 0; i < 60; i++) {
     newMm++;
     if (newMm >= 60) { newMm = 0; newHh = (newHh + 1) % 24; }
-    const candidate = `${prefix}${MMDD}${String(newHh).padStart(2, '0')}${String(newMm).padStart(2, '0')}/`;
+    const candidate = `${prefix}${_MMDD}${String(newHh).padStart(2, '0')}${String(newMm).padStart(2, '0')}/`;
     if (!existingPaths.includes(candidate)) return candidate;
   }
   return basePath;
@@ -529,108 +454,15 @@ function paymentTypeCode(method: string): string {
 }
 
 // =============================================
-// SIMULATOR SAMPLE DATA GENERATOR
+// ACCOUNT BALANCE TRACKER (for B110)
 // =============================================
 
-function generateSampleRecords(primaryId: string, companyTaxId: string): {
-  records: string[];
-  counts: Record<string, number>;
-} {
-  const records: string[] = [];
-  let recordNum = 1;
-  const counts: Record<string, number> = {
-    'A100': 0, 'C100': 0, 'D110': 0, 'D120': 0,
-    'B100': 0, 'B110': 0, 'M100': 0, 'Z900': 0, 'A000': 0,
-  };
-
-  // A100 opening
-  records.push(buildA100({ recordNum: recordNum++, companyTaxId, primaryId }));
-  counts['A100']++;
-
-  // Doc types to generate: 305 (sales inv), 400 (receipt), 320 (inv-receipt), 330 (credit)
-  const docTypes = [
-    { code: '305', name: 'Sample Customer', hasD110: true, hasD120: false },
-    { code: '400', name: 'Receipt Customer', hasD110: false, hasD120: true },
-    { code: '320', name: 'InvReceipt Cust', hasD110: true, hasD120: true },
-    { code: '330', name: 'Credit Customer', hasD110: true, hasD120: false },
-  ];
-
-  // Generate ~500 documents with 3 lines each = ~2000+ records
-  for (let docIdx = 0; docIdx < 500; docIdx++) {
-    const dt = docTypes[docIdx % docTypes.length];
-    const docNum = String(docIdx + 1).padStart(8, '0');
-    const month = String((docIdx % 12) + 1).padStart(2, '0');
-    const day = String((docIdx % 28) + 1).padStart(2, '0');
-    const docDate = `2024${month}${day}`;
-    const amount = 100 + (docIdx * 7) % 9900;
-    const vatAmount = Math.round(amount * 0.17);
-    const totalAmount = amount + vatAmount;
-
-    // C100
-    records.push(buildC100({
-      recordNum: recordNum++,
-      companyTaxId,
-      docTypeCode: dt.code,
-      docNumber: docNum,
-      docDate: `2024-${month}-${day}`,
-      customerName: `${dt.name} ${docIdx + 1}`,
-      customerAddress: 'רחוב הדוגמה 1',
-      city: 'תל אביב',
-      netAmount: amount,
-      vatAmount,
-      totalAmount,
-      cancelled: false,
-    }));
-    counts['C100']++;
-
-    // D110 lines
-    if (dt.hasD110) {
-      for (let lineIdx = 1; lineIdx <= 3; lineIdx++) {
-        const lineAmount = Math.round(amount / 3);
-        records.push(buildD110({
-          recordNum: recordNum++,
-          companyTaxId,
-          docTypeCode: dt.code,
-          docNumber: docNum,
-          lineNum: lineIdx,
-          description: `פריט דוגמה ${lineIdx}`,
-          quantity: lineIdx,
-          unitPrice: lineAmount,
-          lineTotal: lineAmount * lineIdx,
-          vatRate: 17,
-          invoiceDate: `2024-${month}-${day}`,
-        }));
-        counts['D110']++;
-      }
-    }
-
-    // D120 payment lines
-    if (dt.hasD120) {
-      records.push(buildD120({
-        recordNum: recordNum++,
-        companyTaxId,
-        docTypeCode: dt.code,
-        docNumber: docNum,
-        paymentNum: 1,
-        paymentTypeCode: '1',
-        amount: totalAmount,
-        receiptDate: `2024-${month}-${day}`,
-      }));
-      counts['D120']++;
-    }
-  }
-
-  // Z900 closing
-  const totalRecords = records.length + 1;
-  records.push(buildZ900({
-    recordNum: recordNum++,
-    companyTaxId,
-    primaryId,
-    totalRecords,
-  }));
-  counts['Z900']++;
-
-  return { records, counts };
+interface AccountBalance {
+  accountValue: string;
+  accountDescription: string;
+  customerTaxId: string;
+  debitTotal: number;
+  creditTotal: number;
 }
 
 // =============================================
@@ -702,7 +534,7 @@ export function runValidations(params: {
   results.push({ check: 'BKMVDATA מתחיל ב-A100', passed: firstType === 'A100', category: 'blocking' });
   results.push({ check: 'BKMVDATA מסתיים ב-Z900', passed: lastType === 'Z900', category: 'blocking' });
 
-  // 7. &OF1.31& constant in A100 and Z900
+  // 7. &OF1.31& constant
   const a100Const = records[0]?.slice(37, 45);
   const z900Const = records[records.length - 1]?.slice(37, 45);
   results.push({ check: 'A100 מכיל &OF1.31&', passed: a100Const === SPEC_CONSTANT, detail: `ערך: "${a100Const}"`, category: 'blocking' });
@@ -716,10 +548,7 @@ export function runValidations(params: {
   let seqValid = true;
   for (let i = 0; i < records.length; i++) {
     const num = parseInt(records[i].slice(4, 13), 10);
-    if (num !== i + 1) {
-      seqValid = false;
-      break;
-    }
+    if (num !== i + 1) { seqValid = false; break; }
   }
   results.push({ check: 'מספור רשומות רציף', passed: seqValid, category: 'blocking' });
 
@@ -727,18 +556,18 @@ export function runValidations(params: {
   const actualTotal = records.length;
   results.push({ check: 'Z900 ספירה תואמת', passed: closingTotalCount === actualTotal, detail: `Z900: ${closingTotalCount}, בפועל: ${actualTotal}`, category: 'blocking' });
 
-  // 11. INI total count matches actual BKMVDATA records
+  // 11. INI total count matches
   const iniTotalStr = iniLine.slice(9, 24);
   const iniTotal = parseInt(iniTotalStr, 10);
   results.push({ check: 'INI ספירת רשומות תואמת', passed: iniTotal === actualTotal, detail: `INI: ${iniTotal}, בפועל: ${actualTotal}`, category: 'blocking' });
 
-  // 12. INI per-type counters match
+  // 12. INI per-type counters
   const actualCounts: Record<string, number> = {};
   for (const rec of records) {
     const t = rec.slice(0, 4);
     actualCounts[t] = (actualCounts[t] || 0) + 1;
   }
-  for (const type of ['C100', 'D110', 'D120']) {
+  for (const type of ['B110', 'C100', 'D110', 'D120']) {
     const iniCount = params.iniRecordCounts[type] || 0;
     const actual = actualCounts[type] || 0;
     results.push({ check: `INI ספירת ${type} תואמת`, passed: iniCount === actual, detail: `INI: ${iniCount}, בפועל: ${actual}`, category: 'blocking' });
@@ -748,10 +577,24 @@ export function runValidations(params: {
   const pidValid = /^\d{15}$/.test(primaryId);
   results.push({ check: 'Primary ID - 15 ספרות', passed: pidValid, category: 'blocking' });
 
-  // 14. Tax ID in all records
+  // 14. Tax ID consistency
   const companyTaxId = records[0]?.slice(13, 22);
   const allSameTaxId = records.every(r => r.slice(13, 22) === companyTaxId);
   results.push({ check: 'עקביות מספר עוסק', passed: allSameTaxId, category: 'blocking' });
+
+  // 15. Every C100 must have at least one D110
+  const c100DocNums = new Set<string>();
+  const d110DocNums = new Set<string>();
+  for (const rec of records) {
+    const t = rec.slice(0, 4);
+    if (t === 'C100') c100DocNums.add(rec.slice(25, 45));
+    if (t === 'D110') d110DocNums.add(rec.slice(25, 45));
+  }
+  const c100WithoutD110: string[] = [];
+  for (const dn of c100DocNums) {
+    if (!d110DocNums.has(dn)) c100WithoutD110.push(dn.trim());
+  }
+  results.push({ check: 'כל C100 כולל D110', passed: c100WithoutD110.length === 0, detail: c100WithoutD110.length > 0 ? `חסר D110 ל: ${c100WithoutD110.slice(0,3).join(', ')}` : undefined, category: 'blocking' });
 
   // Warnings
   if (params.hasComplianceConfig !== undefined) {
@@ -811,7 +654,7 @@ function buildDebugManifest(params: {
     doc_type_mappings_used: params.docTypeMappingsUsed,
     artifacts: params.artifacts,
     spec_version: '1.31',
-    record_lengths: { A000: A000_LEN, A100: A100_LEN, C100: C100_LEN, D110: D110_LEN, D120: D120_LEN, Z900: Z900_LEN },
+    record_lengths: { A000: A000_LEN, A100: A100_LEN, B110: B110_LEN, C100: C100_LEN, D110: D110_LEN, D120: D120_LEN, Z900: Z900_LEN },
   }, null, 2);
 }
 
@@ -941,30 +784,51 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { mode, taxYear, startDate, endDate, sampleMode } = body;
+    const { mode, taxYear, startDate, endDate } = body;
 
-    if (!sampleMode) {
-      if (mode === 'single_year' && !taxYear) {
-        return new Response(JSON.stringify({ success: false, error: 'Tax year required' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      if (mode === 'multi_year' && (!startDate || !endDate)) {
-        return new Response(JSON.stringify({ success: false, error: 'Dates required' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
+    if (mode === 'single_year' && !taxYear) {
+      return new Response(JSON.stringify({ success: false, error: 'Tax year required' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    if (mode === 'multi_year' && (!startDate || !endDate)) {
+      return new Response(JSON.stringify({ success: false, error: 'Dates required' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     const runStarted = new Date();
     const primaryId = generate15DigitId();
-    const effectiveTaxYear = sampleMode ? 2024 : (taxYear || new Date(startDate).getFullYear());
+    const effectiveTaxYear = taxYear || new Date(startDate).getFullYear();
 
     // Profile
     const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', user.id).single();
-    const companyTaxId = (profile?.company_hp ?? '').replace(/\D/g, '').padStart(9, '0');
-    const companyName = profile?.company_name ?? 'Sample Company';
+    const companyTaxId = (profile?.company_hp ?? '').replace(/\D/g, '');
+
+    // *** PRE-EXPORT VALIDATION: company_hp must exist ***
+    if (!companyTaxId || companyTaxId.length < 2) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'חסר מספר עוסק/ח.פ. בפרופיל החברה. יש להגדיר אותו לפני ייצוא.',
+        preExportValidation: true,
+      }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const companyTaxId9 = companyTaxId.padStart(9, '0');
+    const companyName = profile?.company_name ?? '';
     const companyAddress = profile?.company_address ?? '';
+
+    if (!companyName) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'חסר שם חברה בפרופיל. יש להגדיר אותו לפני ייצוא.',
+        preExportValidation: true,
+      }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     // Compliance config
     const { data: config } = await supabaseAdmin.from('open_format_compliance_config').select('*').eq('user_id', user.id).single();
@@ -980,10 +844,7 @@ serve(async (req) => {
     // Date range
     let queryStart: string;
     let queryEnd: string;
-    if (sampleMode) {
-      queryStart = '2024-01-01';
-      queryEnd = '2024-12-31';
-    } else if (mode === 'single_year') {
+    if (mode === 'single_year') {
       queryStart = `${taxYear}-01-01`;
       queryEnd = `${taxYear}-12-31`;
     } else {
@@ -992,7 +853,7 @@ serve(async (req) => {
     }
 
     // Logical path
-    const basePath = generateLogicalPath(companyTaxId, effectiveTaxYear, runStarted);
+    const basePath = generateLogicalPath(companyTaxId9, effectiveTaxYear, runStarted);
     const { data: existingRuns } = await supabaseAdmin.from('open_format_export_runs').select('logical_output_path').eq('user_id', user.id);
     const existingPaths = (existingRuns || []).map((r: any) => r.logical_output_path);
     const logicalPath = resolveLogicalPathCollision(basePath, existingPaths);
@@ -1002,10 +863,10 @@ serve(async (req) => {
       .from('open_format_export_runs')
       .insert({
         user_id: user.id,
-        mode: sampleMode ? 'sample' : mode,
-        tax_year: sampleMode ? 2024 : (mode === 'single_year' ? taxYear : null),
-        start_date: sampleMode ? '2024-01-01' : (mode === 'multi_year' ? startDate : null),
-        end_date: sampleMode ? '2024-12-31' : (mode === 'multi_year' ? endDate : null),
+        mode,
+        tax_year: mode === 'single_year' ? taxYear : null,
+        start_date: mode === 'multi_year' ? startDate : null,
+        end_date: mode === 'multi_year' ? endDate : null,
         primary_id_15: primaryId,
         logical_output_path: logicalPath,
         encoding_used: encoding,
@@ -1021,85 +882,103 @@ serve(async (req) => {
     // BUILD RECORDS
     // =============================================
 
-    let records: string[];
-    let counts: Record<string, number>;
+    const records: string[] = [];
+    let recordNum = 1;
+    const counts: Record<string, number> = { 'A100': 0, 'B110': 0, 'C100': 0, 'D110': 0, 'D120': 0, 'B100': 0, 'M100': 0, 'Z900': 0, 'A000': 0 };
     const documentIds: string[] = [];
     const unmappedTypes: string[] = [];
     const exportWarnings: string[] = [];
     const docTypeMappingsUsed: Record<string, string> = {};
 
-    if (sampleMode) {
-      // SAMPLE MODE: synthetic data
-      const sample = generateSampleRecords(primaryId, companyTaxId);
-      records = sample.records;
-      counts = sample.counts;
-      exportWarnings.push('מצב הדגמה - נתונים סינתטיים בלבד');
-    } else {
-      // REAL MODE
-      records = [];
-      let recordNum = 1;
-      counts = { 'A100': 0, 'C100': 0, 'D110': 0, 'D120': 0, 'B100': 0, 'B110': 0, 'M100': 0, 'Z900': 0, 'A000': 0 };
+    // Account balance tracker for B110 records
+    const accountBalances = new Map<string, AccountBalance>();
 
-      // Doc type mappings
-      const { data: dbMappings } = await supabaseAdmin.from('open_format_doc_type_mappings').select('*').eq('user_id', user.id);
-      const docTypeMappings: Record<string, string> = { ...DEFAULT_DOC_TYPE_CODES };
-      const disabledTypes = new Set<string>();
-      if (dbMappings && dbMappings.length > 0) {
-        for (const m of dbMappings) {
-          if (m.enabled) docTypeMappings[m.internal_type] = m.tax_authority_code;
-          else disabledTypes.add(m.internal_type);
-        }
+    function trackAccount(accountKey: string, description: string, customerTaxId: string, debit: number, credit: number) {
+      const existing = accountBalances.get(accountKey);
+      if (existing) {
+        existing.debitTotal += debit;
+        existing.creditTotal += credit;
+      } else {
+        accountBalances.set(accountKey, {
+          accountValue: accountKey,
+          accountDescription: description,
+          customerTaxId,
+          debitTotal: debit,
+          creditTotal: credit,
+        });
       }
+    }
 
-      // A100
-      records.push(buildA100({ recordNum: recordNum++, companyTaxId, primaryId }));
-      counts['A100']++;
+    // Doc type mappings
+    const { data: dbMappings } = await supabaseAdmin.from('open_format_doc_type_mappings').select('*').eq('user_id', user.id);
+    const docTypeMappings: Record<string, string> = { ...DEFAULT_DOC_TYPE_CODES };
+    const disabledTypes = new Set<string>();
+    if (dbMappings && dbMappings.length > 0) {
+      for (const m of dbMappings) {
+        if (m.enabled) docTypeMappings[m.internal_type] = m.tax_authority_code;
+        else disabledTypes.add(m.internal_type);
+      }
+    }
 
-      // Tax invoices
-      const { data: taxInvoices } = await supabaseAdmin
-        .from('tax_invoices')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('date', queryStart)
-        .lte('date', queryEnd)
-        .order('date', { ascending: true });
+    // A100 opening record
+    records.push(buildA100({ recordNum: recordNum++, companyTaxId: companyTaxId9, primaryId }));
+    counts['A100']++;
 
-      for (const inv of (taxInvoices || [])) {
-        const internalType = 'tax-invoice';
-        if (disabledTypes.has(internalType)) continue;
-        const docTypeCode = docTypeMappings[internalType];
-        if (!docTypeCode || docTypeCode === '000') {
-          if (!unmappedTypes.includes(internalType)) unmappedTypes.push(internalType);
-          continue;
-        }
-        docTypeMappingsUsed[internalType] = docTypeCode;
-        documentIds.push(inv.id);
+    // =============================================
+    // TAX INVOICES → C100 + D110
+    // =============================================
 
-        const vatRate = (inv.subtotal && inv.subtotal > 0) ? ((inv.vat_amount || 0) / inv.subtotal) * 100 : 17;
+    const { data: taxInvoices } = await supabaseAdmin
+      .from('tax_invoices')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('date', queryStart)
+      .lte('date', queryEnd)
+      .order('date', { ascending: true });
 
-        records.push(buildC100({
-          recordNum: recordNum++,
-          companyTaxId,
-          docTypeCode,
-          docNumber: inv.invoice_number || '',
-          docDate: inv.date,
-          customerName: inv.customer_name || '',
-          customerTaxId: (inv.customer_hp || '').replace(/\D/g, ''),
-          customerAddress: inv.customer_address || '',
-          netAmount: inv.subtotal || 0,
-          vatAmount: inv.vat_amount || 0,
-          totalAmount: inv.total_amount || 0,
-          cancelled: false,
-        }));
-        counts['C100']++;
+    for (const inv of (taxInvoices || [])) {
+      const internalType = 'tax-invoice';
+      if (disabledTypes.has(internalType)) continue;
+      const docTypeCode = docTypeMappings[internalType];
+      if (!docTypeCode || docTypeCode === '000') {
+        if (!unmappedTypes.includes(internalType)) unmappedTypes.push(internalType);
+        continue;
+      }
+      docTypeMappingsUsed[internalType] = docTypeCode;
+      documentIds.push(inv.id);
 
-        const items = Array.isArray(inv.items) ? inv.items : [];
+      const vatRate = (inv.subtotal && inv.subtotal > 0) ? ((inv.vat_amount || 0) / inv.subtotal) * 100 : 17;
+      const customerTaxId = (inv.customer_hp || '').replace(/\D/g, '');
+
+      records.push(buildC100({
+        recordNum: recordNum++,
+        companyTaxId: companyTaxId9,
+        docTypeCode,
+        docNumber: inv.invoice_number || '',
+        docDate: inv.date,
+        customerName: inv.customer_name || '',
+        customerTaxId,
+        customerAddress: inv.customer_address || '',
+        netAmount: inv.subtotal || 0,
+        vatAmount: inv.vat_amount || 0,
+        totalAmount: inv.total_amount || 0,
+        cancelled: false,
+      }));
+      counts['C100']++;
+
+      // Track account balance for this customer
+      const acctKey = customerTaxId || inv.customer_name?.slice(0, 15) || 'UNKNOWN';
+      trackAccount(acctKey, inv.customer_name || 'לקוח', customerTaxId, inv.total_amount || 0, 0);
+
+      // D110 detail lines from invoice items
+      const items = Array.isArray(inv.items) ? inv.items : [];
+      if (items.length > 0) {
         let lineNum = 1;
         for (const item of items) {
           const itemVatRate = (item as any).vatRate ?? (item as any).vat_rate ?? vatRate;
           records.push(buildD110({
             recordNum: recordNum++,
-            companyTaxId,
+            companyTaxId: companyTaxId9,
             docTypeCode,
             docNumber: inv.invoice_number || '',
             lineNum: lineNum++,
@@ -1113,109 +992,177 @@ serve(async (req) => {
           }));
           counts['D110']++;
         }
-      }
-
-      // Customer documents (receipts)
-      const { data: customerDocs } = await supabaseAdmin
-        .from('customer_documents')
-        .select('*, customers!customer_documents_customer_id_fkey(full_name, id_number, address)')
-        .eq('user_id', user.id)
-        .gte('date', queryStart)
-        .lte('date', queryEnd)
-        .order('date', { ascending: true });
-
-      const { data: payments } = await supabaseAdmin
-        .from('customer_payments')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('payment_date', queryStart)
-        .lte('payment_date', queryEnd);
-
-      const paymentsByDocId: Record<string, any[]> = {};
-      for (const pay of (payments || [])) {
-        if (pay.document_id) {
-          if (!paymentsByDocId[pay.document_id]) paymentsByDocId[pay.document_id] = [];
-          paymentsByDocId[pay.document_id].push(pay);
-        }
-      }
-
-      // Also process non-receipt customer docs (contracts etc)
-      for (const doc of (customerDocs || [])) {
-        if (disabledTypes.has(doc.type)) continue;
-        const docTypeCode = docTypeMappings[doc.type];
-        if (!docTypeCode || docTypeCode === '000') {
-          if (!unmappedTypes.includes(doc.type)) unmappedTypes.push(doc.type);
-          exportWarnings.push(`סוג מסמך '${doc.type}' ללא מיפוי - דילוג`);
-          continue;
-        }
-        docTypeMappingsUsed[doc.type] = docTypeCode;
-        documentIds.push(doc.id);
-
-        const customer = (doc as any).customers;
-        const customerName = customer?.full_name || '';
-        const customerTaxId = (customer?.id_number || '').replace(/\D/g, '');
-        const customerAddress = customer?.address || '';
-
-        records.push(buildC100({
+      } else {
+        // No items – create a single D110 fallback line for the entire invoice
+        records.push(buildD110({
           recordNum: recordNum++,
-          companyTaxId,
+          companyTaxId: companyTaxId9,
           docTypeCode,
-          docNumber: doc.document_number || '',
-          docDate: doc.date || '',
-          customerName,
-          customerTaxId,
-          customerAddress,
-          netAmount: doc.amount || 0,
-          vatAmount: 0,
-          totalAmount: doc.amount || 0,
-          cancelled: doc.status === 'cancelled',
+          docNumber: inv.invoice_number || '',
+          lineNum: 1,
+          description: inv.title || 'חשבונית',
+          quantity: 1,
+          unitPrice: inv.subtotal || inv.total_amount || 0,
+          lineTotal: inv.subtotal || inv.total_amount || 0,
+          vatRate: Math.round(vatRate),
+          invoiceDate: inv.date,
         }));
-        counts['C100']++;
+        counts['D110']++;
+      }
+    }
 
-        // D120 for receipt-type docs
-        if (doc.type === 'receipt' || doc.type === 'tax-invoice-receipt') {
-          const linked = paymentsByDocId[doc.id];
-          if (linked && linked.length > 0) {
-            let payNum = 1;
-            for (const pay of linked) {
-              records.push(buildD120({
-                recordNum: recordNum++,
-                companyTaxId,
-                docTypeCode,
-                docNumber: doc.document_number || '',
-                paymentNum: payNum++,
-                paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
-                amount: pay.amount || 0,
-                receiptDate: pay.payment_date || doc.date || '',
-              }));
-              counts['D120']++;
-            }
-          } else {
+    // =============================================
+    // CUSTOMER DOCUMENTS → C100 + D110 + D120
+    // =============================================
+
+    const { data: customerDocs } = await supabaseAdmin
+      .from('customer_documents')
+      .select('*, customers!customer_documents_customer_id_fkey(full_name, id_number, address)')
+      .eq('user_id', user.id)
+      .neq('status', 'cancelled')
+      .gte('date', queryStart)
+      .lte('date', queryEnd)
+      .order('date', { ascending: true });
+
+    const { data: payments } = await supabaseAdmin
+      .from('customer_payments')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('payment_date', queryStart)
+      .lte('payment_date', queryEnd);
+
+    const paymentsByDocId: Record<string, any[]> = {};
+    for (const pay of (payments || [])) {
+      if (pay.document_id) {
+        if (!paymentsByDocId[pay.document_id]) paymentsByDocId[pay.document_id] = [];
+        paymentsByDocId[pay.document_id].push(pay);
+      }
+    }
+
+    for (const doc of (customerDocs || [])) {
+      if (disabledTypes.has(doc.type)) continue;
+      const docTypeCode = docTypeMappings[doc.type];
+      if (!docTypeCode || docTypeCode === '000') {
+        if (!unmappedTypes.includes(doc.type)) unmappedTypes.push(doc.type);
+        exportWarnings.push(`סוג מסמך '${doc.type}' ללא מיפוי - דילוג`);
+        continue;
+      }
+      docTypeMappingsUsed[doc.type] = docTypeCode;
+      documentIds.push(doc.id);
+
+      const customer = (doc as any).customers;
+      const customerName = customer?.full_name || '';
+      const customerTaxId = (customer?.id_number || '').replace(/\D/g, '');
+      const customerAddress = customer?.address || '';
+
+      records.push(buildC100({
+        recordNum: recordNum++,
+        companyTaxId: companyTaxId9,
+        docTypeCode,
+        docNumber: doc.document_number || '',
+        docDate: doc.date || '',
+        customerName,
+        customerTaxId,
+        customerAddress,
+        netAmount: doc.amount || 0,
+        vatAmount: 0,
+        totalAmount: doc.amount || 0,
+        cancelled: false,
+      }));
+      counts['C100']++;
+
+      // Track account balance
+      const acctKey = customerTaxId || customerName?.slice(0, 15) || doc.customer_id?.slice(0, 15) || 'UNKNOWN';
+      // For receipts, it's a credit (payment received); for invoices it's a debit
+      const isCredit = doc.type === 'receipt' || doc.type === 'tax-invoice-receipt';
+      if (isCredit) {
+        trackAccount(acctKey, customerName || 'לקוח', customerTaxId, 0, doc.amount || 0);
+      } else {
+        trackAccount(acctKey, customerName || 'לקוח', customerTaxId, doc.amount || 0, 0);
+      }
+
+      // D110 – every C100 must have at least one D110
+      records.push(buildD110({
+        recordNum: recordNum++,
+        companyTaxId: companyTaxId9,
+        docTypeCode,
+        docNumber: doc.document_number || '',
+        lineNum: 1,
+        description: doc.title || doc.type || 'מסמך',
+        quantity: 1,
+        unitPrice: doc.amount || 0,
+        lineTotal: doc.amount || 0,
+        vatRate: 0,
+        invoiceDate: doc.date || '',
+      }));
+      counts['D110']++;
+
+      // D120 for receipt-type docs
+      if (doc.type === 'receipt' || doc.type === 'tax-invoice-receipt') {
+        const linked = paymentsByDocId[doc.id];
+        if (linked && linked.length > 0) {
+          let payNum = 1;
+          for (const pay of linked) {
             records.push(buildD120({
               recordNum: recordNum++,
-              companyTaxId,
+              companyTaxId: companyTaxId9,
               docTypeCode,
               docNumber: doc.document_number || '',
-              paymentNum: 1,
-              paymentTypeCode: '0',
-              amount: doc.amount || 0,
-              receiptDate: doc.date || '',
+              paymentNum: payNum++,
+              paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
+              amount: pay.amount || 0,
+              receiptDate: pay.payment_date || doc.date || '',
             }));
             counts['D120']++;
           }
+        } else {
+          records.push(buildD120({
+            recordNum: recordNum++,
+            companyTaxId: companyTaxId9,
+            docTypeCode,
+            docNumber: doc.document_number || '',
+            paymentNum: 1,
+            paymentTypeCode: '0',
+            amount: doc.amount || 0,
+            receiptDate: doc.date || '',
+          }));
+          counts['D120']++;
         }
       }
-
-      // Z900
-      const totalRecords = records.length + 1;
-      records.push(buildZ900({
-        recordNum: recordNum++,
-        companyTaxId,
-        primaryId,
-        totalRecords,
-      }));
-      counts['Z900']++;
     }
+
+    // =============================================
+    // B110 — ACCOUNT BALANCE CARDS
+    // =============================================
+
+    for (const [_key, acct] of accountBalances) {
+      const closingBalance = acct.debitTotal - acct.creditTotal;
+      records.push(buildB110({
+        recordNum: recordNum++,
+        companyTaxId: companyTaxId9,
+        accountValue: acct.accountValue,
+        accountDescription: acct.accountDescription,
+        openingBalance: 0,
+        debitTurnover: acct.debitTotal,
+        creditTurnover: acct.creditTotal,
+        closingBalance,
+        customerTaxId: acct.customerTaxId,
+      }));
+      counts['B110']++;
+    }
+
+    // =============================================
+    // Z900 — CLOSING RECORD
+    // =============================================
+
+    const totalRecords = records.length + 1; // +1 for Z900 itself
+    records.push(buildZ900({
+      recordNum: recordNum++,
+      companyTaxId: companyTaxId9,
+      primaryId,
+      totalRecords,
+    }));
+    counts['Z900']++;
 
     // =============================================
     // BUILD FILES
@@ -1243,7 +1190,7 @@ serve(async (req) => {
 
     const a000Line = buildA000({
       primaryId,
-      companyTaxId,
+      companyTaxId: companyTaxId9,
       companyName,
       companyAddress,
       companyCity: '',
@@ -1282,10 +1229,24 @@ serve(async (req) => {
     });
     validation.warnings.push(...exportWarnings);
 
-    if (validation.fatalError) {
+    // If there are blocking errors, fail the export
+    const hasBlockers = validation.results.some(r => r.category === 'blocking' && !r.passed);
+    if (hasBlockers || validation.fatalError) {
       await supabaseAdmin.from('open_format_export_runs')
-        .update({ status: 'failed', finished_at: new Date().toISOString(), error_message: validation.fatalError })
+        .update({ status: 'failed', finished_at: new Date().toISOString(), error_message: validation.fatalError || 'בדיקות ולידציה נכשלו' })
         .eq('id', exportRun.id);
+
+      return new Response(JSON.stringify({
+        success: false,
+        exportRunId: exportRun.id,
+        error: validation.fatalError || 'הייצוא נכשל בבדיקות ולידציה',
+        validationResults: validation.results,
+        warnings: validation.warnings,
+        blockers: validation.blockers,
+        recordCounts: counts,
+      }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // =============================================
@@ -1313,7 +1274,7 @@ serve(async (req) => {
       docTypeMappingsUsed,
       artifacts: artifactsList,
       complianceConfig: config,
-      isSample: !!sampleMode,
+      isSample: false,
       firstRecordCode: records[0]?.slice(0, 4),
       lastRecordCode: records[records.length - 1]?.slice(0, 4),
     });
@@ -1376,7 +1337,6 @@ serve(async (req) => {
       validationResults: validation.results,
       warnings: validation.warnings,
       blockers: validation.blockers,
-      isSample: !!sampleMode,
       artifacts: artifacts.map(a => ({
         type: a.artifact_type,
         filename: a.filename,

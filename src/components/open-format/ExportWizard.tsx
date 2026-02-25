@@ -27,6 +27,7 @@ export function ExportWizard() {
     if (mode === "single_year") {
       params.taxYear = parseInt(taxYear);
     } else {
+      if (!startDate || !endDate) return;
       params.startDate = startDate;
       params.endDate = endDate;
     }
