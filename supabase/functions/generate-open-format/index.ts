@@ -423,8 +423,63 @@ function paymentMethodCode(method: string): string {
 }
 
 // =============================================
-// TXT.INI BUILDER (A000 + summary rows)
+// TXT.INI BUILDER — Official A000 fixed-width record
 // =============================================
+
+// A000 record definition: official INI opening record per spec 1.31
+// Total length = 190 chars (no BOM, CRLF endings)
+export const A000_FIELD_DEFS: FieldDef[] = [
+  { name: 'record_type', length: 4, type: 'alpha', required: true, description: 'A000' },
+  { name: 'record_number', length: 9, type: 'numeric', required: true },
+  { name: 'primary_id', length: 15, type: 'alpha', required: true },
+  { name: 'company_tax_id', length: 9, type: 'alpha', required: true },
+  { name: 'company_name', length: 50, type: 'alpha', required: true },
+  { name: 'tax_year', length: 4, type: 'numeric', required: true },
+  { name: 'encoding_flag', length: 1, type: 'alpha', required: true, description: '1=ISO-8859-8, 2=CP862' },
+  { name: 'software_name', length: 20, type: 'alpha', required: true },
+  { name: 'software_version', length: 10, type: 'alpha', required: true },
+  { name: 'software_reg_num', length: 20, type: 'alpha', required: true },
+  { name: 'vendor_tax_id', length: 9, type: 'alpha', required: true },
+  { name: 'total_bkmv_records', length: 9, type: 'numeric', required: true, description: 'Total records in BKMVDATA' },
+  { name: 'reserved', length: 30, type: 'alpha', required: false },
+];
+
+export const A000_RECORD_LENGTH = A000_FIELD_DEFS.reduce((s, f) => s + f.length, 0); // 190
+
+export function buildA000(params: {
+  primaryId: string;
+  companyTaxId: string;
+  companyName: string;
+  taxYear: number;
+  totalBkmvRecords: number;
+  encoding: string;
+  softwareName: string;
+  softwareVersion: string;
+  softwareRegNum: string;
+  vendorTaxId: string;
+}): string {
+  const p = params;
+  const fields = [
+    padAlphaRight('A000', 4),
+    padNumericLeft(1, 9),          // A000 is always record #1 in INI
+    padAlphaRight(p.primaryId, 15),
+    padAlphaRight(p.companyTaxId, 9),
+    padAlphaRight(p.companyName, 50),
+    padNumericLeft(p.taxYear, 4),
+    padAlphaRight(p.encoding === 'CP862' ? '2' : '1', 1),
+    padAlphaRight(p.softwareName, 20),
+    padAlphaRight(p.softwareVersion, 10),
+    padAlphaRight(p.softwareRegNum, 20),
+    padAlphaRight(p.vendorTaxId, 9),
+    padNumericLeft(p.totalBkmvRecords, 9),
+  ];
+  const used = fields.reduce((s, f) => s + f.length, 0);
+  const remaining = A000_RECORD_LENGTH - used;
+  if (remaining > 0) fields.push(padAlphaRight('', remaining));
+  const raw = fields.join('');
+  if (raw.length > A000_RECORD_LENGTH) return raw.slice(0, A000_RECORD_LENGTH);
+  return raw;
+}
 
 export function buildTxtIni(params: {
   primaryId: string;
@@ -435,24 +490,25 @@ export function buildTxtIni(params: {
   encoding: string;
   softwareName: string;
   softwareVersion: string;
+  softwareRegNum: string;
+  vendorTaxId: string;
   logicalPath: string;
 }): string {
   const p = params;
-  let content = '';
-  content += appendCRLF(`[HEADER]`);
-  content += appendCRLF(`PRIMARY_ID=${p.primaryId}`);
-  content += appendCRLF(`COMPANY_TAX_ID=${p.companyTaxId}`);
-  content += appendCRLF(`COMPANY_NAME=${p.companyName}`);
-  content += appendCRLF(`TAX_YEAR=${p.taxYear}`);
-  content += appendCRLF(`SOFTWARE_NAME=${p.softwareName}`);
-  content += appendCRLF(`SOFTWARE_VERSION=${p.softwareVersion}`);
-  content += appendCRLF(`ENCODING=${p.encoding}`);
-  content += appendCRLF(`LOGICAL_PATH=${p.logicalPath}`);
-  content += appendCRLF(`[BKMVDATA]`);
-  content += appendCRLF(`TOTAL_RECORDS=${p.totalBkmvRecords}`);
-  content += appendCRLF(`FILENAME=TXT.BKMVDATA`);
-  content += appendCRLF(`COMPRESSED_FILENAME=BKMVDATA.zip`);
-  return content;
+  // Official TXT.INI = single A000 fixed-width record with CRLF
+  const a000Line = buildA000({
+    primaryId: p.primaryId,
+    companyTaxId: p.companyTaxId,
+    companyName: p.companyName,
+    taxYear: p.taxYear,
+    totalBkmvRecords: p.totalBkmvRecords,
+    encoding: p.encoding,
+    softwareName: p.softwareName,
+    softwareVersion: p.softwareVersion,
+    softwareRegNum: p.softwareRegNum,
+    vendorTaxId: p.vendorTaxId,
+  });
+  return appendCRLF(a000Line);
 }
 
 // =============================================
@@ -506,8 +562,16 @@ export function runValidations(params: {
   // 2. CRLF validation
   const crlfValid = bkmvContent.includes('\r\n') && !bkmvContent.match(/[^\r]\n/);
   const iniCrlfValid = iniContent.includes('\r\n') && !iniContent.match(/[^\r]\n/);
-  results.push({ check: 'סיום שורות CRLF ב-TXT.BKMVDATA', passed: crlfValid, category: 'blocking' });
-  results.push({ check: 'סיום שורות CRLF ב-TXT.INI', passed: iniCrlfValid, category: 'blocking' });
+  results.push({ check: 'סיום שורות CRLF ב-BKMVDATA.TXT', passed: crlfValid, category: 'blocking' });
+  results.push({ check: 'סיום שורות CRLF ב-INI.TXT', passed: iniCrlfValid, category: 'blocking' });
+
+  // 2b. INI starts with A000
+  const iniStartsA000 = iniContent.startsWith('A000');
+  results.push({ check: 'INI.TXT מתחיל ב-A000', passed: iniStartsA000, category: 'blocking' });
+
+  // 2c. No BOM in INI
+  const iniBom = iniContent.charCodeAt(0) === 0xFEFF || iniContent.startsWith('\xEF\xBB\xBF');
+  results.push({ check: 'INI.TXT ללא BOM', passed: !iniBom, category: 'blocking' });
 
   // 3. Primary ID consistency
   const allHavePrimaryId = records.every(r => r.includes(primaryId));
@@ -1106,6 +1170,7 @@ serve(async (req) => {
     const bkmvContent = records.map(r => appendCRLF(r)).join('');
 
     const actualTotal = records.length;
+    counts['A000'] = 1; // A000 is always generated in TXT.INI
     const iniContent = buildTxtIni({
       primaryId,
       companyTaxId,
@@ -1115,6 +1180,8 @@ serve(async (req) => {
       encoding,
       softwareName,
       softwareVersion,
+      softwareRegNum,
+      vendorTaxId,
       logicalPath,
     });
 
@@ -1182,8 +1249,8 @@ serve(async (req) => {
     const manifestBytes = new TextEncoder().encode(manifestJson);
 
     const zipBytes = createZipArchive([
-      { name: 'TXT.BKMVDATA', content: bkmvBytes },
-      { name: 'logical_path.txt', content: pathTxt },
+      { name: 'BKMVDATA.TXT', content: bkmvBytes },
+      { name: 'INI.TXT', content: iniBytes },
     ]);
 
     // =============================================
@@ -1229,9 +1296,17 @@ serve(async (req) => {
     }));
     await supabaseAdmin.from('open_format_record_counts').insert(countInserts);
 
+    // Upload simulator-friendly aliases (same content, different filename)
+    await supabaseAdmin.storage
+      .from('open-format-exports')
+      .upload(`${storagePath}/INI.TXT`, iniBytes, { contentType: 'text/plain', upsert: true });
+    await supabaseAdmin.storage
+      .from('open-format-exports')
+      .upload(`${storagePath}/BKMVDATA.TXT`, bkmvBytes, { contentType: 'text/plain', upsert: true });
+
     const artifacts = [
-      { artifact_type: 'TXT_INI', filename: 'TXT.INI', storage_path: `${storagePath}/TXT.INI`, byte_size: iniBytes.length },
-      { artifact_type: 'TXT_BKMVDATA', filename: 'TXT.BKMVDATA', storage_path: `${storagePath}/TXT.BKMVDATA`, byte_size: bkmvBytes.length },
+      { artifact_type: 'INI', filename: 'INI.TXT', storage_path: `${storagePath}/INI.TXT`, byte_size: iniBytes.length },
+      { artifact_type: 'BKMVDATA', filename: 'BKMVDATA.TXT', storage_path: `${storagePath}/BKMVDATA.TXT`, byte_size: bkmvBytes.length },
       { artifact_type: 'ZIP', filename: 'BKMVDATA.zip', storage_path: `${storagePath}/BKMVDATA.zip`, byte_size: zipBytes.length },
       { artifact_type: 'DEBUG_MANIFEST', filename: 'export_debug_manifest.json', storage_path: `${storagePath}/export_debug_manifest.json`, byte_size: manifestBytes.length },
     ].map(a => ({ ...a, export_run_id: exportRun.id }));

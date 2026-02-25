@@ -22,6 +22,10 @@ export function SimulatorReadiness({ validationResults, warnings = [], blockers 
     { label: 'מיפוי סוגי מסמכים שלם', passed: !warningResults.find(r => r.check.includes('מיפוי') && !r.passed) },
     { label: 'קידוד תואם לרשות המיסים', passed: encodingCompliant, detail: encoding },
     { label: 'בדיקות ליבה עברו', passed: allBlockingPassed },
+    { label: 'INI.TXT מתחיל ב-A000', passed: !validationResults.find(r => r.check.includes('A000') && !r.passed), detail: validationResults.find(r => r.check.includes('A000'))?.passed ? '✔' : '✘' },
+    { label: 'INI.TXT ללא BOM', passed: !validationResults.find(r => r.check.includes('BOM') && !r.passed) },
+    { label: 'CRLF ב-BKMVDATA.TXT', passed: !validationResults.find(r => r.check.includes('BKMVDATA') && r.check.includes('CRLF') && !r.passed) },
+    { label: 'CRLF ב-INI.TXT', passed: !validationResults.find(r => r.check.includes('INI') && r.check.includes('CRLF') && !r.passed) },
   ];
 
   const overallReady = readinessItems.every(r => r.passed);
