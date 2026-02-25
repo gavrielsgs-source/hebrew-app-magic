@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle2, XCircle, Download, FileText, Archive, Copy, AlertTriangle, Bug } from "lucide-react";
+import { CheckCircle2, XCircle, Download, FileText, Archive, Copy, AlertTriangle, Bug, Printer } from "lucide-react";
 import { ExportRunResult, downloadArtifact } from "@/hooks/use-open-format";
 import { ValidationChecklist } from "./ValidationChecklist";
 import { SimulatorReadiness } from "./SimulatorReadiness";
+import { PrintReport54 } from "./PrintReport54";
 import { toast } from "sonner";
 
 const RECORD_TYPE_LABELS: Record<string, string> = {
@@ -25,6 +27,7 @@ interface ExportResultsProps {
 }
 
 export function ExportResults({ result }: ExportResultsProps) {
+  const [showReport54, setShowReport54] = useState(false);
   const isSuccess = result.status === 'success';
 
   const copyPrimaryId = () => {
@@ -32,8 +35,26 @@ export function ExportResults({ result }: ExportResultsProps) {
     toast.success('Primary ID הועתק');
   };
 
+  if (showReport54) {
+    return (
+      <div className="space-y-4">
+        <Button variant="outline" onClick={() => setShowReport54(false)}>
+          ← חזרה לתוצאות הייצוא
+        </Button>
+        <PrintReport54 exportRunId={result.exportRunId} resultData={result} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* Section 5.4 Report Button */}
+      <div className="flex gap-3">
+        <Button variant="outline" onClick={() => setShowReport54(true)}>
+          <FileText className="h-4 w-4 ml-2" />
+          הצג פלט 5.4
+        </Button>
+      </div>
       {/* Summary Card */}
       <Card>
         <CardHeader>
