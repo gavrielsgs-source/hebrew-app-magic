@@ -121,9 +121,17 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
     };
   });
 
-  // Cancelled document policy: status='cancelled' excluded
-  const activeDocs = (docTotals || []).filter((d: any) => d.status !== 'cancelled');
-  const cancelledCount = (docTotals || []).length - activeDocs.length;
+  // Cancelled document policy: status='cancelled' excluded from mapped totals
+  const allDocs = docTotals || [];
+  const activeDocs = allDocs.filter((d: any) => d.status !== 'cancelled');
+  const cancelledDocs = allDocs.filter((d: any) => d.status === 'cancelled');
+  const cancelledCount = cancelledDocs.length;
+  // Count how many cancelled docs WOULD have been mapped (for cross-check)
+  const cancelledMappedCount = cancelledDocs.filter((d: any) => {
+    const norm = normalizeKey(d.type);
+    const mapping = mappingByNormalized[norm];
+    return mapping && mapping.enabled && mapping.code !== '000';
+  }).length;
 
   // ===================================================================
   // AGGREGATION: only from actual documents + configured mappings
@@ -194,13 +202,15 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
   const unmappedTotalAmount = Object.values(unmappedTypeCounts).reduce((s, v) => s + v.amount, 0);
   const excluded000TotalCount = Object.values(excluded000Types).reduce((s, v) => s + v.count, 0);
 
-  // Cross-check formula:
-  // net_included = totalMappedCount (docs that are mapped + enabled + code!=000)
-  // excluded = cancelledCount + unmappedTotalCount + excluded000TotalCount
-  // total_in_period = net_included + excluded
+  // Cross-check formula (SUBTRACTION based):
+  // mapped_raw = totalMappedCount (active, mapped, enabled, code!=000)
+  //            + cancelledMappedCount (cancelled docs that WOULD have been mapped)
+  // net_included = mapped_raw - cancelledMappedCount - unmapped - excluded000
   // Compare: count100C vs net_included
-  const totalAccountedFor = totalMappedCount + unmappedTotalCount + excluded000TotalCount + cancelledCount;
-  const crossCheckFormula = `100C(${count100C}) ?= mapped(${totalMappedCount}) | unmapped(${unmappedTotalCount}) + excluded000(${excluded000TotalCount}) + cancelled(${cancelledCount}) = total(${totalAccountedFor})`;
+  const mappedRaw = totalMappedCount + cancelledMappedCount;
+  const netIncluded = mappedRaw - cancelledMappedCount - unmappedTotalCount - excluded000TotalCount;
+  const crossCheckPass = count100C === netIncluded;
+  const crossCheckFormula = `net_included = mapped_raw(${mappedRaw}) - cancelled(${cancelledMappedCount}) - unmapped(${unmappedTotalCount}) - excluded_000(${excluded000TotalCount}) = ${netIncluded}`;
 
   // Debug logging
   console.group('[Report 2.6 Debug]');
@@ -500,47 +510,40 @@ export function PrintReport26({ exportRunId, resultData }: PrintReport26Props) {
         <Section26 title="בדיקת הצלבה">
           <div className="space-y-1 text-sm">
             <Row26 label="כמות רשומות 100C בייצוא" value={count100C.toString()} />
-            <Row26 label='סה״כ מסמכים ממופים (נכללו)' value={totalMappedCount.toString()} />
+            <Row26 label='סה״כ מסמכים ממופים (גולמי, כולל מבוטלים)' value={mappedRaw.toString()} />
+            <Row26 label='סה״כ מסמכים ממופים (פעילים בלבד)' value={totalMappedCount.toString()} />
+            {cancelledMappedCount > 0 && (
+              <Row26 label='מסמכים מבוטלים ממופים (הופחתו)' value={`-${cancelledMappedCount}`} />
+            )}
             {unmappedTotalCount > 0 && (
-              <Row26 label='מסמכים ללא מיפוי (לא נספרו)' value={`${unmappedTotalCount} (${Array.from(unmappedTypes).join(', ')})`} />
+              <Row26 label='מסמכים ללא מיפוי (הופחתו)' value={`-${unmappedTotalCount} (${Array.from(unmappedTypes).join(', ')})`} />
             )}
             {excluded000TotalCount > 0 && (
-              <Row26 label='מסמכים ממופים ל-000/מושבתים (לא יוצאו)' value={excluded000TotalCount.toString()} />
+              <Row26 label='מסמכים ממופים ל-000/מושבתים (הופחתו)' value={`-${excluded000TotalCount}`} />
             )}
             {cancelledCount > 0 && (
-              <Row26 label='מסמכים מבוטלים (הוחרגו)' value={cancelledCount.toString()} />
+              <Row26 label='סה״כ מסמכים מבוטלים בתקופה' value={cancelledCount.toString()} />
             )}
+            <Row26 label='סה״כ נטו לייצוא (net_included)' value={netIncluded.toString()} />
             <div className="bg-gray-50 border rounded p-2 mt-2 text-xs font-mono">
               <strong>נוסחת הצלבה:</strong><br />
-              100C({count100C}) ?= mapped_included({totalMappedCount}) + unmapped({unmappedTotalCount}) + excluded_000({excluded000TotalCount}) + cancelled({cancelledCount}) = {totalAccountedFor}
+              net_included = mapped_raw({mappedRaw}) − cancelled({cancelledMappedCount}) − unmapped({unmappedTotalCount}) − excluded_000({excluded000TotalCount}) = <strong>{netIncluded}</strong><br />
+              100C = <strong>{count100C}</strong><br />
+              100C({count100C}) {crossCheckPass ? '==' : '!='} net_included({netIncluded}) → <strong>{crossCheckPass ? 'התאמה ✔' : 'אי-התאמה ✘'}</strong>
             </div>
             <div className="flex items-baseline gap-2 py-0.5 mt-2">
               <span className="font-semibold min-w-[180px] shrink-0">התאמה:</span>
-              {(() => {
-                if (count100C === totalMappedCount && unmappedTotalCount === 0 && excluded000TotalCount === 0 && cancelledCount === 0) {
-                  return <span className="text-green-700 font-bold">✔ תואם מלא</span>;
-                } else if (count100C === totalMappedCount && unmappedTotalCount === 0) {
-                  return <span className="text-green-700 font-bold">✔ תואם (הוחרגו: {excluded000TotalCount} 000 + {cancelledCount} מבוטלים)</span>;
-                } else if (count100C === totalAccountedFor) {
-                  return (
-                    <span className="text-amber-600 font-bold">
-                      ⚠ תואם חלקית — 100C({count100C}) = mapped({totalMappedCount}) + unmapped({unmappedTotalCount}) + 000({excluded000TotalCount}) + cancelled({cancelledCount})
-                    </span>
-                  );
-                } else if (count100C > 0 && totalMappedCount === 0) {
-                  return (
-                    <span className="text-red-600 font-bold">
-                      ✘ אין מסמכים ממופים — {unmappedTotalCount} חסרי מיפוי, 100C={count100C}. יש להגדיר מיפויים.
-                    </span>
-                  );
-                } else {
-                  return (
-                    <span className="text-red-600 font-bold">
-                      ✘ אי-התאמה — 100C: {count100C}, mapped: {totalMappedCount}, unmapped: {unmappedTotalCount}, 000: {excluded000TotalCount}, cancelled: {cancelledCount} (פער: {Math.abs(count100C - totalAccountedFor)})
-                    </span>
-                  );
-                }
-              })()}
+              {crossCheckPass ? (
+                <span className="text-green-700 font-bold">✔ התאמה: כן — 100C({count100C}) = net_included({netIncluded})</span>
+              ) : count100C > 0 && totalMappedCount === 0 ? (
+                <span className="text-red-600 font-bold">
+                  ✘ אין מסמכים ממופים — {unmappedTotalCount} חסרי מיפוי, 100C={count100C}. יש להגדיר מיפויים.
+                </span>
+              ) : (
+                <span className="text-red-600 font-bold">
+                  ✘ אי-התאמה — 100C: {count100C}, net_included: {netIncluded}, פער: {Math.abs(count100C - netIncluded)}
+                </span>
+              )}
             </div>
           </div>
         </Section26>
