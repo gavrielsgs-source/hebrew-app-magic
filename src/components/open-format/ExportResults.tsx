@@ -2,9 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle2, XCircle, Download, FileText, Archive } from "lucide-react";
+import { CheckCircle2, XCircle, Download, FileText, Archive, Copy, AlertTriangle } from "lucide-react";
 import { ExportRunResult, downloadArtifact } from "@/hooks/use-open-format";
 import { ValidationChecklist } from "./ValidationChecklist";
+import { toast } from "sonner";
 
 const RECORD_TYPE_LABELS: Record<string, string> = {
   '100A': 'רשומת פתיחה (100A)',
@@ -23,7 +24,13 @@ interface ExportResultsProps {
 }
 
 export function ExportResults({ result }: ExportResultsProps) {
-  const statusColor = result.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+  const isSuccess = result.status === 'success';
+  const statusColor = isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+
+  const copyPrimaryId = () => {
+    navigator.clipboard.writeText(result.primaryId);
+    toast.success('Primary ID הועתק');
+  };
 
   return (
     <div className="space-y-4">
@@ -33,7 +40,7 @@ export function ExportResults({ result }: ExportResultsProps) {
           <CardTitle className="flex items-center justify-between">
             <span>תוצאות ייצוא</span>
             <Badge className={statusColor}>
-              {result.status === 'success' ? 'הצלחה' : 'נכשל'}
+              {isSuccess ? 'הצלחה' : 'נכשל'}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -45,7 +52,12 @@ export function ExportResults({ result }: ExportResultsProps) {
             </div>
             <div>
               <span className="text-muted-foreground">Primary ID (15 ספרות):</span>
-              <p className="font-mono font-bold">{result.primaryId}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-mono font-bold">{result.primaryId}</p>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyPrimaryId}>
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <div>
               <span className="text-muted-foreground">זמן התחלה:</span>
@@ -58,12 +70,29 @@ export function ExportResults({ result }: ExportResultsProps) {
             <div>
               <span className="text-muted-foreground">קידוד:</span>
               <p>{result.encoding}</p>
+              {result.encoding === 'UTF-8' && (
+                <span className="text-xs text-destructive flex items-center gap-1 mt-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  לא תואם לדרישות רשות המיסים - debug בלבד
+                </span>
+              )}
             </div>
             <div>
               <span className="text-muted-foreground">נתיב לוגי:</span>
               <p className="font-mono text-xs">{result.logicalPath}</p>
             </div>
           </div>
+
+          {/* Error details for failed runs */}
+          {result.error && (
+            <div className="mt-4 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+              <div className="flex items-center gap-2 text-sm font-medium text-destructive mb-1">
+                <AlertTriangle className="h-4 w-4" />
+                שגיאה טכנית
+              </div>
+              <p className="text-xs text-destructive/80 font-mono">{result.error}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -78,17 +107,24 @@ export function ExportResults({ result }: ExportResultsProps) {
               <TableRow>
                 <TableHead>סוג רשומה</TableHead>
                 <TableHead>כמות</TableHead>
+                <TableHead>סטטוס</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.entries(result.recordCounts).map(([code, count]) => (
-                <TableRow key={code}>
-                  <TableCell>{RECORD_TYPE_LABELS[code] || code}</TableCell>
-                  <TableCell>
-                    <Badge variant={count > 0 ? 'default' : 'secondary'}>{count}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {Object.entries(result.recordCounts).map(([code, count]) => {
+                const isFuture = ['100B', '110B', '100M', 'A000'].includes(code);
+                return (
+                  <TableRow key={code} className={isFuture ? 'opacity-50' : ''}>
+                    <TableCell>{RECORD_TYPE_LABELS[code] || code}</TableCell>
+                    <TableCell>
+                      <Badge variant={count > 0 ? 'default' : 'secondary'}>{count}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {isFuture ? 'טרם מיושם' : count > 0 ? 'פעיל' : 'ריק'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -102,24 +138,32 @@ export function ExportResults({ result }: ExportResultsProps) {
         <CardHeader>
           <CardTitle className="text-base">הורדת קבצים</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-3 flex-wrap">
-          {result.artifacts.map((artifact) => (
-            <Button
-              key={artifact.type}
-              variant="outline"
-              onClick={() => downloadArtifact(artifact.storagePath, artifact.filename)}
-            >
-              {artifact.type === 'ZIP' ? (
-                <Archive className="h-4 w-4 ml-2" />
-              ) : (
-                <FileText className="h-4 w-4 ml-2" />
-              )}
-              {artifact.filename}
-              <span className="text-xs text-muted-foreground mr-2">
-                ({(artifact.byteSize / 1024).toFixed(1)} KB)
-              </span>
-            </Button>
-          ))}
+        <CardContent>
+          <div className="flex gap-3 flex-wrap">
+            {result.artifacts.map((artifact) => (
+              <Button
+                key={artifact.type}
+                variant="outline"
+                onClick={() => downloadArtifact(artifact.storagePath, artifact.filename)}
+              >
+                {artifact.type === 'ZIP' ? (
+                  <Archive className="h-4 w-4 ml-2" />
+                ) : (
+                  <FileText className="h-4 w-4 ml-2" />
+                )}
+                {artifact.filename}
+                <span className="text-xs text-muted-foreground mr-2">
+                  ({(artifact.byteSize / 1024).toFixed(1)} KB)
+                </span>
+              </Button>
+            ))}
+          </div>
+          {!isSuccess && (
+            <p className="text-xs text-destructive mt-3 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              קבצים אלו נשמרו לצורכי debug בלבד - הייצוא נכשל בבדיקות ולידציה
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
