@@ -433,3 +433,32 @@ button, input, select, textarea {
   left: 0.5rem;
   right: auto;
 }
+
+/* Print styles for Section 5.4 report */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  [data-print-report],
+  [data-print-report] * {
+    visibility: visible;
+  }
+  [data-print-report] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .print\\:hidden {
+    display: none !important;
+  }
+  .print\\:p-4 {
+    padding: 1rem !important;
+  }
+  .print\\:border-0 {
+    border: 0 !important;
+  }
+  .print\\:shadow-none {
+    box-shadow: none !important;
+  }
+}

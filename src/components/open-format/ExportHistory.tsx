@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Search, Filter } from "lucide-react";
+import { Loader2, Download, Search, Filter, FileText } from "lucide-react";
 import { useExportHistory, useExportRunArtifacts, downloadArtifact } from "@/hooks/use-open-format";
+import { PrintReport54 } from "./PrintReport54";
 
 export function ExportHistory() {
   const { data: runs, isLoading } = useExportHistory();
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [reportRunId, setReportRunId] = useState<string | null>(null);
   const { data: artifacts } = useExportRunArtifacts(selectedRunId);
   
   // Filters
@@ -139,13 +141,24 @@ export function ExportHistory() {
                     {run.simulator_status || '—'}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedRunId(selectedRunId === run.id ? null : run.id)}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedRunId(selectedRunId === run.id ? null : run.id)}
+                        title="הורד קבצים"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReportRunId(reportRunId === run.id ? null : run.id)}
+                        title="פלט 5.4"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -175,6 +188,17 @@ export function ExportHistory() {
                 </Button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Section 5.4 Report Panel */}
+        {reportRunId && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">פלט מודפס 5.4:</p>
+              <Button variant="ghost" size="sm" onClick={() => setReportRunId(null)}>סגור</Button>
+            </div>
+            <PrintReport54 exportRunId={reportRunId} />
           </div>
         )}
       </CardContent>
