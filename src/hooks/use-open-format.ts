@@ -13,7 +13,9 @@ export interface ExportRunResult {
   finishedAt: string;
   status: string;
   recordCounts: Record<string, number>;
-  validationResults: Array<{ check: string; passed: boolean; detail?: string }>;
+  validationResults: Array<{ check: string; passed: boolean; detail?: string; category?: string }>;
+  warnings?: string[];
+  blockers?: string[];
   artifacts: Array<{ type: string; filename: string; storagePath: string; byteSize: number }>;
   error?: string;
 }
@@ -114,6 +116,72 @@ export function useSaveComplianceConfig() {
     },
     onError: (err: any) => {
       toast.error('שגיאה בשמירת ההגדרות: ' + err.message);
+    },
+  });
+}
+
+// Document type mappings hooks
+export function useDocTypeMappings() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['open-format-doc-mappings', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('open_format_doc_type_mappings' as any)
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('internal_type');
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user,
+  });
+}
+
+export function useSaveDocTypeMapping() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (mapping: { internal_type: string; tax_authority_code: string; description?: string; enabled?: boolean; notes?: string }) => {
+      const { data: existing } = await supabase
+        .from('open_format_doc_type_mappings' as any)
+        .select('id')
+        .eq('user_id', user!.id)
+        .eq('internal_type', mapping.internal_type)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from('open_format_doc_type_mappings' as any)
+          .update({
+            tax_authority_code: mapping.tax_authority_code,
+            description: mapping.description,
+            enabled: mapping.enabled ?? true,
+            notes: mapping.notes,
+          })
+          .eq('id', (existing as any).id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('open_format_doc_type_mappings' as any)
+          .insert({
+            user_id: user!.id,
+            internal_type: mapping.internal_type,
+            tax_authority_code: mapping.tax_authority_code,
+            description: mapping.description,
+            enabled: mapping.enabled ?? true,
+            notes: mapping.notes,
+          });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['open-format-doc-mappings'] });
+      toast.success('המיפוי נשמר בהצלחה');
+    },
+    onError: (err: any) => {
+      toast.error('שגיאה בשמירת מיפוי: ' + err.message);
     },
   });
 }
