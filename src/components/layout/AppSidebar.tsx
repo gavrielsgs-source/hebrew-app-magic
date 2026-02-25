@@ -253,6 +253,22 @@ export function AppSidebar() {
                 </button>
               </SidebarMenuItem>
             )}
+
+            {isAdmin() && (
+              <SidebarMenuItem>
+                <button
+                  onClick={() => navigate("/open-format")}
+                  data-active={pathname === "/open-format"}
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors hover:bg-white/10 hover:text-white data-[active=true]:bg-white/20 data-[active=true]:text-white text-gray-200"
+                >
+                  <FileSpreadsheet className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden flex items-center gap-2">
+                    ממשק פתוח
+                    <span className="text-[10px] text-gray-400">1.31</span>
+                  </span>
+                </button>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </div>
       </SidebarContent>

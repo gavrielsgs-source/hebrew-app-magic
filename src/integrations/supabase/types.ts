@@ -1060,6 +1060,184 @@ export type Database = {
         }
         Relationships: []
       }
+      open_format_artifacts: {
+        Row: {
+          artifact_type: string
+          byte_size: number | null
+          checksum: string | null
+          created_at: string
+          export_run_id: string
+          filename: string
+          id: string
+          storage_path: string
+        }
+        Insert: {
+          artifact_type: string
+          byte_size?: number | null
+          checksum?: string | null
+          created_at?: string
+          export_run_id: string
+          filename: string
+          id?: string
+          storage_path: string
+        }
+        Update: {
+          artifact_type?: string
+          byte_size?: number | null
+          checksum?: string | null
+          created_at?: string
+          export_run_id?: string
+          filename?: string
+          id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "open_format_artifacts_export_run_id_fkey"
+            columns: ["export_run_id"]
+            isOneToOne: false
+            referencedRelation: "open_format_export_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      open_format_compliance_config: {
+        Row: {
+          branches_enabled: boolean | null
+          created_at: string
+          currency_code: string | null
+          default_encoding: string | null
+          id: string
+          software_name: string | null
+          software_registration_number: string | null
+          software_vendor_name: string | null
+          software_vendor_tax_id: string | null
+          software_version: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          branches_enabled?: boolean | null
+          created_at?: string
+          currency_code?: string | null
+          default_encoding?: string | null
+          id?: string
+          software_name?: string | null
+          software_registration_number?: string | null
+          software_vendor_name?: string | null
+          software_vendor_tax_id?: string | null
+          software_version?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          branches_enabled?: boolean | null
+          created_at?: string
+          currency_code?: string | null
+          default_encoding?: string | null
+          id?: string
+          software_name?: string | null
+          software_registration_number?: string | null
+          software_vendor_name?: string | null
+          software_vendor_tax_id?: string | null
+          software_version?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      open_format_export_runs: {
+        Row: {
+          compression_name: string
+          created_at: string
+          encoding_used: string
+          end_date: string | null
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          logical_output_path: string
+          mode: string
+          primary_id_15: string
+          simulator_status: string | null
+          start_date: string | null
+          started_at: string
+          status: string
+          tax_year: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          compression_name?: string
+          created_at?: string
+          encoding_used?: string
+          end_date?: string | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          logical_output_path: string
+          mode?: string
+          primary_id_15: string
+          simulator_status?: string | null
+          start_date?: string | null
+          started_at?: string
+          status?: string
+          tax_year?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          compression_name?: string
+          created_at?: string
+          encoding_used?: string
+          end_date?: string | null
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          logical_output_path?: string
+          mode?: string
+          primary_id_15?: string
+          simulator_status?: string | null
+          start_date?: string | null
+          started_at?: string
+          status?: string
+          tax_year?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      open_format_record_counts: {
+        Row: {
+          count: number
+          created_at: string
+          export_run_id: string
+          id: string
+          record_type_code: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          export_run_id: string
+          id?: string
+          record_type_code: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          export_run_id?: string
+          id?: string
+          record_type_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "open_format_record_counts_export_run_id_fkey"
+            columns: ["export_run_id"]
+            isOneToOne: false
+            referencedRelation: "open_format_export_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_history: {
         Row: {
           amount: number
