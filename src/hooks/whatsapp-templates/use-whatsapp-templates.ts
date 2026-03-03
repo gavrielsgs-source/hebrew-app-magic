@@ -27,6 +27,7 @@ export const useWhatsappTemplates = () => {
       const { data, error } = await supabase
         .from("whatsapp_templates" as any)
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
