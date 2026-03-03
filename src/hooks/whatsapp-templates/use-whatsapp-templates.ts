@@ -25,17 +25,12 @@ export const useWhatsappTemplates = () => {
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
-        .from("whatsapp_templates")
+        .from("whatsapp_templates" as any)
         .select("*")
-        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching whatsapp templates:", error);
-        throw error;
-      }
-      console.log("Fetched whatsapp templates:", data?.length, "for user:", user.id);
-      return (data || []) as unknown as WhatsappTemplate[];
+      if (error) throw error;
+      return data as unknown as WhatsappTemplate[];
     },
   });
 };

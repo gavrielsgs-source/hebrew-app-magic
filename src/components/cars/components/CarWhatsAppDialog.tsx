@@ -315,12 +315,43 @@ export function CarWhatsAppDialog({ car, onClose }: CarWhatsAppDialogProps) {
     try {
       setIsSending(true);
 
-      if (selectedTemplate?.facebookTemplateName) {
-        // תבנית מאושרת - בדיקה אם צריך תמונה
-        if (selectedTemplate.supportsImageHeader && !carImageUrl) {
+      if (selectedTemplate?.facebookTemplateName === 'car_template') {
+        // תבנית רכב מאושרת - שליחה עם תמונה אם קיימת
+        
+        if (!carImageUrl) {
           toast.error("לא נמצאה תמונת רכב. יש להעלות תמונה לרכב לפני שליחת תבנית זו");
           return;
         }
+        
+        // Build parameters in correct order (1-7), use UNDEFINED for missing values
+        const parameters = [
+          variableValues['1']?.trim() || `${car.make} ${car.model} ${car.year}` || 'UNDEFINED',
+          variableValues['2']?.trim() || car.price?.toLocaleString() || 'UNDEFINED',
+          variableValues['3']?.trim() || car.fuel_type || 'UNDEFINED',
+          variableValues['4']?.trim() || car.kilometers?.toLocaleString() || 'UNDEFINED',
+          variableValues['5']?.trim() || car.transmission || 'UNDEFINED',
+          variableValues['6']?.trim() || userPhone || 'UNDEFINED',
+          variableValues['7']?.trim() || 'לקבוע פגישה'
+        ];
+
+        const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
+          body: {
+            type: 'template',
+            to: formattedNumber,
+            templateName: 'car_template',
+            parameters,
+            imageUrl: carImageUrl
+          }
+        });
+
+        if (error) {
+          throw new Error((error as any).message || 'שגיאה בשליחת הודעת תבנית');
+        }
+
+        const status = (data as any)?.messageStatus || 'sent';
+        toast.success(`ההודעה נשלחה (${status})`);
+        onClose();
+      } else if (selectedTemplate?.facebookTemplateName) {
         // Build ordered parameters array (sort by numeric key, use UNDEFINED for empty values)
         const orderedParameters = Object.keys(variableValues)
           .sort((a, b) => {
