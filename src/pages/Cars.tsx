@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Table as TableIcon, LayoutGrid as LayoutGridIcon, Car } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AddCarForm } from "@/components/cars/AddCarForm";
-import { MobileAddCarForm } from "@/components/cars/MobileAddCarForm";
+
 import { useSubscription } from '@/contexts/subscription-context';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
 import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
@@ -104,7 +104,7 @@ export default function Cars() {
                 </AlertDescription>
               </Alert>
             ) : (
-              <MobileAddCarForm onSuccess={onCarAdded} />
+              <AddCarForm onSuccess={onCarAdded} />
             )}
           </DialogContent>
         </Dialog>
