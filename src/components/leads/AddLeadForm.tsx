@@ -110,9 +110,6 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
           <AddLeadSourceField control={form.control} />
           <AddLeadCarField control={form.control} />
           <AddLeadNotesField control={form.control} />
-          {canAssignLeads && (
-            <AddLeadAssignedField control={form.control} salesAgents={salesAgents} />
-          )}
           
           <div className="flex items-center gap-2 pt-2">
             <Checkbox
