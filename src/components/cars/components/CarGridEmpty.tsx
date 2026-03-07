@@ -4,10 +4,8 @@ import { FilePlus, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AddCarForm } from "../AddCarForm";
-import { MobileAddCarForm } from "../MobileAddCarForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { useCars } from "@/hooks/use-cars";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -16,7 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 export function CarGridEmpty() {
   const { cars = [] } = useCars();
   const { checkEntitlement } = useSubscription();
-  const isMobile = useIsMobile();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { toast } = useToast();
   const canAddCar = checkEntitlement('carLimit', cars.length + 1);
@@ -56,11 +53,7 @@ export function CarGridEmpty() {
                 </AlertDescription>
               </Alert>
             ) : (
-              isMobile ? (
-                <MobileAddCarForm onSuccess={onCarAdded} />
-              ) : (
-                <AddCarForm onSuccess={onCarAdded} />
-              )
+              <AddCarForm onSuccess={onCarAdded} />
             )}
           </DialogContent>
         </Dialog>
