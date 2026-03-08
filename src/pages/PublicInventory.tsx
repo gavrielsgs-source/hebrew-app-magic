@@ -33,6 +33,7 @@ interface PublicCar {
   engine_size: string | null;
   description: string;
   image_url: string | null;
+  image_urls: string[];
   trim_level: string | null;
   entry_date: string | null;
   next_test_date: string | null;
