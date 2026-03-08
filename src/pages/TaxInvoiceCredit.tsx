@@ -727,20 +727,20 @@ export default function TaxInvoiceCredit() {
                 </CardHeader>
                 <CardContent className="space-y-4 pt-6">
                   {/* Date Range */}
-                  <div className="flex gap-4 items-end justify-end flex-wrap">
+                  <div className="flex gap-4 items-end justify-end" dir="rtl">
                     <div className="space-y-2">
                       <Label className="text-right block">מתאריך</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="w-[160px] justify-start text-right rounded-xl"
+                            className="w-[180px] rounded-xl flex items-center gap-2"
                           >
-                            <CalendarIcon className="ml-2 h-4 w-4" />
-                            {fromDate ? format(fromDate, "dd/MM/yyyy", { locale: he }) : "בחר"}
+                            <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
+                            <span>{fromDate ? format(fromDate, "dd/MM/yyyy", { locale: he }) : "בחר תאריך"}</span>
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
+                        <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
                             selected={fromDate || undefined}
@@ -753,18 +753,18 @@ export default function TaxInvoiceCredit() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-right block">ועד תאריך</Label>
+                      <Label className="text-right block">עד תאריך</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="w-[160px] justify-start text-right rounded-xl"
+                            className="w-[180px] rounded-xl flex items-center gap-2"
                           >
-                            <CalendarIcon className="ml-2 h-4 w-4" />
-                            {toDate ? format(toDate, "dd/MM/yyyy", { locale: he }) : "בחר"}
+                            <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
+                            <span>{toDate ? format(toDate, "dd/MM/yyyy", { locale: he }) : "בחר תאריך"}</span>
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
+                        <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
                             selected={toDate || undefined}
