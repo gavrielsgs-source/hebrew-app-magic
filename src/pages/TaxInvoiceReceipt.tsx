@@ -242,32 +242,33 @@ export default function TaxInvoiceReceipt() {
     const items = form.getValues('items') || [];
     const generalDiscount = form.getValues('generalDiscount') || 0;
     
-    let subtotal = 0;
-    let itemsWithoutVat = 0;
-    let vatFromIncludedItems = 0;
+    let subtotal = 0; // סה"כ נטו (לפני מע"מ)
+    let totalVat = 0; // סה"כ מע"מ
+    let itemsWithoutVat = 0; // tracking for display
     
     items.forEach(item => {
       const itemTotal = item.total || 0;
+      const vatRate = item.vatRate || 18;
       
       if (item.includeVat) {
-        // Price already includes VAT - extract it
-        const vatRate = item.vatRate || 18;
+        // המחיר שהוזן כבר כולל מע"מ - חילוץ מע"מ מבפנים
         const netPrice = itemTotal / (1 + vatRate / 100);
         const vatPortion = itemTotal - netPrice;
         subtotal += netPrice;
-        vatFromIncludedItems += vatPortion;
+        totalVat += vatPortion;
       } else {
-        // No VAT for this item
+        // המחיר לפני מע"מ - הוספת מע"מ מעל
         subtotal += itemTotal;
+        const vatToAdd = itemTotal * (vatRate / 100);
+        totalVat += vatToAdd;
         itemsWithoutVat += itemTotal;
       }
     });
     
     const amountAfterDiscount = subtotal - generalDiscount;
-    // Recalculate VAT proportionally after discount
-    const totalBeforeDiscount = subtotal;
-    const vatAmount = totalBeforeDiscount > 0 
-      ? vatFromIncludedItems * (amountAfterDiscount / totalBeforeDiscount)
+    // Scale VAT proportionally if there's a general discount
+    const vatAmount = subtotal > 0 
+      ? totalVat * (amountAfterDiscount / subtotal)
       : 0;
     const totalAmount = amountAfterDiscount + vatAmount;
     
