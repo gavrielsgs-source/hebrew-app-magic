@@ -12,6 +12,7 @@ import { AddLeadSourceField } from './AddLeadSourceField';
 import { AddLeadCarField } from './AddLeadCarField';
 import { AddLeadNotesField } from './AddLeadNotesField';
 import { AddLeadAssignedField } from './AddLeadAssignedField';
+import { AddLeadInterestedCarFields } from './AddLeadInterestedCarFields';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
