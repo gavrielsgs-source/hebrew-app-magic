@@ -79,8 +79,13 @@ export function useUpdateCar() {
               await supabase.storage.from('cars').remove(filesToDelete);
             }
 
+          const cacheControl = `no-cache, no-store, must-revalidate`;
             const uploadPromises = car.images.map(async (image, index) => {
               const fileExt = image.name.split('.').pop();
+              const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
+              const { error: uploadError } = await supabase.storage
+                .from('cars')
+                .upload(filePath, image, { cacheControl, upsert: false });
               const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
               const { error: uploadError } = await supabase.storage
                 .from('cars')
