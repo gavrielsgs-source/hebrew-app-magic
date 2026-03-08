@@ -439,26 +439,26 @@ export default function TaxInvoiceCredit() {
                   <CardTitle className="text-right text-lg">בחר חשבונית</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-4">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" dir="rtl">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className="flex-1 h-10 rounded-xl text-sm">
-                          <CalendarIcon className="ml-1 h-4 w-4" />
-                          {fromDate ? format(fromDate, "dd/MM/yy") : "מ-"}
+                        <Button variant="outline" className="flex-1 h-10 rounded-xl text-sm flex items-center gap-1.5">
+                          <CalendarIcon className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                          <span>מ: {fromDate ? format(fromDate, "dd/MM/yy") : "בחר"}</span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar mode="single" selected={fromDate || undefined} onSelect={(d) => setFromDate(d || null)} />
                       </PopoverContent>
                     </Popover>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className="flex-1 h-10 rounded-xl text-sm">
-                          <CalendarIcon className="ml-1 h-4 w-4" />
-                          {toDate ? format(toDate, "dd/MM/yy") : "עד-"}
+                        <Button variant="outline" className="flex-1 h-10 rounded-xl text-sm flex items-center gap-1.5">
+                          <CalendarIcon className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                          <span>עד: {toDate ? format(toDate, "dd/MM/yy") : "בחר"}</span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar mode="single" selected={toDate || undefined} onSelect={(d) => setToDate(d || null)} />
                       </PopoverContent>
                     </Popover>
