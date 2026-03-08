@@ -11,6 +11,7 @@ import { FAQSection } from '@/components/landing/FAQSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { VideoModal } from '@/components/landing/VideoModal';
+import { WhatsAppBubble } from '@/components/landing/WhatsAppBubble';
 
 export default function Landing() {
   const { user, loading } = useAuth();
@@ -51,6 +52,8 @@ export default function Landing() {
       <CTASection />
       
       <LandingFooter />
+
+      <WhatsAppBubble />
       
       <VideoModal 
         isOpen={isVideoModalOpen} 
