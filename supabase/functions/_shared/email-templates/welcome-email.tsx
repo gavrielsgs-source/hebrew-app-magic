@@ -18,6 +18,7 @@ interface WelcomeEmailProps {
   magicLink: string;
   trialEndsAt: string;
   amount: number;
+  tutorialLink?: string;
 }
 
 export const WelcomeEmail = ({
