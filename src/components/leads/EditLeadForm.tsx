@@ -101,6 +101,7 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
           <EditLeadStatusField control={context.form.control} />
           <EditLeadSourceField control={context.form.control} />
           {/* Assigned field hidden - will be re-enabled later */}
+          <AddLeadInterestedCarFields control={context.form.control} />
           <EditLeadNotesField control={context.form.control} />
           <Button 
             type="submit" 
