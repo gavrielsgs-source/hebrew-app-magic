@@ -32,6 +32,7 @@ interface EmailRequest {
     paymentDate?: string;
     nextBillingDate?: string;
     invoiceUrl?: string;
+    tutorialLink?: string;
   };
 }
 
@@ -58,6 +59,7 @@ serve(async (req) => {
             magicLink: data.magicLink || "",
             trialEndsAt: data.trialEndsAt || "",
             amount: data.amount || 0,
+            tutorialLink: data.tutorialLink || undefined,
           })
         );
         break;

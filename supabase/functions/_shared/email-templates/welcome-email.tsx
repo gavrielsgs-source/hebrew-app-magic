@@ -18,6 +18,7 @@ interface WelcomeEmailProps {
   magicLink: string;
   trialEndsAt: string;
   amount: number;
+  tutorialLink?: string;
 }
 
 export const WelcomeEmail = ({
@@ -25,6 +26,7 @@ export const WelcomeEmail = ({
   magicLink,
   trialEndsAt,
   amount,
+  tutorialLink = 'https://youtube.com/playlist?list=PL_34QQHEpbtSlkcAuREn2F5L5OzR4SeT-&si=Ba-WcEFghFfqh8up',
 }: WelcomeEmailProps) => {
   const formattedDate = new Date(trialEndsAt).toLocaleDateString('he-IL', {
     year: 'numeric',
@@ -61,6 +63,20 @@ export const WelcomeEmail = ({
             <Button href={magicLink} style={button}>
               👉 היכנס למערכת עכשיו
             </Button>
+          </Section>
+
+          <Section style={tutorialBox}>
+            <Text style={tutorialTitle}>
+              🎬 צפה בהדרכה וגלה את כל האפשרויות
+            </Text>
+            <Text style={tutorialSubtext}>
+              הכנו לך סדרת הדרכות קצרה שתעזור לך להתחיל במהירות
+            </Text>
+            <Section style={buttonContainer}>
+              <Button href={tutorialLink} style={tutorialButton}>
+                ▶ צפה בהדרכה
+              </Button>
+            </Section>
           </Section>
 
           <Hr style={hr} />
@@ -200,4 +216,38 @@ const footer = {
   lineHeight: '24px',
   margin: '30px 40px',
   textAlign: 'center' as const,
+};
+
+const tutorialBox = {
+  backgroundColor: '#f0fdf4',
+  border: '2px solid #22c55e',
+  borderRadius: '12px',
+  padding: '20px',
+  margin: '30px 40px',
+  textAlign: 'center' as const,
+};
+
+const tutorialTitle = {
+  color: '#15803d',
+  fontSize: '20px',
+  fontWeight: 'bold',
+  margin: '0 0 10px 0',
+};
+
+const tutorialSubtext = {
+  color: '#15803d',
+  fontSize: '14px',
+  margin: '0 0 16px 0',
+};
+
+const tutorialButton = {
+  backgroundColor: '#22c55e',
+  borderRadius: '8px',
+  color: '#fff',
+  fontSize: '18px',
+  fontWeight: 'bold',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 40px',
 };
