@@ -28,7 +28,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
   const { mutate: addLead, isPending: isLoading } = useCreateLead();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sendWhatsApp, setSendWhatsApp] = useState(true);
+  const [sendWhatsApp, setSendWhatsApp] = useState(false);
 
   const handleSubmit = async (values: any) => {
     console.log('🔍 [AddLeadForm] handleSubmit called with values:', values);
@@ -111,16 +111,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
           <AddLeadCarField control={form.control} />
           <AddLeadNotesField control={form.control} />
           
-          <div className="flex items-center gap-2 pt-2">
-            <Checkbox
-              id="sendWhatsApp"
-              checked={sendWhatsApp}
-              onCheckedChange={(checked) => setSendWhatsApp(checked as boolean)}
-            />
-            <Label htmlFor="sendWhatsApp" className="cursor-pointer">
-              שלח הודעת ברוכים הבאים בוואטסאפ
-            </Label>
-          </div>
+          {/* WhatsApp checkbox hidden - will be re-enabled later */}
           
           <div className="flex gap-2 pt-4">
             <Button 

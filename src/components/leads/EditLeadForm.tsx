@@ -93,9 +93,7 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
           <EditLeadCarField control={context.form.control} />
           <EditLeadStatusField control={context.form.control} />
           <EditLeadSourceField control={context.form.control} />
-          {context.canAssignLeads && (
-            <EditLeadAssignedField control={context.form.control} salesAgents={context.salesAgents} />
-          )}
+          {/* Assigned field hidden - will be re-enabled later */}
           <EditLeadNotesField control={context.form.control} />
           <Button 
             type="submit" 

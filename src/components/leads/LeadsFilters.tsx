@@ -66,7 +66,7 @@ export function LeadsFilters({
             <SelectContent align="end" className="text-right">
               <SelectItem value="all" className="justify-end text-right">כל הסטטוסים</SelectItem>
               <SelectItem value="new" className="justify-end text-right">חדש</SelectItem>
-              <SelectItem value="in_progress" className="justify-end text-right">בטיפול</SelectItem>
+              <SelectItem value="in_treatment" className="justify-end text-right">בטיפול</SelectItem>
               <SelectItem value="waiting" className="justify-end text-right">בהמתנה</SelectItem>
               <SelectItem value="closed" className="justify-end text-right">סגור</SelectItem>
             </SelectContent>

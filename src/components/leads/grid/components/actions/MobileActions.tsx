@@ -19,6 +19,8 @@ export function MobileActions({
     <div className="flex flex-col gap-3 w-full">
       {/* Primary actions row */}
       <div className="flex gap-3">
+        {/* WhatsApp button hidden - will be re-enabled later */}
+        {false && (
         <MobileButton
           variant="outline"
           size="sm"
@@ -28,6 +30,7 @@ export function MobileActions({
         >
           וואטסאפ
         </MobileButton>
+        )}
         <MobileButton
           variant="outline"
           size="sm"
