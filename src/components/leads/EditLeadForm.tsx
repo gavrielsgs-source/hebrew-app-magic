@@ -14,6 +14,7 @@ import { EditLeadStatusField } from "./fields/EditLeadStatusField";
 import { EditLeadSourceField } from "./fields/EditLeadSourceField";
 import { EditLeadAssignedField } from "./fields/EditLeadAssignedField";
 import { EditLeadNotesField } from "./fields/EditLeadNotesField";
+import { AddLeadInterestedCarFields } from "./AddLeadInterestedCarFields";
 
 interface EditLeadFormProps {
   lead: any;
@@ -48,7 +49,13 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
       status: values.status,
       assigned_to: values.assigned_to || null,
       user_id: user?.id || lead.user_id,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      interested_make: values.interested_make || null,
+      interested_model: values.interested_model || null,
+      interested_year_from: values.interested_year_from || null,
+      interested_year_to: values.interested_year_to || null,
+      interested_max_price: values.interested_max_price || null,
+      interested_max_km: values.interested_max_km || null,
     };
 
     try {
@@ -80,7 +87,13 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
         car_id: lead.car_id || "",
         source: lead.source || "ידני",
         status: lead.status || "new",
-        assigned_to: lead.assigned_to || ""
+        assigned_to: lead.assigned_to || "",
+        interested_make: lead.interested_make || "",
+        interested_model: lead.interested_model || "",
+        interested_year_from: lead.interested_year_from || ('' as unknown as number | ""),
+        interested_year_to: lead.interested_year_to || ('' as unknown as number | ""),
+        interested_max_price: lead.interested_max_price || ('' as unknown as number | ""),
+        interested_max_km: lead.interested_max_km || ('' as unknown as number | ""),
       }}
       onSubmit={handleSubmit}
       isSubmitting={updateLead.isPending}
@@ -94,6 +107,7 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
           <EditLeadStatusField control={context.form.control} />
           <EditLeadSourceField control={context.form.control} />
           {/* Assigned field hidden - will be re-enabled later */}
+          <AddLeadInterestedCarFields control={context.form.control} />
           <EditLeadNotesField control={context.form.control} />
           <Button 
             type="submit" 

@@ -94,6 +94,67 @@ export function useAddCar() {
           });
         }
 
+        // Check for matching leads after successful car creation
+        if (data) {
+          try {
+            let query = supabase
+              .from('leads')
+              .select('id, name, phone, interested_make, interested_model')
+              .not('status', 'in', '("completed","cancelled")')
+              .not('interested_make', 'is', null);
+
+            // Filter by make (case-insensitive)
+            query = query.ilike('interested_make', data.make);
+
+            const { data: matchingLeads, error: matchError } = await query;
+
+            if (!matchError && matchingLeads && matchingLeads.length > 0) {
+              // Further filter in JS for optional fields
+              const filtered = matchingLeads.filter(lead => {
+                const ld = lead as any;
+                if (ld.interested_model && !data.model.toLowerCase().includes(ld.interested_model.toLowerCase())) return false;
+                return true;
+              });
+
+              // Check year/price/km via a second query per match isn't efficient,
+              // so we do a broader query and filter client-side
+              if (filtered.length > 0) {
+                // Get full lead data for filtered leads
+                const leadIds = filtered.map(l => l.id);
+                const { data: fullLeads } = await supabase
+                  .from('leads')
+                  .select('id, name, phone, interested_year_from, interested_year_to, interested_max_price, interested_max_km')
+                  .in('id', leadIds);
+
+                const finalMatches = (fullLeads || []).filter((lead: any) => {
+                  if (lead.interested_year_from && data.year < lead.interested_year_from) return false;
+                  if (lead.interested_year_to && data.year > lead.interested_year_to) return false;
+                  if (lead.interested_max_price && data.price > lead.interested_max_price) return false;
+                  if (lead.interested_max_km && data.kilometers > lead.interested_max_km) return false;
+                  return true;
+                });
+
+                // Create notifications for matches
+                for (const match of finalMatches) {
+                  toast.success(`🎯 נמצאה התאמה! הליד "${match.name}" מחפש רכב כזה`);
+                  
+                  await supabase.from('notifications').insert({
+                    user_id: userData.user.id,
+                    title: 'התאמת רכב לליד',
+                    message: `הרכב ${data.make} ${data.model} ${data.year} תואם לדרישות של ${match.name}`,
+                    type: 'lead_match',
+                    entity_type: 'lead',
+                    entity_id: match.id,
+                  });
+                }
+              }
+            }
+          } catch (matchError) {
+            console.error('Error checking lead matches:', matchError);
+            // Don't fail the car creation if matching fails
+          }
+        }
+
         return data;
       } catch (error) {
         console.error("Error adding car:", error);

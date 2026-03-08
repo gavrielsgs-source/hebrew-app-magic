@@ -38,7 +38,14 @@ export const leadFormSchema = z.object({
     (val) => val === "" || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val),
     "נא לבחור משתמש תקין"
   ),
-  status: z.string().optional()
+  status: z.string().optional(),
+  // Interested car fields
+  interested_make: z.string().max(100).optional().or(z.literal("")),
+  interested_model: z.string().max(100).optional().or(z.literal("")),
+  interested_year_from: z.coerce.number().int().min(1990).max(2030).optional().or(z.literal("")),
+  interested_year_to: z.coerce.number().int().min(1990).max(2030).optional().or(z.literal("")),
+  interested_max_price: z.coerce.number().min(0).optional().or(z.literal("")),
+  interested_max_km: z.coerce.number().int().min(0).optional().or(z.literal("")),
 });
 
 export type LeadFormValues = z.infer<typeof leadFormSchema>;

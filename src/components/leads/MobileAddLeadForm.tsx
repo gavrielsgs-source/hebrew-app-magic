@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { CarSearchSelect } from "@/components/cars/CarSearchSelect";
 import { useAuth } from "@/hooks/use-auth";
 import { useCreateLead } from "@/hooks/leads/use-create-lead";
 import { useCars } from "@/hooks/use-cars";
 import { useToast } from "@/hooks/use-toast";
-import { User, Phone, Mail, FileText, Car, Building } from "lucide-react";
+import { User, Phone, Mail, FileText, Car, Building, Search, ChevronDown, ChevronUp } from "lucide-react";
 
 interface MobileAddLeadFormProps {
   carId?: string;
@@ -30,9 +31,16 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     email: "",
     notes: "",
     car_id: carId || "",
-    source: "ידני"
+    source: "ידני",
+    interested_make: "",
+    interested_model: "",
+    interested_year_from: "",
+    interested_year_to: "",
+    interested_max_price: "",
+    interested_max_km: "",
   });
   const [shouldScheduleMeeting, setShouldScheduleMeeting] = useState(false);
+  const [interestedOpen, setInterestedOpen] = useState(false);
 
   // Enhanced mobile-first submit handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -69,7 +77,13 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         source: formData.source,
         status: "new",
         assigned_to: null,
-        user_id: user.id
+        user_id: user.id,
+        interested_make: formData.interested_make || null,
+        interested_model: formData.interested_model || null,
+        interested_year_from: formData.interested_year_from ? Number(formData.interested_year_from) : null,
+        interested_year_to: formData.interested_year_to ? Number(formData.interested_year_to) : null,
+        interested_max_price: formData.interested_max_price ? Number(formData.interested_max_price) : null,
+        interested_max_km: formData.interested_max_km ? Number(formData.interested_max_km) : null,
       };
 
       console.log('MobileAddLeadForm - Creating lead with data:', leadData);
@@ -208,6 +222,49 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
           </SelectContent>
         </Select>
       </div>
+
+      {/* Interested Car Section */}
+      <Collapsible open={interestedOpen} onOpenChange={setInterestedOpen} className="border rounded-lg p-3">
+        <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium">
+          <span className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            🔍 רכב מבוקש (לא במלאי)
+          </span>
+          {interestedOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 pt-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">יצרן</Label>
+              <Input placeholder="למשל: טויוטה" value={formData.interested_make} onChange={(e) => setFormData({ ...formData, interested_make: e.target.value })} className="h-10" dir="rtl" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">דגם</Label>
+              <Input placeholder="למשל: קורולה" value={formData.interested_model} onChange={(e) => setFormData({ ...formData, interested_model: e.target.value })} className="h-10" dir="rtl" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">משנה</Label>
+              <Input type="number" placeholder="2020" value={formData.interested_year_from} onChange={(e) => setFormData({ ...formData, interested_year_from: e.target.value })} className="h-10" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">עד שנה</Label>
+              <Input type="number" placeholder="2025" value={formData.interested_year_to} onChange={(e) => setFormData({ ...formData, interested_year_to: e.target.value })} className="h-10" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">תקציב מקסימלי (₪)</Label>
+              <Input type="number" placeholder="150000" value={formData.interested_max_price} onChange={(e) => setFormData({ ...formData, interested_max_price: e.target.value })} className="h-10" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">ק"מ מקסימלי</Label>
+              <Input type="number" placeholder="100000" value={formData.interested_max_km} onChange={(e) => setFormData({ ...formData, interested_max_km: e.target.value })} className="h-10" />
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Notes */}
       <div className="space-y-2">

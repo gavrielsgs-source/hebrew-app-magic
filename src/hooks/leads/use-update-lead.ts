@@ -75,6 +75,12 @@ export const useUpdateLead = () => {
         email: data.email === "" ? null : data.email,
         notes: data.notes === "" ? null : data.notes,
         source: data.source === "" ? null : data.source,
+        interested_make: data.interested_make === "" ? null : data.interested_make,
+        interested_model: data.interested_model === "" ? null : data.interested_model,
+        interested_year_from: data.interested_year_from === "" ? null : data.interested_year_from,
+        interested_year_to: data.interested_year_to === "" ? null : data.interested_year_to,
+        interested_max_price: data.interested_max_price === "" ? null : data.interested_max_price,
+        interested_max_km: data.interested_max_km === "" ? null : data.interested_max_km,
       };
 
       const { data: responseData, error } = await supabase

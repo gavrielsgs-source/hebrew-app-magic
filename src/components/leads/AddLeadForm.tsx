@@ -12,6 +12,7 @@ import { AddLeadSourceField } from './AddLeadSourceField';
 import { AddLeadCarField } from './AddLeadCarField';
 import { AddLeadNotesField } from './AddLeadNotesField';
 import { AddLeadAssignedField } from './AddLeadAssignedField';
+import { AddLeadInterestedCarFields } from './AddLeadInterestedCarFields';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -92,7 +93,13 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     car_id: '',
     notes: '',
     assigned_to: '',
-    status: 'new'
+    status: 'new',
+    interested_make: '',
+    interested_model: '',
+    interested_year_from: '' as unknown as number | "",
+    interested_year_to: '' as unknown as number | "",
+    interested_max_price: '' as unknown as number | "",
+    interested_max_km: '' as unknown as number | "",
   };
 
   return (
@@ -109,6 +116,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
           <AddLeadEmailField control={form.control} />
           <AddLeadSourceField control={form.control} />
           <AddLeadCarField control={form.control} />
+          <AddLeadInterestedCarFields control={form.control} />
           <AddLeadNotesField control={form.control} />
           
           {/* WhatsApp checkbox hidden - will be re-enabled later */}
