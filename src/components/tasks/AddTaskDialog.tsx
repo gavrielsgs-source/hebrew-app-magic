@@ -65,7 +65,7 @@ export function AddTaskDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      {!initialDate && !controlledOpen && (
+      {!initialDate && controlledOpen === undefined && (
         <DialogTrigger asChild>
           {trigger}
         </DialogTrigger>
