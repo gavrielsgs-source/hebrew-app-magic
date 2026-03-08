@@ -244,18 +244,31 @@ export default function TaxInvoiceReceipt() {
     
     let subtotal = 0;
     let itemsWithoutVat = 0;
+    let vatFromIncludedItems = 0;
     
     items.forEach(item => {
       const itemTotal = item.total || 0;
-      subtotal += itemTotal;
       
-      if (!item.includeVat) {
+      if (item.includeVat) {
+        // Price already includes VAT - extract it
+        const vatRate = item.vatRate || 18;
+        const netPrice = itemTotal / (1 + vatRate / 100);
+        const vatPortion = itemTotal - netPrice;
+        subtotal += netPrice;
+        vatFromIncludedItems += vatPortion;
+      } else {
+        // No VAT for this item
+        subtotal += itemTotal;
         itemsWithoutVat += itemTotal;
       }
     });
     
     const amountAfterDiscount = subtotal - generalDiscount;
-    const vatAmount = (amountAfterDiscount - itemsWithoutVat) * 0.18;
+    // Recalculate VAT proportionally after discount
+    const totalBeforeDiscount = subtotal;
+    const vatAmount = totalBeforeDiscount > 0 
+      ? vatFromIncludedItems * (amountAfterDiscount / totalBeforeDiscount)
+      : 0;
     const totalAmount = amountAfterDiscount + vatAmount;
     
     return {
