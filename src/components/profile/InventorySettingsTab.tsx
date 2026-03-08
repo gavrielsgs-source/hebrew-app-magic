@@ -121,10 +121,14 @@ export function InventorySettingsTab() {
 
       if (error) throw error;
 
+      // Re-fetch to confirm persisted state
+      await fetchSettings();
       toast.success("ההגדרות נשמרו בהצלחה");
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error("שגיאה בשמירת ההגדרות", { description: error.message });
+      // Re-fetch to revert to actual DB state
+      await fetchSettings();
     } finally {
       setSaving(false);
     }
