@@ -28,7 +28,7 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
   const { mutate: addLead, isPending: isLoading } = useCreateLead();
   const { checkAndNotifyLimit } = useSubscriptionLimits();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sendWhatsApp, setSendWhatsApp] = useState(true);
+  const [sendWhatsApp, setSendWhatsApp] = useState(false);
 
   const handleSubmit = async (values: any) => {
     console.log('🔍 [AddLeadForm] handleSubmit called with values:', values);
