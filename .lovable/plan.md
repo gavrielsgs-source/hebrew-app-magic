@@ -1,18 +1,27 @@
 
 
-## תיקון פונקציית `admin_extend_subscription`
+## תיקון: התאמת ליד לרכב — תיקון באג + הוספה לעדכון רכב
 
 ### הבעיה
-כשמאריכים מנוי דרך ממשק האדמין, הפונקציה מעדכנת רק את `expires_at` אבל לא משנה את `subscription_status` ל-`active`. כתוצאה, משתמשים שהיו ב-`trial` או `expired` נשארים חסומים למרות שתאריך התפוגה הוארך.
+1. **באג בסינטקס** ב-`use-add-car.ts`: הפילטר `.not('status', 'in', '("completed","cancelled")')` משתמש בגרשיים כפולים בתוך הסוגריים — PostgREST דורש סינטקס ללא גרשיים: `'(completed,cancelled)'`
+2. **חסרה לוגיקת matching ב-`use-update-car.ts`** — כשמעדכנים רכב, אין בדיקה אם הרכב המעודכן תואם ללידים
 
-### הפתרון
-עדכון פונקציית `admin_extend_subscription` בבסיס הנתונים כך שה-UPDATE יכלול גם:
-```sql
-subscription_status = 'active'
+### מה ישתנה
+
+**1. `src/hooks/cars/use-add-car.ts`**
+- תיקון שורה 103: שינוי הסינטקס מ-`'("completed","cancelled")'` ל-`'(completed,cancelled)'`
+- הוספת `console.log` לדיבאג כדי לראות התאמות
+
+**2. `src/hooks/cars/use-update-car.ts`**
+- הוספת אותה לוגיקת matching אחרי עדכון מוצלח (אחרי שורה 71)
+- שימוש בנתוני הרכב המעודכנים (`data`) לבדיקת התאמות מול לידים פעילים
+- יצירת toast + notification לכל התאמה שנמצאת
+
+### לוגיקת ה-matching (זהה בשני הקבצים)
+```text
+1. שליפת לידים עם interested_make תואם (ilike)
+2. סינון לפי interested_model (אם קיים)
+3. סינון לפי year range, max_price, max_km
+4. לכל התאמה → toast + notification
 ```
-
-שינוי יחיד בשורת ה-UPDATE הקיימת — הוספת `subscription_status = 'active'` ליד `expires_at` ו-`updated_at`.
-
-### קובץ מושפע
-- Database function: `admin_extend_subscription` (migration בלבד, ללא שינוי קוד Frontend)
 
