@@ -143,6 +143,7 @@ function AppLayout() {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <GracePeriodWarning />
+      <MatchAlertDialog />
       <div className="flex min-h-screen w-full">
         {!isMobile && <AppSidebar />}
         <SidebarInset className={isMobile ? "mr-0" : ""}>
