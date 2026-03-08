@@ -1,18 +1,58 @@
 
 
-## תיקון פונקציית `admin_extend_subscription`
+## תוכנית שינויים - עמוד הלידים
 
-### הבעיה
-כשמאריכים מנוי דרך ממשק האדמין, הפונקציה מעדכנת רק את `expires_at` אבל לא משנה את `subscription_status` ל-`active`. כתוצאה, משתמשים שהיו ב-`trial` או `expired` נשארים חסומים למרות שתאריך התפוגה הוארך.
+5 שינויים נפרדים, כולם בעמוד הלידים בלבד. אף שינוי לא ישפיע על לוגיקה קיימת — רק הסתרה ויזואלית ותיקוני UI.
 
-### הפתרון
-עדכון פונקציית `admin_extend_subscription` בבסיס הנתונים כך שה-UPDATE יכלול גם:
-```sql
-subscription_status = 'active'
-```
+---
 
-שינוי יחיד בשורת ה-UPDATE הקיימת — הוספת `subscription_status = 'active'` ליד `expires_at` ו-`updated_at`.
+### 1. הסתרת כפתורי וואטסאפ (UI בלבד, הלוגיקה נשארת)
 
-### קובץ מושפע
-- Database function: `admin_extend_subscription` (migration בלבד, ללא שינוי קוד Frontend)
+הסתרת כל אלמנטי וואטסאפ מהממשק בעמוד הלידים:
+
+- **`DesktopActions.tsx`** — הסתרת כפתור "וואטסאפ" (הסרה מה-JSX, לא מחיקת הקוד)
+- **`MobileActions.tsx`** — הסתרת כפתור "וואטסאפ"
+- **`LeadsTableActions.tsx`** — הסתרת כפתור ה-Send (וואטסאפ) בטבלה
+- **`LeadsMobileView.tsx`** — הסתרת כפתור וואטסאפ בתצוגת מובייל
+- **`AddLeadForm.tsx`** — הסתרת ה-Checkbox של "שלח הודעת ברוכים הבאים בוואטסאפ" + ביטול שליחה אוטומטית (setSendWhatsApp default ל-false)
+- **`MobileAddLeadForm.tsx`** — ללא שינוי (כבר שולח `sendWhatsApp: false`)
+- **`LeadsMobileHeader.tsx`** — הכפתור כבר הוסר (אין onWhatsApp בממשק)
+
+שיטת הסתרה: עטיפה ב-`{/* hidden - WhatsApp disabled */}` או `{false && (...)}` כך שנוכל להחזיר בקלות.
+
+---
+
+### 2. יישור תפריט "מקור" בעריכת ליד
+
+- **`EditLeadSourceField.tsx`** — הוספת `dir="rtl"` ל-`SelectTrigger` כדי ליישר את הטקסט ימינה, בדיוק כמו שאר התפריטים הנפתחים.
+
+---
+
+### 3. הסרת שדה "איש מכירות מטפל" מטופס עריכה
+
+- **`EditLeadForm.tsx`** — הסתרת `EditLeadAssignedField` (comment out, לא מחיקה), כמו שכבר עשינו ב-`AddLeadForm`.
+
+---
+
+### 4. תיקון סינון סטטוס "בטיפול"
+
+הבעיה: הסטטוס בבסיס הנתונים הוא `in_treatment`, אבל בסינון ב-`LeadsFilters.tsx` הערך הוא `in_progress` — חוסר התאמה!
+
+- **`LeadsFilters.tsx`** שורה 69 — שינוי `value="in_progress"` ל-`value="in_treatment"` כדי שיתאים לערך האמיתי ב-DB.
+
+---
+
+### 5. מערכת הערות מצטברות בכרטיס הליד (Grid)
+
+כרגע: שדה ה-notes דורס את ההערה הקיימת. הדרישה: הערות מצטברות עם אפשרות מחיקה.
+
+**שימוש בשדה `follow_up_notes` (מסוג ARRAY) שכבר קיים בטבלת leads:**
+
+שינויים ב-**`LeadCardActions.tsx`**:
+- בלחיצת "שמור" — הוספת ההערה החדשה למערך `follow_up_notes` (ולא דריסת `notes`)
+- ה-Textarea נשאר ריק אחרי שמירה
+- מתחת ל-Textarea — הצגת רשימת הערות קיימות מ-`lead.follow_up_notes`
+- כל הערה מוצגת בשורה עם טקסט קצר + כפתור X קטן למחיקה
+- מחיקה: סינון ההערה מהמערך ועדכון ב-DB
+- עיצוב: chips/tags קטנים עם רקע `bg-muted/20`, טקסט קטן, X בצד
 
