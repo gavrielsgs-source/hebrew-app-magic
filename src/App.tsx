@@ -55,6 +55,7 @@ import Customers from "./pages/Customers";
 import CustomerProfile from "./pages/CustomerProfile";
 import SubscriptionExpired from "./pages/SubscriptionExpired";
 import { GracePeriodWarning } from "./components/subscription/GracePeriodWarning";
+import { MatchAlertDialog } from "./components/notifications/MatchAlertDialog";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
