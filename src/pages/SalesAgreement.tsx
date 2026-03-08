@@ -61,12 +61,14 @@ type SalesAgreementFormData = z.infer<typeof salesAgreementSchema>;
 
 export default function SalesAgreement() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
   const { data: customers = [] } = useCustomers();
   const createCustomerDocument = useCreateCustomerDocument();
+  const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
   const isMobile = useIsMobile();
 
   const form = useForm<SalesAgreementFormData>({
