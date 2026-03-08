@@ -242,13 +242,52 @@ export default function PublicInventory() {
       </nav>
 
       {/* ── Hero Section ── */}
-      <section className="pt-12 pb-6 sm:pt-20 sm:pb-10 text-center px-5">
-        <h1 className="text-[32px] sm:text-[48px] lg:text-[56px] font-semibold text-[#1d1d1f] tracking-[-0.003em] leading-[1.08] max-w-3xl mx-auto">
-          {dealer?.name}
-        </h1>
-        <p className="mt-3 sm:mt-4 text-[17px] sm:text-[21px] text-[#86868b] font-normal leading-relaxed max-w-xl mx-auto">
-          {pagination?.total || 0} רכבים זמינים במלאי
-        </p>
+      <section className="pt-8 pb-6 sm:pt-14 sm:pb-10 px-4 sm:px-5">
+        <div className="max-w-[1120px] mx-auto">
+          <div 
+            className="relative overflow-hidden rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-14 text-center"
+            style={{
+              background: `linear-gradient(135deg, var(--brand-color) 0%, var(--brand-color-dark) 100%)`,
+            }}
+          >
+            {/* Decorative circles */}
+            <div 
+              className="absolute -top-20 -left-20 w-64 h-64 rounded-full opacity-10"
+              style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }}
+            />
+            <div 
+              className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full opacity-10"
+              style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }}
+            />
+
+            {/* Logo */}
+            {dealer?.settings?.logo_url && (
+              <img 
+                src={dealer.settings.logo_url} 
+                alt={dealer.name} 
+                className="h-10 sm:h-14 w-auto object-contain mx-auto mb-4 sm:mb-6 drop-shadow-lg"
+              />
+            )}
+
+            <h1 className="relative text-[26px] sm:text-[40px] lg:text-[48px] font-bold text-white tracking-tight leading-[1.1] max-w-3xl mx-auto drop-shadow-sm">
+              {dealer?.name}
+            </h1>
+            <p className="relative mt-2 sm:mt-3 text-[15px] sm:text-[19px] text-white/80 font-medium leading-relaxed max-w-xl mx-auto">
+              {pagination?.total || 0} רכבים זמינים במלאי
+            </p>
+
+            {/* Contact pill */}
+            {dealer?.phone && dealer.settings?.show_phone !== false && (
+              <button
+                onClick={() => handleWhatsAppClick()}
+                className="relative mt-5 sm:mt-7 inline-flex items-center gap-2 px-6 py-2.5 sm:py-3 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm sm:text-base font-medium hover:bg-white/30 active:scale-[0.97] transition-all duration-200 border border-white/20"
+              >
+                <Phone className="h-4 w-4" />
+                צור קשר
+              </button>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* ── Search & Filter Bar ── */}
