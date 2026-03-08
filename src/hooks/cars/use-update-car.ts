@@ -113,6 +113,7 @@ export function useUpdateCar() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
+      queryClient.invalidateQueries({ queryKey: ["car-images"] });
       queryClient.invalidateQueries({ queryKey: ["customer"] });
       queryClient.invalidateQueries({ queryKey: ["documents", "car", variables.id] });
     },
