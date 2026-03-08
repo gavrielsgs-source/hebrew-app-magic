@@ -198,49 +198,26 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         return;
       }
 
-      // Check for existing active share
-      const { data: existingShare } = await supabase
-        .from('document_shares' as any)
-        .select('share_id')
-        .eq('document_id', doc.id)
-        .is('revoked_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
+      // Get the direct public URL from storage (like production pages do)
+      const { data: urlData } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(filePath);
 
-      let shareId: string;
+      const publicUrl = urlData?.publicUrl;
 
-      if (existingShare) {
-        shareId = (existingShare as any).share_id;
-      } else {
-        // Create new share record
-        const { data: user } = await supabase.auth.getUser();
-        const newShareId = crypto.randomUUID();
-        
-        const { error: insertError } = await supabase
-          .from('document_shares' as any)
-          .insert({
-            document_id: doc.id,
-            share_id: newShareId,
-            user_id: user.user?.id,
-            file_path: filePath,
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          });
-
-        if (insertError) {
-          console.error('Share insert error:', insertError);
-          toast.error('שגיאה ביצירת קישור שיתוף');
-          toast.dismiss('whatsapp-pdf');
-          return;
-        }
-
-        shareId = newShareId;
+      if (!publicUrl) {
+        toast.error('שגיאה ביצירת קישור למסמך');
+        toast.dismiss('whatsapp-pdf');
+        return;
       }
-
-      const shareUrl = `https://hebrew-app-magic.lovable.app/share/document/${shareId}`;
 
       toast.dismiss('whatsapp-pdf');
 
-      let message = `שלום ${customer.full_name},\nמצורף המסמך "${doc.title}" (מס' ${doc.document_number}).\nסכום: ${doc.amount ? `₪${doc.amount.toLocaleString()}` : 'לא צוין'}\n\nלצפייה והורדה:\n${shareUrl}`;
+      let message = `שלום ${customer.full_name}, מצורף המסמך "${doc.title}"`;
+      if (doc.amount) {
+        message += ` (סכום: ₪${doc.amount.toLocaleString()})`;
+      }
+      message += `\n\n📄 לצפייה והורדת המסמך:\n${publicUrl}`;
 
       const phoneNumber = customer.phone.replace(/[^\d]/g, '');
       const formattedPhone = phoneNumber.startsWith('0') ? `972${phoneNumber.slice(1)}` : phoneNumber;
@@ -250,13 +227,7 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         handleStatusUpdate(doc.id, 'sent');
       }
       
-      const a = document.createElement('a');
-      a.href = whatsappUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      window.open(whatsappUrl, '_blank');
     } catch (error: any) {
       console.error('Error in handleSendToWhatsApp:', error);
       toast.dismiss('whatsapp-pdf');
