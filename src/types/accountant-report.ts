@@ -1,6 +1,6 @@
 export interface AccountantReportTransaction {
   date: string;
-  transaction_type: 'sale' | 'purchase' | 'expense';
+  transaction_type: 'sale' | 'purchase' | 'expense' | 'tax_invoice' | 'payment';
   description: string;
   car_make?: string;
   car_model?: string;
@@ -14,6 +14,7 @@ export interface AccountantReportTransaction {
   invoice_number?: string;
   document_id?: string;
   notes?: string;
+  payment_method?: string;
 }
 
 export interface GenerateReportRequest {
@@ -22,7 +23,7 @@ export interface GenerateReportRequest {
 }
 
 export interface ValidationError {
-  type: 'missing_purchase_cost' | 'missing_invoice' | 'missing_expense_document' | 'invalid_data';
+  type: 'missing_purchase_cost' | 'missing_invoice' | 'missing_expense_document' | 'invalid_data' | 'outstanding_balance';
   message: string;
   carId?: string;
   transactionId?: string;
@@ -33,10 +34,14 @@ export interface FinancialSummary {
   totalSales: number;
   totalPurchases: number;
   totalExpenses: number;
+  totalPayments: number;
   grossProfit: number;
   totalVAT: number;
   netProfit: number;
   transactionCount: number;
+  inventoryCount: number;
+  inventoryValue: number;
+  totalOutstanding: number;
 }
 
 export interface GenerateReportResponse {
