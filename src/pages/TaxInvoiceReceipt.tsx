@@ -454,7 +454,7 @@ export default function TaxInvoiceReceipt() {
     }
   };
 
-  const handleWhatsAppSend = () => {
+  const handleWhatsAppSend = async () => {
     const dataToUse = savedReceiptData || {
       invoiceNumber: form.getValues('title'),
       company: {
@@ -489,9 +489,32 @@ export default function TaxInvoiceReceipt() {
     }
     
     message += `\n\nתודה!\n${dataToUse.company.name}`;
-    
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
+        body: {
+          type: 'text',
+          to: formattedPhone,
+          message: message
+        }
+      });
+
+      if (error) {
+        throw new Error((error as any).message || 'שגיאה בשליחת הודעה');
+      }
+
+      toast({
+        title: "נשלח בהצלחה",
+        description: `ההודעה נשלחה ללקוח ${dataToUse.customer.name} בוואטסאפ`,
+      });
+    } catch (error: any) {
+      console.error('Error sending WhatsApp message:', error);
+      toast({
+        title: "שגיאה בשליחת וואטסאפ",
+        description: error?.message || "לא ניתן לשלוח את ההודעה. ניתן לנסות שוב.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Mobile Layout
