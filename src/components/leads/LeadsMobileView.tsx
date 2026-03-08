@@ -199,16 +199,8 @@ export function LeadsMobileView({ leads, isLoading, error }: { leads: any[]; isL
               {/* כפתורי פעולה ראשיים */}
               <div className="space-y-3">
                 {/* שורה ראשונה - פעולות ראשיות */}
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    size="lg"
-                    className="bg-green-500 hover:bg-green-600 text-white rounded-2xl py-4 h-16 shadow-md font-bold text-lg"
-                    disabled={!lead.phone}
-                    onClick={() => handleWhatsAppMessage(lead.id as string)}
-                  >
-                    <MessageSquare className="h-6 w-6 ml-2" />
-                    וואטסאפ
-                  </Button>
+                <div className="grid grid-cols-1 gap-3">
+                  {/* WhatsApp button hidden - will be re-enabled later */}
 
                   <Button 
                     variant="outline" 

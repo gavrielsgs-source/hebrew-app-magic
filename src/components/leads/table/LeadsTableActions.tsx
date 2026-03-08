@@ -48,6 +48,8 @@ export function LeadsTableActions({
         <Phone className="h-5 w-5" />
       </Button>
       
+      {/* WhatsApp dialog hidden - will be re-enabled later */}
+      {false && (
       <SwipeDialog open={isWhatsappOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
         setIsWhatsappOpen(open);
         if (open) setSelectedLeadId(lead.id as string);
@@ -77,6 +79,7 @@ export function LeadsTableActions({
           )}
         </DialogContent>
       </SwipeDialog>
+      )}
       
       <SwipeDialog open={isScheduleOpen && selectedLeadId === lead.id} onOpenChange={(open) => {
         setIsScheduleOpen(open);

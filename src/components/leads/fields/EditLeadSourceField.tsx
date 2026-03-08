@@ -15,7 +15,7 @@ export function EditLeadSourceField({ control }: Props) {
           <FormLabel className="text-base font-semibold">מקור</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
-              <SelectTrigger aria-label="בחר מקור ליד">
+              <SelectTrigger aria-label="בחר מקור ליד" dir="rtl">
                 <SelectValue placeholder="בחר מקור" />
               </SelectTrigger>
             </FormControl>
