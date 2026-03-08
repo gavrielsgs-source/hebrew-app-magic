@@ -18,7 +18,7 @@ function createTaxInvoiceReceiptHTML(data: TaxInvoiceReceiptData): string {
       <td>${item.quantity}</td>
       <td>${formatCurrency(item.unitPrice, data.currency)}</td>
       <td>${item.discount > 0 ? formatCurrency(item.discount, data.currency) : '-'}</td>
-      <td>${item.vatRate}%</td>
+      <td>${item.includeVat ? `כולל ${item.vatRate}%` : `+ ${item.vatRate}%`}</td>
       <td>${formatCurrency(item.total, data.currency)}</td>
     </tr>
   `).join('');
