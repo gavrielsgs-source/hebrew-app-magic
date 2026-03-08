@@ -354,7 +354,13 @@ export default function Receipt() {
       totals,
     };
     
-    const message = `שלום ${dataToUse.customer?.name || ''},\n\nמצורפת קבלה מספר ${dataToUse.receiptNumber} מאת ${dataToUse.company?.name}.\n\nסה"כ שולם: ₪${totals.grandTotal.toLocaleString('he-IL', { minimumFractionDigits: 2 })}\n\nתודה רבה!`;
+    let message = `שלום ${dataToUse.customer?.name || ''},\n\nמצורפת קבלה מספר ${dataToUse.receiptNumber} מאת ${dataToUse.company?.name}.\n\nסה"כ שולם: ₪${totals.grandTotal.toLocaleString('he-IL', { minimumFractionDigits: 2 })}`;
+    
+    if (documentUrl) {
+      message += `\n\n📄 לצפייה והורדת המסמך:\n${documentUrl}`;
+    }
+    
+    message += `\n\nתודה רבה!`;
     
     const phone = formatPhoneForWhatsApp(watchedFields.customerPhone);
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
