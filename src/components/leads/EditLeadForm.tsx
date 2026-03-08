@@ -90,10 +90,10 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
         assigned_to: lead.assigned_to || "",
         interested_make: lead.interested_make || "",
         interested_model: lead.interested_model || "",
-        interested_year_from: lead.interested_year_from || "",
-        interested_year_to: lead.interested_year_to || "",
-        interested_max_price: lead.interested_max_price || "",
-        interested_max_km: lead.interested_max_km || "",
+        interested_year_from: lead.interested_year_from || ('' as unknown as number | ""),
+        interested_year_to: lead.interested_year_to || ('' as unknown as number | ""),
+        interested_max_price: lead.interested_max_price || ('' as unknown as number | ""),
+        interested_max_km: lead.interested_max_km || ('' as unknown as number | ""),
       }}
       onSubmit={handleSubmit}
       isSubmitting={updateLead.isPending}
