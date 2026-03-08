@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { CarSearchSelect } from "@/components/cars/CarSearchSelect";
 import { useAuth } from "@/hooks/use-auth";
 import { useCreateLead } from "@/hooks/leads/use-create-lead";
 import { useCars } from "@/hooks/use-cars";
 import { useToast } from "@/hooks/use-toast";
-import { User, Phone, Mail, FileText, Car, Building } from "lucide-react";
+import { User, Phone, Mail, FileText, Car, Building, Search, ChevronDown, ChevronUp } from "lucide-react";
 
 interface MobileAddLeadFormProps {
   carId?: string;
@@ -30,9 +31,16 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     email: "",
     notes: "",
     car_id: carId || "",
-    source: "ידני"
+    source: "ידני",
+    interested_make: "",
+    interested_model: "",
+    interested_year_from: "",
+    interested_year_to: "",
+    interested_max_price: "",
+    interested_max_km: "",
   });
   const [shouldScheduleMeeting, setShouldScheduleMeeting] = useState(false);
+  const [interestedOpen, setInterestedOpen] = useState(false);
 
   // Enhanced mobile-first submit handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
