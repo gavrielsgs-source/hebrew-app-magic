@@ -262,7 +262,7 @@ export default function Receipt() {
       try {
         const pdfBlob = await generateReceiptPDF(result, true) as Blob;
         if (pdfBlob) {
-          await uploadDocument({
+          const publicUrl = await uploadDocument({
             pdfBlob,
             documentType: 'receipt',
             documentNumber: result.receiptNumber,
@@ -270,6 +270,9 @@ export default function Receipt() {
             entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
             entityId: selectedEntity?.id,
           });
+          if (publicUrl) {
+            setDocumentUrl(publicUrl);
+          }
         }
       } catch (pdfError) {
         console.error('Error uploading PDF:', pdfError);
