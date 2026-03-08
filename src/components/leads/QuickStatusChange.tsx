@@ -72,7 +72,7 @@ export function QuickStatusChange({ lead, onStatusChange }: QuickStatusChangePro
         <SelectItem value="in_treatment" className="justify-end text-right">בטיפול</SelectItem>
         <SelectItem value="waiting" className="justify-end text-right">ממתין</SelectItem>
         <SelectItem value="meeting_scheduled" className="justify-end text-right">נקבעה פגישה</SelectItem>
-        <SelectItem value="follow_up" className="justify-end text-right">לעקוב</SelectItem>
+        {/* follow_up removed */}
         <SelectItem value="handled" className="justify-end text-right">טופל</SelectItem>
         <SelectItem value="not_relevant" className="justify-end text-right">לא רלוונטי</SelectItem>
       </SelectContent>
