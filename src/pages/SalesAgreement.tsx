@@ -70,6 +70,7 @@ export default function SalesAgreement() {
   const { data: customers = [] } = useCustomers();
   const createCustomerDocument = useCreateCustomerDocument();
   const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
+  const addPurchase = useAddCustomerVehiclePurchase();
   const isMobile = useIsMobile();
 
   const form = useForm<SalesAgreementFormData>({
