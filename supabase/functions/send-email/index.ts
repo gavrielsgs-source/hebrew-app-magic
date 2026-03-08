@@ -32,6 +32,7 @@ interface EmailRequest {
     paymentDate?: string;
     nextBillingDate?: string;
     invoiceUrl?: string;
+    tutorialLink?: string;
   };
 }
 
