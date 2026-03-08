@@ -17,15 +17,44 @@ export function CarDocumentsTab({ carId, ownerCustomerId }: CarDocumentsTabProps
   const { documents: carDocuments, isLoading: loadingCarDocs } = useDocuments("car", carId);
   const { user } = useAuth();
 
-  // Also fetch customer documents if a customer is linked
-  const { data: customerDocuments = [], isLoading: loadingCustomerDocs } = useQuery({
-    queryKey: ['customer-documents', ownerCustomerId],
+  // Find all linked customer IDs via sales and purchases
+  const { data: linkedCustomerIds = [], isLoading: loadingLinks } = useQuery({
+    queryKey: ['car-linked-customers', carId],
     queryFn: async () => {
-      if (!ownerCustomerId || !user) return [];
+      if (!user) return [];
+      const ids = new Set<string>();
+      
+      // Add owner if exists
+      if (ownerCustomerId) ids.add(ownerCustomerId);
+
+      // Check sales (buyer)
+      const { data: sales } = await supabase
+        .from('customer_vehicle_sales')
+        .select('customer_id')
+        .eq('car_id', carId);
+      sales?.forEach(s => ids.add(s.customer_id));
+
+      // Check purchases (buyer from dealer)
+      const { data: purchases } = await supabase
+        .from('customer_vehicle_purchases')
+        .select('customer_id')
+        .eq('car_id', carId);
+      purchases?.forEach(p => ids.add(p.customer_id));
+
+      return Array.from(ids);
+    },
+    enabled: !!user,
+  });
+
+  // Fetch customer documents for all linked customers
+  const { data: customerDocuments = [], isLoading: loadingCustomerDocs } = useQuery({
+    queryKey: ['car-customer-documents', linkedCustomerIds],
+    queryFn: async () => {
+      if (linkedCustomerIds.length === 0 || !user) return [];
       const { data, error } = await supabase
         .from('customer_documents')
         .select('*')
-        .eq('customer_id', ownerCustomerId)
+        .in('customer_id', linkedCustomerIds)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if (error) {
@@ -34,10 +63,10 @@ export function CarDocumentsTab({ carId, ownerCustomerId }: CarDocumentsTabProps
       }
       return data || [];
     },
-    enabled: !!ownerCustomerId && !!user,
+    enabled: linkedCustomerIds.length > 0 && !!user,
   });
 
-  const isLoading = loadingCarDocs || loadingCustomerDocs;
+  const isLoading = loadingCarDocs || loadingLinks || loadingCustomerDocs;
 
   if (isLoading) {
     return (
