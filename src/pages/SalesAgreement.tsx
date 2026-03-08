@@ -26,6 +26,8 @@ import { cn } from "@/lib/utils";
 import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
 import { generateSalesAgreementPDF } from "@/utils/pdf/sales-agreement-pdf";
 import { useCustomers, useCreateCustomerDocument } from "@/hooks/customers";
+import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
+import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { Label } from "@/components/ui/label";
 
 const salesAgreementSchema = z.object({
