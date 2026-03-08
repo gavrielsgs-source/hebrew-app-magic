@@ -29,11 +29,19 @@ export function InventorySettingsTab() {
   const [settings, setSettings] = useState<InventorySettings>({
     primary_color: "#3b82f6",
     show_phone: true,
+    show_prices: true,
   });
   const [slugError, setSlugError] = useState("");
 
   const baseUrl = "https://carsleadapp.com";
   const inventoryUrl = slug ? `${baseUrl}/inventory/${slug}` : "";
+
+  const parseBoolean = (value: unknown, fallback: boolean) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return value.toLowerCase() === "true";
+    if (typeof value === "number") return value === 1;
+    return fallback;
+  };
 
   useEffect(() => {
     if (user) {
@@ -54,17 +62,20 @@ export function InventorySettingsTab() {
       if (data) {
         console.log('[InventorySettings] Fetched:', JSON.stringify(data));
         setSlug(data.inventory_slug || "");
-        setEnabled(data.inventory_enabled === true);
-        if (data.inventory_settings && typeof data.inventory_settings === 'object') {
-          const dbSettings = data.inventory_settings as Record<string, unknown>;
-          setSettings({
-            logo_url: (dbSettings.logo_url as string) || undefined,
-            primary_color: (dbSettings.primary_color as string) || "#3b82f6",
-            contact_phone: (dbSettings.contact_phone as string) || undefined,
-            show_phone: dbSettings.show_phone !== false,
-            show_prices: dbSettings.show_prices === true,
-          });
-        }
+        setEnabled(parseBoolean(data.inventory_enabled, false));
+
+        const dbSettings =
+          data.inventory_settings && typeof data.inventory_settings === "object"
+            ? (data.inventory_settings as Record<string, unknown>)
+            : {};
+
+        setSettings({
+          logo_url: (dbSettings.logo_url as string) || undefined,
+          primary_color: (dbSettings.primary_color as string) || "#3b82f6",
+          contact_phone: (dbSettings.contact_phone as string) || undefined,
+          show_phone: parseBoolean(dbSettings.show_phone, true),
+          show_prices: parseBoolean(dbSettings.show_prices, true),
+        });
       }
     } catch (error) {
       console.error("Error fetching inventory settings:", error);
@@ -118,12 +129,18 @@ export function InventorySettingsTab() {
         }
       }
 
+      const normalizedSettings: InventorySettings = {
+        ...settings,
+        show_phone: parseBoolean(settings.show_phone, true),
+        show_prices: parseBoolean(settings.show_prices, true),
+      };
+
       const { error } = await supabase
         .from("profiles")
         .update({
           inventory_slug: slug || null,
-          inventory_enabled: enabled,
-          inventory_settings: settings as unknown as Json,
+          inventory_enabled: parseBoolean(enabled, false),
+          inventory_settings: normalizedSettings as unknown as Json,
         })
         .eq("id", user?.id);
 
