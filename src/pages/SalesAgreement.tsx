@@ -26,6 +26,8 @@ import { cn } from "@/lib/utils";
 import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
 import { generateSalesAgreementPDF } from "@/utils/pdf/sales-agreement-pdf";
 import { useCustomers, useCreateCustomerDocument } from "@/hooks/customers";
+import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
+import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { Label } from "@/components/ui/label";
 
 const salesAgreementSchema = z.object({
@@ -59,12 +61,14 @@ type SalesAgreementFormData = z.infer<typeof salesAgreementSchema>;
 
 export default function SalesAgreement() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
   const { data: customers = [] } = useCustomers();
   const createCustomerDocument = useCreateCustomerDocument();
+  const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
   const isMobile = useIsMobile();
 
   const form = useForm<SalesAgreementFormData>({
@@ -189,6 +193,26 @@ export default function SalesAgreement() {
       // Generate and download PDF
       await generateSalesAgreementPDF(agreementData);
 
+      // Upload PDF to storage
+      try {
+        const pdfBlob = await generateSalesAgreementPDF(agreementData, true) as Blob;
+        if (pdfBlob) {
+          const publicUrl = await uploadDocument({
+            pdfBlob,
+            documentType: 'sales_agreement',
+            documentNumber: format(data.date, 'yyyyMMdd'),
+            customerName: data.buyerName,
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+          if (publicUrl) {
+            setDocumentUrl(publicUrl);
+          }
+        }
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
+
       // Attach the agreement to an existing customer when possible
       if (selectedEntity?.type === 'customer') {
         createCustomerDocument.mutate({
@@ -229,8 +253,16 @@ export default function SalesAgreement() {
       return;
     }
     
-    const message = `שלום ${buyerName}, מצורף הסכם המכר עבור הרכב. נשמח לקבוע פגישה לחתימה על ההסכם.`;
-    const whatsappUrl = `https://wa.me/${buyerPhone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`;
+    let message = `שלום ${buyerName}, מצורף הסכם המכר עבור הרכב.`;
+    
+    if (documentUrl) {
+      message += `\n\n📄 לצפייה והורדת המסמך:\n${documentUrl}`;
+    }
+    
+    message += `\n\nנשמח לקבוע פגישה לחתימה על ההסכם.`;
+    
+    const formattedPhone = formatPhoneForWhatsApp(buyerPhone);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
