@@ -104,7 +104,57 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         filePath = doc.file_path;
       }
 
-      // If no file exists yet, generate PDF and upload
+      // Priority: Try to find the professionally styled PDF from documents table
+      if (!filePath || bucketName === 'customer-documents') {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (currentUser) {
+          let matchingDoc = null;
+
+          const { data: byEntity } = await supabase
+            .from('documents')
+            .select('file_path, name')
+            .eq('user_id', currentUser.id)
+            .eq('entity_id', customerId)
+            .not('file_path', 'is', null)
+            .order('created_at', { ascending: false });
+
+          if (byEntity && byEntity.length > 0) {
+            const docTitle = doc.title || '';
+            const docType = doc.type || '';
+            const typeKeywords: Record<string, string[]> = {
+              'contract': ['הסכם מכר', 'הסכם', 'contract'],
+              'invoice': ['חשבונית', 'invoice'],
+              'receipt': ['קבלה', 'receipt'],
+              'quote': ['הצעת מחיר', 'quote'],
+              'order': ['הזמנת רכב', 'order'],
+              'credit_invoice': ['זיכוי', 'credit'],
+            };
+            const keywords = typeKeywords[docType] || [docTitle];
+            matchingDoc = byEntity.find(d =>
+              keywords.some(kw => d.name?.includes(kw) || docTitle.includes(kw))
+            ) || byEntity[0];
+          }
+
+          if (!matchingDoc) {
+            const { data: byDocId } = await supabase
+              .from('documents')
+              .select('file_path')
+              .eq('user_id', currentUser.id)
+              .eq('entity_id', doc.id)
+              .not('file_path', 'is', null)
+              .limit(1)
+              .maybeSingle();
+            if (byDocId?.file_path) matchingDoc = byDocId;
+          }
+
+          if (matchingDoc?.file_path) {
+            filePath = matchingDoc.file_path;
+            bucketName = 'documents';
+          }
+        }
+      }
+
+      // If no styled file exists, generate PDF and upload
       if (!filePath) {
         console.log('Generating PDF for document:', doc.id, 'type:', doc.type);
         const pdfBlob = await generatePdfBlobForDoc(doc);
