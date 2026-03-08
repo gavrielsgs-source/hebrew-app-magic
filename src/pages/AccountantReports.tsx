@@ -293,6 +293,12 @@ export default function AccountantReports() {
                   </span>
                   <span className="text-muted-foreground">סה״כ הוצאות</span>
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-semibold text-blue-600">
+                    ₪{reportData.summary.totalPayments.toLocaleString()}
+                  </span>
+                  <span className="text-muted-foreground">סה״כ קבלות</span>
+                </div>
                 <Separator />
                 <div className="flex justify-between text-sm">
                   <span className="font-semibold">
@@ -316,6 +322,33 @@ export default function AccountantReports() {
                 <div className="flex justify-between text-sm">
                   <span className="font-semibold">{reportData.summary.transactionCount}</span>
                   <span className="text-muted-foreground">מס׳ עסקאות</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Inventory & Balances */}
+            <Card className="shadow-lg rounded-2xl border-2">
+              <CardHeader className="bg-gradient-to-l from-blue-500/10 to-transparent border-b pb-3">
+                <CardTitle className="text-right text-base flex items-center gap-2">
+                  <Package className="h-4 w-4 text-blue-500" />
+                  מלאי ויתרות
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="font-semibold">{reportData.summary.inventoryCount} רכבים</span>
+                  <span className="text-muted-foreground">מלאי נוכחי</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-semibold">₪{reportData.summary.inventoryValue.toLocaleString()}</span>
+                  <span className="text-muted-foreground">ערך מלאי</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-sm">
+                  <span className={`font-semibold ${reportData.summary.totalOutstanding > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    ₪{reportData.summary.totalOutstanding.toLocaleString()}
+                  </span>
+                  <span className="text-muted-foreground">יתרות חוב לקוחות</span>
                 </div>
               </CardContent>
             </Card>
@@ -346,6 +379,16 @@ export default function AccountantReports() {
                 )}
               </CardContent>
             </Card>
+
+            {/* What's NOT included */}
+            <Alert className="rounded-xl border-blue-200 bg-blue-50">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800 text-xs">
+                <strong>הדוח כולל:</strong> עסקאות, חשבוניות מס, קבלות, הוצאות, מלאי ויתרות לקוחות + מסמכי PDF.
+                <br />
+                <strong>יש להעביר בנפרד:</strong> דפי בנק, דוחות כרטיסי אשראי, רשימוני יבוא וטופס 1214.
+              </AlertDescription>
+            </Alert>
           </div>
         )}
       </div>
