@@ -20,11 +20,6 @@ export function TasksPageHeader({ viewMode, onViewModeChange }: TasksPageHeaderP
       title="ניהול משימות"
       subtitle="נהל את כל המשימות והפגישות שלך במקום אחד"
       icon={CheckSquare}
-      actionButton={{
-        label: "הוסף משימה חדשה",
-        onClick: () => setIsAddTaskOpen(true),
-        icon: Plus
-      }}
     >
       <div className="flex items-center gap-3">
         <div className="flex border-2 rounded-2xl p-1.5 bg-white/80 backdrop-blur-sm shadow-lg gap-1">
