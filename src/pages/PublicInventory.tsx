@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2, Phone, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Loader2, Phone, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { translateTransmission, translateFuelType, translateColor } from "@/lib/car-translations";
 import { CarImageSlider } from "@/components/inventory/CarImageSlider";
+import { CarDetailModal } from "@/components/inventory/CarDetailModal";
+import { getBrandCSSVars } from "@/lib/brand-color-utils";
 
 interface DealerInfo {
   name: string;
@@ -52,6 +52,8 @@ interface Filters {
   makes: string[];
 }
 
+const DEFAULT_BRAND_COLOR = '#0071e3';
+
 export default function PublicInventory() {
   const { slug } = useParams<{ slug: string }>();
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,14 @@ export default function PublicInventory() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Detail modal state
+  const [detailCar, setDetailCar] = useState<PublicCar | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  // Dynamic brand color
+  const brandColor = dealer?.settings?.primary_color || DEFAULT_BRAND_COLOR;
+  const brandVars = getBrandCSSVars(brandColor);
 
   const fetchInventory = async (page = 1) => {
     setLoading(true);
@@ -200,7 +210,7 @@ export default function PublicInventory() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbfbfd]" dir="rtl">
+    <div className="min-h-screen bg-[#fbfbfd]" dir="rtl" style={brandVars as React.CSSProperties}>
       
       {/* ── Apple-style Nav Bar ── */}
       <nav className="sticky top-0 z-50 bg-[rgba(251,251,253,0.8)] backdrop-blur-2xl backdrop-saturate-[1.8] border-b border-[#d2d2d7]/60">
@@ -222,7 +232,8 @@ export default function PublicInventory() {
           {dealer?.phone && dealer.settings?.show_phone !== false && (
             <button 
               onClick={() => handleWhatsAppClick()} 
-              className="text-[#0071e3] text-sm font-medium hover:underline underline-offset-2 transition-all"
+              className="text-sm font-medium hover:underline underline-offset-2 transition-all"
+              style={{ color: brandColor }}
             >
               צור קשר
             </button>
@@ -252,14 +263,15 @@ export default function PublicInventory() {
                 placeholder="חיפוש..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pr-10 pl-4 rounded-lg bg-[#e8e8ed]/60 border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40 transition-all"
+                className="w-full h-9 pr-10 pl-4 rounded-lg bg-[#e8e8ed]/60 border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 transition-all"
+                style={{ '--tw-ring-color': 'var(--brand-color-alpha-40)' } as React.CSSProperties}
               />
             </div>
 
             {/* Desktop filters */}
             <div className="hidden md:flex gap-2 items-center">
               <Select value={selectedMake || "all"} onValueChange={(val) => setSelectedMake(val === "all" ? "" : val)}>
-                <SelectTrigger className="w-[130px] h-9 rounded-lg border-0 bg-[#e8e8ed]/60 text-[14px] text-[#1d1d1f] focus:ring-2 focus:ring-[#0071e3]/40">
+                <SelectTrigger className="w-[130px] h-9 rounded-lg border-0 bg-[#e8e8ed]/60 text-[14px] text-[#1d1d1f]">
                   <SelectValue placeholder="יצרן" />
                 </SelectTrigger>
                 <SelectContent>
@@ -277,14 +289,16 @@ export default function PublicInventory() {
                     placeholder="מחיר מ-"
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-[100px] h-9 px-3 rounded-lg bg-[#e8e8ed]/60 border-0 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40"
+                    className="w-[100px] h-9 px-3 rounded-lg bg-[#e8e8ed]/60 border-0 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 transition-all"
+                    style={{ '--tw-ring-color': 'var(--brand-color-alpha-40)' } as React.CSSProperties}
                   />
                   <input
                     type="number"
                     placeholder="מחיר עד"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
-                    className="w-[100px] h-9 px-3 rounded-lg bg-[#e8e8ed]/60 border-0 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40"
+                    className="w-[100px] h-9 px-3 rounded-lg bg-[#e8e8ed]/60 border-0 text-[14px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 transition-all"
+                    style={{ '--tw-ring-color': 'var(--brand-color-alpha-40)' } as React.CSSProperties}
                   />
                 </>
               )}
@@ -292,7 +306,8 @@ export default function PublicInventory() {
               {hasActiveFilters && (
                 <button 
                   onClick={clearFilters} 
-                  className="h-9 px-3 rounded-lg text-[14px] text-[#0071e3] hover:bg-[#0071e3]/10 transition-colors flex items-center gap-1"
+                  className="h-9 px-3 rounded-lg text-[14px] hover:opacity-80 transition-colors flex items-center gap-1"
+                  style={{ color: brandColor }}
                 >
                   <X className="h-3.5 w-3.5" />
                   נקה
@@ -306,7 +321,7 @@ export default function PublicInventory() {
                 <button className="md:hidden h-9 w-9 rounded-lg bg-[#e8e8ed]/60 flex items-center justify-center relative">
                   <SlidersHorizontal className="h-4 w-4 text-[#1d1d1f]" />
                   {hasActiveFilters && (
-                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#0071e3]" />
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full" style={{ backgroundColor: brandColor }} />
                   )}
                 </button>
               </SheetTrigger>
@@ -336,9 +351,11 @@ export default function PublicInventory() {
                       <label className="text-[13px] font-medium text-[#86868b] uppercase tracking-wide mb-2 block">טווח מחירים</label>
                       <div className="flex gap-2">
                         <input type="number" placeholder="מינימום" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} 
-                          className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
+                          className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 transition-all"
+                          style={{ '--tw-ring-color': 'var(--brand-color-alpha-40)' } as React.CSSProperties} />
                         <input type="number" placeholder="מקסימום" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} 
-                          className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
+                          className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 transition-all"
+                          style={{ '--tw-ring-color': 'var(--brand-color-alpha-40)' } as React.CSSProperties} />
                       </div>
                     </div>
                   )}
@@ -347,16 +364,19 @@ export default function PublicInventory() {
                     <label className="text-[13px] font-medium text-[#86868b] uppercase tracking-wide mb-2 block">טווח שנים</label>
                     <div className="flex gap-2">
                       <input type="number" placeholder="משנה" value={minYear} onChange={(e) => setMinYear(e.target.value)} 
-                        className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
+                        className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 transition-all"
+                        style={{ '--tw-ring-color': 'var(--brand-color-alpha-40)' } as React.CSSProperties} />
                       <input type="number" placeholder="עד שנה" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} 
-                        className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40" />
+                        className="flex-1 h-11 px-4 rounded-xl bg-[#f5f5f7] border-0 text-[15px] text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 transition-all"
+                        style={{ '--tw-ring-color': 'var(--brand-color-alpha-40)' } as React.CSSProperties} />
                     </div>
                   </div>
 
                   <div className="flex gap-3 pt-2">
                     <button 
                       onClick={() => setFiltersOpen(false)} 
-                      className="flex-1 h-12 rounded-full bg-[#0071e3] text-white text-[15px] font-medium hover:bg-[#0077ed] active:scale-[0.98] transition-all"
+                      className="flex-1 h-12 rounded-full text-white text-[15px] font-medium active:scale-[0.98] transition-all"
+                      style={{ backgroundColor: brandColor }}
                     >
                       הצג תוצאות
                     </button>
@@ -390,7 +410,7 @@ export default function PublicInventory() {
             <h2 className="text-[22px] font-semibold text-[#1d1d1f] tracking-tight">לא נמצאו רכבים</h2>
             <p className="text-[#86868b] text-[15px] mt-2">נסה לשנות את הסינון או החיפוש</p>
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="mt-4 text-[#0071e3] text-[15px] font-medium hover:underline">
+              <button onClick={clearFilters} className="mt-4 text-[15px] font-medium hover:underline" style={{ color: brandColor }}>
                 נקה סינון
               </button>
             )}
@@ -404,26 +424,30 @@ export default function PublicInventory() {
                   className="group flex flex-col h-full rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
-                  {/* Image */}
-                  <CarImageSlider images={car.image_urls || (car.image_url ? [car.image_url] : [])} alt={`${car.make} ${car.model}`} />
+                  {/* Image with price badge */}
+                  <div className="relative">
+                    <CarImageSlider images={car.image_urls || (car.image_url ? [car.image_url] : [])} alt={`${car.make} ${car.model}`} />
+                    
+                    {/* Glassmorphism price badge */}
+                    {showPrices && (
+                      <div className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-lg">
+                        <span className="text-[15px] font-bold" style={{ color: brandColor }}>
+                          {formatPrice(car.price)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Content */}
                   <div className="p-5 flex-1 flex flex-col">
                     {/* Title row */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <h3 className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight leading-tight truncate">
-                          {car.make} {car.model}
-                        </h3>
-                        <p className="text-[13px] text-[#86868b] mt-0.5">
-                          {car.year}{car.trim_level ? ` · ${car.trim_level}` : ''}
-                        </p>
-                      </div>
-                      {showPrices && (
-                        <span className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight whitespace-nowrap">
-                          {formatPrice(car.price)}
-                        </span>
-                      )}
+                    <div>
+                      <h3 className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight leading-tight truncate">
+                        {car.make} {car.model}
+                      </h3>
+                      <p className="text-[13px] text-[#86868b] mt-0.5">
+                        {car.year}{car.trim_level ? ` · ${car.trim_level}` : ''}
+                      </p>
                     </div>
 
                     {/* Specs — clean pill tags */}
@@ -465,14 +489,23 @@ export default function PublicInventory() {
                       </p>
                     )}
                     
-                    {/* CTA — pushed to bottom */}
-                    <div className="mt-auto pt-4">
+                    {/* Dual CTA — pushed to bottom */}
+                    <div className="mt-auto pt-4 flex gap-2">
                       <button 
-                        className="w-full h-10 rounded-full bg-[#1d1d1f] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#000] active:scale-[0.98] transition-all duration-200"
+                        className="flex-1 h-10 rounded-full text-white text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] hover:scale-[1.02] transition-all duration-200"
+                        style={{ backgroundColor: brandColor }}
+                        onClick={() => { setDetailCar(car); setDetailOpen(true); }}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        פרטים נוספים
+                      </button>
+                      <button 
+                        className="h-10 px-4 rounded-full border-2 text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] hover:scale-[1.02] transition-all duration-200"
+                        style={{ borderColor: brandColor, color: brandColor }}
                         onClick={() => handleWhatsAppClick(car)}
                       >
                         <Phone className="h-3.5 w-3.5" />
-                        {showPrices ? 'שלח הודעה' : 'לפרטים ומחיר'}
+                        צור קשר
                       </button>
                     </div>
                   </div>
@@ -497,9 +530,10 @@ export default function PublicInventory() {
                     onClick={() => setCurrentPage(page)}
                     className={`h-9 w-9 rounded-full text-[14px] font-medium transition-all ${
                       page === currentPage 
-                        ? 'bg-[#1d1d1f] text-white' 
+                        ? 'text-white' 
                         : 'text-[#1d1d1f] hover:bg-[#f5f5f7]'
                     }`}
+                    style={page === currentPage ? { backgroundColor: brandColor } : {}}
                   >
                     {page}
                   </button>
@@ -518,6 +552,17 @@ export default function PublicInventory() {
         )}
       </main>
 
+      {/* ── Car Detail Modal ── */}
+      <CarDetailModal
+        car={detailCar}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        showPrices={showPrices}
+        onWhatsAppClick={handleWhatsAppClick}
+        formatPrice={formatPrice}
+        formatKilometers={formatKilometers}
+      />
+
       {/* ── Floating WhatsApp ── */}
       <button
         onClick={() => handleWhatsAppClick()}
@@ -535,7 +580,7 @@ export default function PublicInventory() {
           <p className="text-[12px] text-[#86868b]">© {new Date().getFullYear()} {dealer?.name}</p>
           <p className="text-[12px] text-[#86868b]">
             מופעל על ידי{' '}
-            <a href="https://carsleadapp.com" className="text-[#0071e3] hover:underline underline-offset-2">
+            <a href="https://carsleadapp.com" className="hover:underline underline-offset-2" style={{ color: brandColor }}>
               CarsLead
             </a>
           </p>
