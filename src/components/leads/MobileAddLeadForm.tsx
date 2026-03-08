@@ -223,6 +223,49 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         </Select>
       </div>
 
+      {/* Interested Car Section */}
+      <Collapsible open={interestedOpen} onOpenChange={setInterestedOpen} className="border rounded-lg p-3">
+        <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium">
+          <span className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            🔍 רכב מבוקש (לא במלאי)
+          </span>
+          {interestedOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 pt-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">יצרן</Label>
+              <Input placeholder="למשל: טויוטה" value={formData.interested_make} onChange={(e) => setFormData({ ...formData, interested_make: e.target.value })} className="h-10" dir="rtl" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">דגם</Label>
+              <Input placeholder="למשל: קורולה" value={formData.interested_model} onChange={(e) => setFormData({ ...formData, interested_model: e.target.value })} className="h-10" dir="rtl" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">משנה</Label>
+              <Input type="number" placeholder="2020" value={formData.interested_year_from} onChange={(e) => setFormData({ ...formData, interested_year_from: e.target.value })} className="h-10" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">עד שנה</Label>
+              <Input type="number" placeholder="2025" value={formData.interested_year_to} onChange={(e) => setFormData({ ...formData, interested_year_to: e.target.value })} className="h-10" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">תקציב מקסימלי (₪)</Label>
+              <Input type="number" placeholder="150000" value={formData.interested_max_price} onChange={(e) => setFormData({ ...formData, interested_max_price: e.target.value })} className="h-10" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">ק"מ מקסימלי</Label>
+              <Input type="number" placeholder="100000" value={formData.interested_max_km} onChange={(e) => setFormData({ ...formData, interested_max_km: e.target.value })} className="h-10" />
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
       {/* Notes */}
       <div className="space-y-2">
         <Label htmlFor="notes" className="text-sm font-medium flex items-center gap-2">
