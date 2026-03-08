@@ -327,7 +327,7 @@ export default function TaxInvoice() {
       try {
         const pdfBlob = await generateTaxInvoicePDF({ ...invoiceData, invoiceNumber: savedInvoice.invoiceNumber }, true) as Blob;
         if (pdfBlob) {
-          await uploadDocument({
+          const publicUrl = await uploadDocument({
             pdfBlob,
             documentType: 'tax_invoice',
             documentNumber: savedInvoice.invoiceNumber,
@@ -335,6 +335,7 @@ export default function TaxInvoice() {
             entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
             entityId: selectedEntity?.id,
           });
+          if (publicUrl) setDocumentUrl(publicUrl);
         }
         // Also download the PDF for the user
         await generateTaxInvoicePDF({ ...invoiceData, invoiceNumber: savedInvoice.invoiceNumber });
