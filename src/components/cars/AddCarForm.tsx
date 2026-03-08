@@ -111,7 +111,7 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
         list_price: '',
         registration_fee: '',
         is_pledged: 'false',
-        show_in_catalog: 'false',
+        show_in_catalog: 'true',
         dealer_price: '',
         catalog_price: '',
       }}

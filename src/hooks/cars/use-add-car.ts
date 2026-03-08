@@ -57,7 +57,7 @@ export function useAddCar() {
             list_price: car.list_price || null,
             registration_fee: car.registration_fee || null,
             is_pledged: car.is_pledged || false,
-            show_in_catalog: car.show_in_catalog || false,
+            show_in_catalog: car.show_in_catalog !== undefined ? car.show_in_catalog : true,
             dealer_price: car.dealer_price || null,
             catalog_price: car.catalog_price || null,
             purchase_cost: car.purchase_cost || null,
