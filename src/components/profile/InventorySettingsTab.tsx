@@ -129,12 +129,18 @@ export function InventorySettingsTab() {
         }
       }
 
+      const normalizedSettings: InventorySettings = {
+        ...settings,
+        show_phone: parseBoolean(settings.show_phone, true),
+        show_prices: parseBoolean(settings.show_prices, true),
+      };
+
       const { error } = await supabase
         .from("profiles")
         .update({
           inventory_slug: slug || null,
-          inventory_enabled: enabled,
-          inventory_settings: settings as unknown as Json,
+          inventory_enabled: parseBoolean(enabled, false),
+          inventory_settings: normalizedSettings as unknown as Json,
         })
         .eq("id", user?.id);
 
