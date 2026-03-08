@@ -253,8 +253,16 @@ export default function SalesAgreement() {
       return;
     }
     
-    const message = `שלום ${buyerName}, מצורף הסכם המכר עבור הרכב. נשמח לקבוע פגישה לחתימה על ההסכם.`;
-    const whatsappUrl = `https://wa.me/${buyerPhone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`;
+    let message = `שלום ${buyerName}, מצורף הסכם המכר עבור הרכב.`;
+    
+    if (documentUrl) {
+      message += `\n\n📄 לצפייה והורדת המסמך:\n${documentUrl}`;
+    }
+    
+    message += `\n\nנשמח לקבוע פגישה לחתימה על ההסכם.`;
+    
+    const formattedPhone = formatPhoneForWhatsApp(buyerPhone);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
