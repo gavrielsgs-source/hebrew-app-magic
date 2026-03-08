@@ -22,15 +22,20 @@ export const useCreateLead = () => {
       // Convert empty strings to null for UUID fields to prevent database errors
       const cleanedLead = {
         ...newLead,
-        name: newLead.name?.trim() || null, // Clean and validate name
+        name: newLead.name?.trim() || null,
         phone: formattedPhone,
         car_id: newLead.car_id === "" ? null : newLead.car_id,
         assigned_to: newLead.assigned_to === "" ? null : newLead.assigned_to,
         agency_id: newLead.agency_id === "" ? null : newLead.agency_id,
-        // Also clean other optional fields
         email: newLead.email === "" ? null : newLead.email,
         notes: newLead.notes === "" ? null : newLead.notes,
-        source: newLead.source === "" ? "ידני" : newLead.source, // Default source
+        source: newLead.source === "" ? "ידני" : newLead.source,
+        interested_make: newLead.interested_make === "" ? null : newLead.interested_make || null,
+        interested_model: newLead.interested_model === "" ? null : newLead.interested_model || null,
+        interested_year_from: newLead.interested_year_from === "" ? null : newLead.interested_year_from || null,
+        interested_year_to: newLead.interested_year_to === "" ? null : newLead.interested_year_to || null,
+        interested_max_price: newLead.interested_max_price === "" ? null : newLead.interested_max_price || null,
+        interested_max_km: newLead.interested_max_km === "" ? null : newLead.interested_max_km || null,
       };
 
       console.log('🔍 [useCreateLead] Cleaned lead data:', cleanedLead);

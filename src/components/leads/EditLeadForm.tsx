@@ -49,7 +49,13 @@ export function EditLeadForm({ lead, onSuccess }: EditLeadFormProps) {
       status: values.status,
       assigned_to: values.assigned_to || null,
       user_id: user?.id || lead.user_id,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      interested_make: values.interested_make || null,
+      interested_model: values.interested_model || null,
+      interested_year_from: values.interested_year_from || null,
+      interested_year_to: values.interested_year_to || null,
+      interested_max_price: values.interested_max_price || null,
+      interested_max_km: values.interested_max_km || null,
     };
 
     try {
