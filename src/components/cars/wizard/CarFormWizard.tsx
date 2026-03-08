@@ -106,8 +106,8 @@ export function CarFormWizard({
           }}
         />
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="overflow-visible">
+          <CardContent className="pt-6 overflow-visible">
             <h3 className="text-lg font-semibold mb-4">{STEPS[currentStep].label}</h3>
             
             {currentStep === 0 && <StepBasicInfo form={form} />}

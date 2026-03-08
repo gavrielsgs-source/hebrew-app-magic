@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Car as CarIcon, Edit, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCarImages } from "@/lib/image-utils";
+import { useCarImages } from "@/hooks/cars/use-car-images";
 import { Car } from "@/types/car";
 
 interface CarImageSectionProps {
@@ -19,31 +19,11 @@ export function CarImageSection({
   carImages, 
   onEditClick 
 }: CarImageSectionProps) {
-  const [allImages, setAllImages] = useState<string[]>([]);
+  const { data: allImages = [], isLoading: isLoadingAll } = useCarImages(car.id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLoadingAll, setIsLoadingAll] = useState(false);
-  const [imageErrorCount, setImageErrorCount] = useState(0);
-  const MAX_IMAGE_RETRIES = 3;
-
-  // Fetch all images when component mounts
-  useEffect(() => {
-    const fetchAllImages = async () => {
-      setIsLoadingAll(true);
-      setImageErrorCount(0); // Reset error count on new car
-      try {
-        const images = await getCarImages(car.id);
-        setAllImages(images);
-      } catch (error) {
-        console.error("Error fetching all images:", error);
-      } finally {
-        setIsLoadingAll(false);
-      }
-    };
-    
-    fetchAllImages();
-  }, [car.id]);
 
   const hasMultipleImages = allImages.length > 1;
+  const safeIndex = currentImageIndex >= allImages.length ? 0 : currentImageIndex;
 
   const handlePrevious = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -70,29 +50,14 @@ export function CarImageSection({
       ) : allImages.length > 0 ? (
         <div className="relative w-full h-full">
           <img 
-            src={allImages[currentImageIndex]} 
+            src={allImages[safeIndex]} 
             alt={`${car.make} ${car.model}`}
             className="h-full w-full object-cover transition-all duration-500"
             loading="eager"
             fetchPriority="high"
-            onError={(e) => {
-              if (imageErrorCount < MAX_IMAGE_RETRIES) {
-                console.warn(`Image load failed (attempt ${imageErrorCount + 1}/${MAX_IMAGE_RETRIES})`);
-                setImageErrorCount(prev => prev + 1);
-                const target = e.currentTarget;
-                target.style.display = 'none';
-                // Try to load next image if available
-                if (allImages.length > 1) {
-                  const nextIndex = (currentImageIndex + 1) % allImages.length;
-                  setCurrentImageIndex(nextIndex);
-                }
-              }
-            }}
           />
-          {/* אפקט הצללה עדין */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
-          {/* Navigation buttons for multiple images */}
           {hasMultipleImages && (
             <>
               <Button
@@ -112,7 +77,6 @@ export function CarImageSection({
                 <ChevronRight className="h-5 w-5" />
               </Button>
               
-              {/* Image indicators */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 {allImages.map((_, index) => (
                   <button
@@ -122,7 +86,7 @@ export function CarImageSection({
                       setCurrentImageIndex(index);
                     }}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index === currentImageIndex 
+                      index === safeIndex 
                         ? 'bg-white w-6' 
                         : 'bg-white/60 hover:bg-white/80'
                     }`}
@@ -145,7 +109,6 @@ export function CarImageSection({
         </div>
       )}
       
-      {/* כפתור עריכה מעוצב */}
       <Button 
         variant="secondary" 
         size="sm" 
@@ -159,7 +122,6 @@ export function CarImageSection({
         ערוך
       </Button>
       
-      {/* אינדיקטור סטטוס על התמונה */}
       {car.status === 'sold' && (
         <div className="absolute inset-0 bg-red-600/20 flex items-center justify-center pointer-events-none">
           <div className="bg-red-600 text-white px-4 py-2 rounded-full font-bold text-lg transform rotate-12">

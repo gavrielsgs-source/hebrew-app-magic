@@ -84,7 +84,7 @@ export function useUpdateCar() {
               const filePath = `${id}/${index}-${Date.now()}.${fileExt}`;
               const { error: uploadError } = await supabase.storage
                 .from('cars')
-                .upload(filePath, image, { cacheControl: '3600', upsert: false });
+                .upload(filePath, image, { cacheControl: '0', upsert: false });
               if (uploadError) return { success: false, error: uploadError, index };
               return { success: true, path: filePath, index };
             });
@@ -108,6 +108,7 @@ export function useUpdateCar() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
+      queryClient.invalidateQueries({ queryKey: ["car-images"] });
       queryClient.invalidateQueries({ queryKey: ["customer"] });
       queryClient.invalidateQueries({ queryKey: ["documents", "car", variables.id] });
     },

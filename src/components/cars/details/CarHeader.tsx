@@ -12,8 +12,8 @@ interface CarHeaderProps {
 
 export function CarHeader({ make, model, year, price, status }: CarHeaderProps) {
   return (
-    <div>
-      <div className="flex justify-between items-center">
+    <div className="text-right" dir="rtl">
+      <div className="flex justify-between items-center gap-3">
         <h2 className="text-2xl font-bold">
           {make} {model} {year}
         </h2>
