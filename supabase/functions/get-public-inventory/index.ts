@@ -116,27 +116,32 @@ serve(async (req) => {
 
     const uniqueMakes = [...new Set(makes?.map(c => c.make).filter(Boolean))];
 
-    // Get car images for each car - images are stored at ${carId}/ path
+    // Get car images for each car - return ALL images
     const carsWithImages = await Promise.all(
       (cars || []).map(async (car) => {
         const { data: files } = await supabase.storage
           .from('cars')
           .list(`${car.id}`);
 
-        let imageUrl = null;
+        const imageUrls: string[] = [];
         if (files && files.length > 0) {
-          const imageFile = files.find(f => !f.id?.startsWith('.'));
-          if (imageFile) {
+          const imageFiles = files.filter(f => 
+            !f.id?.startsWith('.') && f.name.match(/\.(jpeg|jpg|png|gif|webp)$/i)
+          );
+          for (const file of imageFiles) {
             const { data: urlData } = supabase.storage
               .from('cars')
-              .getPublicUrl(`${car.id}/${imageFile.name}`);
-            imageUrl = urlData.publicUrl;
+              .getPublicUrl(`${car.id}/${file.name}`);
+            if (urlData?.publicUrl) {
+              imageUrls.push(urlData.publicUrl);
+            }
           }
         }
 
         return {
           ...car,
-          image_url: imageUrl
+          image_url: imageUrls[0] || null,
+          image_urls: imageUrls,
         };
       })
     );
