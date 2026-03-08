@@ -208,7 +208,7 @@ export default function TaxInvoiceCredit() {
       try {
         const pdfBlob = await generateTaxInvoiceCreditPDF(result, true) as Blob;
         if (pdfBlob) {
-          await uploadDocument({
+          const publicUrl = await uploadDocument({
             pdfBlob,
             documentType: 'tax_invoice_credit',
             documentNumber: result.creditInvoiceNumber,
@@ -216,6 +216,7 @@ export default function TaxInvoiceCredit() {
             entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
             entityId: selectedEntity?.id,
           });
+          if (publicUrl) setDocumentUrl(publicUrl);
         }
       } catch (pdfError) {
         console.error('Error uploading PDF:', pdfError);
