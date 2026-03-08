@@ -22,6 +22,13 @@ export interface AdvancedAnalyticsData {
   // ביצועי מכירות
   salesByAgent: { agent: string; sales: number; amount: number }[];
   salesOverTime: { month: string; sales: number; amount: number }[];
+  
+  // נתונים פיננסיים
+  totalRevenue: number;
+  totalPurchaseCost: number;
+  totalExpenses: number;
+  grossProfit: number;
+  totalInventoryValue: number;
 }
 
 export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
@@ -59,6 +66,13 @@ export function useAdvancedAnalytics(dateRange: { from: Date; to: Date }) {
       // ביצועי מכירות
       salesByAgent: salesQuery.data.salesByAgent,
       salesOverTime: salesQuery.data.salesOverTime,
+      
+      // נתונים פיננסיים
+      totalRevenue: salesQuery.data.totalRevenue,
+      totalPurchaseCost: salesQuery.data.totalPurchaseCost,
+      totalExpenses: salesQuery.data.totalExpenses,
+      grossProfit: salesQuery.data.grossProfit,
+      totalInventoryValue: carsQuery.data.totalInventoryValue,
     } : undefined;
 
   return {
@@ -91,7 +105,7 @@ function combineLeadsAndSalesOverTime(
     monthlyData[monthKey].leads += item.count;
   });
   
-  // הוספת מכירות
+  // הוספת מכירות בפועל
   salesOverTime.forEach(item => {
     if (!monthlyData[item.month]) {
       monthlyData[item.month] = { leads: 0, sales: 0 };
