@@ -332,11 +332,11 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     try {
       toast.loading('מכין את המסמך להורדה...', { id: 'pdf-download' });
 
-      // Priority 1: Attached documents with internal URL - try to find the original styled PDF first
-      if (doc.status === 'attached' && doc.url && doc.url.startsWith('/')) {
-        // Search for matching document record that has the actual PDF file
+      // Priority 1: For attached docs, always try to find the professionally styled PDF first
+      if (doc.status === 'attached') {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          // Look for a sibling document record that has the actual styled PDF file
           const { data: matchingDoc } = await supabase
             .from('documents')
             .select('file_path')
@@ -356,11 +356,6 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
             }
           }
         }
-        // Fallback: open internal route in new tab
-        toast.dismiss('pdf-download');
-        window.open(doc.url, '_blank');
-        toast.success('פותח את המסמך...');
-        return;
       }
 
       // Priority 2: Documents with file_path - download from storage
@@ -374,7 +369,15 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
         }
       }
 
-      // Priority 3: External URL - direct download
+      // Priority 3: Internal URL - open in new tab
+      if (doc.url && doc.url.startsWith('/')) {
+        toast.dismiss('pdf-download');
+        window.open(doc.url, '_blank');
+        toast.success('פותח את המסמך...');
+        return;
+      }
+
+      // Priority 4: External URL - direct download
       if (doc.url && doc.url.startsWith('http')) {
         const link = document.createElement('a');
         link.href = doc.url;
