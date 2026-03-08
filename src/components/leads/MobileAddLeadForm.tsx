@@ -223,16 +223,38 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         </Select>
       </div>
 
+      {/* Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="notes" className="text-sm font-medium flex items-center gap-2">
+          <FileText className="h-4 w-4" />
+          הערות
+        </Label>
+        <Textarea
+          id="notes"
+          value={formData.notes}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          placeholder="הערות נוספות..."
+          className="min-h-[80px] text-right"
+          dir="rtl"
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation'
+          }}
+        />
+      </div>
+
       {/* Interested Car Section */}
       <Collapsible open={interestedOpen} onOpenChange={setInterestedOpen} className="border rounded-lg p-3">
         <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium">
           <span className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            🔍 רכב מבוקש (לא במלאי)
+            📋 התראה על רכב עתידי
           </span>
           {interestedOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-3 pt-3">
+          <p className="text-xs text-muted-foreground">
+            אם הלקוח מחפש רכב שעדיין לא במלאי, מלא כאן ונעדכן אותך כשיגיע רכב מתאים.
+          </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-xs">יצרן</Label>
@@ -265,26 +287,6 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
           </div>
         </CollapsibleContent>
       </Collapsible>
-
-      {/* Notes */}
-      <div className="space-y-2">
-        <Label htmlFor="notes" className="text-sm font-medium flex items-center gap-2">
-          <FileText className="h-4 w-4" />
-          הערות
-        </Label>
-        <Textarea
-          id="notes"
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          placeholder="הערות נוספות..."
-          className="min-h-[80px] text-right"
-          dir="rtl"
-          style={{
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation'
-          }}
-        />
-      </div>
 
       {/* Schedule Meeting */}
       <div className="flex items-center space-x-2 space-x-reverse py-2">
