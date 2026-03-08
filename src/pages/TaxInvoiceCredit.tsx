@@ -725,7 +725,7 @@ export default function TaxInvoiceCredit() {
                 <CardHeader className="bg-gradient-to-l from-amber-50 to-transparent border-b">
                   <CardTitle className="text-right text-xl">בחר חשבונית מס</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 pt-6">
+                <CardContent className="space-y-4 pt-6 flex flex-col items-center">
                   {/* Date Range */}
                   <div className="flex gap-4 items-end flex-row-reverse">
                     <div className="space-y-2">
