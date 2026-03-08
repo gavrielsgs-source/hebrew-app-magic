@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { translateTransmission, translateFuelType, translateColor } from "@/lib/car-translations";
+import { CarImageSlider } from "@/components/inventory/CarImageSlider";
 
 interface DealerInfo {
   name: string;
@@ -33,6 +34,7 @@ interface PublicCar {
   engine_size: string | null;
   description: string;
   image_url: string | null;
+  image_urls: string[];
   trim_level: string | null;
   entry_date: string | null;
   next_test_date: string | null;
@@ -403,22 +405,7 @@ export default function PublicInventory() {
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
                   {/* Image */}
-                  <div className="aspect-[4/3] relative bg-[#f5f5f7] overflow-hidden">
-                    {car.image_url ? (
-                      <img
-                        src={car.image_url}
-                        alt={`${car.make} ${car.model}`}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <svg className="h-12 w-12 text-[#d2d2d7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 00-.621-1.828l-2.073-2.592A4.5 4.5 0 0015.862 8.5H6.638a4.5 4.5 0 00-3.516 1.679L1.049 12.77A2.999 2.999 0 00.428 14.6v2.776C.428 17.996.932 18.5 1.553 18.5H3" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
+                  <CarImageSlider images={car.image_urls || (car.image_url ? [car.image_url] : [])} alt={`${car.make} ${car.model}`} />
 
                   {/* Content */}
                   <div className="p-5 flex-1 flex flex-col">

@@ -52,10 +52,18 @@ export function InventorySettingsTab() {
       if (error) throw error;
 
       if (data) {
+        console.log('[InventorySettings] Fetched:', JSON.stringify(data));
         setSlug(data.inventory_slug || "");
         setEnabled(data.inventory_enabled === true);
         if (data.inventory_settings && typeof data.inventory_settings === 'object') {
-          setSettings(data.inventory_settings as InventorySettings);
+          const dbSettings = data.inventory_settings as Record<string, unknown>;
+          setSettings({
+            logo_url: (dbSettings.logo_url as string) || undefined,
+            primary_color: (dbSettings.primary_color as string) || "#3b82f6",
+            contact_phone: (dbSettings.contact_phone as string) || undefined,
+            show_phone: dbSettings.show_phone !== false,
+            show_prices: dbSettings.show_prices === true,
+          });
         }
       }
     } catch (error) {
