@@ -385,7 +385,7 @@ export default function TaxInvoiceReceipt() {
       try {
         const pdfBlob = await generateTaxInvoiceReceiptPDF(result, true) as Blob;
         if (pdfBlob) {
-          await uploadDocument({
+          const publicUrl = await uploadDocument({
             pdfBlob,
             documentType: 'tax_invoice_receipt',
             documentNumber: result.invoiceNumber,
@@ -393,6 +393,9 @@ export default function TaxInvoiceReceipt() {
             entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
             entityId: selectedEntity?.id,
           });
+          if (publicUrl) {
+            setDocumentUrl(publicUrl);
+          }
         }
       } catch (pdfError) {
         console.error('Error uploading PDF:', pdfError);
