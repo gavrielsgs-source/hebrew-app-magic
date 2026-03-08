@@ -26,6 +26,7 @@ export const WelcomeEmail = ({
   magicLink,
   trialEndsAt,
   amount,
+  tutorialLink = 'https://youtube.com/playlist?list=PL_34QQHEpbtSlkcAuREn2F5L5OzR4SeT-&si=Ba-WcEFghFfqh8up',
 }: WelcomeEmailProps) => {
   const formattedDate = new Date(trialEndsAt).toLocaleDateString('he-IL', {
     year: 'numeric',
