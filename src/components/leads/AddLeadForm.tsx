@@ -93,7 +93,13 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     car_id: '',
     notes: '',
     assigned_to: '',
-    status: 'new'
+    status: 'new',
+    interested_make: '',
+    interested_model: '',
+    interested_year_from: '',
+    interested_year_to: '',
+    interested_max_price: '',
+    interested_max_km: '',
   };
 
   return (
