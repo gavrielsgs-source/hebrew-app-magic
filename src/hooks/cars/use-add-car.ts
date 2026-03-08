@@ -100,7 +100,7 @@ export function useAddCar() {
             let query = supabase
               .from('leads')
               .select('id, name, phone, interested_make, interested_model')
-              .not('status', 'in', '("completed","cancelled")')
+              .not('status', 'in', '(completed,cancelled)')
               .not('interested_make', 'is', null);
 
             // Filter by make (case-insensitive)
