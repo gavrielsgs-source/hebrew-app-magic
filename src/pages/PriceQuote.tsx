@@ -207,7 +207,7 @@ export default function PriceQuote() {
       try {
         const pdfBlob = await generatePriceQuotePDF(result, true) as Blob;
         if (pdfBlob) {
-          await uploadDocument({
+          const publicUrl = await uploadDocument({
             pdfBlob,
             documentType: 'price_quote',
             documentNumber: result.quoteNumber,
@@ -215,6 +215,7 @@ export default function PriceQuote() {
             entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
             entityId: selectedEntity?.id,
           });
+          if (publicUrl) setDocumentUrl(publicUrl);
         }
       } catch (pdfError) {
         console.error('Error uploading PDF:', pdfError);
