@@ -224,6 +224,16 @@ export default function SalesAgreement() {
           amount: parseFloat(data.totalPrice),
           date: format(data.date, 'yyyy-MM-dd')
         });
+
+        // Create vehicle purchase record for customer ledger/balance tracking
+        if (selectedCarId) {
+          addPurchase.mutate({
+            customerId: selectedEntity.id,
+            carId: selectedCarId,
+            purchasePrice: parseFloat(data.totalPrice),
+            purchaseDate: format(data.date, 'yyyy-MM-dd'),
+          });
+        }
       }
       
       toast({
