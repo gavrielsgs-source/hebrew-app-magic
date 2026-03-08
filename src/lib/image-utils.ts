@@ -34,34 +34,15 @@ export async function getCarImages(carId: string): Promise<string[]> {
     
     console.log('[getCarImages] Image files:', imageFiles.map(f => f.name));
     
-    // Try to get signed URLs (works for both public and private buckets)
-    const imageUrls: string[] = [];
-    
-    for (const file of imageFiles) {
+    // Use public URLs directly for faster loading (bucket is public)
+    const imageUrls: string[] = imageFiles.map(file => {
       const filePath = `${carId}/${file.name}`;
-      
-      // First try signed URL (works for authenticated users)
-      const { data: signedData, error: signedError } = await supabase
+      const { data: urlData } = supabase
         .storage
         .from('cars')
-        .createSignedUrl(filePath, 3600); // 1 hour expiry
-      
-      if (signedData?.signedUrl) {
-        console.log('[getCarImages] Got signed URL for:', file.name);
-        imageUrls.push(signedData.signedUrl);
-      } else {
-        // Fallback to public URL
-        console.log('[getCarImages] Signed URL failed, trying public URL for:', file.name, signedError);
-        const { data: urlData } = supabase
-          .storage
-          .from('cars')
-          .getPublicUrl(filePath);
-        
-        if (urlData?.publicUrl) {
-          imageUrls.push(urlData.publicUrl);
-        }
-      }
-    }
+        .getPublicUrl(filePath);
+      return urlData?.publicUrl;
+    }).filter(Boolean) as string[];
     
     console.log('[getCarImages] Final URLs:', imageUrls.length);
     return imageUrls;
