@@ -23,6 +23,9 @@ export function AddLeadInterestedCarFields({ control }: AddLeadInterestedCarFiel
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-3 pt-3">
+        <p className="text-xs text-muted-foreground">
+          אם הלקוח מחפש רכב שעדיין לא במלאי, מלא כאן ונעדכן אותך כשיגיע רכב מתאים.
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <FormField
             control={control}
