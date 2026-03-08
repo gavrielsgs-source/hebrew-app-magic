@@ -55,6 +55,7 @@ import Customers from "./pages/Customers";
 import CustomerProfile from "./pages/CustomerProfile";
 import SubscriptionExpired from "./pages/SubscriptionExpired";
 import { GracePeriodWarning } from "./components/subscription/GracePeriodWarning";
+import { MatchAlertDialog } from "./components/notifications/MatchAlertDialog";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -142,6 +143,7 @@ function AppLayout() {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <GracePeriodWarning />
+      <MatchAlertDialog />
       <div className="flex min-h-screen w-full">
         {!isMobile && <AppSidebar />}
         <SidebarInset className={isMobile ? "mr-0" : ""}>

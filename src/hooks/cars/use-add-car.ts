@@ -135,9 +135,17 @@ export function useAddCar() {
                 });
 
                 // Create notifications for matches
+                // Dispatch custom event for prominent dialog
+                const matchDetails = finalMatches.map((m: any) => ({
+                  id: m.id,
+                  name: m.name,
+                  phone: m.phone,
+                  carInfo: `${data.make} ${data.model} ${data.year}`,
+                }));
+                window.dispatchEvent(new CustomEvent('lead-match-found', { detail: matchDetails }));
+
+                // Also save notifications to DB
                 for (const match of finalMatches) {
-                  toast.success(`🎯 נמצאה התאמה! הליד "${match.name}" מחפש רכב כזה`);
-                  
                   await supabase.from('notifications').insert({
                     user_id: userData.user.id,
                     title: 'התאמת רכב לליד',
