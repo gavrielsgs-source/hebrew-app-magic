@@ -29,6 +29,7 @@ export function InventorySettingsTab() {
   const [settings, setSettings] = useState<InventorySettings>({
     primary_color: "#3b82f6",
     show_phone: true,
+    show_prices: true,
   });
   const [slugError, setSlugError] = useState("");
 
