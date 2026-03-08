@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { he } from "date-fns/locale";
-import { Calendar, Download, Mail, FileText, AlertTriangle, CheckCircle2, TrendingUp, Calculator } from "lucide-react";
+import { Calendar, Download, Mail, FileText, AlertTriangle, CheckCircle2, TrendingUp, Calculator, Package, Users, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
