@@ -36,6 +36,13 @@ export function InventorySettingsTab() {
   const baseUrl = "https://carsleadapp.com";
   const inventoryUrl = slug ? `${baseUrl}/inventory/${slug}` : "";
 
+  const parseBoolean = (value: unknown, fallback: boolean) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return value.toLowerCase() === "true";
+    if (typeof value === "number") return value === 1;
+    return fallback;
+  };
+
   useEffect(() => {
     if (user) {
       fetchSettings();
