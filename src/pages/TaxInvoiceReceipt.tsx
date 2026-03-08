@@ -26,7 +26,6 @@ import { useTaxInvoiceReceipt } from '@/hooks/tax-invoice-receipt/use-tax-invoic
 import type { TaxInvoiceReceiptData, TaxInvoiceReceiptItem, PaymentMethod } from '@/types/tax-invoice-receipt';
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
-import { supabase } from '@/integrations/supabase/client';
 import { generateTaxInvoiceReceiptPDF } from '@/utils/pdf/tax-invoice-receipt-pdf';
 import { useAddCustomerVehiclePurchase } from '@/hooks/customers/use-customer-vehicles';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -455,7 +454,7 @@ export default function TaxInvoiceReceipt() {
     }
   };
 
-  const handleWhatsAppSend = async () => {
+  const handleWhatsAppSend = () => {
     const dataToUse = savedReceiptData || {
       invoiceNumber: form.getValues('title'),
       company: {
@@ -486,36 +485,13 @@ export default function TaxInvoiceReceipt() {
     let message = `שלום ${dataToUse.customer.name},\n\nחשבונית מס קבלה מספר: ${dataToUse.invoiceNumber}\nסכום: ${dataToUse.totalAmount.toFixed(2)} ${currencySymbol}`;
     
     if (documentUrl) {
-      message += `\n\n📄 לצפייה והורדת הקובץ:\n${documentUrl}`;
+      message += `\n\n📄 לצפייה והורדת המסמך:\n${documentUrl}`;
     }
     
     message += `\n\nתודה!\n${dataToUse.company.name}`;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('send-whatsapp-message', {
-        body: {
-          type: 'text',
-          to: formattedPhone,
-          message: message
-        }
-      });
-
-      if (error) {
-        throw new Error((error as any).message || 'שגיאה בשליחת הודעה');
-      }
-
-      toast({
-        title: "נשלח בהצלחה",
-        description: `ההודעה נשלחה ללקוח ${dataToUse.customer.name} בוואטסאפ`,
-      });
-    } catch (error: any) {
-      console.error('Error sending WhatsApp message:', error);
-      toast({
-        title: "שגיאה בשליחת וואטסאפ",
-        description: error?.message || "לא ניתן לשלוח את ההודעה. ניתן לנסות שוב.",
-        variant: "destructive",
-      });
-    }
+    
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   // Mobile Layout
