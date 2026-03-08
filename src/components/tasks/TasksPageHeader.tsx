@@ -1,8 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { TaskForm } from "./TaskForm";
+import { AddTaskDialog } from "./AddTaskDialog";
 import { Calendar, Plus, List, Grid, CheckSquare } from "lucide-react";
 import { StandardPageHeader } from "@/components/common/StandardPageHeader";
 
@@ -71,14 +70,11 @@ export function TasksPageHeader({ viewMode, onViewModeChange }: TasksPageHeaderP
         </div>
       </div>
       
-      <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-        <DialogContent className="sm:max-w-[480px] rounded-2xl border-2 shadow-xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-right">הוסף משימה חדשה</DialogTitle>
-          </DialogHeader>
-          <TaskForm onSuccess={() => setIsAddTaskOpen(false)} />
-        </DialogContent>
-      </Dialog>
+      <AddTaskDialog
+        open={isAddTaskOpen}
+        onOpenChange={setIsAddTaskOpen}
+        onSuccess={() => setIsAddTaskOpen(false)}
+      />
     </StandardPageHeader>
   );
 }
