@@ -193,6 +193,26 @@ export default function SalesAgreement() {
       // Generate and download PDF
       await generateSalesAgreementPDF(agreementData);
 
+      // Upload PDF to storage
+      try {
+        const pdfBlob = await generateSalesAgreementPDF(agreementData, true) as Blob;
+        if (pdfBlob) {
+          const publicUrl = await uploadDocument({
+            pdfBlob,
+            documentType: 'sales_agreement',
+            documentNumber: format(data.date, 'yyyyMMdd'),
+            customerName: data.buyerName,
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+          if (publicUrl) {
+            setDocumentUrl(publicUrl);
+          }
+        }
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
+
       // Attach the agreement to an existing customer when possible
       if (selectedEntity?.type === 'customer') {
         createCustomerDocument.mutate({
