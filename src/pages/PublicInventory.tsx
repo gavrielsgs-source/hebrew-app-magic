@@ -269,11 +269,23 @@ export default function PublicInventory() {
               />
             )}
 
-            <h1 className="relative text-[26px] sm:text-[40px] lg:text-[48px] font-bold text-white tracking-tight leading-[1.1] max-w-3xl mx-auto drop-shadow-sm">
+            {/* Hollow outline text */}
+            <h1 
+              className="relative text-[32px] sm:text-[48px] lg:text-[60px] font-black tracking-tight leading-[1.05] max-w-3xl mx-auto select-none"
+              style={{
+                color: 'transparent',
+                WebkitTextStroke: '1.5px rgba(255,255,255,0.9)',
+                textShadow: '0 0 40px rgba(255,255,255,0.15)',
+              }}
+            >
               {dealer?.name}
             </h1>
-            <p className="relative mt-2 sm:mt-3 text-[15px] sm:text-[19px] text-white/80 font-medium leading-relaxed max-w-xl mx-auto">
-              {pagination?.total || 0} רכבים זמינים במלאי
+            {/* Solid subtitle */}
+            <p className="relative mt-1 sm:mt-2 text-[18px] sm:text-[22px] lg:text-[26px] font-bold text-white tracking-tight leading-tight max-w-xl mx-auto drop-shadow-sm">
+              המלאי שלנו
+            </p>
+            <p className="relative mt-1 sm:mt-2 text-[14px] sm:text-[17px] text-white/70 font-medium leading-relaxed max-w-xl mx-auto">
+              {pagination?.total || 0} רכבים זמינים
             </p>
 
             {/* Contact pill */}
