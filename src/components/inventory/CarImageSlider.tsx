@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CarImageSliderProps {
@@ -8,6 +8,8 @@ interface CarImageSliderProps {
 
 export function CarImageSlider({ images, alt }: CarImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
   if (images.length === 0) {
     return (
@@ -21,23 +23,51 @@ export function CarImageSlider({ images, alt }: CarImageSliderProps) {
     );
   }
 
-  const goNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const goNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
-  const goPrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const goPrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipe = 50;
+    if (Math.abs(diff) > minSwipe) {
+      // RTL: swipe left = prev, swipe right = next
+      if (diff > 0) goPrev();
+      else goNext();
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
   return (
-    <div className="aspect-[4/3] relative bg-[#f5f5f7] overflow-hidden group/slider">
+    <div
+      className="aspect-[4/3] relative bg-[#f5f5f7] overflow-hidden group/slider touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <img
         src={images[currentIndex]}
         alt={`${alt} - ${currentIndex + 1}`}
         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
         loading="lazy"
+        draggable={false}
       />
 
       {images.length > 1 && (
