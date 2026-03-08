@@ -77,7 +77,13 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         source: formData.source,
         status: "new",
         assigned_to: null,
-        user_id: user.id
+        user_id: user.id,
+        interested_make: formData.interested_make || null,
+        interested_model: formData.interested_model || null,
+        interested_year_from: formData.interested_year_from ? Number(formData.interested_year_from) : null,
+        interested_year_to: formData.interested_year_to ? Number(formData.interested_year_to) : null,
+        interested_max_price: formData.interested_max_price ? Number(formData.interested_max_price) : null,
+        interested_max_km: formData.interested_max_km ? Number(formData.interested_max_km) : null,
       };
 
       console.log('MobileAddLeadForm - Creating lead with data:', leadData);
