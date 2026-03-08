@@ -217,3 +217,37 @@ const footer = {
   margin: '30px 40px',
   textAlign: 'center' as const,
 };
+
+const tutorialBox = {
+  backgroundColor: '#f0fdf4',
+  border: '2px solid #22c55e',
+  borderRadius: '12px',
+  padding: '20px',
+  margin: '30px 40px',
+  textAlign: 'center' as const,
+};
+
+const tutorialTitle = {
+  color: '#15803d',
+  fontSize: '20px',
+  fontWeight: 'bold',
+  margin: '0 0 10px 0',
+};
+
+const tutorialSubtext = {
+  color: '#15803d',
+  fontSize: '14px',
+  margin: '0 0 16px 0',
+};
+
+const tutorialButton = {
+  backgroundColor: '#22c55e',
+  borderRadius: '8px',
+  color: '#fff',
+  fontSize: '18px',
+  fontWeight: 'bold',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 40px',
+};

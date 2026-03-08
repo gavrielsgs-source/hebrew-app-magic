@@ -139,7 +139,8 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
                 userName: `${formData.firstName} ${formData.lastName}`,
                 magicLink: `${window.location.origin}/auth/callback`,
                 trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('he-IL'),
-                amount: 0
+                amount: 0,
+                tutorialLink: 'https://youtube.com/playlist?list=PL_34QQHEpbtSlkcAuREn2F5L5OzR4SeT-&si=Ba-WcEFghFfqh8up'
               }
             }
           });
