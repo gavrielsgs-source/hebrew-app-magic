@@ -18,12 +18,14 @@ export function AddLeadInterestedCarFields({ control }: AddLeadInterestedCarFiel
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-lg p-3">
       <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium">
         <span className="flex items-center gap-2">
-          <Search className="h-4 w-4" />
-          🔍 רכב מבוקש (לא במלאי)
+          📋 התראה על רכב עתידי
         </span>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-3 pt-3">
+        <p className="text-xs text-muted-foreground">
+          אם הלקוח מחפש רכב שעדיין לא במלאי, מלא כאן ונעדכן אותך כשיגיע רכב מתאים.
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <FormField
             control={control}

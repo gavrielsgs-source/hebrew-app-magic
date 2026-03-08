@@ -116,8 +116,8 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
           <AddLeadEmailField control={form.control} />
           <AddLeadSourceField control={form.control} />
           <AddLeadCarField control={form.control} />
-          <AddLeadInterestedCarFields control={form.control} />
           <AddLeadNotesField control={form.control} />
+          <AddLeadInterestedCarFields control={form.control} />
           
           {/* WhatsApp checkbox hidden - will be re-enabled later */}
           
