@@ -18,8 +18,7 @@ export function AddLeadInterestedCarFields({ control }: AddLeadInterestedCarFiel
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-lg p-3">
       <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium">
         <span className="flex items-center gap-2">
-          <Search className="h-4 w-4" />
-          🔍 רכב מבוקש (לא במלאי)
+          📋 התראה על רכב עתידי
         </span>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>
