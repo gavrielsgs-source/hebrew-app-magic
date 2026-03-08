@@ -52,6 +52,8 @@ export default function Landing() {
       <CTASection />
       
       <LandingFooter />
+
+      <WhatsAppBubble />
       
       <VideoModal 
         isOpen={isVideoModalOpen} 
