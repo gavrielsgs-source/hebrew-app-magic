@@ -958,6 +958,12 @@ export type Database = {
           email: string | null
           follow_up_notes: string[] | null
           id: string
+          interested_make: string | null
+          interested_max_km: number | null
+          interested_max_price: number | null
+          interested_model: string | null
+          interested_year_from: number | null
+          interested_year_to: number | null
           name: string
           notes: string | null
           phone: string | null
@@ -974,6 +980,12 @@ export type Database = {
           email?: string | null
           follow_up_notes?: string[] | null
           id?: string
+          interested_make?: string | null
+          interested_max_km?: number | null
+          interested_max_price?: number | null
+          interested_model?: string | null
+          interested_year_from?: number | null
+          interested_year_to?: number | null
           name: string
           notes?: string | null
           phone?: string | null
@@ -990,6 +1002,12 @@ export type Database = {
           email?: string | null
           follow_up_notes?: string[] | null
           id?: string
+          interested_make?: string | null
+          interested_max_km?: number | null
+          interested_max_price?: number | null
+          interested_model?: string | null
+          interested_year_from?: number | null
+          interested_year_to?: number | null
           name?: string
           notes?: string | null
           phone?: string | null
