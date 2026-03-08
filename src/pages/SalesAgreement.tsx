@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { SalesAgreementPreview } from "@/components/sales-agreement/SalesAgreementPreview";
 import { generateSalesAgreementPDF } from "@/utils/pdf/sales-agreement-pdf";
 import { useCustomers, useCreateCustomerDocument } from "@/hooks/customers";
+import { useAddCustomerVehiclePurchase } from "@/hooks/customers/use-customer-vehicles";
 import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { Label } from "@/components/ui/label";
@@ -69,6 +70,7 @@ export default function SalesAgreement() {
   const { data: customers = [] } = useCustomers();
   const createCustomerDocument = useCreateCustomerDocument();
   const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
+  const addPurchase = useAddCustomerVehiclePurchase();
   const isMobile = useIsMobile();
 
   const form = useForm<SalesAgreementFormData>({
@@ -222,6 +224,16 @@ export default function SalesAgreement() {
           amount: parseFloat(data.totalPrice),
           date: format(data.date, 'yyyy-MM-dd')
         });
+
+        // Create vehicle purchase record for customer ledger/balance tracking
+        if (selectedCarId) {
+          addPurchase.mutate({
+            customerId: selectedEntity.id,
+            carId: selectedCarId,
+            purchasePrice: parseFloat(data.totalPrice),
+            purchaseDate: format(data.date, 'yyyy-MM-dd'),
+          });
+        }
       }
       
       toast({
