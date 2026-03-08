@@ -96,10 +96,10 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     status: 'new',
     interested_make: '',
     interested_model: '',
-    interested_year_from: '',
-    interested_year_to: '',
-    interested_max_price: '',
-    interested_max_km: '',
+    interested_year_from: '' as unknown as number | "",
+    interested_year_to: '' as unknown as number | "",
+    interested_max_price: '' as unknown as number | "",
+    interested_max_km: '' as unknown as number | "",
   };
 
   return (
