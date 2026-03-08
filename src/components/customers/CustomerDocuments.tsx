@@ -332,28 +332,59 @@ export function CustomerDocuments({ customerId }: CustomerDocumentsProps) {
     try {
       toast.loading('מכין את המסמך להורדה...', { id: 'pdf-download' });
 
-      // Priority 1: For attached docs, always try to find the professionally styled PDF first
-      if (doc.status === 'attached') {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // Look for a sibling document record that has the actual styled PDF file
-          const { data: matchingDoc } = await supabase
+      // Priority 1: Always try to find the professionally styled PDF from documents table
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Strategy A: Match by entity_id (customerId) with file_path
+        let matchingDoc = null;
+        
+        const { data: byEntity } = await supabase
+          .from('documents')
+          .select('file_path, name')
+          .eq('user_id', user.id)
+          .eq('entity_id', customerId)
+          .not('file_path', 'is', null)
+          .order('created_at', { ascending: false });
+
+        if (byEntity && byEntity.length > 0) {
+          // Try to match by document type/title keywords
+          const docTitle = doc.title || '';
+          const docType = doc.type || '';
+          const typeKeywords: Record<string, string[]> = {
+            'contract': ['הסכם מכר', 'הסכם', 'contract'],
+            'invoice': ['חשבונית', 'invoice'],
+            'receipt': ['קבלה', 'receipt'],
+            'quote': ['הצעת מחיר', 'quote'],
+            'order': ['הזמנת רכב', 'order'],
+            'credit_invoice': ['זיכוי', 'credit'],
+          };
+          
+          const keywords = typeKeywords[docType] || [docTitle];
+          
+          matchingDoc = byEntity.find(d => 
+            keywords.some(kw => d.name?.includes(kw) || docTitle.includes(kw))
+          ) || byEntity[0]; // fallback to most recent
+        }
+
+        // Strategy B: Also try matching by doc.id as entity_id
+        if (!matchingDoc) {
+          const { data: byDocId } = await supabase
             .from('documents')
             .select('file_path')
             .eq('user_id', user.id)
-            .eq('entity_id', doc.entity_id || doc.id)
+            .eq('entity_id', doc.id)
             .not('file_path', 'is', null)
-            .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
+          if (byDocId?.file_path) matchingDoc = byDocId;
+        }
 
-          if (matchingDoc?.file_path) {
-            const downloaded = await downloadFromBucket('documents', matchingDoc.file_path, doc.title);
-            if (downloaded) {
-              toast.dismiss('pdf-download');
-              toast.success('המסמך הורד בהצלחה');
-              return;
-            }
+        if (matchingDoc?.file_path) {
+          const downloaded = await downloadFromBucket('documents', matchingDoc.file_path, doc.title);
+          if (downloaded) {
+            toast.dismiss('pdf-download');
+            toast.success('המסמך הורד בהצלחה');
+            return;
           }
         }
       }
