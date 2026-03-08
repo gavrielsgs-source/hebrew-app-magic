@@ -62,17 +62,20 @@ export function InventorySettingsTab() {
       if (data) {
         console.log('[InventorySettings] Fetched:', JSON.stringify(data));
         setSlug(data.inventory_slug || "");
-        setEnabled(data.inventory_enabled === true);
-        if (data.inventory_settings && typeof data.inventory_settings === 'object') {
-          const dbSettings = data.inventory_settings as Record<string, unknown>;
-          setSettings({
-            logo_url: (dbSettings.logo_url as string) || undefined,
-            primary_color: (dbSettings.primary_color as string) || "#3b82f6",
-            contact_phone: (dbSettings.contact_phone as string) || undefined,
-            show_phone: dbSettings.show_phone !== false,
-            show_prices: dbSettings.show_prices === true,
-          });
-        }
+        setEnabled(parseBoolean(data.inventory_enabled, false));
+
+        const dbSettings =
+          data.inventory_settings && typeof data.inventory_settings === "object"
+            ? (data.inventory_settings as Record<string, unknown>)
+            : {};
+
+        setSettings({
+          logo_url: (dbSettings.logo_url as string) || undefined,
+          primary_color: (dbSettings.primary_color as string) || "#3b82f6",
+          contact_phone: (dbSettings.contact_phone as string) || undefined,
+          show_phone: parseBoolean(dbSettings.show_phone, true),
+          show_prices: parseBoolean(dbSettings.show_prices, true),
+        });
       }
     } catch (error) {
       console.error("Error fetching inventory settings:", error);
