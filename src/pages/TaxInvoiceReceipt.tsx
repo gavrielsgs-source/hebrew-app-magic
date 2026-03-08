@@ -26,7 +26,6 @@ import { useTaxInvoiceReceipt } from '@/hooks/tax-invoice-receipt/use-tax-invoic
 import type { TaxInvoiceReceiptData, TaxInvoiceReceiptItem, PaymentMethod } from '@/types/tax-invoice-receipt';
 import { formatPhoneForWhatsApp } from '@/utils/phone-utils';
 import { useUploadProductionDocument } from '@/hooks/use-upload-production-document';
-import { supabase } from '@/integrations/supabase/client';
 import { generateTaxInvoiceReceiptPDF } from '@/utils/pdf/tax-invoice-receipt-pdf';
 import { useAddCustomerVehiclePurchase } from '@/hooks/customers/use-customer-vehicles';
 import { useIsMobile } from '@/hooks/use-mobile';
