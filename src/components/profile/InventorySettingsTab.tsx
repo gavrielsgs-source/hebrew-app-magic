@@ -53,7 +53,7 @@ export function InventorySettingsTab() {
 
       if (data) {
         setSlug(data.inventory_slug || "");
-        setEnabled(data.inventory_enabled || false);
+        setEnabled(data.inventory_enabled === true);
         if (data.inventory_settings && typeof data.inventory_settings === 'object') {
           setSettings(data.inventory_settings as InventorySettings);
         }
