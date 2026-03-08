@@ -65,6 +65,20 @@ export const WelcomeEmail = ({
             </Button>
           </Section>
 
+          <Section style={tutorialBox}>
+            <Text style={tutorialTitle}>
+              🎬 צפה בהדרכה וגלה את כל האפשרויות
+            </Text>
+            <Text style={tutorialSubtext}>
+              הכנו לך סדרת הדרכות קצרה שתעזור לך להתחיל במהירות
+            </Text>
+            <Section style={buttonContainer}>
+              <Button href={tutorialLink} style={tutorialButton}>
+                ▶ צפה בהדרכה
+              </Button>
+            </Section>
+          </Section>
+
           <Hr style={hr} />
 
           <Heading style={h2}>ℹ️ מידע חשוב:</Heading>
