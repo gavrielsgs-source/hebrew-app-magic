@@ -14,6 +14,7 @@ import { EditLeadStatusField } from "./fields/EditLeadStatusField";
 import { EditLeadSourceField } from "./fields/EditLeadSourceField";
 import { EditLeadAssignedField } from "./fields/EditLeadAssignedField";
 import { EditLeadNotesField } from "./fields/EditLeadNotesField";
+import { AddLeadInterestedCarFields } from "./AddLeadInterestedCarFields";
 
 interface EditLeadFormProps {
   lead: any;
