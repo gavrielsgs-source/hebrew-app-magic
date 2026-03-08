@@ -562,7 +562,8 @@ export default function SalesAgreement() {
               type="button"
               variant="outline"
               onClick={handleWhatsAppSend}
-              disabled={!form.watch('buyerPhone')}
+              disabled={!form.watch('buyerPhone') || !documentUrl}
+              title={!documentUrl ? 'יש להפיק PDF קודם' : 'שלח בוואטסאפ'}
               className="h-11 px-4 rounded-xl"
             >
               <Send className="h-5 w-5" />
@@ -885,7 +886,8 @@ export default function SalesAgreement() {
                   type="button"
                   variant="outline"
                   onClick={handleWhatsAppSend}
-                  disabled={!form.watch('buyerPhone')}
+                  disabled={!form.watch('buyerPhone') || !documentUrl}
+                  title={!documentUrl ? 'יש להפיק PDF קודם' : 'שלח בוואטסאפ'}
                   className="w-full h-10 rounded-xl"
                 >
                   <Send className="ml-2 h-4 w-4" />
