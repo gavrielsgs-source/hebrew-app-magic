@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
+import { validateDiscountCode } from "@/utils/discount-codes";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 const paymentFormSchema = z.object({
   fullName: z
@@ -38,9 +41,14 @@ interface PaymentFormProps {
   onCancel: () => void;
   selectedPlan: string | null;
   initialValues?: Partial<PaymentFormValues>;
+  isYearly?: boolean;
+  onDiscountApplied?: (discountPercent: number, discountCode: string) => void;
 }
 
-export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initialValues }: PaymentFormProps) {
+export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initialValues, isYearly, onDiscountApplied }: PaymentFormProps) {
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountStatus, setDiscountStatus] = useState<{ valid: boolean; message: string; percent: number } | null>(null);
+
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
@@ -55,6 +63,26 @@ export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initial
       acceptTerms: false,
     },
   });
+
+  const handleApplyDiscount = () => {
+    if (!discountCode.trim()) return;
+    const billingCycle = isYearly ? 'yearly' : 'monthly';
+    const result = validateDiscountCode(discountCode, billingCycle);
+    
+    if (result.valid) {
+      setDiscountStatus({ valid: true, message: `הנחה של ${result.discountPercent}% הוחלה בהצלחה!`, percent: result.discountPercent });
+      onDiscountApplied?.(result.discountPercent, discountCode.trim().toUpperCase());
+    } else {
+      setDiscountStatus({ valid: false, message: result.errorMessage || 'קוד לא תקין', percent: 0 });
+      onDiscountApplied?.(0, '');
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode("");
+    setDiscountStatus(null);
+    onDiscountApplied?.(0, '');
+  };
 
   return (
     <Form {...form}>
@@ -171,6 +199,36 @@ export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initial
               </FormItem>
             )}
           />
+        </div>
+
+        {/* Discount Code Section */}
+        <div className="space-y-2">
+          <FormLabel>קוד הנחה (אופציונלי)</FormLabel>
+          <div className="flex gap-2">
+            <Input
+              placeholder="הכנס קוד הנחה"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              disabled={discountStatus?.valid}
+              dir="ltr"
+              className="flex-1"
+            />
+            {discountStatus?.valid ? (
+              <Button type="button" variant="outline" onClick={handleRemoveDiscount} className="shrink-0">
+                הסר
+              </Button>
+            ) : (
+              <Button type="button" variant="secondary" onClick={handleApplyDiscount} disabled={!discountCode.trim()} className="shrink-0">
+                החל
+              </Button>
+            )}
+          </div>
+          {discountStatus && (
+            <div className={`flex items-center gap-2 text-sm ${discountStatus.valid ? 'text-green-600' : 'text-destructive'}`}>
+              {discountStatus.valid ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+              <span>{discountStatus.message}</span>
+            </div>
+          )}
         </div>
 
         <FormField
