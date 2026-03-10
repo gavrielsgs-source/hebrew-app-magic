@@ -11,6 +11,7 @@ import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
 import { BillingToggle } from "@/components/subscription/BillingToggle";
 import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
+import { applyDiscount } from "@/utils/discount-codes";
 
 export default function Payment() {
   const [searchParams] = useSearchParams();
@@ -20,6 +21,8 @@ export default function Payment() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(preselectedPlan);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountCode, setDiscountCode] = useState("");
   const [userId, setUserId] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
   const [userFullName, setUserFullName] = useState<string>("");
@@ -33,6 +36,7 @@ export default function Payment() {
     thtk: string;
     supplier: string;
     customerInfo: PaymentFormValues;
+    finalSum: number;
   } | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -70,6 +74,11 @@ export default function Payment() {
     fetchUserData();
   }, []);
 
+  const handleDiscountApplied = (percent: number, code: string) => {
+    setDiscountPercent(percent);
+    setDiscountCode(code);
+  };
+
   const onSubmit = async (data: PaymentFormValues) => {
     if (!selectedPlan) {
       toast.error("אנא בחר חבילה תחילה");
@@ -89,15 +98,19 @@ export default function Payment() {
         throw new Error("חבילה לא נמצאה");
       }
 
-      const actualSum = isYearly ? selectedPlanObj.yearlyPrice * 12 : selectedPlanObj.monthlyPrice;
+      let actualSum = isYearly ? selectedPlanObj.yearlyPrice * 12 : selectedPlanObj.monthlyPrice;
 
-      // Call tranzila-handshake to get thtk token
+      if (discountPercent > 0) {
+        actualSum = applyDiscount(actualSum, discountPercent);
+      }
+
       const { data: handshakeData, error } = await supabase.functions.invoke('tranzila-handshake', {
         body: {
           sum: actualSum,
           planId: selectedPlan,
           billingCycle: isYearly ? 'yearly' : 'monthly',
           isYearly,
+          discountCode: discountCode || undefined,
         }
       });
 
@@ -111,13 +124,11 @@ export default function Payment() {
         throw new Error(handshakeData?.error || 'שגיאה באתחול תשלום');
       }
 
-      console.log("Handshake successful, thtk received");
-
-      // Set Tranzila data to show the iframe
       setTranzilaData({
         thtk: handshakeData.thtk,
         supplier: handshakeData.supplier,
         customerInfo: data,
+        finalSum: actualSum,
       });
 
     } catch (error) {
@@ -133,6 +144,8 @@ export default function Payment() {
   const handleUpgrade = async (planId: string) => {
     setSelectedPlan(planId);
     setTranzilaData(null);
+    setDiscountPercent(0);
+    setDiscountCode("");
     setPaymentDrawerOpen(true);
   };
 
@@ -140,35 +153,25 @@ export default function Payment() {
     setPaymentDrawerOpen(open);
     if (!open) {
       setTranzilaData(null);
+      setDiscountPercent(0);
+      setDiscountCode("");
     }
   };
 
   const getSelectedPlanDetails = (planId: string) => {
     const plans = [
-      {
-        id: "premium",
-        name: "פרימיום",
-        monthlyPrice: 199,
-        yearlyPrice: 179,
-        tier: "premium",
-      },
-      {
-        id: "business",
-        name: "ביזנס",
-        monthlyPrice: 399,
-        yearlyPrice: 349,
-        tier: "business",
-      },
-      {
-        id: "enterprise",
-        name: "אנטרפרייז",
-        monthlyPrice: 699,
-        yearlyPrice: 619,
-        tier: "enterprise",
-      },
+      { id: "premium", name: "פרימיום", monthlyPrice: 199, yearlyPrice: 179, tier: "premium" },
+      { id: "business", name: "ביזנס", monthlyPrice: 399, yearlyPrice: 349, tier: "business" },
+      { id: "enterprise", name: "אנטרפרייז", monthlyPrice: 699, yearlyPrice: 619, tier: "enterprise" },
     ];
-
     return plans.find((plan) => plan.id === planId);
+  };
+
+  const getOriginalSum = () => {
+    if (!selectedPlan) return 0;
+    const plan = getSelectedPlanDetails(selectedPlan);
+    if (!plan) return 0;
+    return isYearly ? plan.yearlyPrice * 12 : plan.monthlyPrice;
   };
 
   return (
@@ -209,6 +212,15 @@ export default function Payment() {
                 </>
               )}
             </DrawerTitle>
+            {selectedPlan && discountPercent > 0 && (
+              <p className="text-center text-sm mt-1">
+                <span className="line-through text-muted-foreground">₪{getOriginalSum()}</span>
+                {' '}
+                <span className="text-green-600 font-bold">₪{applyDiscount(getOriginalSum(), discountPercent)}</span>
+                {' '}
+                <span className="text-green-600 text-xs">({discountPercent}% הנחה)</span>
+              </p>
+            )}
           </DrawerHeader>
 
           <div className="px-4 overflow-y-auto">
@@ -216,12 +228,8 @@ export default function Payment() {
               <TranzilaPaymentIframe
                 supplier={tranzilaData.supplier}
                 thtk={tranzilaData.thtk}
-                sum={isYearly 
-                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
-                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
-                recurSum={isYearly 
-                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
-                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                sum={tranzilaData.finalSum}
+                recurSum={tranzilaData.finalSum}
                 recurTransaction={isYearly ? '7_approved' : '4_approved'}
                 customerInfo={{
                   contact: tranzilaData.customerInfo.fullName,
@@ -242,6 +250,8 @@ export default function Payment() {
                 loading={loading}
                 onCancel={() => handleDrawerClose(false)}
                 selectedPlan={selectedPlan}
+                isYearly={isYearly}
+                onDiscountApplied={handleDiscountApplied}
                 initialValues={{
                   fullName: userFullName,
                   phone: userPhone,

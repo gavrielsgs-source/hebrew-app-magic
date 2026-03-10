@@ -14,16 +14,20 @@ import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
 import { BillingToggle } from "@/components/subscription/BillingToggle";
 import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
+import { applyDiscount } from "@/utils/discount-codes";
 
 export default function UpgradeSubscription() {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [paymentDrawerOpen, setPaymentDrawerOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountCode, setDiscountCode] = useState("");
   const [tranzilaData, setTranzilaData] = useState<{
     thtk: string;
     supplier: string;
     customerInfo: PaymentFormValues;
+    finalSum: number;
   } | null>(null);
   const { subscription, refreshSubscription } = useSubscription();
   const { user } = useAuth();
@@ -39,6 +43,11 @@ export default function UpgradeSubscription() {
     return plans.find(plan => plan.id === planId);
   };
 
+  const handleDiscountApplied = (percent: number, code: string) => {
+    setDiscountPercent(percent);
+    setDiscountCode(code);
+  };
+
   const onSubmit = async (data: PaymentFormValues) => {
     if (!selectedPlan) {
       toast.error("אנא בחר חבילה תחילה");
@@ -51,17 +60,21 @@ export default function UpgradeSubscription() {
       const selectedPlanObj = getSelectedPlanDetails(selectedPlan);
       if (!selectedPlanObj) throw new Error("חבילה לא נמצאה");
 
-      const actualSum = isYearly 
+      let actualSum = isYearly 
         ? selectedPlanObj.yearlyPrice * 12
         : selectedPlanObj.monthlyPrice;
 
-      // Call tranzila-handshake to get thtk token
+      if (discountPercent > 0) {
+        actualSum = applyDiscount(actualSum, discountPercent);
+      }
+
       const { data: handshakeData, error } = await supabase.functions.invoke('tranzila-handshake', {
         body: {
           sum: actualSum,
           planId: selectedPlan,
           billingCycle: isYearly ? 'yearly' : 'monthly',
           isYearly,
+          discountCode: discountCode || undefined,
         }
       });
 
@@ -75,13 +88,11 @@ export default function UpgradeSubscription() {
         throw new Error(handshakeData?.error || 'שגיאה באתחול תשלום');
       }
 
-      console.log("Handshake successful, thtk received");
-
-      // Set Tranzila data to show the iframe
       setTranzilaData({
         thtk: handshakeData.thtk,
         supplier: handshakeData.supplier,
         customerInfo: data,
+        finalSum: actualSum,
       });
 
     } catch (error) {
@@ -97,6 +108,8 @@ export default function UpgradeSubscription() {
   const handleUpgrade = (planId: string) => {
     setSelectedPlan(planId);
     setTranzilaData(null);
+    setDiscountPercent(0);
+    setDiscountCode("");
     setPaymentDrawerOpen(true);
   };
 
@@ -104,7 +117,16 @@ export default function UpgradeSubscription() {
     setPaymentDrawerOpen(open);
     if (!open) {
       setTranzilaData(null);
+      setDiscountPercent(0);
+      setDiscountCode("");
     }
+  };
+
+  const getOriginalSum = () => {
+    if (!selectedPlan) return 0;
+    const plan = getSelectedPlanDetails(selectedPlan);
+    if (!plan) return 0;
+    return isYearly ? plan.yearlyPrice * 12 : plan.monthlyPrice;
   };
 
   return (
@@ -149,6 +171,15 @@ export default function UpgradeSubscription() {
                 </>
               )}
             </DrawerTitle>
+            {selectedPlan && discountPercent > 0 && (
+              <p className="text-center text-sm mt-1">
+                <span className="line-through text-muted-foreground">₪{getOriginalSum()}</span>
+                {' '}
+                <span className="text-green-600 font-bold">₪{applyDiscount(getOriginalSum(), discountPercent)}</span>
+                {' '}
+                <span className="text-green-600 text-xs">({discountPercent}% הנחה)</span>
+              </p>
+            )}
           </DrawerHeader>
           
           <div className="px-4 overflow-y-auto">
@@ -156,12 +187,8 @@ export default function UpgradeSubscription() {
               <TranzilaPaymentIframe
                 supplier={tranzilaData.supplier}
                 thtk={tranzilaData.thtk}
-                sum={isYearly 
-                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
-                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
-                recurSum={isYearly 
-                  ? (getSelectedPlanDetails(selectedPlan)?.yearlyPrice ?? 0) * 12
-                  : (getSelectedPlanDetails(selectedPlan)?.monthlyPrice ?? 0)}
+                sum={tranzilaData.finalSum}
+                recurSum={tranzilaData.finalSum}
                 recurTransaction={isYearly ? '7_approved' : '4_approved'}
                 customerInfo={{
                   contact: tranzilaData.customerInfo.fullName,
@@ -182,6 +209,8 @@ export default function UpgradeSubscription() {
                 loading={loading}
                 onCancel={() => handleDrawerClose(false)}
                 selectedPlan={selectedPlan}
+                isYearly={isYearly}
+                onDiscountApplied={handleDiscountApplied}
               />
             )}
           </div>

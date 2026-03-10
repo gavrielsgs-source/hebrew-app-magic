@@ -10,8 +10,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, XCircle } from "lucide-react";
 import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
+import { validateDiscountCode, applyDiscount } from "@/utils/discount-codes";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "שם מלא חייב להכיל לפחות 2 תווים"),
@@ -51,9 +52,13 @@ const plans = [
 export default function SignupTrial() {
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string>("");
+  const [discountCodeInput, setDiscountCodeInput] = useState("");
+  const [discountStatus, setDiscountStatus] = useState<{ valid: boolean; message: string; percent: number } | null>(null);
+  const [appliedDiscountCode, setAppliedDiscountCode] = useState("");
   const [tranzilaData, setTranzilaData] = useState<{
     thtk: string;
     supplier: string;
+    finalSum: number;
   } | null>(null);
   const navigate = useNavigate();
 
@@ -85,17 +90,42 @@ export default function SignupTrial() {
     return cycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
   };
 
+  const handleApplyDiscount = () => {
+    if (!discountCodeInput.trim()) return;
+    const result = validateDiscountCode(discountCodeInput, billingCycle);
+    if (result.valid) {
+      setDiscountStatus({ valid: true, message: `הנחה של ${result.discountPercent}% הוחלה בהצלחה!`, percent: result.discountPercent });
+      setAppliedDiscountCode(discountCodeInput.trim().toUpperCase());
+    } else {
+      setDiscountStatus({ valid: false, message: result.errorMessage || 'קוד לא תקין', percent: 0 });
+      setAppliedDiscountCode("");
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCodeInput("");
+    setDiscountStatus(null);
+    setAppliedDiscountCode("");
+  };
+
+  const getDisplayPrice = () => {
+    const basePrice = getPlanPrice(selectedPlan, billingCycle);
+    if (discountStatus?.valid && discountStatus.percent > 0) {
+      return applyDiscount(basePrice, discountStatus.percent);
+    }
+    return basePrice;
+  };
+
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
 
     try {
-      console.log("Starting trial signup:", data);
+      let actualSum = getPlanPrice(data.plan, data.billingCycle);
 
-      const actualSum = data.billingCycle === 'yearly'
-        ? getPlanPrice(data.plan, 'yearly')
-        : getPlanPrice(data.plan, 'monthly');
+      if (discountStatus?.valid && discountStatus.percent > 0) {
+        actualSum = applyDiscount(actualSum, discountStatus.percent);
+      }
 
-      // Call tranzila-handshake to get thtk token
       const { data: handshakeData, error: handshakeError } = await supabase.functions.invoke(
         "tranzila-handshake",
         {
@@ -104,6 +134,7 @@ export default function SignupTrial() {
             planId: data.plan,
             billingCycle: data.billingCycle,
             isYearly: data.billingCycle === 'yearly',
+            discountCode: appliedDiscountCode || undefined,
           },
         }
       );
@@ -117,11 +148,10 @@ export default function SignupTrial() {
         throw new Error(handshakeData?.error || "שגיאה באתחול תשלום");
       }
 
-      console.log("Handshake successful, showing Tranzila iframe");
-      
       setTranzilaData({
         thtk: handshakeData.thtk,
         supplier: handshakeData.supplier,
+        finalSum: actualSum,
       });
 
     } catch (error: any) {
@@ -170,14 +200,20 @@ export default function SignupTrial() {
                 <CardTitle className="text-center">השלם תשלום</CardTitle>
                 <CardDescription className="text-center">
                   מנוי {plans.find(p => p.id === selectedPlan)?.name} - {billingCycle === 'yearly' ? 'שנתי' : 'חודשי'}
+                  {discountStatus?.valid && (
+                    <>
+                      {' '} | <span className="line-through">₪{getPlanPrice(selectedPlan, billingCycle)}</span>{' '}
+                      <span className="text-green-600 font-bold">₪{tranzilaData.finalSum}</span>
+                    </>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <TranzilaPaymentIframe
                   supplier={tranzilaData.supplier}
                   thtk={tranzilaData.thtk}
-                  sum={getPlanPrice(selectedPlan, billingCycle)}
-                  recurSum={getPlanPrice(selectedPlan, billingCycle)}
+                  sum={tranzilaData.finalSum}
+                  recurSum={tranzilaData.finalSum}
                   recurTransaction={billingCycle === 'yearly' ? '7_approved' : '4_approved'}
                   customerInfo={{
                     contact: formValues.fullName,
@@ -219,7 +255,13 @@ export default function SignupTrial() {
                           <FormLabel>מחזור תשלום</FormLabel>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={field.onChange}
+                              onValueChange={(val) => {
+                                field.onChange(val);
+                                // Reset discount when switching billing cycle
+                                if (discountStatus) {
+                                  handleRemoveDiscount();
+                                }
+                              }}
                               value={field.value}
                               className="flex gap-4"
                             >
@@ -352,6 +394,36 @@ export default function SignupTrial() {
                         )}
                       />
 
+                      {/* Discount Code */}
+                      <div className="space-y-2">
+                        <FormLabel>קוד הנחה (אופציונלי)</FormLabel>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="הכנס קוד הנחה"
+                            value={discountCodeInput}
+                            onChange={(e) => setDiscountCodeInput(e.target.value)}
+                            disabled={discountStatus?.valid}
+                            dir="ltr"
+                            className="flex-1"
+                          />
+                          {discountStatus?.valid ? (
+                            <Button type="button" variant="outline" onClick={handleRemoveDiscount} className="shrink-0">
+                              הסר
+                            </Button>
+                          ) : (
+                            <Button type="button" variant="secondary" onClick={handleApplyDiscount} disabled={!discountCodeInput.trim()} className="shrink-0">
+                              החל
+                            </Button>
+                          )}
+                        </div>
+                        {discountStatus && (
+                          <div className={`flex items-center gap-2 text-sm ${discountStatus.valid ? 'text-green-600' : 'text-destructive'}`}>
+                            {discountStatus.valid ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                            <span>{discountStatus.message}</span>
+                          </div>
+                        )}
+                      </div>
+
                       <div className="pt-4 space-y-4">
                         <div className="bg-muted/50 p-4 rounded-lg">
                           <p className="text-sm font-medium mb-2">סיכום:</p>
@@ -365,8 +437,21 @@ export default function SignupTrial() {
                             <div className="flex justify-between">
                               <span>תשלום עתידי:</span>
                               <span className="font-medium">
-                                ₪{getPlanPrice(selectedPlan, billingCycle)}/
-                                {billingCycle === "yearly" ? "שנה" : "חודש"}
+                                {discountStatus?.valid ? (
+                                  <>
+                                    <span className="line-through text-muted-foreground">
+                                      ₪{getPlanPrice(selectedPlan, billingCycle)}
+                                    </span>{' '}
+                                    <span className="text-green-600">
+                                      ₪{getDisplayPrice()}/{billingCycle === "yearly" ? "שנה" : "חודש"}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    ₪{getPlanPrice(selectedPlan, billingCycle)}/
+                                    {billingCycle === "yearly" ? "שנה" : "חודש"}
+                                  </>
+                                )}
                               </span>
                             </div>
                             <div className="flex justify-between text-green-600 font-medium">
