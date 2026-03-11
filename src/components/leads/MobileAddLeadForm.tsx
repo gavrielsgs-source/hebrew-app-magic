@@ -39,7 +39,7 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     interested_max_price: "",
     interested_max_km: "",
   });
-  const [shouldScheduleMeeting, setShouldScheduleMeeting] = useState(false);
+  const [sendWhatsApp, setSendWhatsApp] = useState(false);
   const [interestedOpen, setInterestedOpen] = useState(false);
 
   // Enhanced mobile-first submit handler
