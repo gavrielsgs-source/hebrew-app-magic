@@ -260,7 +260,7 @@ export function MobileTaskCalendar({ tasks, onTaskClick, onTaskStatusChange }: M
             {selectedDateTasks.map(task => (
               <div
                 key={task.id}
-                onClick={() => onTaskClick(task)}
+                onClick={() => { setEditingTask(task); setShowEditDialog(true); }}
                 className={cn(
                   "p-3 rounded-xl border-2 cursor-pointer hover:shadow-md transition-all",
                   getTaskTypeColor(task),
