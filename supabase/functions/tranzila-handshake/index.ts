@@ -23,6 +23,10 @@ function validateDiscountServer(code: string, billingCycle: string, sum: number,
     return { valid: false, error: 'Discount code only valid for yearly billing' };
   }
 
+  if (discount.allowedPlans.length > 0 && !discount.allowedPlans.includes(planId)) {
+    return { valid: false, error: 'Discount code not valid for this plan' };
+  }
+
   // Validate that the sum matches the expected discounted price
   const planPrices = basePrices[planId];
   if (!planPrices) {

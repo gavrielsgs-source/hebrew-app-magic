@@ -119,7 +119,16 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
           <AddLeadNotesField control={form.control} />
           <AddLeadInterestedCarFields control={form.control} />
           
-          {/* WhatsApp checkbox hidden - will be re-enabled later */}
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <Checkbox 
+              id="sendWhatsApp" 
+              checked={sendWhatsApp}
+              onCheckedChange={(checked) => setSendWhatsApp(checked === true)}
+            />
+            <Label htmlFor="sendWhatsApp" className="text-sm cursor-pointer">
+              שלח הודעת ברוכים הבאים בוואטסאפ
+            </Label>
+          </div>
           
           <div className="flex gap-2 pt-4">
             <Button 

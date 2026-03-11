@@ -543,7 +543,7 @@ export default function SalesAgreement() {
         </div>
 
         {/* Fixed Mobile Action Bar */}
-        <div className="fixed bottom-20 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t z-50">
+        <div className="fixed bottom-36 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t z-50">
           <div className="flex gap-3">
             <Button
               type="button"

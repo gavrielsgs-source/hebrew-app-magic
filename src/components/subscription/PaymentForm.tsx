@@ -67,7 +67,7 @@ export function PaymentForm({ onSubmit, loading, onCancel, selectedPlan, initial
   const handleApplyDiscount = () => {
     if (!discountCode.trim()) return;
     const billingCycle = isYearly ? 'yearly' : 'monthly';
-    const result = validateDiscountCode(discountCode, billingCycle);
+    const result = validateDiscountCode(discountCode, billingCycle, selectedPlan || undefined);
     
     if (result.valid) {
       setDiscountStatus({ valid: true, message: `הנחה של ${result.discountPercent}% הוחלה בהצלחה!`, percent: result.discountPercent });

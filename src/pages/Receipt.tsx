@@ -557,7 +557,7 @@ export default function Receipt() {
               <ReceiptSummaryCard totals={totals} />
 
               {/* Fixed Action Buttons */}
-              <div className="fixed bottom-28 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
+              <div className="fixed bottom-36 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
                 <div className="space-y-1.5 max-w-md mx-auto">
                   <Button
                     type="submit"

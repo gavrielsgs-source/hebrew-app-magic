@@ -288,15 +288,15 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Schedule Meeting */}
+      {/* Send WhatsApp Welcome */}
       <div className="flex items-center space-x-2 space-x-reverse py-2">
         <Checkbox 
-          id="schedule-meeting" 
-          checked={shouldScheduleMeeting}
-          onCheckedChange={(checked) => setShouldScheduleMeeting(checked === true)}
+          id="send-whatsapp" 
+          checked={sendWhatsApp}
+          onCheckedChange={(checked) => setSendWhatsApp(checked === true)}
         />
-        <Label htmlFor="schedule-meeting" className="text-sm">
-          קבע פגישה למחר בשעה 10:00
+        <Label htmlFor="send-whatsapp" className="text-sm">
+          שלח הודעת ברוכים הבאים בוואטסאפ
         </Label>
       </div>
 
