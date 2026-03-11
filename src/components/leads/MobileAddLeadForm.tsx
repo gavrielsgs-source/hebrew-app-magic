@@ -88,11 +88,11 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
 
       console.log('MobileAddLeadForm - Creating lead with data:', leadData);
 
-      await addLead.mutateAsync({ leadData, sendWhatsApp: false });
+      await addLead.mutateAsync({ leadData, sendWhatsApp });
       
       toast({
         title: "ליד נוסף",
-        description: shouldScheduleMeeting ? "הליד נוסף ופגישה נקבעה" : "הליד נוסף בהצלחה",
+        description: sendWhatsApp ? "הליד נוסף והודעת ברוכים הבאים נשלחה" : "הליד נוסף בהצלחה",
       });
 
       if (onSuccess) {
