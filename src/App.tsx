@@ -52,6 +52,7 @@ import AcceptInvitation from "./pages/AcceptInvitation";
 import AboutUs from "./pages/AboutUs";
 import TaxInvoice from "./pages/TaxInvoice";
 import Customers from "./pages/Customers";
+import Automations from "./pages/Automations";
 import CustomerProfile from "./pages/CustomerProfile";
 import SubscriptionExpired from "./pages/SubscriptionExpired";
 import { GracePeriodWarning } from "./components/subscription/GracePeriodWarning";
@@ -176,6 +177,7 @@ function AppLayout() {
                 <Route path="/company/:companyId/settings" element={<CompanySettings />} />
                 <Route path="/company/:companyId/users" element={<CompanyUsers />} />
                 <Route path="/team-management" element={<TeamManagement />} />
+                <Route path="/automations" element={<Automations />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/open-format" element={<OpenFormat />} />
                 <Route path="*" element={<NotFound />} />

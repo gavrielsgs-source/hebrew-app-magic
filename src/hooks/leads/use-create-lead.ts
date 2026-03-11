@@ -50,6 +50,65 @@ export const useCreateLead = () => {
 
       console.log('🔍 [useCreateLead] Lead created successfully:', createdLead);
 
+      // Schedule automation messages
+      try {
+        const { data: automationSettings } = await supabase
+          .from('automation_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (automationSettings && formattedPhone && cleanedLead.name?.trim()) {
+          const now = new Date();
+          const queueItems: any[] = [];
+
+          // Queue welcome only if not sending immediately via sendWhatsApp flag
+          if (automationSettings.welcome_enabled && !sendWhatsApp) {
+            queueItems.push({
+              user_id: user.id,
+              lead_id: createdLead[0].id,
+              automation_type: 'welcome',
+              phone: formattedPhone,
+              template_name: automationSettings.welcome_template || 'welcome_message',
+              template_params: [cleanedLead.name.trim()],
+              scheduled_for: new Date(now.getTime() + automationSettings.welcome_delay_minutes * 60 * 1000).toISOString(),
+            });
+          }
+
+          if (automationSettings.followup1_enabled) {
+            queueItems.push({
+              user_id: user.id,
+              lead_id: createdLead[0].id,
+              automation_type: 'followup_1',
+              phone: formattedPhone,
+              template_name: automationSettings.followup1_template || 'lead_followup',
+              template_params: [cleanedLead.name.trim()],
+              scheduled_for: new Date(now.getTime() + automationSettings.followup1_delay_hours * 60 * 60 * 1000).toISOString(),
+            });
+          }
+
+          if (automationSettings.followup2_enabled) {
+            queueItems.push({
+              user_id: user.id,
+              lead_id: createdLead[0].id,
+              automation_type: 'followup_2',
+              phone: formattedPhone,
+              template_name: automationSettings.followup2_template || 'lead_followup',
+              template_params: [cleanedLead.name.trim()],
+              scheduled_for: new Date(now.getTime() + automationSettings.followup2_delay_hours * 60 * 60 * 1000).toISOString(),
+            });
+          }
+
+          if (queueItems.length > 0) {
+            await supabase.from('automation_queue').insert(queueItems);
+            console.log(`🤖 Queued ${queueItems.length} automation messages for lead`);
+          }
+        }
+      } catch (automationErr) {
+        console.error('Error scheduling automations:', automationErr);
+        // Don't throw — lead was created successfully
+      }
+
       // Send welcome WhatsApp message
       if (sendWhatsApp && formattedPhone && cleanedLead.name?.trim()) {
         try {

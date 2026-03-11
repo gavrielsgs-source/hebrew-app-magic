@@ -155,6 +155,37 @@ export function useAddCar() {
                     entity_id: match.id,
                   });
                 }
+
+                // Queue car_match WhatsApp automations
+                try {
+                  const { data: automationSettings } = await supabase
+                    .from('automation_settings')
+                    .select('car_match_enabled, car_match_template')
+                    .eq('user_id', userData.user.id)
+                    .maybeSingle();
+
+                  if (automationSettings?.car_match_enabled) {
+                    const queueItems = finalMatches
+                      .filter((m: any) => m.phone)
+                      .map((m: any) => ({
+                        user_id: userData.user.id,
+                        lead_id: m.id,
+                        automation_type: 'car_match',
+                        phone: m.phone,
+                        template_name: automationSettings.car_match_template || 'car_match_alert',
+                        template_params: [m.name, `${data.make} ${data.model} ${data.year}`, String(data.price)],
+                        scheduled_for: new Date().toISOString(),
+                        car_id: data.id,
+                      }));
+
+                    if (queueItems.length > 0) {
+                      await supabase.from('automation_queue').insert(queueItems);
+                      console.log(`🤖 Queued ${queueItems.length} car_match WhatsApp messages`);
+                    }
+                  }
+                } catch (automationErr) {
+                  console.error('Error queuing car_match automations:', automationErr);
+                }
               }
             }
           } catch (matchError) {
