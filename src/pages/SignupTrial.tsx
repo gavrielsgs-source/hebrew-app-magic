@@ -92,7 +92,7 @@ export default function SignupTrial() {
 
   const handleApplyDiscount = () => {
     if (!discountCodeInput.trim()) return;
-    const result = validateDiscountCode(discountCodeInput, billingCycle);
+    const result = validateDiscountCode(discountCodeInput, billingCycle, selectedPlan);
     if (result.valid) {
       setDiscountStatus({ valid: true, message: `הנחה של ${result.discountPercent}% הוחלה בהצלחה!`, percent: result.discountPercent });
       setAppliedDiscountCode(discountCodeInput.trim().toUpperCase());

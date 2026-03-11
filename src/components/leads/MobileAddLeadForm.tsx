@@ -39,7 +39,7 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
     interested_max_price: "",
     interested_max_km: "",
   });
-  const [shouldScheduleMeeting, setShouldScheduleMeeting] = useState(false);
+  const [sendWhatsApp, setSendWhatsApp] = useState(false);
   const [interestedOpen, setInterestedOpen] = useState(false);
 
   // Enhanced mobile-first submit handler
@@ -88,11 +88,11 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
 
       console.log('MobileAddLeadForm - Creating lead with data:', leadData);
 
-      await addLead.mutateAsync({ leadData, sendWhatsApp: false });
+      await addLead.mutateAsync({ leadData, sendWhatsApp });
       
       toast({
         title: "ליד נוסף",
-        description: shouldScheduleMeeting ? "הליד נוסף ופגישה נקבעה" : "הליד נוסף בהצלחה",
+        description: sendWhatsApp ? "הליד נוסף והודעת ברוכים הבאים נשלחה" : "הליד נוסף בהצלחה",
       });
 
       if (onSuccess) {
@@ -288,15 +288,15 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Schedule Meeting */}
+      {/* Send WhatsApp Welcome */}
       <div className="flex items-center space-x-2 space-x-reverse py-2">
         <Checkbox 
-          id="schedule-meeting" 
-          checked={shouldScheduleMeeting}
-          onCheckedChange={(checked) => setShouldScheduleMeeting(checked === true)}
+          id="send-whatsapp" 
+          checked={sendWhatsApp}
+          onCheckedChange={(checked) => setSendWhatsApp(checked === true)}
         />
-        <Label htmlFor="schedule-meeting" className="text-sm">
-          קבע פגישה למחר בשעה 10:00
+        <Label htmlFor="send-whatsapp" className="text-sm">
+          שלח הודעת ברוכים הבאים בוואטסאפ
         </Label>
       </div>
 

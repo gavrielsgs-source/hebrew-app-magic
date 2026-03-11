@@ -4,11 +4,11 @@ interface DiscountResult {
   errorMessage?: string;
 }
 
-const DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean }> = {
-  'CARS40': { percent: 40, yearlyOnly: true },
+const DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean; allowedPlans: string[] }> = {
+  'CARS40': { percent: 40, yearlyOnly: true, allowedPlans: ['business', 'enterprise'] },
 };
 
-export function validateDiscountCode(code: string, billingCycle: string): DiscountResult {
+export function validateDiscountCode(code: string, billingCycle: string, planId?: string): DiscountResult {
   const normalized = code.trim().toUpperCase();
   const discount = DISCOUNT_CODES[normalized];
 
@@ -18,6 +18,10 @@ export function validateDiscountCode(code: string, billingCycle: string): Discou
 
   if (discount.yearlyOnly && billingCycle !== 'yearly') {
     return { valid: false, discountPercent: 0, errorMessage: 'קוד זה תקף רק למנוי שנתי' };
+  }
+
+  if (planId && discount.allowedPlans.length > 0 && !discount.allowedPlans.includes(planId)) {
+    return { valid: false, discountPercent: 0, errorMessage: 'קוד זה אינו תקף לחבילה שנבחרה' };
   }
 
   return { valid: true, discountPercent: discount.percent };

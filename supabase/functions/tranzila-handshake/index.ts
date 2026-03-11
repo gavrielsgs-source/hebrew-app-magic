@@ -7,8 +7,8 @@ const corsHeaders = {
 };
 
 // Server-side discount code validation
-const VALID_DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean }> = {
-  'CARS40': { percent: 40, yearlyOnly: true },
+const VALID_DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean; allowedPlans: string[] }> = {
+  'CARS40': { percent: 40, yearlyOnly: true, allowedPlans: ['business', 'enterprise'] },
 };
 
 function validateDiscountServer(code: string, billingCycle: string, sum: number, basePrices: Record<string, { monthly: number; yearly: number }>, planId: string): { valid: boolean; error?: string } {
@@ -21,6 +21,10 @@ function validateDiscountServer(code: string, billingCycle: string, sum: number,
   
   if (discount.yearlyOnly && billingCycle !== 'yearly') {
     return { valid: false, error: 'Discount code only valid for yearly billing' };
+  }
+
+  if (discount.allowedPlans.length > 0 && !discount.allowedPlans.includes(planId)) {
+    return { valid: false, error: 'Discount code not valid for this plan' };
   }
 
   // Validate that the sum matches the expected discounted price
