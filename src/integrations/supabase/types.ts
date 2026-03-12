@@ -103,6 +103,119 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_queue: {
+        Row: {
+          attempts: number
+          automation_type: string
+          car_id: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          lead_id: string | null
+          phone: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          template_name: string
+          template_params: Json
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          automation_type: string
+          car_id?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          lead_id?: string | null
+          phone: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+          template_name: string
+          template_params?: Json
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          automation_type?: string
+          car_id?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          lead_id?: string | null
+          phone?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          template_name?: string
+          template_params?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_queue_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_settings: {
+        Row: {
+          car_match_enabled: boolean
+          car_match_template: string
+          created_at: string
+          followup1_delay_hours: number
+          followup1_enabled: boolean
+          followup1_template: string
+          followup2_delay_hours: number
+          followup2_enabled: boolean
+          followup2_template: string
+          id: string
+          updated_at: string
+          user_id: string
+          welcome_delay_minutes: number
+          welcome_enabled: boolean
+          welcome_template: string
+        }
+        Insert: {
+          car_match_enabled?: boolean
+          car_match_template?: string
+          created_at?: string
+          followup1_delay_hours?: number
+          followup1_enabled?: boolean
+          followup1_template?: string
+          followup2_delay_hours?: number
+          followup2_enabled?: boolean
+          followup2_template?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          welcome_delay_minutes?: number
+          welcome_enabled?: boolean
+          welcome_template?: string
+        }
+        Update: {
+          car_match_enabled?: boolean
+          car_match_template?: string
+          created_at?: string
+          followup1_delay_hours?: number
+          followup1_enabled?: boolean
+          followup1_template?: string
+          followup2_delay_hours?: number
+          followup2_enabled?: boolean
+          followup2_template?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          welcome_delay_minutes?: number
+          welcome_enabled?: boolean
+          welcome_template?: string
+        }
+        Relationships: []
+      }
       cancellation_feedback: {
         Row: {
           created_at: string
