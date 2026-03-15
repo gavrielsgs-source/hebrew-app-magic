@@ -22,6 +22,7 @@ export interface AdminSubscription {
   company_id: string | null;
   max_users: number | null;
   active_users_count: number | null;
+  max_leads: number | null;
 }
 
 export interface SubscriptionStats {
