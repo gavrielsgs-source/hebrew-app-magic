@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Edit, ArrowUpDown, Download, Mail, Phone } from "lucide-react";
+import { Calendar, Clock, Edit, ArrowUpDown, Download, Mail, Phone, Users } from "lucide-react";
 import { AdminSubscription } from "@/hooks/use-admin-subscriptions";
 import { ExtendSubscriptionDialog } from "./ExtendSubscriptionDialog";
 import { ChangeStatusDialog } from "./ChangeStatusDialog";
