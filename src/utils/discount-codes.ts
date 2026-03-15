@@ -8,6 +8,8 @@ const DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean; all
   'CARS40': { percent: 40, yearlyOnly: true, allowedPlans: ['business', 'enterprise'] },
 };
 
+export const VAT_RATE = 0.18;
+
 export function validateDiscountCode(code: string, billingCycle: string, planId?: string): DiscountResult {
   const normalized = code.trim().toUpperCase();
   const discount = DISCOUNT_CODES[normalized];
@@ -29,4 +31,12 @@ export function validateDiscountCode(code: string, billingCycle: string, planId?
 
 export function applyDiscount(sum: number, discountPercent: number): number {
   return Math.round(sum * (1 - discountPercent / 100));
+}
+
+export function addVat(sum: number): number {
+  return Math.round(sum * (1 + VAT_RATE));
+}
+
+export function getVatAmount(sum: number): number {
+  return Math.round(sum * VAT_RATE);
 }

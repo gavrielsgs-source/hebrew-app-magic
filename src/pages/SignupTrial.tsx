@@ -448,25 +448,30 @@ export default function SignupTrial() {
                                 {plans.find((p) => p.id === selectedPlan)?.name}
                               </span>
                             </div>
+                            {discountStatus?.valid && (
+                              <div className="flex justify-between text-green-600">
+                                <span>הנחה ({discountStatus.percent}%):</span>
+                                <span className="font-medium">
+                                  <span className="line-through text-muted-foreground">
+                                    ₪{plans.find((p) => p.id === selectedPlan)?.monthlyPrice! * 12}
+                                  </span>{' '}
+                                  ₪{getDisplayPrice()}
+                                </span>
+                              </div>
+                            )}
                             <div className="flex justify-between">
-                              <span>תשלום עתידי:</span>
+                              <span>סכום לפני מע״מ:</span>
                               <span className="font-medium">
-                                {discountStatus?.valid ? (
-                                  <>
-                                    <span className="line-through text-muted-foreground">
-                                      ₪{getPlanPrice(selectedPlan, billingCycle)}
-                                    </span>{' '}
-                                    <span className="text-green-600">
-                                      ₪{getDisplayPrice()}/{billingCycle === "yearly" ? "שנה" : "חודש"}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <>
-                                    ₪{getPlanPrice(selectedPlan, billingCycle)}/
-                                    {billingCycle === "yearly" ? "שנה" : "חודש"}
-                                  </>
-                                )}
+                                ₪{getBaseSumBeforeVat()}/{billingCycle === "yearly" ? "שנה" : "חודש"}
                               </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>מע״מ (18%):</span>
+                              <span className="font-medium">₪{getVatAmount(getBaseSumBeforeVat())}</span>
+                            </div>
+                            <div className="flex justify-between font-bold border-t pt-1">
+                              <span>תשלום עתידי כולל מע״מ:</span>
+                              <span>₪{addVat(getBaseSumBeforeVat())}/{billingCycle === "yearly" ? "שנה" : "חודש"}</span>
                             </div>
                             <div className="flex justify-between text-green-600 font-medium">
                               <span>היום:</span>
