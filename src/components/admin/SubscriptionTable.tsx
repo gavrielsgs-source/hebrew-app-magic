@@ -7,6 +7,7 @@ import { AdminSubscription } from "@/hooks/use-admin-subscriptions";
 import { ExtendSubscriptionDialog } from "./ExtendSubscriptionDialog";
 import { ChangeStatusDialog } from "./ChangeStatusDialog";
 import { ChangeTierDialog } from "./ChangeTierDialog";
+import { ChangeLeadLimitDialog } from "./ChangeLeadLimitDialog";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import * as XLSX from "xlsx";
