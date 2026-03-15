@@ -53,6 +53,10 @@ export function SubscriptionsManager() {
     changeTier.mutate({ subscriptionId, newTier, reason });
   };
 
+  const handleChangeLeadLimit = (subscriptionId: string, maxLeads: number | null) => {
+    changeLeadLimit.mutate({ subscriptionId, maxLeads });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
