@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, ArrowRight, XCircle } from "lucide-react";
 import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
-import { validateDiscountCode, applyDiscount } from "@/utils/discount-codes";
+import { validateDiscountCode, applyDiscount, addVat, getVatAmount } from "@/utils/discount-codes";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "שם מלא חייב להכיל לפחות 2 תווים"),
