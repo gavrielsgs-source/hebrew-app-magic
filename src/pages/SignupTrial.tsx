@@ -216,11 +216,9 @@ export default function SignupTrial() {
                 <CardTitle className="text-center">השלם תשלום</CardTitle>
                 <CardDescription className="text-center">
                   מנוי {plans.find(p => p.id === selectedPlan)?.name} - {billingCycle === 'yearly' ? 'שנתי' : 'חודשי'}
+                  {' '} | סה״כ כולל מע״מ: ₪{tranzilaData.finalSum}
                   {discountStatus?.valid && (
-                    <>
-                      {' '} | <span className="line-through">₪{getPlanPrice(selectedPlan, billingCycle)}</span>{' '}
-                      <span className="text-green-600 font-bold">₪{tranzilaData.finalSum}</span>
-                    </>
+                    <span className="text-green-600 font-bold"> ({discountStatus.percent}% הנחה)</span>
                   )}
                 </CardDescription>
               </CardHeader>
