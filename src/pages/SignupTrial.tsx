@@ -129,11 +129,18 @@ export default function SignupTrial() {
     setIsLoading(true);
 
     try {
-      let actualSum = getPlanPrice(data.plan, data.billingCycle);
+      const plan = plans.find((p) => p.id === data.plan);
+      if (!plan) throw new Error("חבילה לא נמצאה");
 
-      if (discountStatus?.valid && discountStatus.percent > 0) {
-        actualSum = applyDiscount(actualSum, discountStatus.percent);
+      let baseSum: number;
+      if (discountStatus?.valid && discountStatus.percent > 0 && data.billingCycle === 'yearly') {
+        // Discount replaces yearly discount: use monthlyPrice × 12 as base
+        baseSum = applyDiscount(plan.monthlyPrice * 12, discountStatus.percent);
+      } else {
+        baseSum = getPlanPrice(data.plan, data.billingCycle);
       }
+
+      const actualSum = addVat(baseSum);
 
       const { data: handshakeData, error: handshakeError } = await supabase.functions.invoke(
         "tranzila-handshake",
