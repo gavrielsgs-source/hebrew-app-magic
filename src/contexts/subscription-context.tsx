@@ -144,6 +144,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         subscription_status: subscriptionData.subscription_status,
         isTrialActive: subscriptionData.trial_ends_at ? new Date(subscriptionData.trial_ends_at) > new Date() : false,
         // Override user limit with database value if available
+        leadLimit: subscriptionData.max_leads || baseSubscription.leadLimit,
         userLimit: subscriptionData.max_users || baseSubscription.userLimit
       };
       
