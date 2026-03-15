@@ -108,12 +108,21 @@ export default function SignupTrial() {
     setAppliedDiscountCode("");
   };
 
-  const getDisplayPrice = () => {
-    const basePrice = getPlanPrice(selectedPlan, billingCycle);
-    if (discountStatus?.valid && discountStatus.percent > 0) {
-      return applyDiscount(basePrice, discountStatus.percent);
+  // Get base sum before VAT - discount replaces yearly discount
+  const getBaseSumBeforeVat = () => {
+    const plan = plans.find((p) => p.id === selectedPlan);
+    if (!plan) return 0;
+
+    if (discountStatus?.valid && discountStatus.percent > 0 && billingCycle === 'yearly') {
+      // Discount replaces yearly discount: use monthlyPrice × 12 as base
+      return applyDiscount(plan.monthlyPrice * 12, discountStatus.percent);
     }
-    return basePrice;
+
+    return getPlanPrice(selectedPlan, billingCycle);
+  };
+
+  const getDisplayPrice = () => {
+    return getBaseSumBeforeVat();
   };
 
   const onSubmit = async (data: SignupFormValues) => {
