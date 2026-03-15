@@ -116,6 +116,7 @@ export function SubscriptionTable({
                   <ArrowUpDown className="mr-2 h-4 w-4" />
                 </Button>
               </TableHead>
+              <TableHead className="text-right">מגבלת לידים</TableHead>
               <TableHead className="text-right">
                 <Button variant="ghost" onClick={() => handleSort("trial_ends_at")}>
                   סיום ניסיון
