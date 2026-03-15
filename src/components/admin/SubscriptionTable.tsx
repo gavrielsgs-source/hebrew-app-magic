@@ -33,6 +33,7 @@ export function SubscriptionTable({
   const [extendDialogOpen, setExtendDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [tierDialogOpen, setTierDialogOpen] = useState(false);
+  const [leadLimitDialogOpen, setLeadLimitDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<keyof AdminSubscription>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
