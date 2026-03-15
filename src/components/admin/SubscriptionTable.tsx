@@ -17,6 +17,7 @@ interface SubscriptionTableProps {
   onExtend: (subscriptionId: string, days: number, reason?: string) => void;
   onChangeStatus: (subscriptionId: string, newStatus: string, reason?: string) => void;
   onChangeTier: (subscriptionId: string, newTier: string, reason?: string) => void;
+  onChangeLeadLimit: (subscriptionId: string, maxLeads: number | null) => void;
   isLoading?: boolean;
 }
 
