@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,8 +20,15 @@ export function ChangeLeadLimitDialog({
   onChangeLimit,
   isLoading,
 }: ChangeLeadLimitDialogProps) {
-  const [useDefault, setUseDefault] = useState(currentLimit === null);
-  const [limit, setLimit] = useState(currentLimit?.toString() || "");
+  const [useDefault, setUseDefault] = useState(true);
+  const [limit, setLimit] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setUseDefault(currentLimit === null);
+      setLimit(currentLimit?.toString() || "");
+    }
+  }, [open, currentLimit]);
 
   const handleSubmit = () => {
     if (useDefault) {
@@ -55,15 +62,21 @@ export function ChangeLeadLimitDialog({
           </div>
           {!useDefault && (
             <div className="space-y-2">
-              <Label htmlFor="lead-limit">מגבלת לידים</Label>
+              <Label htmlFor="lead-limit">מגבלת לידים מקסימלית</Label>
               <Input
                 id="lead-limit"
                 type="number"
                 min="1"
                 value={limit}
                 onChange={(e) => setLimit(e.target.value)}
-                placeholder="הזן מספר לידים"
+                placeholder="למשל: 100"
+                autoFocus
               />
+              {limit && parseInt(limit) > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  המשתמש יוגבל ל-{parseInt(limit)} לידים
+                </p>
+              )}
             </div>
           )}
         </div>
