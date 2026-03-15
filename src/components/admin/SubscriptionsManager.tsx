@@ -16,6 +16,7 @@ export function SubscriptionsManager() {
     extendSubscription,
     changeStatus,
     changeTier,
+    changeLeadLimit,
   } = useAdminSubscriptions();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,6 +51,10 @@ export function SubscriptionsManager() {
 
   const handleChangeTier = (subscriptionId: string, newTier: string, reason?: string) => {
     changeTier.mutate({ subscriptionId, newTier, reason });
+  };
+
+  const handleChangeLeadLimit = (subscriptionId: string, maxLeads: number | null) => {
+    changeLeadLimit.mutate({ subscriptionId, maxLeads });
   };
 
   if (isLoading) {
@@ -88,10 +93,12 @@ export function SubscriptionsManager() {
             onExtend={handleExtend}
             onChangeStatus={handleChangeStatus}
             onChangeTier={handleChangeTier}
+            onChangeLeadLimit={handleChangeLeadLimit}
             isLoading={
               extendSubscription.isPending ||
               changeStatus.isPending ||
-              changeTier.isPending
+              changeTier.isPending ||
+              changeLeadLimit.isPending
             }
           />
         </CardContent>

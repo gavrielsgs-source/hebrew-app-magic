@@ -1989,6 +1989,7 @@ export type Database = {
           created_at: string
           expires_at: string
           full_name: string
+          max_leads: number
           max_users: number
           next_billing_date: string
           phone: string

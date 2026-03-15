@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Edit, ArrowUpDown, Download, Mail, Phone } from "lucide-react";
+import { Calendar, Clock, Edit, ArrowUpDown, Download, Mail, Phone, Users } from "lucide-react";
 import { AdminSubscription } from "@/hooks/use-admin-subscriptions";
 import { ExtendSubscriptionDialog } from "./ExtendSubscriptionDialog";
 import { ChangeStatusDialog } from "./ChangeStatusDialog";
 import { ChangeTierDialog } from "./ChangeTierDialog";
+import { ChangeLeadLimitDialog } from "./ChangeLeadLimitDialog";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import * as XLSX from "xlsx";
@@ -16,6 +17,7 @@ interface SubscriptionTableProps {
   onExtend: (subscriptionId: string, days: number, reason?: string) => void;
   onChangeStatus: (subscriptionId: string, newStatus: string, reason?: string) => void;
   onChangeTier: (subscriptionId: string, newTier: string, reason?: string) => void;
+  onChangeLeadLimit: (subscriptionId: string, maxLeads: number | null) => void;
   isLoading?: boolean;
 }
 
@@ -24,12 +26,14 @@ export function SubscriptionTable({
   onExtend,
   onChangeStatus,
   onChangeTier,
+  onChangeLeadLimit,
   isLoading,
 }: SubscriptionTableProps) {
   const [selectedSubscription, setSelectedSubscription] = useState<AdminSubscription | null>(null);
   const [extendDialogOpen, setExtendDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [tierDialogOpen, setTierDialogOpen] = useState(false);
+  const [leadLimitDialogOpen, setLeadLimitDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<keyof AdminSubscription>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
@@ -64,6 +68,7 @@ export function SubscriptionTable({
       "סטטוס": getStatusLabel(sub.subscription_status),
       "סיום ניסיון": sub.trial_ends_at ? new Date(sub.trial_ends_at).toLocaleDateString("he-IL") : "",
       "תאריך פקיעה": sub.expires_at ? new Date(sub.expires_at).toLocaleDateString("he-IL") : "",
+      "מגבלת לידים": sub.max_leads ?? "ברירת מחדל",
       "סכום חיוב": sub.billing_amount || 0,
       "מחזור חיוב": sub.billing_cycle || "",
       "תאריך הצטרפות": new Date(sub.created_at).toLocaleDateString("he-IL"),
@@ -111,6 +116,7 @@ export function SubscriptionTable({
                   <ArrowUpDown className="mr-2 h-4 w-4" />
                 </Button>
               </TableHead>
+              <TableHead className="text-right">מגבלת לידים</TableHead>
               <TableHead className="text-right">
                 <Button variant="ghost" onClick={() => handleSort("trial_ends_at")}>
                   סיום ניסיון
@@ -165,6 +171,15 @@ export function SubscriptionTable({
                         </Badge>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {sub.max_leads !== null ? (
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        {sub.max_leads} לידים
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">ברירת מחדל</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     {sub.trial_ends_at ? (
@@ -262,6 +277,17 @@ export function SubscriptionTable({
                         <Edit className="h-4 w-4 ml-1" />
                         חבילה
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedSubscription(sub);
+                          setLeadLimitDialogOpen(true);
+                        }}
+                      >
+                        <Users className="h-4 w-4 ml-1" />
+                        לידים
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -298,6 +324,16 @@ export function SubscriptionTable({
             currentTier={selectedSubscription.subscription_tier}
             onChangeTier={(newTier, reason) =>
               onChangeTier(selectedSubscription.subscription_id, newTier, reason)
+            }
+            isLoading={isLoading}
+          />
+
+          <ChangeLeadLimitDialog
+            open={leadLimitDialogOpen}
+            onOpenChange={setLeadLimitDialogOpen}
+            currentLimit={selectedSubscription.max_leads}
+            onChangeLimit={(maxLeads) =>
+              onChangeLeadLimit(selectedSubscription.subscription_id, maxLeads)
             }
             isLoading={isLoading}
           />

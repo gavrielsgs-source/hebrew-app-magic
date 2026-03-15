@@ -22,6 +22,7 @@ export interface AdminSubscription {
   company_id: string | null;
   max_users: number | null;
   active_users_count: number | null;
+  max_leads: number | null;
 }
 
 export interface SubscriptionStats {
@@ -177,6 +178,31 @@ export function useAdminSubscriptions() {
     },
   });
 
+  // שינוי מגבלת לידים
+  const changeLeadLimit = useMutation({
+    mutationFn: async ({ 
+      subscriptionId, 
+      maxLeads 
+    }: { 
+      subscriptionId: string; 
+      maxLeads: number | null;
+    }) => {
+      const { error } = await supabase
+        .from("subscriptions")
+        .update({ max_leads: maxLeads, updated_at: new Date().toISOString() })
+        .eq("id", subscriptionId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-subscriptions"] });
+      toast.success("מגבלת הלידים עודכנה בהצלחה");
+    },
+    onError: (error) => {
+      console.error("Error changing lead limit:", error);
+      toast.error("שגיאה בעדכון מגבלת הלידים");
+    },
+  });
+
   return {
     subscriptions,
     stats,
@@ -186,5 +212,6 @@ export function useAdminSubscriptions() {
     extendSubscription,
     changeStatus,
     changeTier,
+    changeLeadLimit,
   };
 }
