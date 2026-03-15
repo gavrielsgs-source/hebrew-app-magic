@@ -93,10 +93,12 @@ export function SubscriptionsManager() {
             onExtend={handleExtend}
             onChangeStatus={handleChangeStatus}
             onChangeTier={handleChangeTier}
+            onChangeLeadLimit={handleChangeLeadLimit}
             isLoading={
               extendSubscription.isPending ||
               changeStatus.isPending ||
-              changeTier.isPending
+              changeTier.isPending ||
+              changeLeadLimit.isPending
             }
           />
         </CardContent>
