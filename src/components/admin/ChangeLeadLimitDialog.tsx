@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ChangeLeadLimitDialogProps {
   open: boolean;
@@ -20,18 +20,19 @@ export function ChangeLeadLimitDialog({
   onChangeLimit,
   isLoading,
 }: ChangeLeadLimitDialogProps) {
-  const [useDefault, setUseDefault] = useState(true);
+  const [useCustom, setUseCustom] = useState(false);
   const [limit, setLimit] = useState("");
 
   useEffect(() => {
     if (open) {
-      setUseDefault(currentLimit === null);
-      setLimit(currentLimit?.toString() || "");
+      const hasCustom = currentLimit !== null;
+      setUseCustom(hasCustom);
+      setLimit(hasCustom ? currentLimit.toString() : "");
     }
   }, [open, currentLimit]);
 
   const handleSubmit = () => {
-    if (useDefault) {
+    if (!useCustom) {
       onChangeLimit(null);
     } else {
       const num = parseInt(limit);
@@ -47,22 +48,28 @@ export function ChangeLeadLimitDialog({
       <DialogContent className="sm:max-w-[400px]" dir="rtl">
         <DialogHeader>
           <DialogTitle>שינוי מגבלת לידים</DialogTitle>
+          <DialogDescription>
+            הגדר מגבלת לידים מותאמת אישית למשתמש זה, או השאר לפי ברירת מחדל של החבילה.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="use-default">ברירת מחדל (לפי חבילה)</Label>
-            <Switch
-              id="use-default"
-              checked={useDefault}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="use-custom"
+              checked={useCustom}
               onCheckedChange={(checked) => {
-                setUseDefault(checked);
-                if (checked) setLimit("");
+                setUseCustom(!!checked);
+                if (!checked) setLimit("");
               }}
             />
+            <Label htmlFor="use-custom" className="cursor-pointer">
+              הגדר מגבלה מותאמת אישית
+            </Label>
           </div>
-          {!useDefault && (
-            <div className="space-y-2">
-              <Label htmlFor="lead-limit">מגבלת לידים מקסימלית</Label>
+
+          {useCustom && (
+            <div className="space-y-2 pr-6">
+              <Label htmlFor="lead-limit">מספר לידים מקסימלי</Label>
               <Input
                 id="lead-limit"
                 type="number"
@@ -79,9 +86,18 @@ export function ChangeLeadLimitDialog({
               )}
             </div>
           )}
+
+          {!useCustom && (
+            <p className="text-sm text-muted-foreground pr-6">
+              המשתמש ישתמש במגבלת הלידים של החבילה שלו.
+            </p>
+          )}
         </div>
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={isLoading || (!useDefault && (!limit || parseInt(limit) <= 0))}>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isLoading || (useCustom && (!limit || parseInt(limit) <= 0))}
+          >
             שמור
           </Button>
         </DialogFooter>
