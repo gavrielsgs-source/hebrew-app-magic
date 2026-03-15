@@ -1578,6 +1578,7 @@ export type Database = {
           created_at: string
           expires_at: string | null
           id: string
+          max_leads: number | null
           max_users: number | null
           next_billing_date: string | null
           payment_token: string | null
@@ -1600,6 +1601,7 @@ export type Database = {
           created_at?: string
           expires_at?: string | null
           id?: string
+          max_leads?: number | null
           max_users?: number | null
           next_billing_date?: string | null
           payment_token?: string | null
@@ -1622,6 +1624,7 @@ export type Database = {
           created_at?: string
           expires_at?: string | null
           id?: string
+          max_leads?: number | null
           max_users?: number | null
           next_billing_date?: string | null
           payment_token?: string | null

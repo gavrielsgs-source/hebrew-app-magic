@@ -1,0 +1,1 @@
+ALTER TABLE public.subscriptions ADD COLUMN max_leads integer DEFAULT NULL;
