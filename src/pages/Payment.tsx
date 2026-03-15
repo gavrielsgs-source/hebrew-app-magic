@@ -11,7 +11,7 @@ import { PaymentInfo } from "@/components/subscription/PaymentInfo";
 import { PaymentForm, PaymentFormValues } from "@/components/subscription/PaymentForm";
 import { BillingToggle } from "@/components/subscription/BillingToggle";
 import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
-import { applyDiscount } from "@/utils/discount-codes";
+import { applyDiscount, addVat, getVatAmount } from "@/utils/discount-codes";
 
 export default function Payment() {
   const [searchParams] = useSearchParams();
@@ -40,6 +40,12 @@ export default function Payment() {
   } | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  const plans = [
+    { id: "premium", name: "פרימיום", monthlyPrice: 199, yearlyPrice: 179, tier: "premium" },
+    { id: "business", name: "ביזנס", monthlyPrice: 399, yearlyPrice: 349, tier: "business" },
+    { id: "enterprise", name: "אנטרפרייז", monthlyPrice: 699, yearlyPrice: 619, tier: "enterprise" },
+  ];
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -79,6 +85,23 @@ export default function Payment() {
     setDiscountCode(code);
   };
 
+  const getSelectedPlanDetails = (planId: string) => {
+    return plans.find((plan) => plan.id === planId);
+  };
+
+  // Calculate the base sum before VAT (with discount replacing yearly discount if applicable)
+  const getBaseSum = (planId: string) => {
+    const plan = getSelectedPlanDetails(planId);
+    if (!plan) return 0;
+
+    if (discountPercent > 0 && isYearly) {
+      // Discount replaces yearly discount: use monthlyPrice × 12 as base
+      return applyDiscount(plan.monthlyPrice * 12, discountPercent);
+    }
+
+    return isYearly ? plan.yearlyPrice * 12 : plan.monthlyPrice;
+  };
+
   const onSubmit = async (data: PaymentFormValues) => {
     if (!selectedPlan) {
       toast.error("אנא בחר חבילה תחילה");
@@ -98,11 +121,8 @@ export default function Payment() {
         throw new Error("חבילה לא נמצאה");
       }
 
-      let actualSum = isYearly ? selectedPlanObj.yearlyPrice * 12 : selectedPlanObj.monthlyPrice;
-
-      if (discountPercent > 0) {
-        actualSum = applyDiscount(actualSum, discountPercent);
-      }
+      const baseSum = getBaseSum(selectedPlan);
+      const actualSum = addVat(baseSum);
 
       const { data: handshakeData, error } = await supabase.functions.invoke('tranzila-handshake', {
         body: {
@@ -158,22 +178,6 @@ export default function Payment() {
     }
   };
 
-  const getSelectedPlanDetails = (planId: string) => {
-    const plans = [
-      { id: "premium", name: "פרימיום", monthlyPrice: 199, yearlyPrice: 179, tier: "premium" },
-      { id: "business", name: "ביזנס", monthlyPrice: 399, yearlyPrice: 349, tier: "business" },
-      { id: "enterprise", name: "אנטרפרייז", monthlyPrice: 699, yearlyPrice: 619, tier: "enterprise" },
-    ];
-    return plans.find((plan) => plan.id === planId);
-  };
-
-  const getOriginalSum = () => {
-    if (!selectedPlan) return 0;
-    const plan = getSelectedPlanDetails(selectedPlan);
-    if (!plan) return 0;
-    return isYearly ? plan.yearlyPrice * 12 : plan.monthlyPrice;
-  };
-
   return (
     <div className={`container mx-auto py-10 px-4 ${isMobile ? "pb-24" : ""}`}>
       <div className={`flex ${isMobile ? "flex-col space-y-4" : "justify-between items-center"} mb-8`}>
@@ -212,14 +216,21 @@ export default function Payment() {
                 </>
               )}
             </DrawerTitle>
-            {selectedPlan && discountPercent > 0 && (
-              <p className="text-center text-sm mt-1">
-                <span className="line-through text-muted-foreground">₪{getOriginalSum()}</span>
-                {' '}
-                <span className="text-green-600 font-bold">₪{applyDiscount(getOriginalSum(), discountPercent)}</span>
-                {' '}
-                <span className="text-green-600 text-xs">({discountPercent}% הנחה)</span>
-              </p>
+            {selectedPlan && (
+              <div className="text-center text-sm mt-1 space-y-1">
+                {discountPercent > 0 && (
+                  <p>
+                    <span className="line-through text-muted-foreground">₪{getSelectedPlanDetails(selectedPlan)!.monthlyPrice * 12}</span>
+                    {' '}
+                    <span className="text-green-600 font-bold">₪{getBaseSum(selectedPlan)}</span>
+                    {' '}
+                    <span className="text-green-600 text-xs">({discountPercent}% הנחה)</span>
+                  </p>
+                )}
+                <p className="text-muted-foreground">
+                  סה״כ לפני מע״מ: ₪{getBaseSum(selectedPlan)} | מע״מ (18%): ₪{getVatAmount(getBaseSum(selectedPlan))} | <span className="font-bold text-foreground">סה״כ: ₪{addVat(getBaseSum(selectedPlan))}</span>
+                </p>
+              </div>
             )}
           </DrawerHeader>
 
@@ -267,7 +278,7 @@ export default function Payment() {
 
           <DrawerFooter className="pt-2">
             <p className={`text-center text-muted-foreground ${isMobile ? "text-xs" : "text-sm"}`}>
-              התשלום מאובטח ומוצפן בתקן PCI DSS
+              התשלום מאובטח ומוצפן בתקן PCI DSS | המחירים אינם כוללים מע״מ
             </p>
           </DrawerFooter>
         </DrawerContent>

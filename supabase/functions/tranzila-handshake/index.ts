@@ -6,39 +6,56 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const VAT_RATE = 0.18;
+
 // Server-side discount code validation
 const VALID_DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean; allowedPlans: string[] }> = {
   'CARS40': { percent: 40, yearlyOnly: true, allowedPlans: ['business', 'enterprise'] },
 };
 
-function validateDiscountServer(code: string, billingCycle: string, sum: number, basePrices: Record<string, { monthly: number; yearly: number }>, planId: string): { valid: boolean; error?: string } {
-  const normalized = code.trim().toUpperCase();
-  const discount = VALID_DISCOUNT_CODES[normalized];
-  
-  if (!discount) {
-    return { valid: false, error: 'Invalid discount code' };
-  }
-  
-  if (discount.yearlyOnly && billingCycle !== 'yearly') {
-    return { valid: false, error: 'Discount code only valid for yearly billing' };
-  }
-
-  if (discount.allowedPlans.length > 0 && !discount.allowedPlans.includes(planId)) {
-    return { valid: false, error: 'Discount code not valid for this plan' };
-  }
-
-  // Validate that the sum matches the expected discounted price
+function validateSumServer(
+  sum: number,
+  planId: string,
+  billingCycle: string,
+  discountCode: string | undefined,
+  basePrices: Record<string, { monthly: number; yearly: number; monthlyRaw: number }>
+): { valid: boolean; error?: string } {
   const planPrices = basePrices[planId];
   if (!planPrices) {
     return { valid: false, error: 'Invalid plan' };
   }
 
-  const baseSum = billingCycle === 'yearly' ? planPrices.yearly : planPrices.monthly;
-  const expectedSum = Math.round(baseSum * (1 - discount.percent / 100));
+  let baseSum: number;
+
+  if (discountCode) {
+    const normalized = discountCode.trim().toUpperCase();
+    const discount = VALID_DISCOUNT_CODES[normalized];
+
+    if (!discount) {
+      return { valid: false, error: 'Invalid discount code' };
+    }
+
+    if (discount.yearlyOnly && billingCycle !== 'yearly') {
+      return { valid: false, error: 'Discount code only valid for yearly billing' };
+    }
+
+    if (discount.allowedPlans.length > 0 && !discount.allowedPlans.includes(planId)) {
+      return { valid: false, error: 'Discount code not valid for this plan' };
+    }
+
+    // Discount replaces yearly discount: use monthlyRaw × 12 as base
+    const rawYearly = planPrices.monthlyRaw * 12;
+    baseSum = Math.round(rawYearly * (1 - discount.percent / 100));
+  } else {
+    baseSum = billingCycle === 'yearly' ? planPrices.yearly : planPrices.monthly;
+  }
+
+  // Expected sum includes 18% VAT
+  const expectedSum = Math.round(baseSum * (1 + VAT_RATE));
 
   if (sum !== expectedSum) {
-    console.error(`Discount validation failed: expected ${expectedSum}, got ${sum}`);
-    return { valid: false, error: 'Sum does not match discount' };
+    console.error(`Sum validation failed: expected ${expectedSum} (base ${baseSum} + VAT), got ${sum}`);
+    return { valid: false, error: 'Sum does not match expected amount' };
   }
 
   return { valid: true };
@@ -77,31 +94,28 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Invalid sum' }), { status: 400, headers: corsHeaders });
     }
 
-    // Known base prices for validation (both flows use different price structures)
-    // UpgradeSubscription/Payment prices
-    const upgradePrices: Record<string, { monthly: number; yearly: number }> = {
-      'premium': { monthly: 199, yearly: 179 * 12 },
-      'business': { monthly: 399, yearly: 349 * 12 },
-      'enterprise': { monthly: 699, yearly: 619 * 12 },
+    // Known base prices for validation
+    // UpgradeSubscription/Payment prices (monthlyRaw = standard monthly, yearly = yearlyPrice * 12)
+    const upgradePrices: Record<string, { monthly: number; yearly: number; monthlyRaw: number }> = {
+      'premium': { monthly: 199, yearly: 179 * 12, monthlyRaw: 199 },
+      'business': { monthly: 399, yearly: 349 * 12, monthlyRaw: 399 },
+      'enterprise': { monthly: 699, yearly: 619 * 12, monthlyRaw: 699 },
     };
 
-    // SignupTrial prices  
-    const signupPrices: Record<string, { monthly: number; yearly: number }> = {
-      'premium': { monthly: 99, yearly: 990 },
-      'business': { monthly: 299, yearly: 2990 },
-      'enterprise': { monthly: 999, yearly: 9990 },
+    // SignupTrial prices
+    const signupPrices: Record<string, { monthly: number; yearly: number; monthlyRaw: number }> = {
+      'premium': { monthly: 99, yearly: 990, monthlyRaw: 99 },
+      'business': { monthly: 299, yearly: 2990, monthlyRaw: 299 },
+      'enterprise': { monthly: 999, yearly: 9990, monthlyRaw: 999 },
     };
 
-    // Validate discount code if provided
-    if (discountCode) {
-      // Try both price structures
-      const upgradeValidation = validateDiscountServer(discountCode, billingCycle, sum, upgradePrices, planId);
-      const signupValidation = validateDiscountServer(discountCode, billingCycle, sum, signupPrices, planId);
-      
-      if (!upgradeValidation.valid && !signupValidation.valid) {
-        console.error(`Discount code validation failed for code: ${discountCode}, plan: ${planId}, cycle: ${billingCycle}, sum: ${sum}`);
-        return new Response(JSON.stringify({ error: 'קוד הנחה לא תקין או סכום לא תואם' }), { status: 400, headers: corsHeaders });
-      }
+    // Validate sum against both price structures
+    const upgradeValidation = validateSumServer(sum, planId, billingCycle, discountCode, upgradePrices);
+    const signupValidation = validateSumServer(sum, planId, billingCycle, discountCode, signupPrices);
+
+    if (!upgradeValidation.valid && !signupValidation.valid) {
+      console.error(`Sum validation failed for plan: ${planId}, cycle: ${billingCycle}, sum: ${sum}, discount: ${discountCode || 'none'}`);
+      return new Response(JSON.stringify({ error: 'סכום לא תקין או קוד הנחה לא תואם' }), { status: 400, headers: corsHeaders });
     }
 
     const supplier = Deno.env.get('TRANZILA_SUPPLIER');

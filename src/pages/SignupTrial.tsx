@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, ArrowRight, XCircle } from "lucide-react";
 import { TranzilaPaymentIframe } from "@/components/subscription/TranzilaPaymentIframe";
-import { validateDiscountCode, applyDiscount } from "@/utils/discount-codes";
+import { validateDiscountCode, applyDiscount, addVat, getVatAmount } from "@/utils/discount-codes";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "שם מלא חייב להכיל לפחות 2 תווים"),
@@ -108,23 +108,39 @@ export default function SignupTrial() {
     setAppliedDiscountCode("");
   };
 
-  const getDisplayPrice = () => {
-    const basePrice = getPlanPrice(selectedPlan, billingCycle);
-    if (discountStatus?.valid && discountStatus.percent > 0) {
-      return applyDiscount(basePrice, discountStatus.percent);
+  // Get base sum before VAT - discount replaces yearly discount
+  const getBaseSumBeforeVat = () => {
+    const plan = plans.find((p) => p.id === selectedPlan);
+    if (!plan) return 0;
+
+    if (discountStatus?.valid && discountStatus.percent > 0 && billingCycle === 'yearly') {
+      // Discount replaces yearly discount: use monthlyPrice × 12 as base
+      return applyDiscount(plan.monthlyPrice * 12, discountStatus.percent);
     }
-    return basePrice;
+
+    return getPlanPrice(selectedPlan, billingCycle);
+  };
+
+  const getDisplayPrice = () => {
+    return getBaseSumBeforeVat();
   };
 
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
 
     try {
-      let actualSum = getPlanPrice(data.plan, data.billingCycle);
+      const plan = plans.find((p) => p.id === data.plan);
+      if (!plan) throw new Error("חבילה לא נמצאה");
 
-      if (discountStatus?.valid && discountStatus.percent > 0) {
-        actualSum = applyDiscount(actualSum, discountStatus.percent);
+      let baseSum: number;
+      if (discountStatus?.valid && discountStatus.percent > 0 && data.billingCycle === 'yearly') {
+        // Discount replaces yearly discount: use monthlyPrice × 12 as base
+        baseSum = applyDiscount(plan.monthlyPrice * 12, discountStatus.percent);
+      } else {
+        baseSum = getPlanPrice(data.plan, data.billingCycle);
       }
+
+      const actualSum = addVat(baseSum);
 
       const { data: handshakeData, error: handshakeError } = await supabase.functions.invoke(
         "tranzila-handshake",
@@ -200,11 +216,9 @@ export default function SignupTrial() {
                 <CardTitle className="text-center">השלם תשלום</CardTitle>
                 <CardDescription className="text-center">
                   מנוי {plans.find(p => p.id === selectedPlan)?.name} - {billingCycle === 'yearly' ? 'שנתי' : 'חודשי'}
+                  {' '} | סה״כ כולל מע״מ: ₪{tranzilaData.finalSum}
                   {discountStatus?.valid && (
-                    <>
-                      {' '} | <span className="line-through">₪{getPlanPrice(selectedPlan, billingCycle)}</span>{' '}
-                      <span className="text-green-600 font-bold">₪{tranzilaData.finalSum}</span>
-                    </>
+                    <span className="text-green-600 font-bold"> ({discountStatus.percent}% הנחה)</span>
                   )}
                 </CardDescription>
               </CardHeader>
@@ -434,25 +448,30 @@ export default function SignupTrial() {
                                 {plans.find((p) => p.id === selectedPlan)?.name}
                               </span>
                             </div>
+                            {discountStatus?.valid && (
+                              <div className="flex justify-between text-green-600">
+                                <span>הנחה ({discountStatus.percent}%):</span>
+                                <span className="font-medium">
+                                  <span className="line-through text-muted-foreground">
+                                    ₪{plans.find((p) => p.id === selectedPlan)?.monthlyPrice! * 12}
+                                  </span>{' '}
+                                  ₪{getDisplayPrice()}
+                                </span>
+                              </div>
+                            )}
                             <div className="flex justify-between">
-                              <span>תשלום עתידי:</span>
+                              <span>סכום לפני מע״מ:</span>
                               <span className="font-medium">
-                                {discountStatus?.valid ? (
-                                  <>
-                                    <span className="line-through text-muted-foreground">
-                                      ₪{getPlanPrice(selectedPlan, billingCycle)}
-                                    </span>{' '}
-                                    <span className="text-green-600">
-                                      ₪{getDisplayPrice()}/{billingCycle === "yearly" ? "שנה" : "חודש"}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <>
-                                    ₪{getPlanPrice(selectedPlan, billingCycle)}/
-                                    {billingCycle === "yearly" ? "שנה" : "חודש"}
-                                  </>
-                                )}
+                                ₪{getBaseSumBeforeVat()}/{billingCycle === "yearly" ? "שנה" : "חודש"}
                               </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>מע״מ (18%):</span>
+                              <span className="font-medium">₪{getVatAmount(getBaseSumBeforeVat())}</span>
+                            </div>
+                            <div className="flex justify-between font-bold border-t pt-1">
+                              <span>תשלום עתידי כולל מע״מ:</span>
+                              <span>₪{addVat(getBaseSumBeforeVat())}/{billingCycle === "yearly" ? "שנה" : "חודש"}</span>
                             </div>
                             <div className="flex justify-between text-green-600 font-medium">
                               <span>היום:</span>
