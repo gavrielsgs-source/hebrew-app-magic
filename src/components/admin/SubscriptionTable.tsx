@@ -173,6 +173,15 @@ export function SubscriptionTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
+                    {sub.max_leads !== null ? (
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        {sub.max_leads} לידים
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">ברירת מחדל</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
                     {sub.trial_ends_at ? (
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center justify-end gap-1 text-sm">
