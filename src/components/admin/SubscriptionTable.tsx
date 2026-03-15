@@ -327,6 +327,16 @@ export function SubscriptionTable({
             }
             isLoading={isLoading}
           />
+
+          <ChangeLeadLimitDialog
+            open={leadLimitDialogOpen}
+            onOpenChange={setLeadLimitDialogOpen}
+            currentLimit={selectedSubscription.max_leads}
+            onChangeLimit={(maxLeads) =>
+              onChangeLeadLimit(selectedSubscription.subscription_id, maxLeads)
+            }
+            isLoading={isLoading}
+          />
         </>
       )}
     </>
