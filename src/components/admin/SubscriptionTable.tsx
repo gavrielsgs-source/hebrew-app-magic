@@ -26,6 +26,7 @@ export function SubscriptionTable({
   onExtend,
   onChangeStatus,
   onChangeTier,
+  onChangeLeadLimit,
   isLoading,
 }: SubscriptionTableProps) {
   const [selectedSubscription, setSelectedSubscription] = useState<AdminSubscription | null>(null);
