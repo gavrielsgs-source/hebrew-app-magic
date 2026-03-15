@@ -1,18 +1,38 @@
 
 
-## תיקון פונקציית `admin_extend_subscription`
+## הוספת עמודת `max_leads` לטבלת subscriptions — override ללקוח ספציפי
 
-### הבעיה
-כשמאריכים מנוי דרך ממשק האדמין, הפונקציה מעדכנת רק את `expires_at` אבל לא משנה את `subscription_status` ל-`active`. כתוצאה, משתמשים שהיו ב-`trial` או `expired` נשארים חסומים למרות שתאריך התפוגה הוארך.
+### מה נעשה
+נוסיף עמודה `max_leads` לטבלת `subscriptions` (בדיוק כמו `max_users` שכבר קיימת). כשהעמודה מכילה ערך — הוא ידרוס את ה-`leadLimit` של החבילה. כשהיא NULL — המערכת תמשיך לעבוד לפי החבילה הרגילה.
 
-### הפתרון
-עדכון פונקציית `admin_extend_subscription` בבסיס הנתונים כך שה-UPDATE יכלול גם:
+### שינויים
+
+**1. מיגרציה — הוספת עמודת `max_leads`**
 ```sql
-subscription_status = 'active'
+ALTER TABLE public.subscriptions ADD COLUMN max_leads integer DEFAULT NULL;
 ```
 
-שינוי יחיד בשורת ה-UPDATE הקיימת — הוספת `subscription_status = 'active'` ליד `expires_at` ו-`updated_at`.
+**2. `src/contexts/subscription-context.tsx`** (שורה ~147)
+כרגע יש:
+```ts
+userLimit: subscriptionData.max_users || baseSubscription.userLimit
+```
+נוסיף באותו אופן:
+```ts
+leadLimit: subscriptionData.max_leads || baseSubscription.leadLimit,
+userLimit: subscriptionData.max_users || baseSubscription.userLimit
+```
 
-### קובץ מושפע
-- Database function: `admin_extend_subscription` (migration בלבד, ללא שינוי קוד Frontend)
+**3. עדכון הלקוח הספציפי**
+אחרי הפריסה, נעדכן ישירות דרך Supabase SQL Editor:
+```sql
+UPDATE subscriptions SET max_leads = <מספר> WHERE user_id = '<user-id>';
+```
+
+### איך להשתמש
+בכל פעם שרוצים לשנות מגבלת לידים ללקוח ספציפי — פשוט לעדכן את `max_leads` בשורה שלו בטבלת `subscriptions`. אם הערך NULL — המערכת משתמשת במגבלת החבילה הרגילה.
+
+### קבצים שישתנו
+- מיגרציה חדשה (עמודת `max_leads`)
+- `src/contexts/subscription-context.tsx` (שורה אחת)
 
