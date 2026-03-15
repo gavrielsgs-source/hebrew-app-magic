@@ -16,6 +16,7 @@ export function SubscriptionsManager() {
     extendSubscription,
     changeStatus,
     changeTier,
+    changeLeadLimit,
   } = useAdminSubscriptions();
 
   const [searchTerm, setSearchTerm] = useState("");
