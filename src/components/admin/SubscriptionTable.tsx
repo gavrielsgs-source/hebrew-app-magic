@@ -68,6 +68,7 @@ export function SubscriptionTable({
       "סטטוס": getStatusLabel(sub.subscription_status),
       "סיום ניסיון": sub.trial_ends_at ? new Date(sub.trial_ends_at).toLocaleDateString("he-IL") : "",
       "תאריך פקיעה": sub.expires_at ? new Date(sub.expires_at).toLocaleDateString("he-IL") : "",
+      "מגבלת לידים": sub.max_leads ?? "ברירת מחדל",
       "סכום חיוב": sub.billing_amount || 0,
       "מחזור חיוב": sub.billing_cycle || "",
       "תאריך הצטרפות": new Date(sub.created_at).toLocaleDateString("he-IL"),
