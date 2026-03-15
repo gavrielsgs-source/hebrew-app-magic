@@ -277,6 +277,17 @@ export function SubscriptionTable({
                         <Edit className="h-4 w-4 ml-1" />
                         חבילה
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedSubscription(sub);
+                          setLeadLimitDialogOpen(true);
+                        }}
+                      >
+                        <Users className="h-4 w-4 ml-1" />
+                        לידים
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
