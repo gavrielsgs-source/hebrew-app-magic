@@ -1,18 +1,29 @@
 
 
-## תיקון פונקציית `admin_extend_subscription`
+## הוספת עמודת max_leads לממשק ניהול מנויים באדמין
 
-### הבעיה
-כשמאריכים מנוי דרך ממשק האדמין, הפונקציה מעדכנת רק את `expires_at` אבל לא משנה את `subscription_status` ל-`active`. כתוצאה, משתמשים שהיו ב-`trial` או `expired` נשארים חסומים למרות שתאריך התפוגה הוארך.
+### שינויים נדרשים
 
-### הפתרון
-עדכון פונקציית `admin_extend_subscription` בבסיס הנתונים כך שה-UPDATE יכלול גם:
-```sql
-subscription_status = 'active'
-```
+**1. `src/hooks/use-admin-subscriptions.ts`**
+- הוספת `max_leads` ל-interface `AdminSubscription`
+- וידוא שה-RPC `get_all_subscriptions` מחזיר את השדה (אם לא — צריך לעדכן את הפונקציה)
 
-שינוי יחיד בשורת ה-UPDATE הקיימת — הוספת `subscription_status = 'active'` ליד `expires_at` ו-`updated_at`.
+**2. `src/components/admin/SubscriptionTable.tsx`**
+- הוספת עמודה "מגבלת לידים" בטבלה (אחרי עמודת "חבילה")
+- הצגת הערך הנוכחי, או "ברירת מחדל" אם NULL
+- הוספת כפתור "לידים" בפעולות שפותח dialog לעריכה
 
-### קובץ מושפע
-- Database function: `admin_extend_subscription` (migration בלבד, ללא שינוי קוד Frontend)
+**3. קומפוננטה חדשה: `src/components/admin/ChangeLeadLimitDialog.tsx`**
+- Dialog פשוט עם input מספרי ל-max_leads
+- אפשרות "ברירת מחדל (לפי חבילה)" שמאפסת ל-NULL
+- כפתור שמירה
+
+**4. `src/hooks/use-admin-subscriptions.ts`**
+- הוספת mutation `changeLeadLimit` שמעדכן ישירות את `subscriptions.max_leads` (UPDATE פשוט, לא צריך RPC חדש)
+
+**5. בדיקת RPC `get_all_subscriptions`**
+- צריך לוודא שהפונקציה מחזירה את `max_leads`. אם לא — נעדכן אותה.
+
+### ייצוא לאקסל
+- הוספת עמודת "מגבלת לידים" גם לייצוא Excel
 
