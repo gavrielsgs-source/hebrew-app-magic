@@ -54,6 +54,7 @@ export function useAutomationSettings() {
       return data as AutomationSettings | null;
     },
     enabled: !!user,
+    staleTime: 300000, // 5 minutes - prevent unnecessary refetches
   });
 }
 
@@ -64,16 +65,22 @@ export function useUpsertAutomationSettings() {
   return useMutation({
     mutationFn: async (settings: Partial<AutomationSettings>) => {
       if (!user) throw new Error("Not authenticated");
-      const { error } = await supabase
+      
+      // Return the saved record from DB
+      const { data, error } = await supabase
         .from("automation_settings")
         .upsert(
           { ...settings, user_id: user.id, updated_at: new Date().toISOString() },
           { onConflict: "user_id" }
-        );
+        )
+        .select("*")
+        .single();
       if (error) throw error;
+      return data as AutomationSettings;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["automation_settings"] });
+    onSuccess: (savedData) => {
+      // Directly set cache with confirmed DB data instead of refetching
+      queryClient.setQueryData(["automation_settings", user?.id], savedData);
       toast.success("הגדרות האוטומציה נשמרו");
     },
     onError: (err: any) => {

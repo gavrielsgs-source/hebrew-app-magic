@@ -53,27 +53,25 @@ export function AutomationSettingsTab() {
   const upsert = useUpsertAutomationSettings();
 
   const [form, setForm] = useState<Partial<AutomationSettings>>(DEFAULT_SETTINGS);
-  const [dirty, setDirty] = useState(true);
-  const userHasEdited = useRef(false);
+  const hydrated = useRef(false);
 
+  // Hydrate form ONCE when settings first load from DB
   useEffect(() => {
-    if (settings && !userHasEdited.current) {
+    if (settings && !hydrated.current) {
       setForm(settings);
-      setDirty(false);
+      hydrated.current = true;
     }
   }, [settings]);
 
   function update(key: keyof AutomationSettings, value: any) {
-    userHasEdited.current = true;
     setForm((f) => ({ ...f, [key]: value }));
-    setDirty(true);
   }
 
   function save() {
     upsert.mutate(form, {
-      onSuccess: () => {
-        userHasEdited.current = false;
-        setDirty(false);
+      onSuccess: (savedData) => {
+        // Update local form with confirmed DB values
+        setForm(savedData);
       },
     });
   }
@@ -254,7 +252,7 @@ export function AutomationSettingsTab() {
               </Card>
 
               <Button onClick={save} disabled={upsert.isPending} className="w-full">
-                {upsert.isPending ? "שומר..." : dirty ? "שמור הגדרות" : "שמור הגדרות"}
+                {upsert.isPending ? "שומר..." : "שמור הגדרות"}
               </Button>
             </div>
           )}

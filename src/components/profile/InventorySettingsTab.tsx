@@ -70,8 +70,13 @@ export function InventorySettingsTab() {
   });
   const [slugError, setSlugError] = useState("");
 
-  // Track recent saves to prevent remount from overwriting state
-  const lastSaveTimestamp = useRef<number>(0);
+  // Track recent saves to prevent remount from overwriting state (survives remount via sessionStorage)
+  const getLastSaveTimestamp = () => {
+    try { return Number(sessionStorage.getItem('inventory_save_ts') || '0'); } catch { return 0; }
+  };
+  const setLastSaveTimestamp = () => {
+    try { sessionStorage.setItem('inventory_save_ts', String(Date.now())); } catch {}
+  };
 
   const baseUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
@@ -89,8 +94,8 @@ export function InventorySettingsTab() {
 
   const fetchSettings = async () => {
     // Skip fetch if we saved very recently (prevents remount race condition)
-    const timeSinceLastSave = Date.now() - lastSaveTimestamp.current;
-    if (timeSinceLastSave < 3000) {
+    const timeSinceLastSave = Date.now() - getLastSaveTimestamp();
+    if (timeSinceLastSave < 5000) {
       setLoading(false);
       return;
     }
@@ -271,7 +276,7 @@ export function InventorySettingsTab() {
       }
 
       // Mark save timestamp to prevent remount fetch from overwriting
-      lastSaveTimestamp.current = Date.now();
+      setLastSaveTimestamp();
 
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
