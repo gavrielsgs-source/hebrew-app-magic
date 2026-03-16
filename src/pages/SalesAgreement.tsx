@@ -552,6 +552,15 @@ export default function SalesAgreement() {
           <div className="flex gap-3">
             <Button
               type="button"
+              variant="outline"
+              onClick={() => setSignatureDialogOpen(true)}
+              className="h-11 px-4 rounded-xl"
+            >
+              <PenLine className="h-5 w-5" />
+              {signatures.seller || signatures.buyer ? '✓' : ''}
+            </Button>
+            <Button
+              type="button"
               onClick={form.handleSubmit(onSubmit)}
               disabled={isGenerating}
               className="flex-1 h-11 rounded-xl shadow-lg"
@@ -575,6 +584,14 @@ export default function SalesAgreement() {
             </Button>
           </div>
         </div>
+
+        {/* Signature Dialog */}
+        <SignatureDialog
+          open={signatureDialogOpen}
+          onOpenChange={setSignatureDialogOpen}
+          onSignaturesComplete={setSignatures}
+          existingSignatures={signatures}
+        />
       </MobileContainer>
     );
   }
