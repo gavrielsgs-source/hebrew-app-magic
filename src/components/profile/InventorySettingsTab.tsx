@@ -70,7 +70,8 @@ export function InventorySettingsTab() {
     return window.location.origin;
   }, []);
 
-  const inventoryUrl = slug ? `${baseUrl}/inventory/${slug}` : "";
+  const resolvedSlug = useMemo(() => normalizeSlug(slug || suggestedSlug), [slug, suggestedSlug]);
+  const inventoryUrl = resolvedSlug ? `${baseUrl}/inventory/${resolvedSlug}` : "";
 
   useEffect(() => {
     if (user) {
