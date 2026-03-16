@@ -29,7 +29,8 @@ export default function Leads() {
   // Initialize leads hook
   const { leads = [], isLoading, error } = useLeads();
 
-  const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
+  const monthlyLeadCount = getMonthlyLeadCount(leads);
+  const canAddLead = checkEntitlement('leadLimit', monthlyLeadCount + 1);
 
   const onLeadAdded = () => {
     console.log('Lead added successfully');
