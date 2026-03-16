@@ -119,6 +119,7 @@ export default function SalesAgreement() {
   // Create preview data
   const previewData = {
     date: form.watch("date"),
+    signatures,
     seller: {
       company: profile?.company_name || profile?.full_name || "חברת רכב בע\"מ",
       id: "000000000",
