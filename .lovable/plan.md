@@ -1,18 +1,29 @@
 
 
-## תיקון פונקציית `admin_extend_subscription`
+## תיקון: שמירה אוטומטית של טוגלים בהגדרות מלאי
 
 ### הבעיה
-כשמאריכים מנוי דרך ממשק האדמין, הפונקציה מעדכנת רק את `expires_at` אבל לא משנה את `subscription_status` ל-`active`. כתוצאה, משתמשים שהיו ב-`trial` או `expired` נשארים חסומים למרות שתאריך התפוגה הוארך.
+כל הטוגלים (הפעלת קטלוג, הצג טלפון, הצג מחירים) משנים רק state מקומי. כדי שהשינוי באמת יישמר ב-DB צריך ללחוץ "שמור הגדרות". אם המשתמש לוחץ על טוגל ומרענן — הכל חוזר למצב הקודם. זה גם אומר שהקטלוג לא באמת "עולה לאוויר" עד שלוחצים שמור.
 
 ### הפתרון
-עדכון פונקציית `admin_extend_subscription` בבסיס הנתונים כך שה-UPDATE יכלול גם:
-```sql
-subscription_status = 'active'
-```
+הפיכת הטוגלים ל-**auto-save** — כל שינוי בטוגל ישלח מיידית עדכון ל-DB (debounced). שאר השדות (slug, טלפון, צבע, תמונות) ימשיכו לדרוש לחיצה על "שמור".
 
-שינוי יחיד בשורת ה-UPDATE הקיימת — הוספת `subscription_status = 'active'` ליד `expires_at` ו-`updated_at`.
+### מה ישתנה בקובץ `src/components/profile/InventorySettingsTab.tsx`
 
-### קובץ מושפע
-- Database function: `admin_extend_subscription` (migration בלבד, ללא שינוי קוד Frontend)
+1. **פונקציה חדשה `autoSaveToggle`** — מקבלת את שם השדה והערך, שולחת `update` ישירות ל-Supabase:
+   - אם זה `inventory_enabled` → מעדכנת את העמודה ישירות
+   - אם זה `show_phone` / `show_prices` → קוראת את ה-`inventory_settings` הנוכחי, ממרג'ת את השינוי, ושומרת חזרה
+
+2. **`handleEnabledChange`** → קוראת ל-`autoSaveToggle('inventory_enabled', checked)` מיד אחרי `setEnabled`
+
+3. **`handleDisplaySettingChange`** → קוראת ל-`autoSaveToggle` מיד אחרי `setSettings`
+
+4. **אינדיקציה ויזואלית** — הוספת state `autoSaving` שמציג Loader קטן ליד הטוגל שנשמר, ו-toast קצר ("נשמר") בהצלחה
+
+5. **כפתור "שמור הגדרות"** נשאר — הוא שומר את כל השאר (slug, צבע, טלפון, תמונות)
+
+### למה זה לא שובר כלום
+- השמירה האוטומטית עובדת על אותם שדות בדיוק שכפתור השמירה מעדכן
+- אם המשתמש ישנה טוגל וגם slug ואז ילחץ שמור — השמירה הידנית פשוט תדרוס את הערך עם אותו ערך
+- אין race condition כי auto-save הוא await סינכרוני (לא debounce)
 
