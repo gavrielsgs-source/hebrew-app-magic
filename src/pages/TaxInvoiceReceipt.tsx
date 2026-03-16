@@ -710,7 +710,7 @@ export default function TaxInvoiceReceipt() {
                             <Label className="text-xs">כולל מע"מ</Label>
                             <Switch
                               checked={watchedFields.items?.[index]?.includeVat}
-                              onCheckedChange={(checked) => form.setValue(`items.${index}.includeVat`, checked)}
+                              onCheckedChange={(checked) => form.setValue(`items.${index}.includeVat`, checked, { shouldDirty: true })}
                               dir="ltr"
                             />
                           </div>
