@@ -556,7 +556,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        reportUrl: publicUrl,
+        reportUrl,
         summary,
         validationErrors,
         generatedAt: new Date().toISOString(),

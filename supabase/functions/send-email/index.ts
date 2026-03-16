@@ -108,6 +108,19 @@ serve(async (req) => {
         );
         break;
 
+      case "accountant_report":
+        subject = `📊 דוח תקופתי לרואה חשבון - ${data.period || ""}`;
+        html = await renderAsync(
+          React.createElement(AccountantReportEmail, {
+            userName: data.userName,
+            reportUrl: data.reportUrl || "",
+            period: data.period || "",
+            companyName: data.companyName,
+            summary: data.summary,
+          })
+        );
+        break;
+
       default:
         throw new Error(`Unknown template: ${template}`);
     }

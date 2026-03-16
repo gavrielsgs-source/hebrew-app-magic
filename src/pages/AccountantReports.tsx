@@ -84,6 +84,7 @@ export default function AccountantReports() {
           template: "accountant_report",
           data: {
             userName: profile.full_name || "לקוח יקר",
+            companyName: profile.company_name || "",
             reportUrl: reportData.reportUrl,
             period: `${format(new Date(startDate), "dd/MM/yyyy", { locale: he })} - ${format(
               new Date(endDate),
