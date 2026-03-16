@@ -1023,12 +1023,10 @@ export default function PriceQuote() {
                       />
                     </div>
 
-                    {includeVAT && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">מע״מ (18%):</span>
-                        <span className="text-lg font-semibold">{formatPrice(vat)}</span>
-                      </div>
-                    )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">מע״מ (18%):</span>
+                      <span className="text-lg font-semibold">{formatPrice(vat)}</span>
+                    </div>
                     
                     <Separator />
                     
