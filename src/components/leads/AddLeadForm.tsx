@@ -4,6 +4,7 @@ import { useCreateLead } from '@/hooks/leads/use-create-lead';
 import { useLeads } from '@/hooks/use-leads';
 import { useSubscriptionLimits } from '@/hooks/use-subscription-limits';
 import { useAuth } from '@/hooks/use-auth';
+import { getMonthlyLeadCount } from '@/utils/monthly-lead-count';
 import { LeadFormBase, FormContextValue } from './LeadFormBase';
 import { AddLeadNameField } from './AddLeadNameField';
 import { AddLeadPhoneField } from './AddLeadPhoneField';
@@ -42,8 +43,8 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     
     setIsSubmitting(true);
     try {
-      const currentCount = leads?.length || 0;
-      console.log('🔍 [AddLeadForm] Current leads count:', currentCount);
+      const currentCount = getMonthlyLeadCount(leads || []);
+      console.log('🔍 [AddLeadForm] Monthly leads count:', currentCount);
       
       // בדיקת מגבלות לפני יצירת הליד
       const canProceed = checkAndNotifyLimit('lead', currentCount);

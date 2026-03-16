@@ -7,6 +7,7 @@ import { AlertCircle, Plus, Users } from "lucide-react";
 import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
 import { SubscriptionLimitAlert } from "@/components/subscription/SubscriptionLimitAlert";
 import { useLeads } from "@/hooks/use-leads";
+import { getMonthlyLeadCount } from '@/utils/monthly-lead-count';
 
 interface LeadsPageHeaderProps {
   isAddingLead: boolean;
@@ -24,7 +25,7 @@ export function LeadsPageHeader({
   setActiveTab
 }: LeadsPageHeaderProps) {
   const { leads } = useLeads();
-  const currentLeadCount = leads?.length || 0;
+  const currentLeadCount = getMonthlyLeadCount(leads || []);
 
   console.log('LeadsPageHeader rendered - both buttons should work consistently');
 

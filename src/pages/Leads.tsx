@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/subscription-context';
+import { getMonthlyLeadCount } from '@/utils/monthly-lead-count';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,8 @@ export default function Leads() {
   // Initialize leads hook
   const { leads = [], isLoading, error } = useLeads();
 
-  const canAddLead = checkEntitlement('leadLimit', leads.length + 1);
+  const monthlyLeadCount = getMonthlyLeadCount(leads);
+  const canAddLead = checkEntitlement('leadLimit', monthlyLeadCount + 1);
 
   const onLeadAdded = () => {
     console.log('Lead added successfully');
@@ -114,7 +116,7 @@ export default function Leads() {
       <MobileContainer withPadding={false}>
         <SubscriptionLimitAlert 
           resourceType="lead" 
-          currentCount={leads.length} 
+          currentCount={monthlyLeadCount} 
         />
         
         <LeadsMobileHeader
@@ -162,7 +164,7 @@ export default function Leads() {
     <div className={cn("p-4 sm:p-6 rtl-fix", isMobile && "pb-24")}>
       <SubscriptionLimitAlert 
         resourceType="lead" 
-        currentCount={leads.length} 
+        currentCount={monthlyLeadCount} 
       />
       
       <LeadsPageHeader

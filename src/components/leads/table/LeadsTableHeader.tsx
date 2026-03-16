@@ -7,6 +7,7 @@ import { AddLeadForm } from "../AddLeadForm";
 import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
 import { useLeads } from "@/hooks/use-leads";
 import { useSubscription } from '@/contexts/subscription-context';
+import { getMonthlyLeadCount } from '@/utils/monthly-lead-count';
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -19,7 +20,7 @@ interface LeadsTableHeaderProps {
 export function LeadsTableHeader({ isAddLeadOpen, setIsAddLeadOpen }: LeadsTableHeaderProps) {
   const { leads } = useLeads();
   const { checkEntitlement } = useSubscription();
-  const currentLeadCount = leads?.length || 0;
+  const currentLeadCount = getMonthlyLeadCount(leads || []);
   const canAddLead = checkEntitlement('leadLimit', currentLeadCount + 1);
 
   const handleAddLead = () => {

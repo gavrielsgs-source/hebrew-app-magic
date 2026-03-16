@@ -6,6 +6,7 @@ import { AddLeadForm } from "../AddLeadForm";
 import { useSubscription } from '@/contexts/subscription-context';
 import { LimitAwareButton } from "@/components/subscription/LimitAwareButton";
 import { useLeads } from "@/hooks/use-leads";
+import { getMonthlyLeadCount } from '@/utils/monthly-lead-count';
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -14,7 +15,7 @@ export function LeadsEmptyState() {
   const { leads } = useLeads();
   const { checkEntitlement } = useSubscription();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const currentLeadCount = leads?.length || 0;
+  const currentLeadCount = getMonthlyLeadCount(leads || []);
   const canAddLead = checkEntitlement('leadLimit', currentLeadCount + 1);
 
   const handleAddLead = () => {
