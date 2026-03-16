@@ -172,7 +172,7 @@ export default function TaxInvoiceReceipt() {
     name: 'payments'
   });
 
-  const watchedFields = form.watch();
+  const watchedFields = useWatch({ control: form.control });
   const selectedLead = leads.find(lead => lead.id === watchedFields.leadId);
 
   // Update company info when profile loads
