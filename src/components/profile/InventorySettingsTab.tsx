@@ -290,14 +290,26 @@ export function InventorySettingsTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-4" dir="rtl">
+          <div
+            className="flex cursor-pointer items-center justify-between rounded-lg border bg-muted/50 p-4"
+            dir="rtl"
+            role="button"
+            tabIndex={0}
+            onClick={() => setEnabled((current) => !current)}
+            onKeyDown={(event) => handleToggleKeyDown(event, () => setEnabled((current) => !current))}
+          >
             <div>
               <Label className="font-medium">הפעל דף מלאי</Label>
               <p className="text-sm text-muted-foreground">
                 כאשר מופעל, הדף יהיה נגיש לכל אחד עם הקישור.
               </p>
             </div>
-            <Switch checked={enabled} onCheckedChange={setEnabled} dir="ltr" />
+            <Switch
+              checked={enabled}
+              onCheckedChange={handleEnabledChange}
+              onClick={(event) => event.stopPropagation()}
+              dir="ltr"
+            />
           </div>
 
           <div className="space-y-2">
