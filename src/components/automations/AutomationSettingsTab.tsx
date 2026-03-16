@@ -77,8 +77,8 @@ export function AutomationSettingsTab() {
   function save() {
     upsert.mutate(form, {
       onSuccess: (savedData) => {
-        // Update local form with confirmed DB values
         setForm(savedData);
+        localStorage.setItem("automation_settings_form", JSON.stringify(savedData));
       },
     });
   }

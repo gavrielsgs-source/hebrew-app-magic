@@ -159,6 +159,7 @@ export function InventorySettingsTab() {
       applyProfileState(data);
     } catch (error) {
       console.error("Error fetching inventory settings:", error);
+      // Keep localStorage values (already set as initial state) — don't reset to false
       toast.error("שגיאה בטעינת הגדרות הקטלוג החיצוני");
     } finally {
       setLoading(false);

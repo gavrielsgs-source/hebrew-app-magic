@@ -90,6 +90,7 @@ export function usePushNotifications() {
       }
 
       setPreferences(newPreferences);
+      localStorage.setItem("notification_preferences", JSON.stringify(newPreferences));
       toast.success("Notification preferences saved");
     } catch (error) {
       console.error("Error updating preferences:", error);
