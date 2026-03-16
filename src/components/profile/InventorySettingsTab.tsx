@@ -93,7 +93,7 @@ export function InventorySettingsTab() {
       setSuggestedSlug(nextSuggestedSlug);
 
       if (data) {
-        const existingSlug = data.inventory_slug || nextSuggestedSlug || "";
+        const existingSlug = normalizeSlug(data.inventory_slug || nextSuggestedSlug || "");
         setSlug(existingSlug);
         setEnabled(parseBoolean(data.inventory_enabled, false));
         validateSlug(existingSlug);
