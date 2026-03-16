@@ -27,11 +27,12 @@ const urlBase64ToUint8Array = (base64String: string) => {
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSupported, setIsSupported] = useState(false);
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    tasks: true,
-    leads: true,
-    reminders: true,
-    meetings: true
+  const [preferences, setPreferences] = useState<NotificationPreferences>(() => {
+    try {
+      const cached = localStorage.getItem("notification_preferences");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return { tasks: true, leads: true, reminders: true, meetings: true };
   });
   const { user } = useAuth();
 
