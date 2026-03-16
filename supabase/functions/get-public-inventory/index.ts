@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,7 +15,6 @@ serve(async (req) => {
     const url = new URL(req.url);
     const slug = url.searchParams.get('slug');
     
-    // Filters
     const make = url.searchParams.get('make');
     const minYear = url.searchParams.get('minYear');
     const maxYear = url.searchParams.get('maxYear');
@@ -25,7 +23,6 @@ serve(async (req) => {
     const fuelType = url.searchParams.get('fuelType');
     const transmission = url.searchParams.get('transmission');
     
-    // Pagination
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '12');
     const offset = (page - 1) * limit;
@@ -39,15 +36,13 @@ serve(async (req) => {
 
     console.log(`📦 Fetching public inventory for slug: ${slug}`);
 
-    // Create Supabase client with anon key for public access
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Get dealer profile by slug
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, company_name, phone, inventory_slug, inventory_enabled, inventory_settings')
+      .select('id, full_name, company_name, phone, company_address, company_logo_url, inventory_slug, inventory_enabled, inventory_settings')
       .eq('inventory_slug', slug)
       .eq('inventory_enabled', true)
       .single();
@@ -62,7 +57,6 @@ serve(async (req) => {
 
     console.log(`✅ Found dealer: ${profile.company_name || profile.full_name}`);
 
-    // Build cars query with filters
     let carsQuery = supabase
       .from('cars')
       .select('id, make, model, year, price, kilometers, fuel_type, transmission, exterior_color, interior_color, engine_size, description, status, created_at, trim_level, entry_date, next_test_date, ownership_history, catalog_price', { count: 'exact' })
@@ -71,7 +65,6 @@ serve(async (req) => {
       .eq('show_in_catalog', true)
       .order('created_at', { ascending: false });
 
-    // Apply filters
     if (make) {
       carsQuery = carsQuery.ilike('make', `%${make}%`);
     }
@@ -94,7 +87,6 @@ serve(async (req) => {
       carsQuery = carsQuery.eq('transmission', transmission);
     }
 
-    // Apply pagination
     carsQuery = carsQuery.range(offset, offset + limit - 1);
 
     const { data: cars, error: carsError, count } = await carsQuery;
@@ -107,7 +99,6 @@ serve(async (req) => {
       );
     }
 
-    // Get unique makes for filter options
     const { data: makes } = await supabase
       .from('cars')
       .select('make')
@@ -116,7 +107,6 @@ serve(async (req) => {
 
     const uniqueMakes = [...new Set(makes?.map(c => c.make).filter(Boolean))];
 
-    // Get car images for each car - return ALL images
     const carsWithImages = await Promise.all(
       (cars || []).map(async (car) => {
         const { data: files } = await supabase.storage
@@ -151,11 +141,19 @@ serve(async (req) => {
 
     console.log(`📊 Found ${carsWithImages.length} cars (total: ${count})`);
 
+    // Extract settings
+    const settings = (profile.inventory_settings && typeof profile.inventory_settings === 'object') 
+      ? profile.inventory_settings as Record<string, unknown>
+      : {};
+
     const response = {
       dealer: {
         name: profile.company_name || profile.full_name,
         phone: profile.phone,
-        settings: profile.inventory_settings || {}
+        logo_url: profile.company_logo_url || (settings.logo_url as string) || null,
+        cover_image_url: (settings.cover_image_url as string) || null,
+        address: profile.company_address || null,
+        settings: settings
       },
       cars: carsWithImages,
       pagination: {
