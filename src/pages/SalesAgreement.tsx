@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
-import { Calendar, Download, Send, Loader2, User, Car, DollarSign, Eye, Save, CheckCircle, FileText, CalendarIcon } from "lucide-react";
+import { Calendar, Download, Send, Loader2, User, Car, DollarSign, Eye, Save, CheckCircle, FileText, CalendarIcon, PenLine } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { MobileDocumentHeader } from "@/components/mobile/MobileDocumentHeader";
@@ -30,6 +30,7 @@ import { useAddCustomerVehiclePurchase } from "@/hooks/customers/use-customer-ve
 import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { Label } from "@/components/ui/label";
+import { SignatureDialog } from "@/components/signature/SignatureDialog";
 
 const salesAgreementSchema = z.object({
   date: z.date({
@@ -64,6 +65,8 @@ export default function SalesAgreement() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
+  const [signatures, setSignatures] = useState<{ seller?: string; buyer?: string }>({});
+  const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
@@ -116,6 +119,7 @@ export default function SalesAgreement() {
   // Create preview data
   const previewData = {
     date: form.watch("date"),
+    signatures,
     seller: {
       company: profile?.company_name || profile?.full_name || "חברת רכב בע\"מ",
       id: "000000000",
@@ -189,7 +193,8 @@ export default function SalesAgreement() {
           remainingAmount: data.remainingAmount ? parseFloat(data.remainingAmount) : parseFloat(data.totalPrice) - parseFloat(data.downPayment),
           paymentTerms: data.paymentTerms || "",
           specialTerms: data.specialTerms || ""
-        }
+        },
+        signatures: signatures.seller || signatures.buyer ? signatures : undefined,
       };
 
       // Generate and download PDF
@@ -547,6 +552,15 @@ export default function SalesAgreement() {
           <div className="flex gap-3">
             <Button
               type="button"
+              variant="outline"
+              onClick={() => setSignatureDialogOpen(true)}
+              className="h-11 px-4 rounded-xl"
+            >
+              <PenLine className="h-5 w-5" />
+              {signatures.seller || signatures.buyer ? '✓' : ''}
+            </Button>
+            <Button
+              type="button"
               onClick={form.handleSubmit(onSubmit)}
               disabled={isGenerating}
               className="flex-1 h-11 rounded-xl shadow-lg"
@@ -570,6 +584,14 @@ export default function SalesAgreement() {
             </Button>
           </div>
         </div>
+
+        {/* Signature Dialog */}
+        <SignatureDialog
+          open={signatureDialogOpen}
+          onOpenChange={setSignatureDialogOpen}
+          onSignaturesComplete={setSignatures}
+          existingSignatures={signatures}
+        />
       </MobileContainer>
     );
   }
@@ -865,6 +887,16 @@ export default function SalesAgreement() {
               <div className="pt-4 space-y-3">
                 <Button
                   type="button"
+                  variant="outline"
+                  onClick={() => setSignatureDialogOpen(true)}
+                  className="w-full h-10 rounded-xl"
+                >
+                  <PenLine className="ml-2 h-4 w-4" />
+                  {signatures.seller || signatures.buyer ? 'חתימות נשמרו ✓' : 'חתימה דיגיטלית'}
+                </Button>
+
+                <Button
+                  type="button"
                   onClick={form.handleSubmit(onSubmit)}
                   disabled={isGenerating}
                   className="w-full h-12 rounded-xl shadow-lg"
@@ -911,6 +943,14 @@ export default function SalesAgreement() {
               </CardContent>
             </Card>
           )}
+
+          {/* Signature Dialog */}
+          <SignatureDialog
+            open={signatureDialogOpen}
+            onOpenChange={setSignatureDialogOpen}
+            onSignaturesComplete={setSignatures}
+            existingSignatures={signatures}
+          />
         </div>
       </div>
     </div>

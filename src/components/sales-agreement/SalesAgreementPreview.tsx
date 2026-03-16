@@ -1,9 +1,14 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface SalesAgreementPreviewProps {
   data: {
     date?: Date;
+    signatures?: {
+      seller?: string;
+      buyer?: string;
+    };
     seller?: {
       company?: string;
       id?: string;
@@ -178,13 +183,19 @@ export const SalesAgreementPreview: React.FC<SalesAgreementPreviewProps> = ({ da
         {/* Signatures */}
         <div className="grid grid-cols-2 gap-8 mt-8 pt-8 border-t">
           <div className="text-center">
-            <div className="border-t border-foreground/30 pt-2 mt-16">
+            {data.signatures?.buyer && (
+              <img src={data.signatures.buyer} alt="חתימת הקונה" className="max-w-[140px] max-h-[60px] mx-auto mb-2" />
+            )}
+            <div className={cn("border-t border-foreground/30 pt-2", !data.signatures?.buyer && "mt-16")}>
               <p className="text-sm font-semibold">חתימת הקונה</p>
               <p className="text-xs text-muted-foreground">תאריך: _______</p>
             </div>
           </div>
           <div className="text-center">
-            <div className="border-t border-foreground/30 pt-2 mt-16">
+            {data.signatures?.seller && (
+              <img src={data.signatures.seller} alt="חתימת המוכר" className="max-w-[140px] max-h-[60px] mx-auto mb-2" />
+            )}
+            <div className={cn("border-t border-foreground/30 pt-2", !data.signatures?.seller && "mt-16")}>
               <p className="text-sm font-semibold">חתימת המוכר</p>
               <p className="text-xs text-muted-foreground">תאריך: _______</p>
             </div>
