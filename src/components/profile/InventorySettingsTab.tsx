@@ -449,12 +449,15 @@ export function InventorySettingsTab() {
                 כאשר מופעל, הדף יהיה נגיש לכל אחד עם הקישור.
               </p>
             </div>
-            <Switch
-              checked={enabled}
-              onCheckedChange={handleEnabledChange}
-              onClick={(event) => event.stopPropagation()}
-              dir="ltr"
-            />
+            <div className="flex items-center gap-2">
+              {autoSaving === 'inventory_enabled' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+              <Switch
+                checked={enabled}
+                onCheckedChange={handleEnabledChange}
+                onClick={(event) => event.stopPropagation()}
+                dir="ltr"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
