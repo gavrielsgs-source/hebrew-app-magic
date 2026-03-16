@@ -270,7 +270,6 @@ export function InventorySettingsTab() {
   };
 
   const handleEnabledChange = (checked: boolean) => {
-    setEnabled(checked);
     autoSaveToggle('inventory_enabled', checked);
   };
 
