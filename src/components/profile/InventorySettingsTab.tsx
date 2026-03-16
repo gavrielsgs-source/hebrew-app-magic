@@ -371,46 +371,8 @@ export function InventorySettingsTab() {
         inventory_settings: normalizedSettings as unknown as Json,
       };
 
-      const { data: updatedProfile, error: updateError } = await supabase
-        .from("profiles")
-        .update(profilePayload)
-        .eq("id", user.id)
-        .select("inventory_slug, inventory_enabled, inventory_settings")
-        .maybeSingle();
-
-      if (updateError) throw updateError;
-
-      if (!updatedProfile) {
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({
-            id: user.id,
-            ...profilePayload,
-          });
-
-        if (insertError) throw insertError;
-
-        setSlug(normalizedSlug);
-        setEnabled(isEnabled);
-        setSettings(normalizedSettings);
-      } else {
-        setSlug(normalizeSlug(updatedProfile.inventory_slug || ""));
-        setEnabled(parseBoolean(updatedProfile.inventory_enabled, false));
-
-        const confirmedSettings =
-          updatedProfile.inventory_settings && typeof updatedProfile.inventory_settings === "object"
-            ? (updatedProfile.inventory_settings as Record<string, unknown>)
-            : {};
-
-        setSettings({
-          logo_url: (confirmedSettings.logo_url as string) || undefined,
-          cover_image_url: (confirmedSettings.cover_image_url as string) || undefined,
-          primary_color: (confirmedSettings.primary_color as string) || "#3b82f6",
-          contact_phone: (confirmedSettings.contact_phone as string) || undefined,
-          show_phone: parseBoolean(confirmedSettings.show_phone, true),
-          show_prices: parseBoolean(confirmedSettings.show_prices, true),
-        });
-      }
+      const updatedProfile = await persistProfile(profilePayload);
+      applyProfileState(updatedProfile);
 
       
 
