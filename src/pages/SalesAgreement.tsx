@@ -887,6 +887,16 @@ export default function SalesAgreement() {
               <div className="pt-4 space-y-3">
                 <Button
                   type="button"
+                  variant="outline"
+                  onClick={() => setSignatureDialogOpen(true)}
+                  className="w-full h-10 rounded-xl"
+                >
+                  <PenLine className="ml-2 h-4 w-4" />
+                  {signatures.seller || signatures.buyer ? 'חתימות נשמרו ✓' : 'חתימה דיגיטלית'}
+                </Button>
+
+                <Button
+                  type="button"
                   onClick={form.handleSubmit(onSubmit)}
                   disabled={isGenerating}
                   className="w-full h-12 rounded-xl shadow-lg"
@@ -933,6 +943,14 @@ export default function SalesAgreement() {
               </CardContent>
             </Card>
           )}
+
+          {/* Signature Dialog */}
+          <SignatureDialog
+            open={signatureDialogOpen}
+            onOpenChange={setSignatureDialogOpen}
+            onSignaturesComplete={setSignatures}
+            existingSignatures={signatures}
+          />
         </div>
       </div>
     </div>
