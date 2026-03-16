@@ -30,6 +30,7 @@ import { useAddCustomerVehiclePurchase } from "@/hooks/customers/use-customer-ve
 import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
 import { formatPhoneForWhatsApp } from "@/utils/phone-utils";
 import { Label } from "@/components/ui/label";
+import { SignatureDialog } from "@/components/signature/SignatureDialog";
 
 const salesAgreementSchema = z.object({
   date: z.date({
