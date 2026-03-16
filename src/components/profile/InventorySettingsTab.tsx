@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -33,7 +33,7 @@ const normalizeSlug = (value: string) =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
-const createSuggestedSlug = (...values: Array<string | null | undefined>) => {
+const createSuggestedSlug = (userId: string | undefined, ...values: Array<string | null | undefined>) => {
   for (const value of values) {
     const normalized = normalizeSlug(
       (value || "")
@@ -44,6 +44,11 @@ const createSuggestedSlug = (...values: Array<string | null | undefined>) => {
     if (normalized.length >= 3) {
       return normalized;
     }
+  }
+
+  // Fallback: use first 8 chars of user UUID for Hebrew-only names
+  if (userId && userId.length >= 8) {
+    return `dealer-${userId.substring(0, 8)}`;
   }
 
   return "";
@@ -65,6 +70,9 @@ export function InventorySettingsTab() {
   });
   const [slugError, setSlugError] = useState("");
 
+  // Track recent saves to prevent remount from overwriting state
+  const lastSaveTimestamp = useRef<number>(0);
+
   const baseUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     return window.location.origin;
@@ -80,6 +88,13 @@ export function InventorySettingsTab() {
   }, [user]);
 
   const fetchSettings = async () => {
+    // Skip fetch if we saved very recently (prevents remount race condition)
+    const timeSinceLastSave = Date.now() - lastSaveTimestamp.current;
+    if (timeSinceLastSave < 3000) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -89,7 +104,7 @@ export function InventorySettingsTab() {
 
       if (error) throw error;
 
-      const nextSuggestedSlug = createSuggestedSlug(data?.company_name, data?.full_name);
+      const nextSuggestedSlug = createSuggestedSlug(user?.id, data?.company_name, data?.full_name);
       setSuggestedSlug(nextSuggestedSlug);
 
       if (data) {
@@ -212,11 +227,12 @@ export function InventorySettingsTab() {
         inventory_settings: normalizedSettings as unknown as Json,
       };
 
+      // Read back confirmed values from DB response
       const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
         .update(profilePayload)
         .eq("id", user.id)
-        .select("id")
+        .select("inventory_slug, inventory_enabled, inventory_settings")
         .maybeSingle();
 
       if (updateError) throw updateError;
@@ -230,16 +246,38 @@ export function InventorySettingsTab() {
           });
 
         if (insertError) throw insertError;
+
+        // For insert, trust local values
+        setSlug(normalizedSlug);
+        setEnabled(isEnabled);
+        setSettings(normalizedSettings);
+      } else {
+        // Use confirmed DB values to set state
+        setSlug(normalizeSlug(updatedProfile.inventory_slug || ""));
+        setEnabled(parseBoolean(updatedProfile.inventory_enabled, false));
+
+        const confirmedSettings =
+          updatedProfile.inventory_settings && typeof updatedProfile.inventory_settings === "object"
+            ? (updatedProfile.inventory_settings as Record<string, unknown>)
+            : {};
+
+        setSettings({
+          logo_url: (confirmedSettings.logo_url as string) || undefined,
+          primary_color: (confirmedSettings.primary_color as string) || "#3b82f6",
+          contact_phone: (confirmedSettings.contact_phone as string) || undefined,
+          show_phone: parseBoolean(confirmedSettings.show_phone, true),
+          show_prices: parseBoolean(confirmedSettings.show_prices, true),
+        });
       }
 
-      setSlug(normalizedSlug);
-      setEnabled(isEnabled);
-      setSettings(normalizedSettings);
-      await fetchSettings();
+      // Mark save timestamp to prevent remount fetch from overwriting
+      lastSaveTimestamp.current = Date.now();
+
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error("שגיאה בשמירת ההגדרות", { description: error.message });
+      // Only re-fetch on error to rollback state
       await fetchSettings();
     } finally {
       setSaving(false);
