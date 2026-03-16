@@ -125,15 +125,18 @@ serve(async (req) => {
 
         const imageUrls: string[] = [];
         if (files && files.length > 0) {
-          const imageFiles = files.filter(f => 
-            !f.id?.startsWith('.') && f.name.match(/\.(jpeg|jpg|png|gif|webp)$/i)
-          );
+          const imageFiles = files
+            .filter(f => 
+              !f.id?.startsWith('.') && f.name.match(/\.(jpeg|jpg|png|gif|webp|avif)$/i)
+            )
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
           for (const file of imageFiles) {
             const { data: urlData } = supabase.storage
               .from('cars')
               .getPublicUrl(`${car.id}/${file.name}`);
             if (urlData?.publicUrl) {
-              imageUrls.push(urlData.publicUrl);
+              imageUrls.push(`${urlData.publicUrl}?v=${encodeURIComponent(file.name)}`);
             }
           }
         }
