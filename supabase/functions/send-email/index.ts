@@ -7,6 +7,7 @@ import { WelcomeEmail } from "../_shared/email-templates/welcome-email.tsx";
 import { TrialReminderEmail } from "../_shared/email-templates/trial-reminder-email.tsx";
 import { PaymentFailedEmail } from "../_shared/email-templates/payment-failed-email.tsx";
 import { PaymentReceiptEmail } from "../_shared/email-templates/payment-receipt-email.tsx";
+import { AccountantReportEmail } from "../_shared/email-templates/accountant-report-email.tsx";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "CarsLeadApp <onboarding@carsleadapp.com>";
