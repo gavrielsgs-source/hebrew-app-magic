@@ -455,8 +455,8 @@ export function InventorySettingsTab() {
             dir="rtl"
             role="button"
             tabIndex={0}
-            onClick={() => setEnabled((current) => !current)}
-            onKeyDown={(event) => handleToggleKeyDown(event, () => setEnabled((current) => !current))}
+            onClick={() => handleEnabledChange(!enabled)}
+            onKeyDown={(event) => handleToggleKeyDown(event, () => handleEnabledChange(!enabled))}
           >
             <div>
               <Label className="font-medium">הפעל דף מלאי</Label>
