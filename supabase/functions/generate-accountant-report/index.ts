@@ -539,11 +539,19 @@ serve(async (req) => {
 
     if (uploadError) throw uploadError;
 
-    const {
-      data: { publicUrl },
-    } = supabaseClient.storage.from("documents").getPublicUrl(`reports/${user.id}/${filename}`);
+    // Use signed URL (valid 7 days) instead of public URL
+    const storagePath = `reports/${user.id}/${filename}`;
+    const { data: signedData, error: signedError } = await supabaseClient.storage
+      .from("documents")
+      .createSignedUrl(storagePath, 60 * 60 * 24 * 7); // 7 days
 
-    console.log(`✅ Report generated: ${publicUrl} | ${transactions.length} transactions, ${(inventory || []).length} inventory, ${balances.length} customers`);
+    if (signedError) {
+      console.error("Signed URL error:", signedError);
+      throw new Error("Failed to generate download URL");
+    }
+
+    const reportUrl = signedData.signedUrl;
+    console.log(`✅ Report generated: ${reportUrl} | ${transactions.length} transactions, ${(inventory || []).length} inventory, ${balances.length} customers`);
 
     return new Response(
       JSON.stringify({
