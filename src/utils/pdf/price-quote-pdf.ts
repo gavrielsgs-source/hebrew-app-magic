@@ -73,7 +73,7 @@ function createPriceQuoteHTML(data: PriceQuoteData): string {
     <div class="summary-box">
       <div class="summary-row"><span>סה"כ לפני הנחה:</span><span>${formatCurrency(data.financial.subtotal)}</span></div>
       ${data.financial.totalDiscount > 0 ? `<div class="summary-row" style="color:#c53030"><span>הנחה:</span><span>-${formatCurrency(data.financial.totalDiscount)}</span></div>` : ''}
-      ${data.financial.vat !== undefined && data.financial.vat > 0 ? `<div class="summary-row"><span>מע"מ (18%):</span><span>${formatCurrency(data.financial.vat)}</span></div>` : ''}
+      <div class="summary-row"><span>מע"מ (18%):</span><span>${formatCurrency(data.financial.vat !== undefined ? data.financial.vat : 0)}</span></div>
       <div class="summary-row summary-total"><span>סה"כ לתשלום:</span><span>${formatCurrency(data.financial.total)}</span></div>
     </div>
 

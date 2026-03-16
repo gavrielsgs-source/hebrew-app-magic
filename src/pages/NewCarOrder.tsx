@@ -293,12 +293,10 @@ export default function NewCarOrder() {
             <span className="font-semibold">{formatPrice(total)}</span>
             <span>סה"כ</span>
           </div>
-          {includeVAT && (
-            <div className="flex justify-between">
-              <span className="font-semibold">{formatPrice(vatAmount)}</span>
-              <span>מע"מ (18%)</span>
-            </div>
-          )}
+          <div className="flex justify-between">
+            <span className="font-semibold">{formatPrice(vatAmount)}</span>
+            <span>מע"מ (18%)</span>
+          </div>
         </div>
         <Separator />
         <div className="flex justify-between items-center text-lg font-bold text-primary">
