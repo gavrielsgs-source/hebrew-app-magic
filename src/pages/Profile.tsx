@@ -322,7 +322,14 @@ export default function Profile() {
         <Tabs defaultValue="profile" className="space-y-6">
           <Card className="shadow-lg rounded-2xl border-2">
             <CardContent className="p-2">
-              <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-xl h-14 flex-row-reverse">
+              <TabsList className="grid w-full grid-cols-5 bg-muted/50 rounded-xl h-14 flex-row-reverse">
+                <TabsTrigger 
+                  value="automations"
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
+                >
+                  <Zap className="h-5 w-5" />
+                  אוטומציות
+                </TabsTrigger>
                 <TabsTrigger 
                   value="notifications"
                   className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
