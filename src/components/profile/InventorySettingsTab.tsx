@@ -699,12 +699,15 @@ export function InventorySettingsTab() {
                 <Label>הצג מחירים בדף</Label>
                 <p className="text-sm text-muted-foreground">האם להציג מחירי רכבים בקטלוג החיצוני.</p>
               </div>
-              <Switch
-                checked={settings.show_prices !== false}
-                onCheckedChange={(checked) => handleDisplaySettingChange("show_prices", checked)}
-                onClick={(event) => event.stopPropagation()}
-                dir="ltr"
-              />
+              <div className="flex items-center gap-2">
+                {autoSaving === 'show_prices' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                <Switch
+                  checked={settings.show_prices !== false}
+                  onCheckedChange={(checked) => handleDisplaySettingChange("show_prices", checked)}
+                  onClick={(event) => event.stopPropagation()}
+                  dir="ltr"
+                />
+              </div>
             </div>
           </div>
 
