@@ -62,12 +62,13 @@ export function usePushNotifications() {
 
       if (error) throw error;
       if (data?.notification_preferences) {
-        // Type assertion to ensure proper typing
         const prefs = data.notification_preferences as unknown as NotificationPreferences;
         setPreferences(prefs);
+        localStorage.setItem("notification_preferences", JSON.stringify(prefs));
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
+      // Keep localStorage values (already set as initial state)
     }
   };
 
