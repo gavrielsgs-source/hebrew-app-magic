@@ -400,26 +400,42 @@ export function InventorySettingsTab() {
               </p>
             </div>
 
-            <div className="flex items-center justify-between" dir="rtl">
+            <div
+              className="flex cursor-pointer items-center justify-between"
+              dir="rtl"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleDisplaySettingChange("show_phone", settings.show_phone === false)}
+              onKeyDown={(event) => handleToggleKeyDown(event, () => handleDisplaySettingChange("show_phone", settings.show_phone === false))}
+            >
               <div>
                 <Label>הצג טלפון בדף</Label>
                 <p className="text-sm text-muted-foreground">האם להציג כפתור יצירת קשר בדף.</p>
               </div>
               <Switch
                 checked={settings.show_phone !== false}
-                onCheckedChange={(checked) => setSettings({ ...settings, show_phone: checked })}
+                onCheckedChange={(checked) => handleDisplaySettingChange("show_phone", checked)}
+                onClick={(event) => event.stopPropagation()}
                 dir="ltr"
               />
             </div>
 
-            <div className="flex items-center justify-between" dir="rtl">
+            <div
+              className="flex cursor-pointer items-center justify-between"
+              dir="rtl"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleDisplaySettingChange("show_prices", settings.show_prices === false)}
+              onKeyDown={(event) => handleToggleKeyDown(event, () => handleDisplaySettingChange("show_prices", settings.show_prices === false))}
+            >
               <div>
                 <Label>הצג מחירים בדף</Label>
                 <p className="text-sm text-muted-foreground">האם להציג מחירי רכבים בקטלוג החיצוני.</p>
               </div>
               <Switch
                 checked={settings.show_prices !== false}
-                onCheckedChange={(checked) => setSettings({ ...settings, show_prices: checked })}
+                onCheckedChange={(checked) => handleDisplaySettingChange("show_prices", checked)}
+                onClick={(event) => event.stopPropagation()}
                 dir="ltr"
               />
             </div>
