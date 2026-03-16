@@ -61,12 +61,14 @@ export function InventorySettingsTab() {
   const [copied, setCopied] = useState(false);
   const [suggestedSlug, setSuggestedSlug] = useState("");
 
-  const [slug, setSlug] = useState("");
-  const [enabled, setEnabled] = useState(false);
-  const [settings, setSettings] = useState<InventorySettings>({
-    primary_color: "#3b82f6",
-    show_phone: true,
-    show_prices: true,
+  const [slug, setSlug] = useState(() => localStorage.getItem("inventory_slug") || "");
+  const [enabled, setEnabled] = useState(() => localStorage.getItem("inventory_enabled") === "true");
+  const [settings, setSettings] = useState<InventorySettings>(() => {
+    try {
+      const cached = localStorage.getItem("inventory_settings");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return { primary_color: "#3b82f6", show_phone: true, show_prices: true };
   });
   const [slugError, setSlugError] = useState("");
 
