@@ -1061,6 +1061,8 @@ export default function PriceQuote() {
                   <Button
                     type="button"
                     onClick={handleWhatsAppSend}
+                    disabled={!documentUrl}
+                    title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                     variant="default"
                     className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-xl h-11"
                   >

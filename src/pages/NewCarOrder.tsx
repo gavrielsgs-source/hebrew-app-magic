@@ -674,6 +674,8 @@ export default function NewCarOrder() {
                   <Button
                     type="button"
                     onClick={handleWhatsAppSend}
+                    disabled={!documentUrl}
+                    title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                     className="h-12 rounded-xl bg-green-600 hover:bg-green-700"
                   >
                     <MessageCircle className="ml-2 h-5 w-5" />

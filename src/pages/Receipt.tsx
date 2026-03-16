@@ -835,7 +835,8 @@ export default function Receipt() {
                     <Button
                       type="button"
                       onClick={handleWhatsAppSend}
-                      disabled={!watchedFields.customerPhone}
+                      disabled={!documentUrl}
+                      title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                       className="h-12 rounded-xl bg-green-600 hover:bg-green-700"
                     >
                       <MessageCircle className="mr-2 h-5 w-5" />

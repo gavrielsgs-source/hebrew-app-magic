@@ -963,7 +963,8 @@ export default function TaxInvoiceCredit() {
                     type="button"
                     variant="outline"
                     onClick={handleWhatsAppSend}
-                    disabled={!watchedFields.customerPhone}
+                    disabled={!documentUrl}
+                    title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                     className="h-12 rounded-xl"
                   >
                     <MessageCircle className="ml-2 h-4 w-4" />

@@ -1039,7 +1039,8 @@ export default function TaxInvoice() {
                   type="button"
                   variant="outline"
                   onClick={handleWhatsAppSend}
-                  disabled={!watchedFields.customerPhone}
+                  disabled={!documentUrl}
+                  title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                   size="lg"
                   className="flex-1 h-16 text-lg font-bold border-2 border-brand-primary/30 bg-white hover:bg-brand-primary/5 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:border-brand-primary/60 rounded-2xl text-brand-primary"
                 >
