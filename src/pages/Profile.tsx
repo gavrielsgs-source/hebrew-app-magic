@@ -9,10 +9,11 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, MapPin, Hash, CheckCircle, ImageIcon } from "lucide-react";
+import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, MapPin, Hash, CheckCircle, ImageIcon, Zap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
+import { AutomationSettingsTab } from "@/components/automations/AutomationSettingsTab";
 
 
 export default function Profile() {
@@ -121,7 +122,14 @@ export default function Profile() {
           <Tabs defaultValue="profile" className="space-y-4">
             <Card className="shadow-lg rounded-2xl border-2">
               <CardContent className="p-2">
-              <TabsList className="grid w-full grid-cols-3 bg-muted/50 rounded-xl h-12 flex-row-reverse">
+              <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-xl h-12 flex-row-reverse">
+                <TabsTrigger 
+                  value="automations"
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2"
+                >
+                  <Zap className="h-4 w-4" />
+                  אוטומציות
+                </TabsTrigger>
                 <TabsTrigger 
                   value="notifications"
                   className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2"
@@ -269,6 +277,14 @@ export default function Profile() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="automations">
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardContent className="p-4">
+                  <AutomationSettingsTab />
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
       </MobileContainer>
@@ -306,7 +322,14 @@ export default function Profile() {
         <Tabs defaultValue="profile" className="space-y-6">
           <Card className="shadow-lg rounded-2xl border-2">
             <CardContent className="p-2">
-              <TabsList className="grid w-full grid-cols-4 bg-muted/50 rounded-xl h-14 flex-row-reverse">
+              <TabsList className="grid w-full grid-cols-5 bg-muted/50 rounded-xl h-14 flex-row-reverse">
+                <TabsTrigger 
+                  value="automations"
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
+                >
+                  <Zap className="h-5 w-5" />
+                  אוטומציות
+                </TabsTrigger>
                 <TabsTrigger 
                   value="notifications"
                   className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2 text-base"
@@ -566,6 +589,10 @@ export default function Profile() {
             <Card className="shadow-lg rounded-2xl border-2">
               <NotificationSettings />
             </Card>
+          </TabsContent>
+
+          <TabsContent value="automations">
+            <AutomationSettingsTab />
           </TabsContent>
         </Tabs>
       </div>
