@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLeads } from "@/hooks/use-leads";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from '@/contexts/subscription-context';
+import { getMonthlyLeadCount } from '@/utils/monthly-lead-count';
 import { SubscriptionLimitAlert } from '@/components/subscription/SubscriptionLimitAlert';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
