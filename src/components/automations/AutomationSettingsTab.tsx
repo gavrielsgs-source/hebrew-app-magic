@@ -253,8 +253,8 @@ export function AutomationSettingsTab() {
                 )}
               </Card>
 
-              <Button onClick={save} disabled={!dirty || upsert.isPending} className="w-full">
-                {upsert.isPending ? "שומר..." : "שמור הגדרות"}
+              <Button onClick={save} disabled={upsert.isPending} className="w-full">
+                {upsert.isPending ? "שומר..." : dirty ? "שמור הגדרות" : "שמור הגדרות"}
               </Button>
             </div>
           )}
