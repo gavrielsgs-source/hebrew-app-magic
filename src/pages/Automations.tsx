@@ -54,21 +54,28 @@ export default function Automations() {
 
   const [form, setForm] = useState<Partial<AutomationSettings>>(DEFAULT_SETTINGS);
   const [dirty, setDirty] = useState(true);
+  const userHasEdited = useRef(false);
 
   useEffect(() => {
-    if (settings) {
+    if (settings && !userHasEdited.current) {
       setForm(settings);
       setDirty(false);
     }
   }, [settings]);
 
   function update(key: keyof AutomationSettings, value: any) {
+    userHasEdited.current = true;
     setForm((f) => ({ ...f, [key]: value }));
     setDirty(true);
   }
 
   function save() {
-    upsert.mutate(form, { onSuccess: () => setDirty(false) });
+    upsert.mutate(form, {
+      onSuccess: () => {
+        userHasEdited.current = false;
+        setDirty(false);
+      },
+    });
   }
 
   const pendingCount = queue?.filter((q) => q.status === "pending").length ?? 0;
