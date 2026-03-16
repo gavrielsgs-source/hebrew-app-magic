@@ -377,7 +377,7 @@ export function InventorySettingsTab() {
         });
       }
 
-      setLastSaveTimestamp();
+      
 
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
