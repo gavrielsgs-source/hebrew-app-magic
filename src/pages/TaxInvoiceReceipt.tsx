@@ -209,7 +209,7 @@ export default function TaxInvoiceReceipt() {
     }
   };
 
-  // Calculate totals for each item
+   // Calculate totals for each item
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name?.startsWith('items') && !name.includes('total')) {
@@ -222,8 +222,16 @@ export default function TaxInvoiceReceipt() {
             const includeVat = item.includeVat !== false;
             const vatRate = item.vatRate || 18;
             
-            let subtotal = quantity * unitPrice;
-            let total = subtotal - discount;
+            const base = quantity * unitPrice - discount;
+            let total: number;
+            
+            if (includeVat) {
+              // מע"מ דלוק - מוסיפים מע"מ על מחיר הבסיס
+              total = base + (base * vatRate / 100);
+            } else {
+              // מע"מ כבוי - המחיר נשאר כמו שהוא
+              total = base;
+            }
             
             const currentTotal = form.getValues(`items.${index}.total`);
             if (Math.abs(currentTotal - total) > 0.01) {
