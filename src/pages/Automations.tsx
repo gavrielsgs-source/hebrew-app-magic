@@ -85,28 +85,6 @@ export default function Automations() {
         </div>
       </div>
 
-      {/* Setup notice */}
-      <Card className="mb-6 border-amber-500/30 bg-amber-500/5">
-        <CardContent className="pt-4 pb-4">
-          <div className="flex gap-3 items-start">
-            <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm space-y-1">
-              <p className="font-semibold text-amber-600">נדרשות פעולות חיצוניות לפני הפעלה</p>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                <li>
-                  <strong>תבנית <code>lead_followup</code></strong> — צור ב-Meta Business Manager עם פרמטר 1: שם הליד
-                </li>
-                <li>
-                  <strong>תבנית <code>car_match_alert</code></strong> — צור ב-Meta Business Manager עם 3 פרמטרים: שם ליד, פרטי רכב, מחיר
-                </li>
-                <li>
-                  <strong>Cron Job</strong> — ב-Supabase Dashboard ← Database ← Cron Jobs, הוסף משימה כל 5 דקות שקוראת ל-<code>process-automation-queue</code>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <Tabs defaultValue="settings">
         <TabsList className="mb-6">
