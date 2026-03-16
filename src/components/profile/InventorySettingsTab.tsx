@@ -84,6 +84,16 @@ export function InventorySettingsTab() {
   const resolvedSlug = useMemo(() => normalizeSlug(slug || suggestedSlug), [slug, suggestedSlug]);
   const inventoryUrl = resolvedSlug ? `${baseUrl}/inventory/${resolvedSlug}` : "";
 
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    void fetchSettings();
+  }, [user?.id]);
+
   const applyProfileState = (
     profile: {
       inventory_slug?: string | null;
@@ -144,6 +154,33 @@ export function InventorySettingsTab() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const persistProfile = async (payload: {
+    inventory_slug?: string | null;
+    inventory_enabled?: boolean;
+    inventory_settings?: Json;
+  }) => {
+    const selectFields = "inventory_slug, inventory_enabled, inventory_settings, company_name, full_name";
+
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from("profiles")
+      .update(payload)
+      .eq("id", user!.id)
+      .select(selectFields)
+      .maybeSingle();
+
+    if (updateError) throw updateError;
+    if (updatedProfile) return updatedProfile;
+
+    const { data: insertedProfile, error: insertError } = await supabase
+      .from("profiles")
+      .insert({ id: user!.id, ...payload })
+      .select(selectFields)
+      .single();
+
+    if (insertError) throw insertError;
+    return insertedProfile;
   };
 
   const validateSlug = (value: string) => {
