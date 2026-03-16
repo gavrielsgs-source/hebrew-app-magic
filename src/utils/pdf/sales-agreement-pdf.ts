@@ -321,16 +321,18 @@ function createSalesAgreementHTML(data: SalesAgreementData): string {
   </div>
 
   <!-- Signatures -->
-  <div class="signatures">
-    <div class="sig-block">
-      <div class="sig-line">חתימת המוכר</div>
-      <div class="sig-date">תאריך: ______</div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-line">חתימת הקונה</div>
-      <div class="sig-date">תאריך: ______</div>
-    </div>
-  </div>
+   <div class="signatures">
+     <div class="sig-block">
+       ${data.signatures?.seller ? `<img src="${data.signatures.seller}" style="max-width:180px;max-height:80px;margin:0 auto 8px auto;display:block;" alt="חתימת המוכר" />` : ''}
+       <div class="sig-line">חתימת המוכר</div>
+       <div class="sig-date">תאריך: ${data.date}</div>
+     </div>
+     <div class="sig-block">
+       ${data.signatures?.buyer ? `<img src="${data.signatures.buyer}" style="max-width:180px;max-height:80px;margin:0 auto 8px auto;display:block;" alt="חתימת הקונה" />` : ''}
+       <div class="sig-line">חתימת הקונה</div>
+       <div class="sig-date">תאריך: ${data.date}</div>
+     </div>
+   </div>
 </body>
 </html>`;
 }
