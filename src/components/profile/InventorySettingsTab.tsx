@@ -94,8 +94,8 @@ export function InventorySettingsTab() {
 
   const fetchSettings = async () => {
     // Skip fetch if we saved very recently (prevents remount race condition)
-    const timeSinceLastSave = Date.now() - lastSaveTimestamp.current;
-    if (timeSinceLastSave < 3000) {
+    const timeSinceLastSave = Date.now() - getLastSaveTimestamp();
+    if (timeSinceLastSave < 5000) {
       setLoading(false);
       return;
     }
