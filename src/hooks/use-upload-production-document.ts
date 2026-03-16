@@ -99,7 +99,10 @@ function getDocumentTypeName(type: string): string {
     price_quote: 'הצעת מחיר',
     tax_invoice: 'חשבונית מס',
     tax_invoice_receipt: 'חשבונית מס קבלה',
-    sales_agreement: 'הסכם מכר'
+    sales_agreement: 'הסכם מכר',
+    receipt: 'קבלה',
+    tax_invoice_credit: 'חשבונית מס זיכוי',
+    new_car_order: 'הזמנת רכב חדש',
   };
   return names[type] || type;
 }
