@@ -52,7 +52,7 @@ import AcceptInvitation from "./pages/AcceptInvitation";
 import AboutUs from "./pages/AboutUs";
 import TaxInvoice from "./pages/TaxInvoice";
 import Customers from "./pages/Customers";
-import Automations from "./pages/Automations";
+
 import CustomerProfile from "./pages/CustomerProfile";
 import SubscriptionExpired from "./pages/SubscriptionExpired";
 import { GracePeriodWarning } from "./components/subscription/GracePeriodWarning";
