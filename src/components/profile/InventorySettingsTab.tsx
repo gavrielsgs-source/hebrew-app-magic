@@ -276,7 +276,7 @@ export function InventorySettingsTab() {
       }
 
       // Mark save timestamp to prevent remount fetch from overwriting
-      lastSaveTimestamp.current = Date.now();
+      setLastSaveTimestamp();
 
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
