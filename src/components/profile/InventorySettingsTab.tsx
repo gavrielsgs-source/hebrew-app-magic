@@ -676,12 +676,15 @@ export function InventorySettingsTab() {
                 <Label>הצג טלפון בדף</Label>
                 <p className="text-sm text-muted-foreground">האם להציג כפתור יצירת קשר בדף.</p>
               </div>
-              <Switch
-                checked={settings.show_phone !== false}
-                onCheckedChange={(checked) => handleDisplaySettingChange("show_phone", checked)}
-                onClick={(event) => event.stopPropagation()}
-                dir="ltr"
-              />
+              <div className="flex items-center gap-2">
+                {autoSaving === 'show_phone' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                <Switch
+                  checked={settings.show_phone !== false}
+                  onCheckedChange={(checked) => handleDisplaySettingChange("show_phone", checked)}
+                  onClick={(event) => event.stopPropagation()}
+                  dir="ltr"
+                />
+              </div>
             </div>
 
             <div
