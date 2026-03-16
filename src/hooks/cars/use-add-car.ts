@@ -72,7 +72,7 @@ export function useAddCar() {
           throw carError;
         }
 
-        // Upload images in background
+        // Upload images before completing so the UI and external catalog receive fresh images immediately
         if (car.images && car.images.length > 0 && data.id) {
           const carId = data.id;
           const uploadPromises = car.images.map(async (image, index) => {
@@ -80,18 +80,24 @@ export function useAddCar() {
             const filePath = `${carId}/${index}-${Date.now()}.${fileExt}`;
             const { error: uploadError } = await supabase.storage
               .from('cars')
-              .upload(filePath, image, { cacheControl: '3600', upsert: false });
+              .upload(filePath, image, { cacheControl: '0', upsert: false });
+
             if (uploadError) {
               console.error(`Error uploading image ${index + 1}:`, uploadError);
               return { success: false, error: uploadError };
             }
+
             return { success: true, path: filePath };
           });
-          
-          Promise.all(uploadPromises).then((results) => {
-            const failed = results.filter(r => !r.success).length;
-            if (failed > 0) toast.error(`${failed} תמונות לא הועלו בהצלחה`);
-          });
+
+          const results = await Promise.all(uploadPromises);
+          const failed = results.filter(r => !r.success).length;
+
+          if (failed > 0) {
+            toast.error(`${failed} תמונות לא הועלו בהצלחה`);
+          }
+
+          queryClient.invalidateQueries({ queryKey: ["car-images", carId] });
         }
 
         // Check for matching leads after successful car creation
@@ -202,6 +208,7 @@ export function useAddCar() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
+      queryClient.invalidateQueries({ queryKey: ["car-images"] });
       toast.success("רכב נוסף בהצלחה");
     },
     onError: (error) => {

@@ -121,13 +121,20 @@ export default function Profile() {
           <Tabs defaultValue="profile" className="space-y-4">
             <Card className="shadow-lg rounded-2xl border-2">
               <CardContent className="p-2">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50 rounded-xl h-12 flex-row-reverse">
+              <TabsList className="grid w-full grid-cols-3 bg-muted/50 rounded-xl h-12 flex-row-reverse">
                 <TabsTrigger 
                   value="notifications"
                   className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2"
                 >
                   <Bell className="h-4 w-4" />
                   התראות
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="inventory"
+                  className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg flex items-center justify-center gap-2"
+                >
+                  <Globe className="h-4 w-4" />
+                  מלאי
                 </TabsTrigger>
                 <TabsTrigger 
                   value="profile" 
@@ -243,6 +250,14 @@ export default function Profile() {
                       </Button>
                     </div>
                   </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="inventory">
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardContent className="p-4">
+                  <InventorySettingsTab />
                 </CardContent>
               </Card>
             </TabsContent>

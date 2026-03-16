@@ -22,10 +22,10 @@ export async function getCarImages(carId: string): Promise<string[]> {
     
     console.log('[getCarImages] Found files:', data.map(f => f.name));
     
-    // Filter only image files
-    const imageFiles = data.filter(file => 
-      file.name.match(/\.(jpeg|jpg|png|gif|webp)$/i)
-    );
+    // Filter only image files and keep order stable
+    const imageFiles = data
+      .filter(file => !file.name.startsWith('.') && file.name.match(/\.(jpeg|jpg|png|gif|webp|avif)$/i))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
     
     if (imageFiles.length === 0) {
       console.log('[getCarImages] No image files found');
@@ -34,14 +34,17 @@ export async function getCarImages(carId: string): Promise<string[]> {
     
     console.log('[getCarImages] Image files:', imageFiles.map(f => f.name));
     
-    // Use public URLs directly for faster loading (bucket is public)
+    // Use public URLs directly for faster loading and add a lightweight version token for refreshes
     const imageUrls: string[] = imageFiles.map(file => {
       const filePath = `${carId}/${file.name}`;
       const { data: urlData } = supabase
         .storage
         .from('cars')
         .getPublicUrl(filePath);
-      return urlData?.publicUrl;
+
+      if (!urlData?.publicUrl) return null;
+
+      return `${urlData.publicUrl}?v=${encodeURIComponent(file.name)}`;
     }).filter(Boolean) as string[];
     
     console.log('[getCarImages] Final URLs:', imageUrls.length);
