@@ -38,6 +38,29 @@ export function StepFinancialInfo({ form }: StepFinancialInfoProps) {
 
   return (
     <div className="space-y-6">
+      {/* Purchase Source */}
+      <FormField
+        control={form.control}
+        name="purchase_source"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>מקור רכישה</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value || ""}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר מקור רכישה" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="private">פרטי (מרג׳ין)</SelectItem>
+                <SelectItem value="business">עוסק / חברה (מע״מ רגיל)</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}

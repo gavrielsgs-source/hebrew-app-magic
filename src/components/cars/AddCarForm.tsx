@@ -114,6 +114,7 @@ export function AddCarForm({ onSuccess, className }: AddCarFormProps) {
         show_in_catalog: 'true',
         dealer_price: '',
         catalog_price: '',
+        purchase_source: '',
       }}
       onSubmit={handleSubmit}
       submitLabel="הוסף רכב"

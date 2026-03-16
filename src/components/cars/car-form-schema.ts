@@ -77,6 +77,7 @@ export const carFormSchema = z.object({
   catalog_price: z.string().optional().or(z.literal("")),
   asking_price: z.string().optional().or(z.literal("")),
   include_vat: z.any().optional(),
+  purchase_source: z.string().optional().or(z.literal("")),
 });
 
 export type CarFormValues = z.infer<typeof carFormSchema>;

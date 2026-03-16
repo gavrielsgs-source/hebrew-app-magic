@@ -42,5 +42,6 @@ export function createDefaultFormValues(car: Car): CarFormValues {
     show_in_catalog: car.show_in_catalog ? "true" : "false",
     dealer_price: car.dealer_price?.toString() || "",
     catalog_price: car.catalog_price?.toString() || "",
+    purchase_source: (car as any).purchase_source || "",
   };
 }
