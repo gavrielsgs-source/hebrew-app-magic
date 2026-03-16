@@ -26,6 +26,7 @@ interface Transaction {
   document_id?: string;
   notes?: string;
   payment_method?: string;
+  tax_type?: string; // 'margin' | 'standard' | ''
 }
 
 serve(async (req) => {
@@ -60,10 +61,10 @@ serve(async (req) => {
     const validationErrors: any[] = [];
     const documentFiles: Record<string, Uint8Array> = {};
 
-    // 1. Fetch Sales
+    // 1. Fetch Sales - now including purchase_source and vat_paid for margin calculation
     const { data: sales, error: salesError } = await supabaseClient
       .from("customer_vehicle_sales")
-      .select(`*, car:cars(make, model, year, purchase_cost), customer:customers(full_name)`)
+      .select(`*, car:cars(make, model, year, purchase_cost, purchase_source, vat_paid), customer:customers(full_name)`)
       .gte("sale_date", startDate)
       .lte("sale_date", endDate)
       .eq("cars.user_id", user.id);
@@ -72,12 +73,39 @@ serve(async (req) => {
 
     for (const sale of sales || []) {
       const salePrice = sale.sale_price || 0;
-      const vatAmount = salePrice * VAT_RATE;
+      const purchaseCost = sale.car?.purchase_cost || 0;
+      const purchaseSource = sale.car?.purchase_source;
 
-      if (!sale.car?.purchase_cost) {
+      // Determine tax type: if purchased from private → margin, otherwise standard
+      const isMargin = purchaseSource === 'private';
+      let vatAmount: number;
+      let taxType: string;
+
+      if (isMargin) {
+        // Margin tax: VAT only on profit, prices are gross (inclusive)
+        const margin = Math.max(0, salePrice - purchaseCost);
+        vatAmount = margin / (1 + VAT_RATE) * VAT_RATE;
+        taxType = 'margin';
+      } else {
+        // Standard: extract VAT from gross sale price
+        vatAmount = salePrice / (1 + VAT_RATE) * VAT_RATE;
+        taxType = 'standard';
+      }
+
+      vatAmount = Math.round(vatAmount * 100) / 100;
+
+      if (!purchaseCost) {
         validationErrors.push({
           type: "missing_purchase_cost",
           message: `חסר מחיר רכישה לרכב ${sale.car?.make} ${sale.car?.model}`,
+          carId: sale.car_id,
+        });
+      }
+
+      if (!purchaseSource) {
+        validationErrors.push({
+          type: "invalid_data",
+          message: `חסר מקור רכישה (פרטי/עסקי) לרכב ${sale.car?.make} ${sale.car?.model} - חישוב מע"מ עלול להיות לא מדויק`,
           carId: sale.car_id,
         });
       }
@@ -92,14 +120,15 @@ serve(async (req) => {
         customer_name: sale.customer?.full_name,
         amount: salePrice,
         vat_amount: vatAmount,
-        total_with_vat: salePrice + vatAmount,
+        total_with_vat: salePrice, // price is already gross
+        tax_type: taxType,
       });
     }
 
-    // 2. Fetch Purchases
+    // 2. Fetch Purchases - with purchase_source for VAT calculation
     const { data: purchases, error: purchasesError } = await supabaseClient
       .from("customer_vehicle_purchases")
-      .select(`*, car:cars(make, model, year, supplier_name), customer:customers(full_name)`)
+      .select(`*, car:cars(make, model, year, supplier_name, purchase_source, vat_paid), customer:customers(full_name)`)
       .gte("purchase_date", startDate)
       .lte("purchase_date", endDate)
       .eq("cars.user_id", user.id);
@@ -108,7 +137,24 @@ serve(async (req) => {
 
     for (const purchase of purchases || []) {
       const purchasePrice = purchase.purchase_price || 0;
-      const vatAmount = purchasePrice * VAT_RATE;
+      const purchaseSource = purchase.car?.purchase_source;
+      const vatPaidFromCar = purchase.car?.vat_paid;
+
+      // If purchased from private → VAT = 0 on purchase
+      // If purchased from business → use vat_paid if available, otherwise extract from gross
+      let vatAmount: number;
+      let taxType: string;
+
+      if (purchaseSource === 'private') {
+        vatAmount = 0;
+        taxType = 'margin';
+      } else {
+        vatAmount = vatPaidFromCar != null && vatPaidFromCar > 0
+          ? vatPaidFromCar
+          : purchasePrice / (1 + VAT_RATE) * VAT_RATE;
+        vatAmount = Math.round(vatAmount * 100) / 100;
+        taxType = 'standard';
+      }
 
       transactions.push({
         date: purchase.purchase_date,
@@ -120,7 +166,8 @@ serve(async (req) => {
         supplier_name: purchase.car?.supplier_name,
         amount: purchasePrice,
         vat_amount: vatAmount,
-        total_with_vat: purchasePrice + vatAmount,
+        total_with_vat: purchasePrice, // stored as gross
+        tax_type: taxType,
       });
     }
 
@@ -161,7 +208,7 @@ serve(async (req) => {
         notes: expense.description,
       });
 
-      // Try to download document PDF
+      // Download expense documents into Expenses_Purchases folder
       if (expense.document_url) {
         try {
           const { data: fileData } = await supabaseClient.storage
@@ -170,7 +217,7 @@ serve(async (req) => {
           if (fileData) {
             const arrayBuffer = await fileData.arrayBuffer();
             const fileName = `expense_${expense.expense_date}_${expense.id.slice(0, 8)}.pdf`;
-            documentFiles[`documents/${fileName}`] = new Uint8Array(arrayBuffer);
+            documentFiles[`Expenses_Purchases/${fileName}`] = new Uint8Array(arrayBuffer);
           }
         } catch (e) {
           console.warn(`Could not download expense document: ${expense.document_url}`, e);
@@ -178,7 +225,7 @@ serve(async (req) => {
       }
     }
 
-    // 4. Fetch Tax Invoices (full data now)
+    // 4. Fetch Tax Invoices
     const { data: invoices, error: invoicesError } = await supabaseClient
       .from("tax_invoices")
       .select("*")
@@ -233,7 +280,7 @@ serve(async (req) => {
       });
     }
 
-    // 6. Fetch Customer Documents (sales agreements) - download PDFs
+    // 6. Fetch Customer Documents - organize into folders
     const { data: customerDocs, error: customerDocsError } = await supabaseClient
       .from("customer_documents")
       .select(`*, customer:customers(full_name)`)
@@ -253,7 +300,16 @@ serve(async (req) => {
             const arrayBuffer = await fileData.arrayBuffer();
             const ext = doc.file_path.split(".").pop() || "pdf";
             const fileName = `${doc.type}_${doc.document_number}_${doc.id.slice(0, 8)}.${ext}`;
-            documentFiles[`documents/${fileName}`] = new Uint8Array(arrayBuffer);
+            
+            // Route to appropriate folder
+            let folder = "Agreements";
+            if (doc.type === 'tax_invoice' || doc.type === 'invoice' || doc.type === 'receipt' || doc.type === 'tax_invoice_receipt') {
+              folder = "Invoices_Sales";
+            } else if (doc.type === 'purchase_agreement' || doc.type === 'expense') {
+              folder = "Expenses_Purchases";
+            }
+            
+            documentFiles[`${folder}/${fileName}`] = new Uint8Array(arrayBuffer);
           }
         } catch (e) {
           console.warn(`Could not download customer document: ${doc.file_path}`, e);
@@ -282,7 +338,7 @@ serve(async (req) => {
     // 7. Inventory Snapshot
     const { data: inventory, error: inventoryError } = await supabaseClient
       .from("cars")
-      .select("id, make, model, year, chassis_number, license_number, purchase_cost, purchase_date, status, kilometers")
+      .select("id, make, model, year, chassis_number, license_number, purchase_cost, purchase_date, status, kilometers, purchase_source")
       .eq("user_id", user.id)
       .eq("status", "available");
 
@@ -355,10 +411,10 @@ serve(async (req) => {
     const encoder = new TextEncoder();
     const BOM = "\uFEFF"; // UTF-8 BOM for Excel Hebrew support
 
-    // transactions.csv
+    // transactions.csv - with tax type column
     const txnHeader = [
-      "תאריך", "סוג עסקה", "תיאור", "יצרן רכב", "דגם רכב", "שנה",
-      "לקוח/ספק", "סכום", 'מע"מ', 'סה"כ כולל מע"מ', "מס' חשבונית", "אמצעי תשלום", "הערות",
+      "תאריך", "סוג עסקה", "סוג מיסוי", "תיאור", "יצרן רכב", "דגם רכב", "שנה",
+      "לקוח/ספק", "סכום ברוטו", "מע\"מ (18%)", "סכום נטו", "מס' חשבונית", "אמצעי תשלום", "הערות",
     ].join(",");
 
     const typeMap: Record<string, string> = {
@@ -369,28 +425,35 @@ serve(async (req) => {
       payment: "קבלה",
     };
 
-    const txnRows = transactions.map((t) =>
-      [
+    const taxTypeMap: Record<string, string> = {
+      margin: "מרג׳ין",
+      standard: "רגיל",
+    };
+
+    const txnRows = transactions.map((t) => {
+      const netAmount = t.total_with_vat - t.vat_amount;
+      return [
         t.date,
         typeMap[t.transaction_type] || t.transaction_type,
+        t.tax_type ? (taxTypeMap[t.tax_type] || "") : "",
         `"${t.description}"`,
         t.car_make || "",
         t.car_model || "",
         t.car_year || "",
         t.customer_name || t.supplier_name || "",
-        t.amount.toFixed(2),
-        t.vat_amount.toFixed(2),
         t.total_with_vat.toFixed(2),
+        t.vat_amount.toFixed(2),
+        netAmount.toFixed(2),
         t.invoice_number || "",
         t.payment_method ? (paymentMethodLabels[t.payment_method] || t.payment_method) : "",
         `"${t.notes || ""}"`,
-      ].join(",")
-    );
+      ].join(",");
+    });
 
     const transactionsCsv = BOM + [txnHeader, ...txnRows].join("\n");
 
-    // inventory.csv
-    const invHeader = ["מס' שלדה", "מס' רישוי", "יצרן", "דגם", "שנה", "ק\"מ", "עלות רכישה", "תאריך רכישה"].join(",");
+    // inventory.csv - with purchase_source
+    const invHeader = ["מס' שלדה", "מס' רישוי", "יצרן", "דגם", "שנה", "ק\"מ", "עלות רכישה", "תאריך רכישה", "מקור רכישה"].join(",");
     const invRows = (inventory || []).map((car) =>
       [
         car.chassis_number || "",
@@ -401,9 +464,10 @@ serve(async (req) => {
         car.kilometers || "",
         car.purchase_cost ? car.purchase_cost.toFixed(2) : "",
         car.purchase_date || "",
+        car.purchase_source === 'private' ? 'פרטי' : car.purchase_source === 'business' ? 'עוסק' : '',
       ].join(",")
     );
-    const inventoryCsv = BOM + [invHeader, ...invRows, "", `סה"כ ערך מלאי,,,,,,,${inventoryValue.toFixed(2)}`].join("\n");
+    const inventoryCsv = BOM + [invHeader, ...invRows, "", `סה"כ ערך מלאי,,,,,,,,${inventoryValue.toFixed(2)}`].join("\n");
 
     // balances.csv
     const balHeader = ["שם לקוח", "ת.ז./ח.פ.", "טלפון", "סה\"כ רכישות", "סה\"כ שולם", "יתרת חוב"].join(",");
@@ -435,7 +499,7 @@ serve(async (req) => {
       `סה"כ יתרות חוב לקוחות,${totalOutstanding.toFixed(2)}`,
     ].join("\n");
 
-    // Build ZIP
+    // Build ZIP with folder structure
     const files: Record<string, Uint8Array> = {
       "transactions.csv": encoder.encode(transactionsCsv),
       "inventory.csv": encoder.encode(inventoryCsv),
