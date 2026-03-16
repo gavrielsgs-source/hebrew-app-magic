@@ -308,7 +308,7 @@ export function InventorySettingsTab() {
             </p>
           </div>
 
-          {slug && (
+          {resolvedSlug && (
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
               <div className="flex items-center justify-between gap-3" dir="rtl">
                 <div>
@@ -318,10 +318,10 @@ export function InventorySettingsTab() {
                   <p className="text-sm text-muted-foreground">
                     {enabled
                       ? "אפשר לפתוח, להעתיק ולשתף את הקישור ישירות."
-                      : "שמור את ההגדרות עם ההפעלה כדי שהלקוחות יוכלו להיכנס."}
+                      : "הקישור כבר מוכן. שמור עם ההפעלה כדי לפרסם אותו ללקוחות."}
                   </p>
                 </div>
-                <Button variant="outline" onClick={openInventory} disabled={!enabled}>
+                <Button variant="outline" onClick={openInventory} disabled={!enabled || !inventoryUrl}>
                   <ExternalLink className="ml-2 h-4 w-4" />
                   פתח קטלוג חיצוני
                 </Button>
@@ -329,7 +329,7 @@ export function InventorySettingsTab() {
 
               <div className="flex items-center gap-2">
                 <Input value={inventoryUrl} readOnly className="flex-1 bg-background" dir="ltr" />
-                <Button variant="outline" size="icon" onClick={copyToClipboard}>
+                <Button variant="outline" size="icon" onClick={copyToClipboard} disabled={!inventoryUrl}>
                   {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
