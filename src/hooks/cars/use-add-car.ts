@@ -208,6 +208,7 @@ export function useAddCar() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cars"] });
+      queryClient.invalidateQueries({ queryKey: ["car-images"] });
       toast.success("רכב נוסף בהצלחה");
     },
     onError: (error) => {

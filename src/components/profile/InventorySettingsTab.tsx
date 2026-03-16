@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -18,12 +18,44 @@ interface InventorySettings {
   show_prices?: boolean;
 }
 
+const parseBoolean = (value: unknown, fallback: boolean) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") return value.toLowerCase() === "true";
+  if (typeof value === "number") return value === 1;
+  return fallback;
+};
+
+const normalizeSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+const createSuggestedSlug = (...values: Array<string | null | undefined>) => {
+  for (const value of values) {
+    const normalized = normalizeSlug(
+      (value || "")
+        .normalize("NFKD")
+        .replace(/[^\x00-\x7F]/g, "")
+    );
+
+    if (normalized.length >= 3) {
+      return normalized;
+    }
+  }
+
+  return "";
+};
+
 export function InventorySettingsTab() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
-  
+  const [suggestedSlug, setSuggestedSlug] = useState("");
+
   const [slug, setSlug] = useState("");
   const [enabled, setEnabled] = useState(false);
   const [settings, setSettings] = useState<InventorySettings>({
@@ -33,15 +65,12 @@ export function InventorySettingsTab() {
   });
   const [slugError, setSlugError] = useState("");
 
-  const baseUrl = "https://carsleadapp.com";
-  const inventoryUrl = slug ? `${baseUrl}/inventory/${slug}` : "";
+  const baseUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return window.location.origin;
+  }, []);
 
-  const parseBoolean = (value: unknown, fallback: boolean) => {
-    if (typeof value === "boolean") return value;
-    if (typeof value === "string") return value.toLowerCase() === "true";
-    if (typeof value === "number") return value === 1;
-    return fallback;
-  };
+  const inventoryUrl = slug ? `${baseUrl}/inventory/${slug}` : "";
 
   useEffect(() => {
     if (user) {
@@ -53,16 +82,20 @@ export function InventorySettingsTab() {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("inventory_slug, inventory_enabled, inventory_settings")
+        .select("inventory_slug, inventory_enabled, inventory_settings, company_name, full_name")
         .eq("id", user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
+      const nextSuggestedSlug = createSuggestedSlug(data?.company_name, data?.full_name);
+      setSuggestedSlug(nextSuggestedSlug);
+
       if (data) {
-        console.log('[InventorySettings] Fetched:', JSON.stringify(data));
-        setSlug(data.inventory_slug || "");
+        const existingSlug = data.inventory_slug || nextSuggestedSlug || "";
+        setSlug(existingSlug);
         setEnabled(parseBoolean(data.inventory_enabled, false));
+        validateSlug(existingSlug);
 
         const dbSettings =
           data.inventory_settings && typeof data.inventory_settings === "object"
@@ -76,51 +109,68 @@ export function InventorySettingsTab() {
           show_phone: parseBoolean(dbSettings.show_phone, true),
           show_prices: parseBoolean(dbSettings.show_prices, true),
         });
+      } else {
+        setSlug(nextSuggestedSlug);
+        validateSlug(nextSuggestedSlug);
       }
     } catch (error) {
       console.error("Error fetching inventory settings:", error);
+      toast.error("שגיאה בטעינת הגדרות הקטלוג החיצוני");
     } finally {
       setLoading(false);
     }
   };
 
   const validateSlug = (value: string) => {
+    const normalizedValue = normalizeSlug(value);
     const slugRegex = /^[a-z0-9-]+$/;
-    if (!value) {
+
+    if (!normalizedValue) {
       setSlugError("");
       return true;
     }
-    if (!slugRegex.test(value)) {
+
+    if (!slugRegex.test(normalizedValue)) {
       setSlugError("השם יכול להכיל רק אותיות באנגלית קטנות, מספרים ומקפים");
       return false;
     }
-    if (value.length < 3) {
+
+    if (normalizedValue.length < 3) {
       setSlugError("השם חייב להכיל לפחות 3 תווים");
       return false;
     }
+
     setSlugError("");
     return true;
   };
 
   const handleSlugChange = (value: string) => {
-    const formatted = value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
+    const formatted = normalizeSlug(value);
     setSlug(formatted);
     validateSlug(formatted);
   };
 
   const saveSettings = async () => {
-    if (!validateSlug(slug)) return;
-    
+    const normalizedSlug = normalizeSlug(slug || suggestedSlug);
+
+    if (enabled && !normalizedSlug) {
+      setSlugError("כדי להפעיל את הקטלוג צריך להגדיר כתובת דף באנגלית");
+      return;
+    }
+
+    if (!validateSlug(normalizedSlug)) return;
+
     setSaving(true);
     try {
-      // Check if slug is unique
-      if (slug) {
-        const { data: existing } = await supabase
+      if (normalizedSlug) {
+        const { data: existing, error: existingError } = await supabase
           .from("profiles")
           .select("id")
-          .eq("inventory_slug", slug)
+          .eq("inventory_slug", normalizedSlug)
           .neq("id", user?.id)
-          .single();
+          .maybeSingle();
+
+        if (existingError) throw existingError;
 
         if (existing) {
           setSlugError("כתובת זו כבר תפוסה, נסה כתובת אחרת");
@@ -135,24 +185,29 @@ export function InventorySettingsTab() {
         show_prices: parseBoolean(settings.show_prices, true),
       };
 
+      const isEnabled = parseBoolean(enabled, false) && !!normalizedSlug;
+
       const { error } = await supabase
         .from("profiles")
-        .update({
-          inventory_slug: slug || null,
-          inventory_enabled: parseBoolean(enabled, false),
-          inventory_settings: normalizedSettings as unknown as Json,
-        })
-        .eq("id", user?.id);
+        .upsert(
+          {
+            id: user?.id,
+            inventory_slug: normalizedSlug || null,
+            inventory_enabled: isEnabled,
+            inventory_settings: normalizedSettings as unknown as Json,
+          },
+          { onConflict: "id" }
+        );
 
       if (error) throw error;
 
-      // Re-fetch to confirm persisted state
+      setSlug(normalizedSlug);
+      setEnabled(isEnabled);
       await fetchSettings();
-      toast.success("ההגדרות נשמרו בהצלחה");
+      toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error("שגיאה בשמירת ההגדרות", { description: error.message });
-      // Re-fetch to revert to actual DB state
       await fetchSettings();
     } finally {
       setSaving(false);
@@ -172,9 +227,14 @@ export function InventorySettingsTab() {
   };
 
   const openInventory = () => {
-    if (inventoryUrl) {
-      window.open(inventoryUrl, "_blank");
+    if (inventoryUrl && enabled) {
+      window.open(inventoryUrl, "_blank", "noopener,noreferrer");
+      return;
     }
+
+    toast.error("הקטלוג עדיין לא פעיל", {
+      description: "שמור את ההגדרות עם כתובת דף והפעלה כדי לפתוח את הקטלוג.",
+    });
   };
 
   if (loading) {
@@ -194,30 +254,25 @@ export function InventorySettingsTab() {
             <LinkIcon className="h-5 w-5" />
           </CardTitle>
           <CardDescription>
-            צור דף ציבורי שמציג את כל הרכבים הזמינים במלאי שלך. 
-            שתף את הקישור עם לקוחות פוטנציאליים.
+            צור דף ציבורי שמציג את כל הרכבים הזמינים במלאי שלך ושתף אותו ישירות עם לקוחות.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Enable Toggle */}
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg" dir="rtl">
+          <div className="flex items-center justify-between rounded-lg border bg-muted/50 p-4" dir="rtl">
             <div>
               <Label className="font-medium">הפעל דף מלאי</Label>
               <p className="text-sm text-muted-foreground">
-                כאשר מופעל, הדף יהיה נגיש לכל אחד עם הקישור
+                כאשר מופעל, הדף יהיה נגיש לכל אחד עם הקישור.
               </p>
             </div>
-            <div>
-              <Switch checked={enabled} onCheckedChange={setEnabled} dir="ltr" />
-            </div>
+            <Switch checked={enabled} onCheckedChange={setEnabled} dir="ltr" />
           </div>
 
-          {/* Slug Input */}
           <div className="space-y-2">
             <Label htmlFor="slug">כתובת הדף</Label>
             <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+              <div className="relative flex-1">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   {baseUrl}/inventory/
                 </span>
                 <Input
@@ -225,42 +280,48 @@ export function InventorySettingsTab() {
                   value={slug}
                   onChange={(e) => handleSlugChange(e.target.value)}
                   className="pr-[200px]"
-                  placeholder="my-dealership"
+                  placeholder={suggestedSlug || "my-dealership"}
                   dir="ltr"
                 />
               </div>
             </div>
             {slugError && <p className="text-sm text-destructive">{slugError}</p>}
             <p className="text-xs text-muted-foreground">
-              בחר שם ייחודי לדף שלך (אותיות באנגלית, מספרים ומקפים בלבד)
+              בחר שם ייחודי לדף שלך (אותיות באנגלית, מספרים ומקפים בלבד).
             </p>
           </div>
 
-          {/* URL Preview and Actions */}
-          {slug && enabled && (
-            <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
-              <Label className="text-green-700 dark:text-green-300 font-medium">הדף שלך פעיל!</Label>
-              <div className="flex items-center gap-2 mt-2">
-                <Input 
-                  value={inventoryUrl} 
-                  readOnly 
-                  className="flex-1 bg-white dark:bg-gray-900" 
-                  dir="ltr"
-                />
-                <Button variant="outline" size="icon" onClick={copyToClipboard}>
-                  {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+          {slug && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3" dir="rtl">
+                <div>
+                  <Label className="font-medium text-foreground">
+                    {enabled ? "הקטלוג החיצוני פעיל" : "הקטלוג מוכן — נשאר רק להפעיל"}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {enabled
+                      ? "אפשר לפתוח, להעתיק ולשתף את הקישור ישירות."
+                      : "שמור את ההגדרות עם ההפעלה כדי שהלקוחות יוכלו להיכנס."}
+                  </p>
+                </div>
+                <Button variant="outline" onClick={openInventory} disabled={!enabled}>
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                  פתח קטלוג חיצוני
                 </Button>
-                <Button variant="outline" size="icon" onClick={openInventory}>
-                  <ExternalLink className="h-4 w-4" />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Input value={inventoryUrl} readOnly className="flex-1 bg-background" dir="ltr" />
+                <Button variant="outline" size="icon" onClick={copyToClipboard}>
+                  {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Settings */}
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-4 border-t pt-4">
             <h3 className="font-medium">הגדרות תצוגה</h3>
-            
+
             <div className="space-y-2">
               <Label htmlFor="primaryColor">צבע ראשי</Label>
               <div className="flex gap-2">
@@ -269,7 +330,7 @@ export function InventorySettingsTab() {
                   type="color"
                   value={settings.primary_color || "#3b82f6"}
                   onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
-                  className="w-16 h-10 p-1"
+                  className="h-10 w-16 p-1"
                 />
                 <Input
                   value={settings.primary_color || "#3b82f6"}
@@ -291,50 +352,41 @@ export function InventorySettingsTab() {
                 dir="ltr"
               />
               <p className="text-xs text-muted-foreground">
-                מספר הטלפון שיופיע בכפתור "צור קשר" (אם ריק, ישתמש בטלפון מהפרופיל)
+                מספר הטלפון שיופיע בכפתור "צור קשר". אם לא הוגדר, יילקח מהפרופיל.
               </p>
             </div>
 
             <div className="flex items-center justify-between" dir="rtl">
               <div>
                 <Label>הצג טלפון בדף</Label>
-                <p className="text-sm text-muted-foreground">
-                  האם להציג את כפתור יצירת הקשר בדף
-                </p>
+                <p className="text-sm text-muted-foreground">האם להציג כפתור יצירת קשר בדף.</p>
               </div>
-              <div>
-                <Switch 
-                  checked={settings.show_phone !== false} 
-                  onCheckedChange={(checked) => setSettings({ ...settings, show_phone: checked })}
-                  dir="ltr"
-                />
-              </div>
+              <Switch
+                checked={settings.show_phone !== false}
+                onCheckedChange={(checked) => setSettings({ ...settings, show_phone: checked })}
+                dir="ltr"
+              />
             </div>
 
             <div className="flex items-center justify-between" dir="rtl">
               <div>
                 <Label>הצג מחירים בדף</Label>
-                <p className="text-sm text-muted-foreground">
-                  האם להציג מחירי רכבים בדף המלאי הפומבי
-                </p>
+                <p className="text-sm text-muted-foreground">האם להציג מחירי רכבים בקטלוג החיצוני.</p>
               </div>
-              <div>
-                <Switch 
-                  checked={settings.show_prices !== false} 
-                  onCheckedChange={(checked) => setSettings({ ...settings, show_prices: checked })}
-                  dir="ltr"
-                />
-              </div>
+              <Switch
+                checked={settings.show_prices !== false}
+                onCheckedChange={(checked) => setSettings({ ...settings, show_prices: checked })}
+                dir="ltr"
+              />
             </div>
           </div>
 
           <Button onClick={saveSettings} disabled={saving || !!slugError} className="w-full">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
+            {saving ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : null}
             שמור הגדרות
           </Button>
         </CardContent>
       </Card>
-
     </div>
   );
 }
