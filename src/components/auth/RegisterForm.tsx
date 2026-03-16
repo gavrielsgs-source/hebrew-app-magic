@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, User, Building, Phone, MapPin } from 'lucide-react';
+import { Mail, Lock, User, Building, Phone, MapPin, Eye, EyeOff } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 
@@ -30,6 +30,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
   });
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -307,7 +308,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="postalCode" className="text-gray-700 font-medium">מיקוד</Label>
+            <Label htmlFor="postalCode" className="text-gray-700 font-medium">מיקוד <span className="text-muted-foreground font-normal">(אופציונלי)</span></Label>
             <Input
               id="postalCode"
               type="text"
@@ -315,7 +316,6 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
               value={formData.postalCode}
               onChange={(e) => handleInputChange('postalCode', e.target.value)}
               className="h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
-              required
             />
           </div>
         </div>
@@ -359,14 +359,25 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
             <Lock className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
             <Input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="בחר סיסמה חזקה (לפחות 8 תווים)"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              className="pr-12 h-12 border-gray-200 rounded-xl"
+              className="pr-12 pl-12 h-12 border-gray-200 rounded-xl"
               required
               minLength={8}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute left-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
           </div>
         </div>
 
