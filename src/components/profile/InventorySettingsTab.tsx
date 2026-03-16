@@ -111,7 +111,7 @@ export function InventorySettingsTab() {
     if (!profile) {
       setSlug(nextSuggestedSlug);
       validateSlug(nextSuggestedSlug);
-      setEnabled(false);
+      // Don't reset enabled to false — keep localStorage value as fallback
       setSettings({
         primary_color: "#3b82f6",
         show_phone: true,
