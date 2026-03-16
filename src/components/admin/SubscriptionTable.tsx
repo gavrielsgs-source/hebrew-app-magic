@@ -290,6 +290,17 @@ export function SubscriptionTable({
                         <Users className="h-4 w-4 ml-1" />
                         לידים
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedSubscription(sub);
+                          setSequencesDialogOpen(true);
+                        }}
+                      >
+                        <Hash className="h-4 w-4 ml-1" />
+                        מספור
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
