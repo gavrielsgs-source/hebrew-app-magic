@@ -111,7 +111,7 @@ export function InventorySettingsTab() {
     if (!profile) {
       setSlug(nextSuggestedSlug);
       validateSlug(nextSuggestedSlug);
-      setEnabled(false);
+      // Don't reset enabled to false — keep localStorage value as fallback
       setSettings({
         primary_color: "#3b82f6",
         show_phone: true,
@@ -270,7 +270,6 @@ export function InventorySettingsTab() {
   };
 
   const handleEnabledChange = (checked: boolean) => {
-    setEnabled(checked);
     autoSaveToggle('inventory_enabled', checked);
   };
 
@@ -380,7 +379,6 @@ export function InventorySettingsTab() {
           {
             id: user.id,
             inventory_slug: normalizedSlug || null,
-            inventory_enabled: parseBoolean(enabled, false) && !!normalizedSlug,
             inventory_settings: normalizedSettings as unknown as Json,
           },
           { onConflict: "id" }
@@ -457,8 +455,8 @@ export function InventorySettingsTab() {
             dir="rtl"
             role="button"
             tabIndex={0}
-            onClick={() => setEnabled((current) => !current)}
-            onKeyDown={(event) => handleToggleKeyDown(event, () => setEnabled((current) => !current))}
+            onClick={() => handleEnabledChange(!enabled)}
+            onKeyDown={(event) => handleToggleKeyDown(event, () => handleEnabledChange(!enabled))}
           >
             <div>
               <Label className="font-medium">הפעל דף מלאי</Label>
