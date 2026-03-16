@@ -27,11 +27,12 @@ const urlBase64ToUint8Array = (base64String: string) => {
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSupported, setIsSupported] = useState(false);
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    tasks: true,
-    leads: true,
-    reminders: true,
-    meetings: true
+  const [preferences, setPreferences] = useState<NotificationPreferences>(() => {
+    try {
+      const cached = localStorage.getItem("notification_preferences");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return { tasks: true, leads: true, reminders: true, meetings: true };
   });
   const { user } = useAuth();
 
@@ -61,12 +62,13 @@ export function usePushNotifications() {
 
       if (error) throw error;
       if (data?.notification_preferences) {
-        // Type assertion to ensure proper typing
         const prefs = data.notification_preferences as unknown as NotificationPreferences;
         setPreferences(prefs);
+        localStorage.setItem("notification_preferences", JSON.stringify(prefs));
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
+      // Keep localStorage values (already set as initial state)
     }
   };
 
@@ -88,6 +90,7 @@ export function usePushNotifications() {
       }
 
       setPreferences(newPreferences);
+      localStorage.setItem("notification_preferences", JSON.stringify(newPreferences));
       toast.success("Notification preferences saved");
     } catch (error) {
       console.error("Error updating preferences:", error);

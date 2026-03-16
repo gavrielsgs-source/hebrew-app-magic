@@ -61,12 +61,14 @@ export function InventorySettingsTab() {
   const [copied, setCopied] = useState(false);
   const [suggestedSlug, setSuggestedSlug] = useState("");
 
-  const [slug, setSlug] = useState("");
-  const [enabled, setEnabled] = useState(false);
-  const [settings, setSettings] = useState<InventorySettings>({
-    primary_color: "#3b82f6",
-    show_phone: true,
-    show_prices: true,
+  const [slug, setSlug] = useState(() => localStorage.getItem("inventory_slug") || "");
+  const [enabled, setEnabled] = useState(() => localStorage.getItem("inventory_enabled") === "true");
+  const [settings, setSettings] = useState<InventorySettings>(() => {
+    try {
+      const cached = localStorage.getItem("inventory_settings");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return { primary_color: "#3b82f6", show_phone: true, show_prices: true };
   });
   const [slugError, setSlugError] = useState("");
 
@@ -120,22 +122,29 @@ export function InventorySettingsTab() {
 
     const existingSlug = normalizeSlug(profile.inventory_slug || nextSuggestedSlug || "");
     setSlug(existingSlug);
-    setEnabled(parseBoolean(profile.inventory_enabled, false));
+    const enabledVal = parseBoolean(profile.inventory_enabled, false);
+    setEnabled(enabledVal);
     validateSlug(existingSlug);
+
+    // Persist to localStorage for instant hydration on next mount
+    localStorage.setItem("inventory_slug", existingSlug);
+    localStorage.setItem("inventory_enabled", String(enabledVal));
 
     const dbSettings =
       profile.inventory_settings && typeof profile.inventory_settings === "object"
         ? (profile.inventory_settings as Record<string, unknown>)
         : {};
 
-    setSettings({
+    const resolvedSettings: InventorySettings = {
       logo_url: (dbSettings.logo_url as string) || undefined,
       cover_image_url: (dbSettings.cover_image_url as string) || undefined,
       primary_color: (dbSettings.primary_color as string) || "#3b82f6",
       contact_phone: (dbSettings.contact_phone as string) || undefined,
       show_phone: parseBoolean(dbSettings.show_phone, true),
       show_prices: parseBoolean(dbSettings.show_prices, true),
-    });
+    };
+    setSettings(resolvedSettings);
+    localStorage.setItem("inventory_settings", JSON.stringify(resolvedSettings));
   };
 
   const fetchSettings = async () => {
@@ -150,6 +159,7 @@ export function InventorySettingsTab() {
       applyProfileState(data);
     } catch (error) {
       console.error("Error fetching inventory settings:", error);
+      // Keep localStorage values (already set as initial state) — don't reset to false
       toast.error("שגיאה בטעינת הגדרות הקטלוג החיצוני");
     } finally {
       setLoading(false);
