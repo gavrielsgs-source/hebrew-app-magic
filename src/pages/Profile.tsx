@@ -9,7 +9,7 @@ import { NotificationSettings } from "@/components/notifications/NotificationSet
 import { MobileNotificationSettings } from "@/components/notifications/MobileNotificationSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, MapPin, Hash, CheckCircle, ImageIcon } from "lucide-react";
+import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, MapPin, Hash, CheckCircle, ImageIcon, Zap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
