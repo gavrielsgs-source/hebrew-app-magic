@@ -469,7 +469,7 @@ export default function NewCarOrder() {
                     <Download className="ml-1 h-4 w-4" />
                     PDF
                   </Button>
-                  <Button type="button" onClick={handleWhatsAppSend} disabled={!documentUrl && !form.watch("customer.phone")} className="h-9 rounded-xl bg-green-600 hover:bg-green-700">
+                  <Button type="button" onClick={handleWhatsAppSend} disabled={!documentUrl} title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'} className="h-9 rounded-xl bg-green-600 hover:bg-green-700">
                     <MessageCircle className="ml-1 h-4 w-4" />
                     וואטסאפ
                   </Button>
@@ -674,6 +674,8 @@ export default function NewCarOrder() {
                   <Button
                     type="button"
                     onClick={handleWhatsAppSend}
+                    disabled={!documentUrl}
+                    title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                     className="h-12 rounded-xl bg-green-600 hover:bg-green-700"
                   >
                     <MessageCircle className="ml-2 h-5 w-5" />

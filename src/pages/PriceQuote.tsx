@@ -613,6 +613,8 @@ export default function PriceQuote() {
                   <Button
                     type="button"
                     onClick={handleWhatsAppSend}
+                    disabled={!documentUrl}
+                    title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                     className="h-9 bg-green-600 hover:bg-green-700 rounded-xl"
                   >
                     <MessageCircle className="mr-1 h-4 w-4" />
@@ -1059,6 +1061,8 @@ export default function PriceQuote() {
                   <Button
                     type="button"
                     onClick={handleWhatsAppSend}
+                    disabled={!documentUrl}
+                    title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'}
                     variant="default"
                     className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-xl h-11"
                   >
