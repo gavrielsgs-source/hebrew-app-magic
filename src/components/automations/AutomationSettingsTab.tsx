@@ -52,13 +52,20 @@ export function AutomationSettingsTab() {
   const { data: queue } = useAutomationQueue();
   const upsert = useUpsertAutomationSettings();
 
-  const [form, setForm] = useState<Partial<AutomationSettings>>(DEFAULT_SETTINGS);
+  const [form, setForm] = useState<Partial<AutomationSettings>>(() => {
+    try {
+      const cached = localStorage.getItem("automation_settings_form");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return DEFAULT_SETTINGS;
+  });
   const hydrated = useRef(false);
 
   // Hydrate form ONCE when settings first load from DB
   useEffect(() => {
     if (settings && !hydrated.current) {
       setForm(settings);
+      localStorage.setItem("automation_settings_form", JSON.stringify(settings));
       hydrated.current = true;
     }
   }, [settings]);
