@@ -235,7 +235,7 @@ export default function TaxInvoiceReceipt() {
             
             const currentTotal = form.getValues(`items.${index}.total`);
             if (Math.abs(currentTotal - total) > 0.01) {
-              form.setValue(`items.${index}.total`, total, { shouldValidate: false });
+              form.setValue(`items.${index}.total`, total, { shouldValidate: false, shouldDirty: true });
             }
           }
         });
