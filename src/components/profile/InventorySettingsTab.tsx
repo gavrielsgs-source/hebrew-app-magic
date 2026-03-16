@@ -151,6 +151,21 @@ export function InventorySettingsTab() {
     validateSlug(formatted);
   };
 
+  const handleEnabledChange = (checked: boolean) => {
+    setEnabled(checked);
+  };
+
+  const handleDisplaySettingChange = (key: "show_phone" | "show_prices", checked: boolean) => {
+    setSettings((current) => ({ ...current, [key]: checked }));
+  };
+
+  const handleToggleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, toggle: () => void) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggle();
+    }
+  };
+
   const saveSettings = async () => {
     if (!user?.id) {
       toast.error("לא ניתן לשמור כרגע", { description: "המשתמש אינו מחובר." });
