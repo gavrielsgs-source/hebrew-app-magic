@@ -767,7 +767,7 @@ export default function TaxInvoiceReceipt() {
                       <Download className="mr-1 h-4 w-4" />
                       PDF
                     </Button>
-                    <Button type="button" onClick={handleWhatsAppSend} disabled={!watchedFields.customerPhone} className="h-9 rounded-xl bg-green-600">
+                    <Button type="button" onClick={handleWhatsAppSend} disabled={!documentUrl} title={!documentUrl ? 'יש לשמור את המסמך קודם' : 'שלח בוואטסאפ'} className="h-9 rounded-xl bg-green-600">
                       <MessageCircle className="mr-1 h-4 w-4" />
                       וואטסאפ
                     </Button>
