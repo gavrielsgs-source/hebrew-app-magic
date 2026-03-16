@@ -65,6 +65,8 @@ export default function SalesAgreement() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
+  const [signatures, setSignatures] = useState<{ seller?: string; buyer?: string }>({});
+  const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
   const { leads = [] } = useLeads();
   const { cars = [] } = useCars();
   const { profile } = useProfile();
