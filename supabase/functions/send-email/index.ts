@@ -19,7 +19,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  template: "welcome" | "trial-reminder" | "payment-failed" | "payment-receipt";
+  template: "welcome" | "trial-reminder" | "payment-failed" | "payment-receipt" | "accountant_report";
   data: {
     userName: string;
     magicLink?: string;
@@ -34,6 +34,10 @@ interface EmailRequest {
     nextBillingDate?: string;
     invoiceUrl?: string;
     tutorialLink?: string;
+    reportUrl?: string;
+    period?: string;
+    companyName?: string;
+    summary?: any;
   };
 }
 
