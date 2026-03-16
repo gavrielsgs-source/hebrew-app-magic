@@ -257,10 +257,8 @@ export default function TaxInvoiceReceipt() {
         subtotal += netPrice;
         totalVat += vatPortion;
       } else {
-        // המחיר לפני מע"מ - הוספת מע"מ מעל
+        // כפתור מע"מ כבוי - אין מע"מ, המחיר הוא הסכום הסופי
         subtotal += itemTotal;
-        const vatToAdd = itemTotal * (vatRate / 100);
-        totalVat += vatToAdd;
         itemsWithoutVat += itemTotal;
       }
     });
