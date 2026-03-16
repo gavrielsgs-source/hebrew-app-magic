@@ -30,6 +30,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
   });
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
