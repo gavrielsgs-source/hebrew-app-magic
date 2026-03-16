@@ -350,6 +350,13 @@ export function SubscriptionTable({
             }
             isLoading={isLoading}
           />
+
+          <DocumentSequencesDialog
+            open={sequencesDialogOpen}
+            onOpenChange={setSequencesDialogOpen}
+            userId={selectedSubscription.user_id}
+            userName={selectedSubscription.full_name || selectedSubscription.user_email}
+          />
         </>
       )}
     </>
