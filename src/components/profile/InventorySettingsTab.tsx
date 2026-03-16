@@ -70,7 +70,8 @@ export function InventorySettingsTab() {
     return window.location.origin;
   }, []);
 
-  const inventoryUrl = slug ? `${baseUrl}/inventory/${slug}` : "";
+  const resolvedSlug = useMemo(() => normalizeSlug(slug || suggestedSlug), [slug, suggestedSlug]);
+  const inventoryUrl = resolvedSlug ? `${baseUrl}/inventory/${resolvedSlug}` : "";
 
   useEffect(() => {
     if (user) {
@@ -92,7 +93,7 @@ export function InventorySettingsTab() {
       setSuggestedSlug(nextSuggestedSlug);
 
       if (data) {
-        const existingSlug = data.inventory_slug || nextSuggestedSlug || "";
+        const existingSlug = normalizeSlug(data.inventory_slug || nextSuggestedSlug || "");
         setSlug(existingSlug);
         setEnabled(parseBoolean(data.inventory_enabled, false));
         validateSlug(existingSlug);
@@ -151,6 +152,11 @@ export function InventorySettingsTab() {
   };
 
   const saveSettings = async () => {
+    if (!user?.id) {
+      toast.error("לא ניתן לשמור כרגע", { description: "המשתמש אינו מחובר." });
+      return;
+    }
+
     const normalizedSlug = normalizeSlug(slug || suggestedSlug);
 
     if (enabled && !normalizedSlug) {
@@ -167,14 +173,13 @@ export function InventorySettingsTab() {
           .from("profiles")
           .select("id")
           .eq("inventory_slug", normalizedSlug)
-          .neq("id", user?.id)
+          .neq("id", user.id)
           .maybeSingle();
 
         if (existingError) throw existingError;
 
         if (existing) {
           setSlugError("כתובת זו כבר תפוסה, נסה כתובת אחרת");
-          setSaving(false);
           return;
         }
       }
@@ -186,23 +191,35 @@ export function InventorySettingsTab() {
       };
 
       const isEnabled = parseBoolean(enabled, false) && !!normalizedSlug;
+      const profilePayload = {
+        inventory_slug: normalizedSlug || null,
+        inventory_enabled: isEnabled,
+        inventory_settings: normalizedSettings as unknown as Json,
+      };
 
-      const { error } = await supabase
+      const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
-        .upsert(
-          {
-            id: user?.id,
-            inventory_slug: normalizedSlug || null,
-            inventory_enabled: isEnabled,
-            inventory_settings: normalizedSettings as unknown as Json,
-          },
-          { onConflict: "id" }
-        );
+        .update(profilePayload)
+        .eq("id", user.id)
+        .select("id")
+        .maybeSingle();
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      if (!updatedProfile) {
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,
+            ...profilePayload,
+          });
+
+        if (insertError) throw insertError;
+      }
 
       setSlug(normalizedSlug);
       setEnabled(isEnabled);
+      setSettings(normalizedSettings);
       await fetchSettings();
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
@@ -291,7 +308,7 @@ export function InventorySettingsTab() {
             </p>
           </div>
 
-          {slug && (
+          {resolvedSlug && (
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
               <div className="flex items-center justify-between gap-3" dir="rtl">
                 <div>
@@ -301,10 +318,10 @@ export function InventorySettingsTab() {
                   <p className="text-sm text-muted-foreground">
                     {enabled
                       ? "אפשר לפתוח, להעתיק ולשתף את הקישור ישירות."
-                      : "שמור את ההגדרות עם ההפעלה כדי שהלקוחות יוכלו להיכנס."}
+                      : "הקישור כבר מוכן. שמור עם ההפעלה כדי לפרסם אותו ללקוחות."}
                   </p>
                 </div>
-                <Button variant="outline" onClick={openInventory} disabled={!enabled}>
+                <Button variant="outline" onClick={openInventory} disabled={!enabled || !inventoryUrl}>
                   <ExternalLink className="ml-2 h-4 w-4" />
                   פתח קטלוג חיצוני
                 </Button>
@@ -312,7 +329,7 @@ export function InventorySettingsTab() {
 
               <div className="flex items-center gap-2">
                 <Input value={inventoryUrl} readOnly className="flex-1 bg-background" dir="ltr" />
-                <Button variant="outline" size="icon" onClick={copyToClipboard}>
+                <Button variant="outline" size="icon" onClick={copyToClipboard} disabled={!inventoryUrl}>
                   {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
