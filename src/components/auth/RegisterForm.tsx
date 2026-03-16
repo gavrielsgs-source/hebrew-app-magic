@@ -308,7 +308,7 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="postalCode" className="text-gray-700 font-medium">מיקוד</Label>
+            <Label htmlFor="postalCode" className="text-gray-700 font-medium">מיקוד <span className="text-muted-foreground font-normal">(אופציונלי)</span></Label>
             <Input
               id="postalCode"
               type="text"
@@ -316,7 +316,6 @@ export default function RegisterForm({ isTrialIntent = false }: RegisterFormProp
               value={formData.postalCode}
               onChange={(e) => handleInputChange('postalCode', e.target.value)}
               className="h-12 border-gray-200 rounded-xl focus:border-carslead-purple focus:ring-carslead-purple"
-              required
             />
           </div>
         </div>
