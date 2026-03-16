@@ -152,6 +152,11 @@ export function InventorySettingsTab() {
   };
 
   const saveSettings = async () => {
+    if (!user?.id) {
+      toast.error("לא ניתן לשמור כרגע", { description: "המשתמש אינו מחובר." });
+      return;
+    }
+
     const normalizedSlug = normalizeSlug(slug || suggestedSlug);
 
     if (enabled && !normalizedSlug) {
@@ -168,14 +173,13 @@ export function InventorySettingsTab() {
           .from("profiles")
           .select("id")
           .eq("inventory_slug", normalizedSlug)
-          .neq("id", user?.id)
+          .neq("id", user.id)
           .maybeSingle();
 
         if (existingError) throw existingError;
 
         if (existing) {
           setSlugError("כתובת זו כבר תפוסה, נסה כתובת אחרת");
-          setSaving(false);
           return;
         }
       }
@@ -187,23 +191,35 @@ export function InventorySettingsTab() {
       };
 
       const isEnabled = parseBoolean(enabled, false) && !!normalizedSlug;
+      const profilePayload = {
+        inventory_slug: normalizedSlug || null,
+        inventory_enabled: isEnabled,
+        inventory_settings: normalizedSettings as unknown as Json,
+      };
 
-      const { error } = await supabase
+      const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
-        .upsert(
-          {
-            id: user?.id,
-            inventory_slug: normalizedSlug || null,
-            inventory_enabled: isEnabled,
-            inventory_settings: normalizedSettings as unknown as Json,
-          },
-          { onConflict: "id" }
-        );
+        .update(profilePayload)
+        .eq("id", user.id)
+        .select("id")
+        .maybeSingle();
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      if (!updatedProfile) {
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,
+            ...profilePayload,
+          });
+
+        if (insertError) throw insertError;
+      }
 
       setSlug(normalizedSlug);
       setEnabled(isEnabled);
+      setSettings(normalizedSettings);
       await fetchSettings();
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
