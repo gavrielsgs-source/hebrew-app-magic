@@ -76,13 +76,6 @@ export function InventorySettingsTab() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  const getLastSaveTimestamp = () => {
-    try { return Number(sessionStorage.getItem('inventory_save_ts') || '0'); } catch { return 0; }
-  };
-  const setLastSaveTimestamp = () => {
-    try { sessionStorage.setItem('inventory_save_ts', String(Date.now())); } catch {}
-  };
-
   const baseUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     return window.location.origin;
@@ -91,19 +84,51 @@ export function InventorySettingsTab() {
   const resolvedSlug = useMemo(() => normalizeSlug(slug || suggestedSlug), [slug, suggestedSlug]);
   const inventoryUrl = resolvedSlug ? `${baseUrl}/inventory/${resolvedSlug}` : "";
 
-  useEffect(() => {
-    if (user) {
-      fetchSettings();
-    }
-  }, [user]);
+  const applyProfileState = (
+    profile: {
+      inventory_slug?: string | null;
+      inventory_enabled?: boolean | string | number | null;
+      inventory_settings?: Json | null;
+      company_name?: string | null;
+      full_name?: string | null;
+    } | null
+  ) => {
+    const nextSuggestedSlug = createSuggestedSlug(user?.id, profile?.company_name, profile?.full_name);
+    setSuggestedSlug(nextSuggestedSlug);
 
-  const fetchSettings = async () => {
-    const timeSinceLastSave = Date.now() - getLastSaveTimestamp();
-    if (timeSinceLastSave < 5000) {
-      setLoading(false);
+    if (!profile) {
+      setSlug(nextSuggestedSlug);
+      validateSlug(nextSuggestedSlug);
+      setEnabled(false);
+      setSettings({
+        primary_color: "#3b82f6",
+        show_phone: true,
+        show_prices: true,
+      });
       return;
     }
 
+    const existingSlug = normalizeSlug(profile.inventory_slug || nextSuggestedSlug || "");
+    setSlug(existingSlug);
+    setEnabled(parseBoolean(profile.inventory_enabled, false));
+    validateSlug(existingSlug);
+
+    const dbSettings =
+      profile.inventory_settings && typeof profile.inventory_settings === "object"
+        ? (profile.inventory_settings as Record<string, unknown>)
+        : {};
+
+    setSettings({
+      logo_url: (dbSettings.logo_url as string) || undefined,
+      cover_image_url: (dbSettings.cover_image_url as string) || undefined,
+      primary_color: (dbSettings.primary_color as string) || "#3b82f6",
+      contact_phone: (dbSettings.contact_phone as string) || undefined,
+      show_phone: parseBoolean(dbSettings.show_phone, true),
+      show_prices: parseBoolean(dbSettings.show_prices, true),
+    });
+  };
+
+  const fetchSettings = async () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -112,33 +137,7 @@ export function InventorySettingsTab() {
         .maybeSingle();
 
       if (error) throw error;
-
-      const nextSuggestedSlug = createSuggestedSlug(user?.id, data?.company_name, data?.full_name);
-      setSuggestedSlug(nextSuggestedSlug);
-
-      if (data) {
-        const existingSlug = normalizeSlug(data.inventory_slug || nextSuggestedSlug || "");
-        setSlug(existingSlug);
-        setEnabled(parseBoolean(data.inventory_enabled, false));
-        validateSlug(existingSlug);
-
-        const dbSettings =
-          data.inventory_settings && typeof data.inventory_settings === "object"
-            ? (data.inventory_settings as Record<string, unknown>)
-            : {};
-
-        setSettings({
-          logo_url: (dbSettings.logo_url as string) || undefined,
-          cover_image_url: (dbSettings.cover_image_url as string) || undefined,
-          primary_color: (dbSettings.primary_color as string) || "#3b82f6",
-          contact_phone: (dbSettings.contact_phone as string) || undefined,
-          show_phone: parseBoolean(dbSettings.show_phone, true),
-          show_prices: parseBoolean(dbSettings.show_prices, true),
-        });
-      } else {
-        setSlug(nextSuggestedSlug);
-        validateSlug(nextSuggestedSlug);
-      }
+      applyProfileState(data);
     } catch (error) {
       console.error("Error fetching inventory settings:", error);
       toast.error("שגיאה בטעינת הגדרות הקטלוג החיצוני");
@@ -216,7 +215,6 @@ export function InventorySettingsTab() {
           .eq("id", user.id);
         if (error) throw error;
       }
-      setLastSaveTimestamp();
       toast.success("נשמר");
     } catch (error: any) {
       console.error("Auto-save toggle error:", error);
@@ -379,7 +377,7 @@ export function InventorySettingsTab() {
         });
       }
 
-      setLastSaveTimestamp();
+      
 
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
