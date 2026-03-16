@@ -164,7 +164,7 @@ export default function Leads() {
     <div className={cn("p-4 sm:p-6 rtl-fix", isMobile && "pb-24")}>
       <SubscriptionLimitAlert 
         resourceType="lead" 
-        currentCount={leads.length} 
+        currentCount={monthlyLeadCount} 
       />
       
       <LeadsPageHeader

@@ -25,7 +25,7 @@ export function LeadsPageHeader({
   setActiveTab
 }: LeadsPageHeaderProps) {
   const { leads } = useLeads();
-  const currentLeadCount = leads?.length || 0;
+  const currentLeadCount = getMonthlyLeadCount(leads || []);
 
   console.log('LeadsPageHeader rendered - both buttons should work consistently');
 

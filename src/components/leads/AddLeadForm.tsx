@@ -43,8 +43,8 @@ export function AddLeadForm({ onSuccess, className }: AddLeadFormProps) {
     
     setIsSubmitting(true);
     try {
-      const currentCount = leads?.length || 0;
-      console.log('🔍 [AddLeadForm] Current leads count:', currentCount);
+      const currentCount = getMonthlyLeadCount(leads || []);
+      console.log('🔍 [AddLeadForm] Monthly leads count:', currentCount);
       
       // בדיקת מגבלות לפני יצירת הליד
       const canProceed = checkAndNotifyLimit('lead', currentCount);

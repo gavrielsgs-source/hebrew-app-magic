@@ -15,7 +15,7 @@ export function LeadsEmptyState() {
   const { leads } = useLeads();
   const { checkEntitlement } = useSubscription();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const currentLeadCount = leads?.length || 0;
+  const currentLeadCount = getMonthlyLeadCount(leads || []);
   const canAddLead = checkEntitlement('leadLimit', currentLeadCount + 1);
 
   const handleAddLead = () => {
