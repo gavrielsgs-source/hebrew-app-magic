@@ -84,6 +84,16 @@ export function InventorySettingsTab() {
   const resolvedSlug = useMemo(() => normalizeSlug(slug || suggestedSlug), [slug, suggestedSlug]);
   const inventoryUrl = resolvedSlug ? `${baseUrl}/inventory/${resolvedSlug}` : "";
 
+  useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    void fetchSettings();
+  }, [user?.id]);
+
   const applyProfileState = (
     profile: {
       inventory_slug?: string | null;
@@ -146,6 +156,33 @@ export function InventorySettingsTab() {
     }
   };
 
+  const persistProfile = async (payload: {
+    inventory_slug?: string | null;
+    inventory_enabled?: boolean;
+    inventory_settings?: Json;
+  }) => {
+    const selectFields = "inventory_slug, inventory_enabled, inventory_settings, company_name, full_name";
+
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from("profiles")
+      .update(payload)
+      .eq("id", user!.id)
+      .select(selectFields)
+      .maybeSingle();
+
+    if (updateError) throw updateError;
+    if (updatedProfile) return updatedProfile;
+
+    const { data: insertedProfile, error: insertError } = await supabase
+      .from("profiles")
+      .insert({ id: user!.id, ...payload })
+      .select(selectFields)
+      .single();
+
+    if (insertError) throw insertError;
+    return insertedProfile;
+  };
+
   const validateSlug = (value: string) => {
     const normalizedValue = normalizeSlug(value);
     const slugRegex = /^[a-z0-9-]+$/;
@@ -180,45 +217,43 @@ export function InventorySettingsTab() {
   const autoSaveToggle = async (field: string, value: boolean) => {
     if (!user?.id) return;
     setAutoSaving(field);
+
     try {
-      if (field === 'inventory_enabled') {
+      if (field === "inventory_enabled") {
         const normalizedSlug = normalizeSlug(slug || suggestedSlug);
-        const isEnabled = value && !!normalizedSlug;
-        const { error } = await supabase
-          .from("profiles")
-          .update({ inventory_enabled: isEnabled })
-          .eq("id", user.id);
-        if (error) throw error;
-        setEnabled(isEnabled);
+
         if (value && !normalizedSlug) {
-          toast.error("כדי להפעיל את הקטלוג צריך להגדיר כתובת דף");
           setEnabled(false);
+          toast.error("כדי להפעיל את הקטלוג צריך להגדיר כתובת דף");
           return;
         }
+
+        const updatedProfile = await persistProfile({
+          inventory_enabled: value && !!normalizedSlug,
+          inventory_slug: normalizedSlug || null,
+        });
+
+        applyProfileState(updatedProfile);
       } else {
-        // show_phone / show_prices — merge into inventory_settings JSONB
-        const { data: current } = await supabase
-          .from("profiles")
-          .select("inventory_settings")
-          .eq("id", user.id)
-          .maybeSingle();
+        const nextSettings = {
+          ...settings,
+          [field]: value,
+          show_phone: field === "show_phone" ? value : parseBoolean(settings.show_phone, true),
+          show_prices: field === "show_prices" ? value : parseBoolean(settings.show_prices, true),
+        };
 
-        const currentSettings = (current?.inventory_settings && typeof current.inventory_settings === "object")
-          ? (current.inventory_settings as Record<string, unknown>)
-          : {};
+        const updatedProfile = await persistProfile({
+          inventory_settings: nextSettings as unknown as Json,
+        });
 
-        const merged = { ...currentSettings, [field]: value };
-
-        const { error } = await supabase
-          .from("profiles")
-          .update({ inventory_settings: merged as unknown as Json })
-          .eq("id", user.id);
-        if (error) throw error;
+        applyProfileState(updatedProfile);
       }
+
       toast.success("נשמר");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Auto-save toggle error:", error);
       toast.error("שגיאה בשמירה");
+      await fetchSettings();
     } finally {
       setAutoSaving(null);
     }
@@ -336,46 +371,8 @@ export function InventorySettingsTab() {
         inventory_settings: normalizedSettings as unknown as Json,
       };
 
-      const { data: updatedProfile, error: updateError } = await supabase
-        .from("profiles")
-        .update(profilePayload)
-        .eq("id", user.id)
-        .select("inventory_slug, inventory_enabled, inventory_settings")
-        .maybeSingle();
-
-      if (updateError) throw updateError;
-
-      if (!updatedProfile) {
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({
-            id: user.id,
-            ...profilePayload,
-          });
-
-        if (insertError) throw insertError;
-
-        setSlug(normalizedSlug);
-        setEnabled(isEnabled);
-        setSettings(normalizedSettings);
-      } else {
-        setSlug(normalizeSlug(updatedProfile.inventory_slug || ""));
-        setEnabled(parseBoolean(updatedProfile.inventory_enabled, false));
-
-        const confirmedSettings =
-          updatedProfile.inventory_settings && typeof updatedProfile.inventory_settings === "object"
-            ? (updatedProfile.inventory_settings as Record<string, unknown>)
-            : {};
-
-        setSettings({
-          logo_url: (confirmedSettings.logo_url as string) || undefined,
-          cover_image_url: (confirmedSettings.cover_image_url as string) || undefined,
-          primary_color: (confirmedSettings.primary_color as string) || "#3b82f6",
-          contact_phone: (confirmedSettings.contact_phone as string) || undefined,
-          show_phone: parseBoolean(confirmedSettings.show_phone, true),
-          show_prices: parseBoolean(confirmedSettings.show_prices, true),
-        });
-      }
+      const updatedProfile = await persistProfile(profilePayload);
+      applyProfileState(updatedProfile);
 
       
 
