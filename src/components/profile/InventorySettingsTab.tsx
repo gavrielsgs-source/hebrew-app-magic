@@ -215,7 +215,6 @@ export function InventorySettingsTab() {
           .eq("id", user.id);
         if (error) throw error;
       }
-      setLastSaveTimestamp();
       toast.success("נשמר");
     } catch (error: any) {
       console.error("Auto-save toggle error:", error);
