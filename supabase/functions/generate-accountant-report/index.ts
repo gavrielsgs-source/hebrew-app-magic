@@ -57,6 +57,13 @@ serve(async (req) => {
     const { startDate, endDate } = await req.json();
     console.log(`📊 Generating report for user ${user.id} from ${startDate} to ${endDate}`);
 
+    // Fetch company profile details for the report header
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("company_name, company_hp, company_address, company_type, full_name")
+      .eq("id", user.id)
+      .single();
+
     const transactions: Transaction[] = [];
     const validationErrors: any[] = [];
     const documentFiles: Record<string, Uint8Array> = {};
