@@ -1,0 +1,1 @@
+ALTER TABLE public.cars ADD COLUMN purchase_source text DEFAULT NULL;
