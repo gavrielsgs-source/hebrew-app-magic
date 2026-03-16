@@ -255,19 +255,22 @@ export default function TaxInvoiceReceipt() {
     let itemsWithoutVat = 0; // tracking for display
     
     items.forEach(item => {
-      const itemTotal = item.total || 0;
+      const quantity = item.quantity || 0;
+      const unitPrice = item.unitPrice || 0;
+      const discount = item.discount || 0;
       const vatRate = item.vatRate || 18;
       
+      // מחשבים בסיס מהשדות המקוריים, לא מ-item.total
+      const base = quantity * unitPrice - discount;
+      
       if (item.includeVat) {
-        // המחיר שהוזן כבר כולל מע"מ - חילוץ מע"מ מבפנים
-        const netPrice = itemTotal / (1 + vatRate / 100);
-        const vatPortion = itemTotal - netPrice;
-        subtotal += netPrice;
-        totalVat += vatPortion;
+        // מע"מ דלוק - מוסיפים מע"מ
+        subtotal += base;
+        totalVat += base * vatRate / 100;
       } else {
-        // כפתור מע"מ כבוי - אין מע"מ, המחיר הוא הסכום הסופי
-        subtotal += itemTotal;
-        itemsWithoutVat += itemTotal;
+        // מע"מ כבוי - אין מע"מ
+        subtotal += base;
+        itemsWithoutVat += base;
       }
     });
     
