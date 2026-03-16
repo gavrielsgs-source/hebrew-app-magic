@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Edit, ArrowUpDown, Download, Mail, Phone, Users } from "lucide-react";
+import { Calendar, Clock, Edit, ArrowUpDown, Download, Mail, Phone, Users, Hash } from "lucide-react";
 import { AdminSubscription } from "@/hooks/use-admin-subscriptions";
 import { ExtendSubscriptionDialog } from "./ExtendSubscriptionDialog";
 import { ChangeStatusDialog } from "./ChangeStatusDialog";
 import { ChangeTierDialog } from "./ChangeTierDialog";
 import { ChangeLeadLimitDialog } from "./ChangeLeadLimitDialog";
+import { DocumentSequencesDialog } from "./DocumentSequencesDialog";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import * as XLSX from "xlsx";
@@ -34,6 +35,7 @@ export function SubscriptionTable({
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [tierDialogOpen, setTierDialogOpen] = useState(false);
   const [leadLimitDialogOpen, setLeadLimitDialogOpen] = useState(false);
+  const [sequencesDialogOpen, setSequencesDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<keyof AdminSubscription>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
@@ -288,6 +290,17 @@ export function SubscriptionTable({
                         <Users className="h-4 w-4 ml-1" />
                         לידים
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedSubscription(sub);
+                          setSequencesDialogOpen(true);
+                        }}
+                      >
+                        <Hash className="h-4 w-4 ml-1" />
+                        מספור
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -336,6 +349,13 @@ export function SubscriptionTable({
               onChangeLeadLimit(selectedSubscription.subscription_id, maxLeads)
             }
             isLoading={isLoading}
+          />
+
+          <DocumentSequencesDialog
+            open={sequencesDialogOpen}
+            onOpenChange={setSequencesDialogOpen}
+            userId={selectedSubscription.user_id}
+            userName={selectedSubscription.full_name || selectedSubscription.user_email}
           />
         </>
       )}
