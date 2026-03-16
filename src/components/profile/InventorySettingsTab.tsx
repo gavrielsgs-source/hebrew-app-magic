@@ -217,45 +217,43 @@ export function InventorySettingsTab() {
   const autoSaveToggle = async (field: string, value: boolean) => {
     if (!user?.id) return;
     setAutoSaving(field);
+
     try {
-      if (field === 'inventory_enabled') {
+      if (field === "inventory_enabled") {
         const normalizedSlug = normalizeSlug(slug || suggestedSlug);
-        const isEnabled = value && !!normalizedSlug;
-        const { error } = await supabase
-          .from("profiles")
-          .update({ inventory_enabled: isEnabled })
-          .eq("id", user.id);
-        if (error) throw error;
-        setEnabled(isEnabled);
+
         if (value && !normalizedSlug) {
-          toast.error("כדי להפעיל את הקטלוג צריך להגדיר כתובת דף");
           setEnabled(false);
+          toast.error("כדי להפעיל את הקטלוג צריך להגדיר כתובת דף");
           return;
         }
+
+        const updatedProfile = await persistProfile({
+          inventory_enabled: value && !!normalizedSlug,
+          inventory_slug: normalizedSlug || null,
+        });
+
+        applyProfileState(updatedProfile);
       } else {
-        // show_phone / show_prices — merge into inventory_settings JSONB
-        const { data: current } = await supabase
-          .from("profiles")
-          .select("inventory_settings")
-          .eq("id", user.id)
-          .maybeSingle();
+        const nextSettings = {
+          ...settings,
+          [field]: value,
+          show_phone: field === "show_phone" ? value : parseBoolean(settings.show_phone, true),
+          show_prices: field === "show_prices" ? value : parseBoolean(settings.show_prices, true),
+        };
 
-        const currentSettings = (current?.inventory_settings && typeof current.inventory_settings === "object")
-          ? (current.inventory_settings as Record<string, unknown>)
-          : {};
+        const updatedProfile = await persistProfile({
+          inventory_settings: nextSettings as unknown as Json,
+        });
 
-        const merged = { ...currentSettings, [field]: value };
-
-        const { error } = await supabase
-          .from("profiles")
-          .update({ inventory_settings: merged as unknown as Json })
-          .eq("id", user.id);
-        if (error) throw error;
+        applyProfileState(updatedProfile);
       }
+
       toast.success("נשמר");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Auto-save toggle error:", error);
       toast.error("שגיאה בשמירה");
+      await fetchSettings();
     } finally {
       setAutoSaving(null);
     }
