@@ -27,6 +27,10 @@ export const DOCUMENT_TYPES: DocumentType[] = [
 
 export interface SalesAgreementData {
   date: string;
+  signatures?: {
+    seller?: string;
+    buyer?: string;
+  };
   seller: {
     company: string;
     id: string;
