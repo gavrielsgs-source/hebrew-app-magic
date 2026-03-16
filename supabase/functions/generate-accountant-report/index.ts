@@ -490,8 +490,18 @@ serve(async (req) => {
     );
     const balancesCsv = BOM + [balHeader, ...balRows, "", `סה"כ יתרות חוב,,,,,${totalOutstanding.toFixed(2)}`].join("\n");
 
-    // summary.csv
+    // summary.csv - with company details header
+    const companyHeader = [
+      `שם העסק,${profile?.company_name || ""}`,
+      `ח.פ./ע.מ.,${profile?.company_hp || ""}`,
+      `כתובת,${profile?.company_address || ""}`,
+      `סוג עוסק,${profile?.company_type || ""}`,
+      `שם בעלים,${profile?.full_name || ""}`,
+      `תקופת דוח,${startDate} - ${endDate}`,
+      "",
+    ];
     const summaryCsv = BOM + [
+      ...companyHeader,
       "סעיף,סכום",
       `סה"כ מכירות,${totalSales.toFixed(2)}`,
       `סה"כ רכישות,${totalPurchases.toFixed(2)}`,
