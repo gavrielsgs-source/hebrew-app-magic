@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface UploadProductionDocumentParams {
   pdfBlob: Blob;
-  documentType: 'price_quote' | 'tax_invoice' | 'tax_invoice_receipt' | 'sales_agreement' | 'receipt' | 'tax_invoice_credit';
+  documentType: 'price_quote' | 'tax_invoice' | 'tax_invoice_receipt' | 'sales_agreement' | 'receipt' | 'tax_invoice_credit' | 'new_car_order';
   documentNumber: string;
   customerName: string;
   entityType?: string;
@@ -99,7 +99,10 @@ function getDocumentTypeName(type: string): string {
     price_quote: 'הצעת מחיר',
     tax_invoice: 'חשבונית מס',
     tax_invoice_receipt: 'חשבונית מס קבלה',
-    sales_agreement: 'הסכם מכר'
+    sales_agreement: 'הסכם מכר',
+    receipt: 'קבלה',
+    tax_invoice_credit: 'חשבונית מס זיכוי',
+    new_car_order: 'הזמנת רכב חדש',
   };
   return names[type] || type;
 }
