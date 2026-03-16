@@ -379,7 +379,6 @@ export function InventorySettingsTab() {
           {
             id: user.id,
             inventory_slug: normalizedSlug || null,
-            inventory_enabled: parseBoolean(enabled, false) && !!normalizedSlug,
             inventory_settings: normalizedSettings as unknown as Json,
           },
           { onConflict: "id" }
