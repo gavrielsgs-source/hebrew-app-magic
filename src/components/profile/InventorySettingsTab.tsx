@@ -70,8 +70,13 @@ export function InventorySettingsTab() {
   });
   const [slugError, setSlugError] = useState("");
 
-  // Track recent saves to prevent remount from overwriting state
-  const lastSaveTimestamp = useRef<number>(0);
+  // Track recent saves to prevent remount from overwriting state (survives remount via sessionStorage)
+  const getLastSaveTimestamp = () => {
+    try { return Number(sessionStorage.getItem('inventory_save_ts') || '0'); } catch { return 0; }
+  };
+  const setLastSaveTimestamp = () => {
+    try { sessionStorage.setItem('inventory_save_ts', String(Date.now())); } catch {}
+  };
 
   const baseUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
