@@ -590,6 +590,10 @@ export default function Profile() {
               <NotificationSettings />
             </Card>
           </TabsContent>
+
+          <TabsContent value="automations">
+            <AutomationSettingsTab />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
