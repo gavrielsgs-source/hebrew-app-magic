@@ -13,6 +13,7 @@ import { Mail, User, Phone, Building, Save, Bell, Briefcase, Globe, FileText, Ma
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
+import { AutomationSettingsTab } from "@/components/automations/AutomationSettingsTab";
 
 
 export default function Profile() {
