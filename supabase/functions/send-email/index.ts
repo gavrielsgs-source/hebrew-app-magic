@@ -7,6 +7,7 @@ import { WelcomeEmail } from "../_shared/email-templates/welcome-email.tsx";
 import { TrialReminderEmail } from "../_shared/email-templates/trial-reminder-email.tsx";
 import { PaymentFailedEmail } from "../_shared/email-templates/payment-failed-email.tsx";
 import { PaymentReceiptEmail } from "../_shared/email-templates/payment-receipt-email.tsx";
+import { AccountantReportEmail } from "../_shared/email-templates/accountant-report-email.tsx";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "CarsLeadApp <onboarding@carsleadapp.com>";
@@ -18,7 +19,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  template: "welcome" | "trial-reminder" | "payment-failed" | "payment-receipt";
+  template: "welcome" | "trial-reminder" | "payment-failed" | "payment-receipt" | "accountant_report";
   data: {
     userName: string;
     magicLink?: string;
@@ -33,6 +34,10 @@ interface EmailRequest {
     nextBillingDate?: string;
     invoiceUrl?: string;
     tutorialLink?: string;
+    reportUrl?: string;
+    period?: string;
+    companyName?: string;
+    summary?: any;
   };
 }
 
@@ -99,6 +104,19 @@ serve(async (req) => {
             paymentDate: data.paymentDate || "",
             nextBillingDate: data.nextBillingDate,
             invoiceUrl: data.invoiceUrl || "",
+          })
+        );
+        break;
+
+      case "accountant_report":
+        subject = `📊 דוח תקופתי לרואה חשבון - ${data.period || ""}`;
+        html = await renderAsync(
+          React.createElement(AccountantReportEmail, {
+            userName: data.userName,
+            reportUrl: data.reportUrl || "",
+            period: data.period || "",
+            companyName: data.companyName,
+            summary: data.summary,
           })
         );
         break;

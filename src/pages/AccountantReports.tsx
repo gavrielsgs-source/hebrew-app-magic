@@ -40,7 +40,7 @@ export default function AccountantReports() {
     );
   };
 
-  const handleQuickFilter = (type: "current" | "previous" | "three") => {
+  const handleQuickFilter = (type: "current" | "previous" | "three" | "tax_year") => {
     const now = new Date();
     switch (type) {
       case "current":
@@ -55,6 +55,12 @@ export default function AccountantReports() {
         setStartDate(format(startOfMonth(subMonths(now, 3)), "yyyy-MM-dd"));
         setEndDate(format(endOfMonth(now), "yyyy-MM-dd"));
         break;
+      case "tax_year": {
+        const year = now.getMonth() < 3 ? now.getFullYear() - 1 : now.getFullYear();
+        setStartDate(`${year}-01-01`);
+        setEndDate(`${year}-12-31`);
+        break;
+      }
     }
   };
 
@@ -78,6 +84,7 @@ export default function AccountantReports() {
           template: "accountant_report",
           data: {
             userName: profile.full_name || "לקוח יקר",
+            companyName: profile.company_name || "",
             reportUrl: reportData.reportUrl,
             period: `${format(new Date(startDate), "dd/MM/yyyy", { locale: he })} - ${format(
               new Date(endDate),
@@ -161,6 +168,14 @@ export default function AccountantReports() {
                   className="rounded-xl"
                 >
                   3 חודשים אחרונים
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleQuickFilter("tax_year")}
+                  className="rounded-xl border-primary text-primary"
+                >
+                  שנת מס {new Date().getMonth() < 3 ? new Date().getFullYear() - 1 : new Date().getFullYear()}
                 </Button>
               </div>
             </div>

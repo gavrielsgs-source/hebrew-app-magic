@@ -57,6 +57,13 @@ serve(async (req) => {
     const { startDate, endDate } = await req.json();
     console.log(`📊 Generating report for user ${user.id} from ${startDate} to ${endDate}`);
 
+    // Fetch company profile details for the report header
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("company_name, company_hp, company_address, company_type, full_name")
+      .eq("id", user.id)
+      .single();
+
     const transactions: Transaction[] = [];
     const validationErrors: any[] = [];
     const documentFiles: Record<string, Uint8Array> = {};
@@ -483,8 +490,18 @@ serve(async (req) => {
     );
     const balancesCsv = BOM + [balHeader, ...balRows, "", `סה"כ יתרות חוב,,,,,${totalOutstanding.toFixed(2)}`].join("\n");
 
-    // summary.csv
+    // summary.csv - with company details header
+    const companyHeader = [
+      `שם העסק,${profile?.company_name || ""}`,
+      `ח.פ./ע.מ.,${profile?.company_hp || ""}`,
+      `כתובת,${profile?.company_address || ""}`,
+      `סוג עוסק,${profile?.company_type || ""}`,
+      `שם בעלים,${profile?.full_name || ""}`,
+      `תקופת דוח,${startDate} - ${endDate}`,
+      "",
+    ];
     const summaryCsv = BOM + [
+      ...companyHeader,
       "סעיף,סכום",
       `סה"כ מכירות,${totalSales.toFixed(2)}`,
       `סה"כ רכישות,${totalPurchases.toFixed(2)}`,
@@ -522,16 +539,24 @@ serve(async (req) => {
 
     if (uploadError) throw uploadError;
 
-    const {
-      data: { publicUrl },
-    } = supabaseClient.storage.from("documents").getPublicUrl(`reports/${user.id}/${filename}`);
+    // Use signed URL (valid 7 days) instead of public URL
+    const storagePath = `reports/${user.id}/${filename}`;
+    const { data: signedData, error: signedError } = await supabaseClient.storage
+      .from("documents")
+      .createSignedUrl(storagePath, 60 * 60 * 24 * 7); // 7 days
 
-    console.log(`✅ Report generated: ${publicUrl} | ${transactions.length} transactions, ${(inventory || []).length} inventory, ${balances.length} customers`);
+    if (signedError) {
+      console.error("Signed URL error:", signedError);
+      throw new Error("Failed to generate download URL");
+    }
+
+    const reportUrl = signedData.signedUrl;
+    console.log(`✅ Report generated: ${reportUrl} | ${transactions.length} transactions, ${(inventory || []).length} inventory, ${balances.length} customers`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        reportUrl: publicUrl,
+        reportUrl,
         summary,
         validationErrors,
         generatedAt: new Date().toISOString(),
