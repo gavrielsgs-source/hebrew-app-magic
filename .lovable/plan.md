@@ -1,21 +1,18 @@
 
 
-## תיקון ריאקטיביות הטוגלים בחשבונית מס קבלה
+## תיקון פונקציית `admin_extend_subscription`
 
 ### הבעיה
-`form.watch()` (שורה 175) מחזיר ערכים אבל לא תמיד גורם ל-re-render כשמשנים שדה מקונן במערך (כמו `items.0.includeVat`). לכן התצוגה המקדימה לא מתעדכנת מיד כשמכבים/מדליקים את טוגל המע"מ.
+כשמאריכים מנוי דרך ממשק האדמין, הפונקציה מעדכנת רק את `expires_at` אבל לא משנה את `subscription_status` ל-`active`. כתוצאה, משתמשים שהיו ב-`trial` או `expired` נשארים חסומים למרות שתאריך התפוגה הוארך.
 
 ### הפתרון
+עדכון פונקציית `admin_extend_subscription` בבסיס הנתונים כך שה-UPDATE יכלול גם:
+```sql
+subscription_status = 'active'
+```
 
-**קובץ: `src/pages/TaxInvoiceReceipt.tsx`**
+שינוי יחיד בשורת ה-UPDATE הקיימת — הוספת `subscription_status = 'active'` ליד `expires_at` ו-`updated_at`.
 
-1. **החלפת `form.watch()` ב-`useWatch`** — ייבוא `useWatch` מ-`react-hook-form` ושימוש ב-`useWatch({ control: form.control })` במקום `form.watch()` בשורה 175. זה מבטיח re-render בכל שינוי, כולל שדות מקוננים במערכים.
-
-2. **הוספת `shouldDirty: true`** לקריאת `form.setValue` בטוגל המע"מ (שורה 713) וב-useEffect שמחשב total (שורה 238), כדי להבטיח שהשינוי מזוהה ע"י react-hook-form.
-
-שלושה שינויים בלבד:
-- שורה 2: הוספת `useWatch` לייבוא
-- שורה 175: `const watchedFields = useWatch({ control: form.control });`
-- שורה 238: הוספת `{ shouldDirty: true, shouldValidate: false }`
-- שורה 713: הוספת `{ shouldDirty: true }` ל-setValue
+### קובץ מושפע
+- Database function: `admin_extend_subscription` (migration בלבד, ללא שינוי קוד Frontend)
 

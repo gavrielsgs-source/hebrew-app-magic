@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -172,7 +172,7 @@ export default function TaxInvoiceReceipt() {
     name: 'payments'
   });
 
-  const watchedFields = form.watch();
+  const watchedFields = useWatch({ control: form.control });
   const selectedLead = leads.find(lead => lead.id === watchedFields.leadId);
 
   // Update company info when profile loads
@@ -235,7 +235,7 @@ export default function TaxInvoiceReceipt() {
             
             const currentTotal = form.getValues(`items.${index}.total`);
             if (Math.abs(currentTotal - total) > 0.01) {
-              form.setValue(`items.${index}.total`, total, { shouldValidate: false });
+              form.setValue(`items.${index}.total`, total, { shouldValidate: false, shouldDirty: true });
             }
           }
         });
@@ -710,7 +710,7 @@ export default function TaxInvoiceReceipt() {
                             <Label className="text-xs">כולל מע"מ</Label>
                             <Switch
                               checked={watchedFields.items?.[index]?.includeVat}
-                              onCheckedChange={(checked) => form.setValue(`items.${index}.includeVat`, checked)}
+                              onCheckedChange={(checked) => form.setValue(`items.${index}.includeVat`, checked, { shouldDirty: true })}
                               dir="ltr"
                             />
                           </div>
