@@ -193,7 +193,8 @@ export default function SalesAgreement() {
           remainingAmount: data.remainingAmount ? parseFloat(data.remainingAmount) : parseFloat(data.totalPrice) - parseFloat(data.downPayment),
           paymentTerms: data.paymentTerms || "",
           specialTerms: data.specialTerms || ""
-        }
+        },
+        signatures: signatures.seller || signatures.buyer ? signatures : undefined,
       };
 
       // Generate and download PDF
