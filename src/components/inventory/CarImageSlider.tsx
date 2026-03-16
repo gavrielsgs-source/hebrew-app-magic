@@ -4,9 +4,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface CarImageSliderProps {
   images: string[];
   alt: string;
+  brandColor?: string;
+  logoUrl?: string;
+  carName?: string;
 }
 
-export function CarImageSlider({ images, alt }: CarImageSliderProps) {
+export function CarImageSlider({ images, alt, brandColor, logoUrl, carName }: CarImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
@@ -47,7 +50,6 @@ export function CarImageSlider({ images, alt }: CarImageSliderProps) {
     const diff = touchStartX.current - touchEndX.current;
     const minSwipe = 50;
     if (Math.abs(diff) > minSwipe) {
-      // RTL: swipe left = prev, swipe right = next
       if (diff > 0) goPrev();
       else goNext();
     }
@@ -70,6 +72,30 @@ export function CarImageSlider({ images, alt }: CarImageSliderProps) {
         draggable={false}
       />
 
+      {/* Status badge - top right */}
+      <span className="absolute top-3 right-3 text-[11px] font-bold text-white px-3 py-1 rounded-full shadow-sm"
+        style={{ backgroundColor: brandColor || '#22c55e' }}
+      >
+        במלאי
+      </span>
+
+      {/* Logo watermark - top left */}
+      {logoUrl && (
+        <div className="absolute top-3 left-3 h-8 w-auto opacity-70">
+          <img src={logoUrl} alt="" className="h-full w-auto object-contain drop-shadow-md" />
+        </div>
+      )}
+
+      {/* Brand color banner with car name - bottom */}
+      {carName && (
+        <div
+          className="absolute bottom-0 inset-x-0 px-4 py-2.5 text-white"
+          style={{ backgroundColor: brandColor || '#1d1d1f' }}
+        >
+          <span className="text-[15px] font-bold tracking-tight drop-shadow-sm">{carName}</span>
+        </div>
+      )}
+
       {images.length > 1 && (
         <>
           {/* Arrows */}
@@ -86,8 +112,8 @@ export function CarImageSlider({ images, alt }: CarImageSliderProps) {
             <ChevronLeft className="h-4 w-4 text-[#1d1d1f]" />
           </button>
 
-          {/* Dots */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          {/* Dots - positioned above banner */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex gap-1" style={{ bottom: carName ? '44px' : '8px' }}>
             {images.map((_, idx) => (
               <button
                 key={idx}
@@ -100,7 +126,9 @@ export function CarImageSlider({ images, alt }: CarImageSliderProps) {
           </div>
 
           {/* Counter */}
-          <span className="absolute top-2 left-2 text-[11px] font-medium text-white bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
+          <span className="absolute top-2 left-2 text-[11px] font-medium text-white bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full"
+            style={{ left: logoUrl ? 'auto' : '8px', right: logoUrl ? undefined : undefined }}
+          >
             {currentIndex + 1}/{images.length}
           </span>
         </>

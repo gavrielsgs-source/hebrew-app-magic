@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2, Phone, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Loader2, Phone, Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { translateTransmission, translateFuelType, translateColor } from "@/lib/car-translations";
@@ -11,8 +11,12 @@ import { getBrandCSSVars } from "@/lib/brand-color-utils";
 interface DealerInfo {
   name: string;
   phone: string;
+  logo_url?: string;
+  cover_image_url?: string;
+  address?: string;
   settings: {
     logo_url?: string;
+    cover_image_url?: string;
     primary_color?: string;
     contact_phone?: string;
     show_phone?: boolean;
@@ -79,6 +83,8 @@ export default function PublicInventory() {
   // Dynamic brand color
   const brandColor = dealer?.settings?.primary_color || DEFAULT_BRAND_COLOR;
   const brandVars = getBrandCSSVars(brandColor);
+  const logoUrl = dealer?.settings?.logo_url || dealer?.logo_url || null;
+  const coverImageUrl = dealer?.settings?.cover_image_url || dealer?.cover_image_url || null;
 
   const fetchInventory = async (page = 1) => {
     setLoading(true);
@@ -212,14 +218,14 @@ export default function PublicInventory() {
   return (
     <div className="min-h-screen bg-[#fbfbfd]" dir="rtl" style={brandVars as React.CSSProperties}>
       
-      {/* ── Apple-style Nav Bar ── */}
+      {/* ── Nav Bar ── */}
       <nav className="sticky top-0 z-50 bg-[rgba(251,251,253,0.8)] backdrop-blur-2xl backdrop-saturate-[1.8] border-b border-[#d2d2d7]/60">
         <div className="max-w-[1120px] mx-auto px-5 h-12 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {dealer?.settings?.logo_url ? (
+            {logoUrl ? (
               <img 
-                src={dealer.settings.logo_url} 
-                alt={dealer.name} 
+                src={logoUrl} 
+                alt={dealer?.name || ''} 
                 className="h-7 w-auto object-contain"
               />
             ) : (
@@ -246,30 +252,46 @@ export default function PublicInventory() {
         <div className="max-w-[1120px] mx-auto">
           <div 
             className="relative overflow-hidden rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-14 text-center"
-            style={{
+            style={coverImageUrl ? {} : {
               background: `linear-gradient(135deg, var(--brand-color) 0%, var(--brand-color-dark) 100%)`,
             }}
           >
+            {/* Cover image background */}
+            {coverImageUrl && (
+              <>
+                <img 
+                  src={coverImageUrl} 
+                  alt="" 
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/50" />
+              </>
+            )}
+
             {/* Decorative circles */}
-            <div 
-              className="absolute -top-20 -left-20 w-64 h-64 rounded-full opacity-10"
-              style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }}
-            />
-            <div 
-              className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full opacity-10"
-              style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }}
-            />
+            {!coverImageUrl && (
+              <>
+                <div 
+                  className="absolute -top-20 -left-20 w-64 h-64 rounded-full opacity-10"
+                  style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }}
+                />
+                <div 
+                  className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full opacity-10"
+                  style={{ background: 'radial-gradient(circle, white 0%, transparent 70%)' }}
+                />
+              </>
+            )}
 
             {/* Logo */}
-            {dealer?.settings?.logo_url && (
+            {logoUrl && (
               <img 
-                src={dealer.settings.logo_url} 
-                alt={dealer.name} 
-                className="h-10 sm:h-14 w-auto object-contain mx-auto mb-4 sm:mb-6 drop-shadow-lg"
+                src={logoUrl} 
+                alt={dealer?.name || ''} 
+                className="relative h-10 sm:h-14 w-auto object-contain mx-auto mb-4 sm:mb-6 drop-shadow-lg"
               />
             )}
 
-            {/* Hollow outline text */}
+            {/* Title */}
             <h1 
               className="relative text-[32px] sm:text-[48px] lg:text-[60px] font-black tracking-tight leading-[1.05] max-w-3xl mx-auto select-none"
               style={{
@@ -280,7 +302,16 @@ export default function PublicInventory() {
             >
               {dealer?.name}
             </h1>
-            {/* Solid subtitle */}
+            
+            {/* Address */}
+            {dealer?.address && (
+              <p className="relative mt-2 text-[14px] sm:text-[16px] text-white/70 font-medium flex items-center justify-center gap-1.5">
+                <MapPin className="h-4 w-4" />
+                {dealer.address}
+              </p>
+            )}
+
+            {/* Subtitle */}
             <p className="relative mt-1 sm:mt-2 text-[18px] sm:text-[22px] lg:text-[26px] font-bold text-white tracking-tight leading-tight max-w-xl mx-auto drop-shadow-sm">
               המלאי שלנו
             </p>
@@ -472,16 +503,23 @@ export default function PublicInventory() {
               {filteredCars.map((car, index) => (
                 <article 
                   key={car.id} 
-                  className="group flex flex-col h-full rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+                  className="group flex flex-col h-full rounded-[20px] bg-white overflow-hidden transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 cursor-pointer"
                   style={{ animationDelay: `${index * 60}ms` }}
+                  onClick={() => { setDetailCar(car); setDetailOpen(true); }}
                 >
-                  {/* Image with price badge */}
+                  {/* Image with brand banner */}
                   <div className="relative">
-                    <CarImageSlider images={car.image_urls || (car.image_url ? [car.image_url] : [])} alt={`${car.make} ${car.model}`} />
+                    <CarImageSlider 
+                      images={car.image_urls || (car.image_url ? [car.image_url] : [])} 
+                      alt={`${car.make} ${car.model}`}
+                      brandColor={brandColor}
+                      logoUrl={logoUrl || undefined}
+                      carName={`${car.make} ${car.model} ${car.year}`}
+                    />
                     
                     {/* Glassmorphism price badge */}
                     {showPrices && (
-                      <div className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-lg">
+                      <div className="absolute bottom-12 right-3 px-3.5 py-1.5 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-lg">
                         <span className="text-[15px] font-bold" style={{ color: brandColor }}>
                           {formatPrice(car.price)}
                         </span>
@@ -489,75 +527,41 @@ export default function PublicInventory() {
                     )}
                   </div>
 
-                  {/* Content */}
-                  <div className="p-5 flex-1 flex flex-col">
-                    {/* Title row */}
-                    <div>
-                      <h3 className="text-[17px] font-semibold text-[#1d1d1f] tracking-tight leading-tight truncate">
-                        {car.make} {car.model}
-                      </h3>
-                      <p className="text-[13px] text-[#86868b] mt-0.5">
-                        {car.year}{car.trim_level ? ` · ${car.trim_level}` : ''}
-                      </p>
-                    </div>
-
-                    {/* Specs — clean pill tags */}
-                    <div className="flex flex-wrap gap-1.5 mt-4">
-                      <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
-                        {formatKilometers(car.kilometers)} ק״מ
-                      </span>
-                      {car.fuel_type && (
-                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
-                          {translateFuelType(car.fuel_type)}
-                        </span>
-                      )}
-                      {car.transmission && (
-                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
-                          {translateTransmission(car.transmission)}
-                        </span>
-                      )}
+                  {/* Technical details - 2 column grid */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <div className="grid grid-cols-2 gap-2 text-[12px]">
+                      <div className="flex items-center justify-between bg-[#f5f5f7] rounded-lg px-3 py-2">
+                        <span className="text-[#86868b]">שנה</span>
+                        <span className="font-semibold text-[#1d1d1f]">{car.year}</span>
+                      </div>
+                      <div className="flex items-center justify-between bg-[#f5f5f7] rounded-lg px-3 py-2">
+                        <span className="text-[#86868b]">ק״מ</span>
+                        <span className="font-semibold text-[#1d1d1f]">{formatKilometers(car.kilometers)}</span>
+                      </div>
                       {car.engine_size && (
-                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
-                          {car.engine_size} סמ״ק
-                        </span>
+                        <div className="flex items-center justify-between bg-[#f5f5f7] rounded-lg px-3 py-2">
+                          <span className="text-[#86868b]">מנוע</span>
+                          <span className="font-semibold text-[#1d1d1f]">{car.engine_size}</span>
+                        </div>
                       )}
-                      {car.exterior_color && (
-                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
-                          {translateColor(car.exterior_color)}
-                        </span>
+                      {car.fuel_type && (
+                        <div className="flex items-center justify-between bg-[#f5f5f7] rounded-lg px-3 py-2">
+                          <span className="text-[#86868b]">דלק</span>
+                          <span className="font-semibold text-[#1d1d1f]">{translateFuelType(car.fuel_type)}</span>
+                        </div>
                       )}
                       {car.ownership_history && (
-                        <span className="inline-flex items-center h-7 px-3 rounded-full bg-[#f5f5f7] text-[12px] text-[#1d1d1f] font-medium">
-                          יד {car.ownership_history}
-                        </span>
+                        <div className="flex items-center justify-between bg-[#f5f5f7] rounded-lg px-3 py-2">
+                          <span className="text-[#86868b]">יד</span>
+                          <span className="font-semibold text-[#1d1d1f]">{car.ownership_history}</span>
+                        </div>
                       )}
-                    </div>
-
-                    {/* Description */}
-                    {car.description && (
-                      <p className="text-[13px] text-[#86868b] mt-3 leading-relaxed line-clamp-2">
-                        {car.description}
-                      </p>
-                    )}
-                    
-                    {/* Dual CTA — pushed to bottom */}
-                    <div className="mt-auto pt-4 flex gap-2">
-                      <button 
-                        className="flex-1 h-10 rounded-full text-white text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] hover:scale-[1.02] transition-all duration-200"
-                        style={{ backgroundColor: brandColor }}
-                        onClick={() => { setDetailCar(car); setDetailOpen(true); }}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        פרטים נוספים
-                      </button>
-                      <button 
-                        className="h-10 px-4 rounded-full border-2 text-[14px] font-medium flex items-center justify-center gap-2 active:scale-[0.98] hover:scale-[1.02] transition-all duration-200"
-                        style={{ borderColor: brandColor, color: brandColor }}
-                        onClick={() => handleWhatsAppClick(car)}
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                        צור קשר
-                      </button>
+                      {car.transmission && (
+                        <div className="flex items-center justify-between bg-[#f5f5f7] rounded-lg px-3 py-2">
+                          <span className="text-[#86868b]">תיבה</span>
+                          <span className="font-semibold text-[#1d1d1f]">{translateTransmission(car.transmission)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </article>

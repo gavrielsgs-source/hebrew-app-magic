@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, ExternalLink, Check, Loader2, Link as LinkIcon } from "lucide-react";
+import { Copy, ExternalLink, Check, Loader2, Link as LinkIcon, Upload, ImageIcon, X } from "lucide-react";
 import { Json } from "@/integrations/supabase/types";
 
 interface InventorySettings {
   logo_url?: string;
+  cover_image_url?: string;
   primary_color?: string;
   contact_phone?: string;
   show_phone?: boolean;
@@ -46,7 +47,6 @@ const createSuggestedSlug = (userId: string | undefined, ...values: Array<string
     }
   }
 
-  // Fallback: use first 8 chars of user UUID for Hebrew-only names
   if (userId && userId.length >= 8) {
     return `dealer-${userId.substring(0, 8)}`;
   }
@@ -70,7 +70,12 @@ export function InventorySettingsTab() {
   });
   const [slugError, setSlugError] = useState("");
 
-  // Track recent saves to prevent remount from overwriting state (survives remount via sessionStorage)
+  // Upload states
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
   const getLastSaveTimestamp = () => {
     try { return Number(sessionStorage.getItem('inventory_save_ts') || '0'); } catch { return 0; }
   };
@@ -93,7 +98,6 @@ export function InventorySettingsTab() {
   }, [user]);
 
   const fetchSettings = async () => {
-    // Skip fetch if we saved very recently (prevents remount race condition)
     const timeSinceLastSave = Date.now() - getLastSaveTimestamp();
     if (timeSinceLastSave < 5000) {
       setLoading(false);
@@ -125,6 +129,7 @@ export function InventorySettingsTab() {
 
         setSettings({
           logo_url: (dbSettings.logo_url as string) || undefined,
+          cover_image_url: (dbSettings.cover_image_url as string) || undefined,
           primary_color: (dbSettings.primary_color as string) || "#3b82f6",
           contact_phone: (dbSettings.contact_phone as string) || undefined,
           show_phone: parseBoolean(dbSettings.show_phone, true),
@@ -186,6 +191,55 @@ export function InventorySettingsTab() {
     }
   };
 
+  const handleImageUpload = async (
+    file: File,
+    type: 'logo' | 'cover',
+    setUploading: (v: boolean) => void
+  ) => {
+    if (!user) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('נא להעלות קובץ תמונה בלבד');
+      return;
+    }
+
+    const maxSize = type === 'logo' ? 2 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`גודל הקובץ חייב להיות עד ${type === 'logo' ? '2' : '5'}MB`);
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/inventory-${type}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(fileName);
+
+      if (urlData?.publicUrl) {
+        const publicUrl = `${urlData.publicUrl}?v=${Date.now()}`;
+        setSettings(prev => ({
+          ...prev,
+          [type === 'logo' ? 'logo_url' : 'cover_image_url']: publicUrl,
+        }));
+        toast.success(type === 'logo' ? 'הלוגו הועלה בהצלחה' : 'תמונת הכיסוי הועלתה בהצלחה');
+      }
+    } catch (error) {
+      console.error(`Error uploading ${type}:`, error);
+      toast.error('שגיאה בהעלאת התמונה');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const saveSettings = async () => {
     if (!user?.id) {
       toast.error("לא ניתן לשמור כרגע", { description: "המשתמש אינו מחובר." });
@@ -232,7 +286,6 @@ export function InventorySettingsTab() {
         inventory_settings: normalizedSettings as unknown as Json,
       };
 
-      // Read back confirmed values from DB response
       const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
         .update(profilePayload)
@@ -252,12 +305,10 @@ export function InventorySettingsTab() {
 
         if (insertError) throw insertError;
 
-        // For insert, trust local values
         setSlug(normalizedSlug);
         setEnabled(isEnabled);
         setSettings(normalizedSettings);
       } else {
-        // Use confirmed DB values to set state
         setSlug(normalizeSlug(updatedProfile.inventory_slug || ""));
         setEnabled(parseBoolean(updatedProfile.inventory_enabled, false));
 
@@ -268,6 +319,7 @@ export function InventorySettingsTab() {
 
         setSettings({
           logo_url: (confirmedSettings.logo_url as string) || undefined,
+          cover_image_url: (confirmedSettings.cover_image_url as string) || undefined,
           primary_color: (confirmedSettings.primary_color as string) || "#3b82f6",
           contact_phone: (confirmedSettings.contact_phone as string) || undefined,
           show_phone: parseBoolean(confirmedSettings.show_phone, true),
@@ -275,14 +327,12 @@ export function InventorySettingsTab() {
         });
       }
 
-      // Mark save timestamp to prevent remount fetch from overwriting
       setLastSaveTimestamp();
 
       toast.success("הגדרות הקטלוג נשמרו בהצלחה");
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error("שגיאה בשמירת ההגדרות", { description: error.message });
-      // Only re-fetch on error to rollback state
       await fetchSettings();
     } finally {
       setSaving(false);
@@ -408,6 +458,122 @@ export function InventorySettingsTab() {
 
           <div className="space-y-4 border-t pt-4">
             <h3 className="font-medium">הגדרות תצוגה</h3>
+
+            {/* Logo Upload */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 justify-end">
+                לוגו לקטלוג
+                <ImageIcon className="h-4 w-4 text-primary" />
+              </Label>
+              <p className="text-xs text-muted-foreground text-right">
+                הלוגו יופיע ב-Hero ועל תמונות הרכב כ-watermark (מומלץ: רקע שקוף, PNG, עד 2MB)
+              </p>
+              <div className="flex items-center gap-4 justify-end flex-row-reverse">
+                {settings.logo_url ? (
+                  <div className="relative group">
+                    <div className="w-32 h-20 rounded-xl border-2 border-primary/20 overflow-hidden bg-white flex items-center justify-center p-2">
+                      <img src={settings.logo_url} alt="לוגו" className="max-w-full max-h-full object-contain" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSettings(prev => ({ ...prev, logo_url: undefined }))}
+                      className="absolute -top-2 -left-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-32 h-20 rounded-xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/30">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                  </div>
+                )}
+                <div>
+                  <input
+                    type="file"
+                    ref={logoInputRef}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file, 'logo', setUploadingLogo);
+                      if (logoInputRef.current) logoInputRef.current.value = '';
+                    }}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                    className="rounded-lg"
+                  >
+                    {uploadingLogo ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" />מעלה...</>
+                    ) : (
+                      <><Upload className="h-4 w-4 mr-2" />{settings.logo_url ? 'החלף לוגו' : 'העלה לוגו'}</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Cover Image Upload */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 justify-end">
+                תמונת כיסוי ל-Hero
+                <ImageIcon className="h-4 w-4 text-primary" />
+              </Label>
+              <p className="text-xs text-muted-foreground text-right">
+                תמונה שתוצג כרקע בראש הקטלוג (מומלץ: רוחב 1920px, JPG, עד 5MB). אם לא תועלה תמונה, יוצג גרדיאנט בצבע המותג.
+              </p>
+              <div className="flex items-center gap-4 justify-end flex-row-reverse">
+                {settings.cover_image_url ? (
+                  <div className="relative group">
+                    <div className="w-40 h-20 rounded-xl border-2 border-primary/20 overflow-hidden bg-white flex items-center justify-center">
+                      <img src={settings.cover_image_url} alt="כיסוי" className="w-full h-full object-cover" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSettings(prev => ({ ...prev, cover_image_url: undefined }))}
+                      className="absolute -top-2 -left-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-40 h-20 rounded-xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/30">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                  </div>
+                )}
+                <div>
+                  <input
+                    type="file"
+                    ref={coverInputRef}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file, 'cover', setUploadingCover);
+                      if (coverInputRef.current) coverInputRef.current.value = '';
+                    }}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={uploadingCover}
+                    className="rounded-lg"
+                  >
+                    {uploadingCover ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" />מעלה...</>
+                    ) : (
+                      <><Upload className="h-4 w-4 mr-2" />{settings.cover_image_url ? 'החלף תמונה' : 'העלה תמונה'}</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="primaryColor">צבע ראשי</Label>
