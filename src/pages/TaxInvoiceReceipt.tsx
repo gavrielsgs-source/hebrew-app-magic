@@ -239,8 +239,8 @@ export default function TaxInvoiceReceipt() {
 
   // Calculate financial summary
   const calculateFinancialSummary = () => {
-    const items = form.getValues('items') || [];
-    const generalDiscount = form.getValues('generalDiscount') || 0;
+    const items = watchedFields.items || [];
+    const generalDiscount = watchedFields.generalDiscount || 0;
     
     let subtotal = 0; // סה"כ נטו (לפני מע"מ)
     let totalVat = 0; // סה"כ מע"מ
