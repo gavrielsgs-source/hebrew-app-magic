@@ -53,7 +53,7 @@ export default function Automations() {
   const upsert = useUpsertAutomationSettings();
 
   const [form, setForm] = useState<Partial<AutomationSettings>>(DEFAULT_SETTINGS);
-  const [dirty, setDirty] = useState(false);
+  const [dirty, setDirty] = useState(true);
 
   useEffect(() => {
     if (settings) {
