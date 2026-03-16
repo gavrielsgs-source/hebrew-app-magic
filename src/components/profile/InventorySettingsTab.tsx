@@ -76,6 +76,14 @@ export function InventorySettingsTab() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  const baseUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return window.location.origin;
+  }, []);
+
+  const resolvedSlug = useMemo(() => normalizeSlug(slug || suggestedSlug), [slug, suggestedSlug]);
+  const inventoryUrl = resolvedSlug ? `${baseUrl}/inventory/${resolvedSlug}` : "";
+
   const applyProfileState = (
     profile: {
       inventory_slug?: string | null;
