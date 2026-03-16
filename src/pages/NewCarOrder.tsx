@@ -8,11 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, FileText, Download, UserPlus, Calendar as CalendarIcon, Send, MessageCircle } from "lucide-react";
+import { Plus, Trash2, FileText, Download, UserPlus, Calendar as CalendarIcon, MessageCircle } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
-import { NewCarOrderData } from "@/types/document-production";
 import { useToast } from "@/hooks/use-toast";
-import { LeadSearchSelect } from "@/components/leads/LeadSearchSelect";
 import { CustomerAndLeadSearchSelect } from "@/components/customers/CustomerAndLeadSearchSelect";
 import { useLeads } from "@/hooks/use-leads";
 import { useCustomers } from "@/hooks/customers";
@@ -22,6 +20,10 @@ import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { MobileDocumentHeader } from "@/components/mobile/MobileDocumentHeader";
+import { useNewCarOrder } from "@/hooks/use-new-car-order";
+import { useUploadProductionDocument } from "@/hooks/use-upload-production-document";
+import { generateNewCarOrderPDF, type NewCarOrderPDFData } from "@/utils/pdf/new-car-order-pdf";
+import { useProfile } from "@/hooks/use-profile";
 
 const newCarOrderSchema = z.object({
   date: z.string().min(1, "תאריך נדרש"),
@@ -33,6 +35,7 @@ const newCarOrderSchema = z.object({
     idNumber: z.string().min(9, "תעודת זהות תקינה נדרשת"),
     city: z.string().min(2, "עיר נדרשת"),
     address: z.string().min(2, "כתובת נדרשת"),
+    phone: z.string().optional(),
   }),
   items: z.array(z.object({
     id: z.string(),
@@ -53,9 +56,15 @@ export default function NewCarOrder() {
   const [useExisting, setUseExisting] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState<{ type: 'customer' | 'lead'; id: string } | null>(null);
   const [includeVAT, setIncludeVAT] = useState(false);
+  const [savedOrderData, setSavedOrderData] = useState<NewCarOrderPDFData | null>(null);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
   const { leads } = useLeads();
   const { data: customers = [] } = useCustomers();
   const isMobile = useIsMobile();
+  const { createOrder, isCreating } = useNewCarOrder();
+  const { mutateAsync: uploadDocument, isPending: isUploading } = useUploadProductionDocument();
+  const { profile } = useProfile();
 
   const form = useForm<NewCarOrderFormValues>({
     resolver: zodResolver(newCarOrderSchema),
@@ -69,6 +78,7 @@ export default function NewCarOrder() {
         idNumber: "",
         city: "",
         address: "",
+        phone: "",
       },
       items: [{
         id: "1",
@@ -82,8 +92,6 @@ export default function NewCarOrder() {
     },
   });
 
-  const selectedLead = leads?.find(l => l.id === (form.watch("leadId") || ""));
-
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "items",
@@ -92,7 +100,6 @@ export default function NewCarOrder() {
   const watchedItems = form.watch("items");
   const selectedDate = form.watch("date") ? new Date(form.watch("date")) : undefined;
   
-  // Calculate totals
   const subtotal = watchedItems.reduce((sum, item) => sum + (item.netPrice * item.quantity), 0);
   const totalDiscount = watchedItems.reduce((sum, item) => sum + item.discount, 0);
   const total = subtotal - totalDiscount;
@@ -125,6 +132,7 @@ export default function NewCarOrder() {
       form.setValue("leadId", value.id);
       form.setValue("customer.fullName", value.data.name || "");
       form.setValue("customer.firstName", value.data.name?.split(" ")[0] || "");
+      form.setValue("customer.phone", value.data.phone || "");
     } else {
       form.setValue("leadId", undefined);
       form.setValue("customer.fullName", value.data.full_name || "");
@@ -132,22 +140,127 @@ export default function NewCarOrder() {
       form.setValue("customer.idNumber", value.data.id_number || "");
       form.setValue("customer.city", value.data.city || "");
       form.setValue("customer.address", value.data.address || "");
+      form.setValue("customer.phone", value.data.phone || "");
     }
   };
 
-  const onSubmit = (data: NewCarOrderFormValues) => {
-    toast({
-      title: "הצלחה",
-      description: "הזמנת הרכב החדש נשמרה בהצלחה",
-    });
-    setShowPreview(true);
+  const buildOrderData = (formData: NewCarOrderFormValues): Omit<NewCarOrderPDFData, 'orderNumber'> => ({
+    date: formData.date,
+    customer: {
+      fullName: formData.customer.fullName,
+      firstName: formData.customer.firstName,
+      birthYear: formData.customer.birthYear,
+      idNumber: formData.customer.idNumber,
+      city: formData.customer.city,
+      address: formData.customer.address,
+      phone: formData.customer.phone,
+    },
+    items: formData.items.map(item => ({
+      description: item.description,
+      netPrice: item.netPrice,
+      discount: item.discount,
+      quantity: item.quantity,
+      finalPrice: item.finalPrice,
+    })),
+    financial: {
+      subtotal,
+      totalDiscount,
+      vat: includeVAT ? vatAmount : undefined,
+      total: grandTotal,
+    },
+    includeVAT,
+    notes: formData.notes,
+    company: profile ? {
+      name: profile.company_name || '',
+      address: profile.company_address || '',
+      hp: profile.company_hp || '',
+      phone: profile.phone || '',
+      authorizedDealer: profile.company_authorized_dealer || false,
+      logoUrl: profile.company_logo_url || undefined,
+    } : undefined,
+  });
+
+  const onSubmit = async (data: NewCarOrderFormValues) => {
+    try {
+      const orderPayload = buildOrderData(data);
+      const result = await createOrder(orderPayload);
+      setSavedOrderData(result);
+      setIsSaved(true);
+
+      toast({
+        title: "הזמנת הרכב נשמרה בהצלחה",
+        description: `מספר הזמנה: ${result.orderNumber}`,
+      });
+
+      // Generate and upload PDF
+      try {
+        const pdfBlob = await generateNewCarOrderPDF(result, true) as Blob;
+        if (pdfBlob) {
+          const publicUrl = await uploadDocument({
+            pdfBlob,
+            documentType: 'new_car_order',
+            documentNumber: result.orderNumber,
+            customerName: result.customer?.fullName || '',
+            entityType: selectedEntity?.type === 'customer' ? 'customer' : 'lead',
+            entityId: selectedEntity?.id,
+          });
+          if (publicUrl) setDocumentUrl(publicUrl);
+        }
+      } catch (pdfError) {
+        console.error('Error uploading PDF:', pdfError);
+      }
+
+      setShowPreview(true);
+    } catch (error) {
+      console.error("Error saving car order:", error);
+      toast({
+        title: "שגיאה בשמירת ההזמנה",
+        description: "אנא נסה שוב",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDownloadPDF = () => {
-    toast({
-      title: "בפיתוח",  
-      description: "הורדת PDF תהיה זמינה בקרוב",
-    });
+  const handleDownloadPDF = async () => {
+    const formData = form.getValues();
+    const orderData: NewCarOrderPDFData = savedOrderData || {
+      orderNumber: "טיוטה",
+      ...buildOrderData(formData),
+    };
+    await generateNewCarOrderPDF(orderData);
+  };
+
+  const handleWhatsAppSend = () => {
+    const formData = form.getValues();
+    const customerData = savedOrderData?.customer || formData.customer;
+    const orderNumber = savedOrderData?.orderNumber || "טיוטה";
+    const totalAmount = savedOrderData?.financial.total || grandTotal;
+
+    let message = `שלום ${customerData.firstName || customerData.fullName},\n\nהזמנת רכב חדש מספר: ${orderNumber}\nסכום: ${totalAmount.toFixed(2)} ₪`;
+
+    if (documentUrl) {
+      message += `\n\n📄 לצפייה והורדת הקובץ:\n${documentUrl}`;
+    }
+
+    message += '\n\nנשמח לעמוד לרשותך!';
+
+    let phone = customerData.phone?.replace(/[^\d]/g, '');
+
+    if (phone) {
+      if (phone.startsWith('0')) {
+        phone = '972' + phone.slice(1);
+      } else if (!phone.startsWith('972')) {
+        phone = '972' + phone;
+      }
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    } else {
+      toast({
+        title: "מספר טלפון חסר",
+        description: "יש להזין מספר טלפון ללקוח כדי לשלוח וואטסאפ",
+        variant: "destructive",
+      });
+    }
   };
 
   // ─── Financial Summary Card (shared) ───
@@ -204,8 +317,15 @@ export default function NewCarOrder() {
           title="הזמנת רכב חדש"
           icon={<FileText className="h-5 w-5" />}
         />
+
+        {isSaved && (
+          <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-green-700">נשמר בענן</span>
+          </div>
+        )}
         
-        <div className="space-y-4 pb-40">
+        <div className="p-4 space-y-4 pb-44">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Date */}
             <Card className="shadow-lg rounded-2xl border-2">
@@ -249,45 +369,24 @@ export default function NewCarOrder() {
               </CardHeader>
               <CardContent className="space-y-3 pt-4">
                 <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={useExisting ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setUseExisting(true)}
-                    className="flex-1 h-10 rounded-xl"
-                  >
+                  <Button type="button" variant={useExisting ? "default" : "outline"} size="sm" onClick={() => setUseExisting(true)} className="flex-1 h-10 rounded-xl">
                     בחר לקוח קיים
                   </Button>
-                  <Button
-                    type="button"
-                    variant={!useExisting ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setUseExisting(false);
-                      form.setValue("leadId", undefined);
-                      setSelectedEntity(null);
-                    }}
-                    className="flex-1 h-10 rounded-xl flex items-center gap-2"
-                  >
+                  <Button type="button" variant={!useExisting ? "default" : "outline"} size="sm" onClick={() => { setUseExisting(false); form.setValue("leadId", undefined); setSelectedEntity(null); }} className="flex-1 h-10 rounded-xl flex items-center gap-2">
                     <UserPlus className="h-4 w-4" />
                     לקוח חדש
                   </Button>
                 </div>
 
                 {useExisting && (
-                  <CustomerAndLeadSearchSelect
-                    value={selectedEntity}
-                    onValueChange={handleLeadSelect}
-                    placeholder="חפש לקוח או ליד..."
-                  />
+                  <CustomerAndLeadSearchSelect value={selectedEntity} onValueChange={handleLeadSelect} placeholder="חפש לקוח או ליד..." />
                 )}
                 
                 <div className="space-y-3">
                   <Input {...form.register("customer.fullName")} className="text-right h-11 rounded-xl" placeholder="שם מלא" />
                   {form.formState.errors.customer?.fullName && <p className="text-sm text-destructive">{form.formState.errors.customer.fullName.message}</p>}
-                  
                   <Input {...form.register("customer.firstName")} className="text-right h-11 rounded-xl" placeholder="שם פרטי" />
-                  
+                  <Input {...form.register("customer.phone")} className="text-right h-11 rounded-xl" placeholder="טלפון" />
                   <div className="grid grid-cols-2 gap-2">
                     <Input {...form.register("customer.birthYear")} className="text-right h-10 rounded-xl" placeholder="שנת לידה" />
                     <Input {...form.register("customer.idNumber")} className="text-right h-10 rounded-xl" placeholder="תעודת זהות" />
@@ -316,56 +415,26 @@ export default function NewCarOrder() {
                   <Card key={field.id} className="p-3 bg-muted/30 rounded-xl border">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => remove(index)}
-                          className="h-7 px-2 rounded-lg"
-                          disabled={fields.length === 1}
-                        >
+                        <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)} className="h-7 px-2 rounded-lg" disabled={fields.length === 1}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                         <span className="font-medium text-sm">פריט {index + 1}</span>
                       </div>
-
-                      <Input
-                        {...form.register(`items.${index}.description`)}
-                        className="text-right h-10 rounded-xl"
-                        placeholder="תיאור הפריט"
-                      />
-
+                      <Input {...form.register(`items.${index}.description`)} className="text-right h-10 rounded-xl" placeholder="תיאור הפריט" />
                       <div className="grid grid-cols-3 gap-2">
                         <div className="space-y-1">
                           <Label className="text-xs">מחיר נטו</Label>
-                          <Input
-                            type="number"
-                            {...form.register(`items.${index}.netPrice`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })}
-                            className="text-right h-10 rounded-xl"
-                            placeholder="0"
-                          />
+                          <Input type="number" {...form.register(`items.${index}.netPrice`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })} className="text-right h-10 rounded-xl" placeholder="0" />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">הנחה</Label>
-                          <Input
-                            type="number"
-                            {...form.register(`items.${index}.discount`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })}
-                            className="text-right h-10 rounded-xl"
-                            placeholder="0"
-                          />
+                          <Input type="number" {...form.register(`items.${index}.discount`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })} className="text-right h-10 rounded-xl" placeholder="0" />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">כמות</Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            {...form.register(`items.${index}.quantity`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })}
-                            className="text-right h-10 rounded-xl"
-                            placeholder="1"
-                          />
+                          <Input type="number" min="1" {...form.register(`items.${index}.quantity`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })} className="text-right h-10 rounded-xl" placeholder="1" />
                         </div>
                       </div>
-
                       <div className="p-2 bg-primary/5 rounded-lg text-center font-semibold text-sm">
                         מחיר סופי: {formatPrice(watchedItems[index]?.finalPrice || 0)}
                       </div>
@@ -381,11 +450,7 @@ export default function NewCarOrder() {
                 <CardTitle className="text-right text-lg">הערות</CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
-                <Textarea
-                  {...form.register("notes")}
-                  className="text-right min-h-[80px] rounded-xl"
-                  placeholder="הערות נוספות להזמנה..."
-                />
+                <Textarea {...form.register("notes")} className="text-right min-h-[80px] rounded-xl" placeholder="הערות נוספות להזמנה..." />
               </CardContent>
             </Card>
 
@@ -395,19 +460,16 @@ export default function NewCarOrder() {
             {/* Fixed Action Buttons */}
             <div className="fixed bottom-36 left-0 right-0 p-3 bg-background border-t shadow-lg z-50">
               <div className="space-y-1.5 max-w-md mx-auto">
-                <Button
-                  type="submit"
-                  className="w-full h-11 rounded-xl text-base font-bold bg-green-600 hover:bg-green-700"
-                >
+                <Button type="submit" disabled={isCreating || isUploading} className="w-full h-11 rounded-xl text-base font-bold bg-green-600 hover:bg-green-700">
                   <FileText className="ml-2 h-5 w-5" />
-                  הפק מסמך
+                  {isCreating ? 'שומר...' : 'הפק מסמך'}
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
                   <Button type="button" variant="outline" onClick={handleDownloadPDF} className="h-9 rounded-xl">
                     <Download className="ml-1 h-4 w-4" />
                     PDF
                   </Button>
-                  <Button type="button" className="h-9 rounded-xl bg-green-600">
+                  <Button type="button" onClick={handleWhatsAppSend} disabled={!documentUrl && !form.watch("customer.phone")} className="h-9 rounded-xl bg-green-600 hover:bg-green-700">
                     <MessageCircle className="ml-1 h-4 w-4" />
                     וואטסאפ
                   </Button>
@@ -422,15 +484,24 @@ export default function NewCarOrder() {
 
   // ─── Desktop Layout ───
   return (
-    <div className="min-h-screen bg-background p-6" dir="rtl">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-right flex items-center gap-3 justify-end">
+    <div className="container mx-auto py-6 px-4 max-w-7xl" dir="rtl">
+      {/* Page Header - aligned right like PriceQuote */}
+      <div className="mb-8 text-right">
+        <h1 className="text-4xl font-bold bg-gradient-to-l from-primary to-primary/70 bg-clip-text text-transparent mb-2">
           הזמנת רכב חדש
-          <FileText className="h-8 w-8 text-primary" />
         </h1>
-        <p className="text-muted-foreground text-right mt-1">מילוי פרטי הזמנת רכב חדש ללקוח</p>
+        <p className="text-muted-foreground text-lg">
+          מילוי פרטי הזמנת רכב חדש ללקוח
+        </p>
       </div>
+
+      {/* Save Status Indicator */}
+      {isSaved && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-green-700">ההזמנה נשמרה בענן</span>
+        </div>
+      )}
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -456,16 +527,7 @@ export default function NewCarOrder() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="end" side="bottom">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => {
-                        if (date) form.setValue("date", date.toISOString().split('T')[0]);
-                      }}
-                      initialFocus
-                      dir="rtl"
-                      className="pointer-events-auto"
-                    />
+                    <Calendar mode="single" selected={selectedDate} onSelect={(date) => { if (date) form.setValue("date", date.toISOString().split('T')[0]); }} initialFocus dir="rtl" className="pointer-events-auto" />
                   </PopoverContent>
                 </Popover>
               </CardContent>
@@ -476,26 +538,10 @@ export default function NewCarOrder() {
               <CardHeader className="bg-gradient-to-l from-primary/10 to-transparent border-b pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={useExisting ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setUseExisting(true)}
-                      className="rounded-xl"
-                    >
+                    <Button type="button" variant={useExisting ? "default" : "outline"} size="sm" onClick={() => setUseExisting(true)} className="rounded-xl">
                       בחר לקוח קיים
                     </Button>
-                    <Button
-                      type="button"
-                      variant={!useExisting ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setUseExisting(false);
-                        form.setValue("leadId", undefined);
-                        setSelectedEntity(null);
-                      }}
-                      className="rounded-xl flex items-center gap-2"
-                    >
+                    <Button type="button" variant={!useExisting ? "default" : "outline"} size="sm" onClick={() => { setUseExisting(false); form.setValue("leadId", undefined); setSelectedEntity(null); }} className="rounded-xl flex items-center gap-2">
                       <UserPlus className="h-4 w-4" />
                       לקוח חדש
                     </Button>
@@ -505,13 +551,8 @@ export default function NewCarOrder() {
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
                 {useExisting && (
-                  <CustomerAndLeadSearchSelect
-                    value={selectedEntity}
-                    onValueChange={handleLeadSelect}
-                    placeholder="חפש לקוח או ליד..."
-                  />
+                  <CustomerAndLeadSearchSelect value={selectedEntity} onValueChange={handleLeadSelect} placeholder="חפש לקוח או ליד..." />
                 )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <Label className="text-sm">שם מלא</Label>
@@ -521,6 +562,10 @@ export default function NewCarOrder() {
                   <div className="space-y-1">
                     <Label className="text-sm">שם פרטי</Label>
                     <Input {...form.register("customer.firstName")} className="text-right h-10 rounded-xl" placeholder="שם פרטי" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-sm">טלפון</Label>
+                    <Input {...form.register("customer.phone")} className="text-right h-10 rounded-xl" placeholder="050-1234567" />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-sm">שנת לידה</Label>
@@ -534,7 +579,7 @@ export default function NewCarOrder() {
                     <Label className="text-sm">עיר</Label>
                     <Input {...form.register("customer.city")} className="text-right h-10 rounded-xl" placeholder="תל אביב" />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 lg:col-span-2">
                     <Label className="text-sm">כתובת</Label>
                     <Input {...form.register("customer.address")} className="text-right h-10 rounded-xl" placeholder="הכנס כתובת" />
                   </div>
@@ -557,58 +602,29 @@ export default function NewCarOrder() {
                 {fields.map((field, index) => (
                   <Card key={field.id} className="p-4 bg-muted/30 rounded-xl border">
                     <div className="flex items-center justify-between mb-3">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => remove(index)}
-                        className="h-8 px-3 rounded-lg"
-                        disabled={fields.length === 1}
-                      >
+                      <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)} className="h-8 px-3 rounded-lg" disabled={fields.length === 1}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                       <h4 className="font-medium">פריט {index + 1}</h4>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                       <div className="space-y-1 lg:col-span-2">
                         <Label className="text-sm">תיאור</Label>
-                        <Input
-                          {...form.register(`items.${index}.description`)}
-                          className="text-right h-10 rounded-xl"
-                          placeholder="תיאור הפריט"
-                        />
+                        <Input {...form.register(`items.${index}.description`)} className="text-right h-10 rounded-xl" placeholder="תיאור הפריט" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-sm">מחיר נטו</Label>
-                        <Input
-                          type="number"
-                          {...form.register(`items.${index}.netPrice`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })}
-                          className="text-right h-10 rounded-xl"
-                          placeholder="0"
-                        />
+                        <Input type="number" {...form.register(`items.${index}.netPrice`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })} className="text-right h-10 rounded-xl" placeholder="0" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-sm">הנחה</Label>
-                        <Input
-                          type="number"
-                          {...form.register(`items.${index}.discount`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })}
-                          className="text-right h-10 rounded-xl"
-                          placeholder="0"
-                        />
+                        <Input type="number" {...form.register(`items.${index}.discount`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })} className="text-right h-10 rounded-xl" placeholder="0" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-sm">כמות</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          {...form.register(`items.${index}.quantity`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })}
-                          className="text-right h-10 rounded-xl"
-                          placeholder="1"
-                        />
+                        <Input type="number" min="1" {...form.register(`items.${index}.quantity`, { valueAsNumber: true, onChange: () => calculateFinalPrice(index) })} className="text-right h-10 rounded-xl" placeholder="1" />
                       </div>
                     </div>
-
                     <div className="mt-3 p-3 bg-primary/5 rounded-xl text-center">
                       <span className="text-lg font-bold text-primary">
                         מחיר סופי: {formatPrice(watchedItems[index]?.finalPrice || 0)}
@@ -625,11 +641,7 @@ export default function NewCarOrder() {
                 <CardTitle className="text-lg text-right">הערות</CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
-                <Textarea
-                  {...form.register("notes")}
-                  className="text-right min-h-[100px] rounded-xl"
-                  placeholder="הערות נוספות להזמנה..."
-                />
+                <Textarea {...form.register("notes")} className="text-right min-h-[100px] rounded-xl" placeholder="הערות נוספות להזמנה..." />
               </CardContent>
             </Card>
           </div>
@@ -643,10 +655,11 @@ export default function NewCarOrder() {
               <div className="space-y-3">
                 <Button
                   type="submit"
+                  disabled={isCreating || isUploading}
                   className="w-full h-14 rounded-xl text-lg font-bold bg-green-600 hover:bg-green-700"
                 >
                   <FileText className="ml-2 h-5 w-5" />
-                  הפק מסמך
+                  {isCreating ? 'שומר...' : 'הפק מסמך'}
                 </Button>
                 <div className="grid grid-cols-2 gap-3">
                   <Button
@@ -660,6 +673,7 @@ export default function NewCarOrder() {
                   </Button>
                   <Button
                     type="button"
+                    onClick={handleWhatsAppSend}
                     className="h-12 rounded-xl bg-green-600 hover:bg-green-700"
                   >
                     <MessageCircle className="ml-2 h-5 w-5" />
@@ -669,15 +683,16 @@ export default function NewCarOrder() {
               </div>
 
               {/* Preview Section */}
-              {showPreview && (
+              {showPreview && savedOrderData && (
                 <Card className="shadow-lg rounded-2xl border-2">
                   <CardHeader className="bg-gradient-to-l from-green-500/10 to-transparent border-b pb-3">
                     <CardTitle className="text-lg text-right">✅ ההזמנה נשמרה</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 pt-4 text-right text-sm">
-                    <p><strong>תאריך:</strong> {form.watch("date") ? new Date(form.watch("date")).toLocaleDateString('he-IL') : ""}</p>
-                    <p><strong>לקוח:</strong> {form.watch("customer.fullName")}</p>
-                    <p><strong>סה"כ לתשלום:</strong> {formatPrice(grandTotal)}</p>
+                    <p><strong>מספר הזמנה:</strong> {savedOrderData.orderNumber}</p>
+                    <p><strong>תאריך:</strong> {new Date(savedOrderData.date).toLocaleDateString('he-IL')}</p>
+                    <p><strong>לקוח:</strong> {savedOrderData.customer.fullName}</p>
+                    <p><strong>סה"כ לתשלום:</strong> {formatPrice(savedOrderData.financial.total)}</p>
                   </CardContent>
                 </Card>
               )}
