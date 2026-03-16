@@ -40,7 +40,7 @@ export default function AccountantReports() {
     );
   };
 
-  const handleQuickFilter = (type: "current" | "previous" | "three") => {
+  const handleQuickFilter = (type: "current" | "previous" | "three" | "tax_year") => {
     const now = new Date();
     switch (type) {
       case "current":
@@ -55,6 +55,12 @@ export default function AccountantReports() {
         setStartDate(format(startOfMonth(subMonths(now, 3)), "yyyy-MM-dd"));
         setEndDate(format(endOfMonth(now), "yyyy-MM-dd"));
         break;
+      case "tax_year": {
+        const year = now.getMonth() < 3 ? now.getFullYear() - 1 : now.getFullYear();
+        setStartDate(`${year}-01-01`);
+        setEndDate(`${year}-12-31`);
+        break;
+      }
     }
   };
 
