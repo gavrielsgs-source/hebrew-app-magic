@@ -4,6 +4,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface SalesAgreementPreviewProps {
   data: {
     date?: Date;
+    signatures?: {
+      seller?: string;
+      buyer?: string;
+    };
     seller?: {
       company?: string;
       id?: string;
