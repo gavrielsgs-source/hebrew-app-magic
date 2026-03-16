@@ -168,6 +168,14 @@ export default function AccountantReports() {
                 >
                   3 חודשים אחרונים
                 </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleQuickFilter("tax_year")}
+                  className="rounded-xl border-primary text-primary"
+                >
+                  שנת מס {new Date().getMonth() < 3 ? new Date().getFullYear() - 1 : new Date().getFullYear()}
+                </Button>
               </div>
             </div>
 
