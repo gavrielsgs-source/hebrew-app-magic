@@ -344,6 +344,7 @@ export type Database = {
           price: number
           purchase_cost: number | null
           purchase_date: string | null
+          purchase_source: string | null
           registration_fee: number | null
           registration_year: number | null
           show_in_catalog: boolean | null
@@ -389,6 +390,7 @@ export type Database = {
           price: number
           purchase_cost?: number | null
           purchase_date?: string | null
+          purchase_source?: string | null
           registration_fee?: number | null
           registration_year?: number | null
           show_in_catalog?: boolean | null
@@ -434,6 +436,7 @@ export type Database = {
           price?: number
           purchase_cost?: number | null
           purchase_date?: string | null
+          purchase_source?: string | null
           registration_fee?: number | null
           registration_year?: number | null
           show_in_catalog?: boolean | null
