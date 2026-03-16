@@ -277,6 +277,14 @@ export default function Profile() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="automations">
+              <Card className="shadow-lg rounded-2xl border-2">
+                <CardContent className="p-4">
+                  <AutomationSettingsTab />
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
       </MobileContainer>
