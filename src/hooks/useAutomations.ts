@@ -66,7 +66,6 @@ export function useUpsertAutomationSettings() {
     mutationFn: async (settings: Partial<AutomationSettings>) => {
       if (!user) throw new Error("Not authenticated");
       
-      // Return the saved record from DB
       const { data, error } = await supabase
         .from("automation_settings")
         .upsert(
@@ -75,6 +74,7 @@ export function useUpsertAutomationSettings() {
         )
         .select("*")
         .single();
+
       if (error) throw error;
       return data as AutomationSettings;
     },

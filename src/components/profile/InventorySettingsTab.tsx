@@ -364,19 +364,31 @@ export function InventorySettingsTab() {
         show_prices: parseBoolean(settings.show_prices, true),
       };
 
-      const isEnabled = parseBoolean(enabled, false) && !!normalizedSlug;
-      const profilePayload = {
-        inventory_slug: normalizedSlug || null,
-        inventory_enabled: isEnabled,
-        inventory_settings: normalizedSettings as unknown as Json,
-      };
+      const { data, error } = await supabase
+        .from("profiles")
+        .upsert(
+          {
+            id: user.id,
+            inventory_slug: normalizedSlug || null,
+            inventory_enabled: parseBoolean(enabled, false) && !!normalizedSlug,
+            inventory_settings: normalizedSettings as unknown as Json,
+          },
+          { onConflict: "id" }
+        )
+        .select("id");
 
-      const updatedProfile = await persistProfile(profilePayload);
-      applyProfileState(updatedProfile);
+      if (error) {
+        toast.error("Save failed: " + error.message);
+        return;
+      }
 
-      
+      if (!data || data.length === 0) {
+        toast.error("Save failed: no rows updated. Check database permissions.");
+        return;
+      }
 
-      toast.success("הגדרות הקטלוג נשמרו בהצלחה");
+      toast.success("Settings saved");
+      await fetchSettings();
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error("שגיאה בשמירת ההגדרות", { description: error.message });

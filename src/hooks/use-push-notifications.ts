@@ -74,17 +74,21 @@ export function usePushNotifications() {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
-        .update({ 
-          notification_preferences: newPreferences as any
-        })
-        .eq("id", user.id);
+        .upsert({
+          id: user.id,
+          notification_preferences: newPreferences as any,
+        }, { onConflict: "id" })
+        .select("id");
 
-      if (error) throw error;
+      if (error || !data || data.length === 0) {
+        toast.error("Failed to save notification preferences");
+        return;
+      }
 
       setPreferences(newPreferences);
-      toast.success("העדפות התראות עודכנו!");
+      toast.success("Notification preferences saved");
     } catch (error) {
       console.error("Error updating preferences:", error);
       toast.error("שגיאה בעדכון העדפות");
