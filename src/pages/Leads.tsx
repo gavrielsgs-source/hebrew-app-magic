@@ -116,7 +116,7 @@ export default function Leads() {
       <MobileContainer withPadding={false}>
         <SubscriptionLimitAlert 
           resourceType="lead" 
-          currentCount={leads.length} 
+          currentCount={monthlyLeadCount} 
         />
         
         <LeadsMobileHeader
