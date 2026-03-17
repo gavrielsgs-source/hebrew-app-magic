@@ -53,8 +53,8 @@ export function useAutomationSettings() {
       if (error) throw error;
       return data as AutomationSettings | null;
     },
-    enabled: !!user,
-    staleTime: 300000, // 5 minutes - prevent unnecessary refetches
+    enabled: !!user?.id,
+    staleTime: 0,
   });
 }
 
