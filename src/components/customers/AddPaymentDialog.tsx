@@ -56,7 +56,7 @@ export function AddPaymentDialog({ customerId, preselectedPurchaseId, trigger }:
     try {
       await addPayment.mutateAsync({
         customerId,
-        purchaseId: purchaseId || undefined,
+        purchaseId: purchaseId && purchaseId !== 'none' ? purchaseId : undefined,
         amount: parseFloat(amount),
         paymentDate,
         paymentMethod,
