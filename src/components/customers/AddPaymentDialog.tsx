@@ -56,7 +56,7 @@ export function AddPaymentDialog({ customerId, preselectedPurchaseId, trigger }:
     try {
       await addPayment.mutateAsync({
         customerId,
-        purchaseId: purchaseId || undefined,
+        purchaseId: purchaseId && purchaseId !== 'none' ? purchaseId : undefined,
         amount: parseFloat(amount),
         paymentDate,
         paymentMethod,
@@ -166,7 +166,7 @@ export function AddPaymentDialog({ customerId, preselectedPurchaseId, trigger }:
                   <SelectValue placeholder="בחר עסקה לקישור" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">ללא קישור לעסקה</SelectItem>
+                  <SelectItem value="none">ללא קישור לעסקה</SelectItem>
                   {purchases.map((purchase) => (
                     <SelectItem key={purchase.id} value={purchase.id}>
                       {formatPurchaseLabel(purchase)}
