@@ -166,7 +166,7 @@ export function AddPaymentDialog({ customerId, preselectedPurchaseId, trigger }:
                   <SelectValue placeholder="בחר עסקה לקישור" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">ללא קישור לעסקה</SelectItem>
+                  <SelectItem value="none">ללא קישור לעסקה</SelectItem>
                   {purchases.map((purchase) => (
                     <SelectItem key={purchase.id} value={purchase.id}>
                       {formatPurchaseLabel(purchase)}
