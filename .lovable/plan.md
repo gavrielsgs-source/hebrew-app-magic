@@ -1,26 +1,18 @@
 
 
-## תיקון — החזרת תגובת UI מיידית לטוגלים
+## תיקון פונקציית `admin_extend_subscription`
 
-### מה שבור
-הסרנו את `setEnabled(checked)` מ-`handleEnabledChange` בתיקון הקודם. עכשיו הטוגל לא מגיב ויזואלית עד שה-DB מגיב — מה שנראה למשתמש כאילו הוא לא עובד.
+### הבעיה
+כשמאריכים מנוי דרך ממשק האדמין, הפונקציה מעדכנת רק את `expires_at` אבל לא משנה את `subscription_status` ל-`active`. כתוצאה, משתמשים שהיו ב-`trial` או `expired` נשארים חסומים למרות שתאריך התפוגה הוארך.
 
-### מה צריך לעשות
-שינוי אחד בלבד בקובץ `InventorySettingsTab.tsx`:
-
-**החזרת `setEnabled(checked)` ל-`handleEnabledChange`** (שורה 272-274):
-```typescript
-const handleEnabledChange = (checked: boolean) => {
-  setEnabled(checked); // ← להחזיר את זה — תגובה מיידית ב-UI
-  autoSaveToggle('inventory_enabled', checked);
-};
+### הפתרון
+עדכון פונקציית `admin_extend_subscription` בבסיס הנתונים כך שה-UPDATE יכלול גם:
+```sql
+subscription_status = 'active'
 ```
 
-אם השמירה נכשלת, `autoSaveToggle` כבר קורא ל-`fetchSettings()` ב-catch שמחזיר את הערך הנכון מה-DB.
-
-### מה לא לגעת
-כל שאר השינויים מהסיבוב הקודם (wrapper div שקורא ל-`handleEnabledChange`, הסרת `inventory_enabled` מ-`saveSettings`) — אלה תקינים ונשארים.
+שינוי יחיד בשורת ה-UPDATE הקיימת — הוספת `subscription_status = 'active'` ליד `expires_at` ו-`updated_at`.
 
 ### קובץ מושפע
-- `src/components/profile/InventorySettingsTab.tsx` — שורה אחת בלבד
+- Database function: `admin_extend_subscription` (migration בלבד, ללא שינוי קוד Frontend)
 
