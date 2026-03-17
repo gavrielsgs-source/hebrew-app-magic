@@ -70,8 +70,16 @@ export function AutomationSettingsTab() {
     }
   }, [settings]);
 
+  const TOGGLE_KEYS: (keyof AutomationSettings)[] = ['welcome_enabled', 'followup1_enabled', 'followup2_enabled', 'car_match_enabled'];
+
   function update(key: keyof AutomationSettings, value: any) {
-    setForm((f) => ({ ...f, [key]: value }));
+    const updated = { ...form, [key]: value };
+    setForm(updated);
+    localStorage.setItem("automation_settings_form", JSON.stringify(updated));
+
+    if (TOGGLE_KEYS.includes(key)) {
+      upsert.mutate(updated);
+    }
   }
 
   function save() {
