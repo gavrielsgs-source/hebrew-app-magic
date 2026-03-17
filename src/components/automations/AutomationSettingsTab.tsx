@@ -59,14 +59,10 @@ export function AutomationSettingsTab() {
     } catch {}
     return DEFAULT_SETTINGS;
   });
-  const hydrated = useRef(false);
-
-  // Hydrate form ONCE when settings first load from DB
   useEffect(() => {
-    if (settings && !hydrated.current) {
+    if (settings) {
       setForm(settings);
       localStorage.setItem("automation_settings_form", JSON.stringify(settings));
-      hydrated.current = true;
     }
   }, [settings]);
 

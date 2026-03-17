@@ -78,9 +78,8 @@ export function useUpsertAutomationSettings() {
       if (error) throw error;
       return data as AutomationSettings;
     },
-    onSuccess: (savedData) => {
-      // Directly set cache with confirmed DB data instead of refetching
-      queryClient.setQueryData(["automation_settings", user?.id], savedData);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["automation_settings"] });
       toast.success("הגדרות האוטומציה נשמרו");
     },
     onError: (err: any) => {
