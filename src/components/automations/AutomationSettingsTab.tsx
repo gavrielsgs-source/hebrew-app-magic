@@ -76,7 +76,12 @@ export function AutomationSettingsTab() {
     localStorage.setItem("automation_settings_form", JSON.stringify(updated));
 
     if (TOGGLE_KEYS.includes(key)) {
-      upsert.mutate(updated);
+      isSubmitting.current = true;
+      upsert.mutate(updated, {
+        onSettled: () => {
+          isSubmitting.current = false;
+        }
+      });
     }
   }
 
