@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAutomationSettings, useUpsertAutomationSettings, useAutomationQueue, AutomationSettings } from "@/hooks/useAutomations";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -59,14 +59,10 @@ export function AutomationSettingsTab() {
     } catch {}
     return DEFAULT_SETTINGS;
   });
-  const hydrated = useRef(false);
-
-  // Hydrate form ONCE when settings first load from DB
   useEffect(() => {
-    if (settings && !hydrated.current) {
+    if (settings) {
       setForm(settings);
       localStorage.setItem("automation_settings_form", JSON.stringify(settings));
-      hydrated.current = true;
     }
   }, [settings]);
 

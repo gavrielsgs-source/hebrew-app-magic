@@ -53,8 +53,8 @@ export function useAutomationSettings() {
       if (error) throw error;
       return data as AutomationSettings | null;
     },
-    enabled: !!user,
-    staleTime: 300000, // 5 minutes - prevent unnecessary refetches
+    enabled: !!user?.id,
+    staleTime: 0,
   });
 }
 
@@ -78,9 +78,8 @@ export function useUpsertAutomationSettings() {
       if (error) throw error;
       return data as AutomationSettings;
     },
-    onSuccess: (savedData) => {
-      // Directly set cache with confirmed DB data instead of refetching
-      queryClient.setQueryData(["automation_settings", user?.id], savedData);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["automation_settings"] });
       toast.success("הגדרות האוטומציה נשמרו");
     },
     onError: (err: any) => {
