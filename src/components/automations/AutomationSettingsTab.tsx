@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAutomationSettings, useUpsertAutomationSettings, useAutomationQueue, AutomationSettings } from "@/hooks/useAutomations";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -59,8 +59,10 @@ export function AutomationSettingsTab() {
     } catch {}
     return DEFAULT_SETTINGS;
   });
+  const isSubmitting = useRef(false);
+
   useEffect(() => {
-    if (settings) {
+    if (settings && !isSubmitting.current) {
       setForm(settings);
       localStorage.setItem("automation_settings_form", JSON.stringify(settings));
     }
@@ -74,7 +76,12 @@ export function AutomationSettingsTab() {
     localStorage.setItem("automation_settings_form", JSON.stringify(updated));
 
     if (TOGGLE_KEYS.includes(key)) {
-      upsert.mutate(updated);
+      isSubmitting.current = true;
+      upsert.mutate(updated, {
+        onSettled: () => {
+          isSubmitting.current = false;
+        }
+      });
     }
   }
 
