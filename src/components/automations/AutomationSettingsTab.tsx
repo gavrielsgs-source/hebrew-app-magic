@@ -59,8 +59,10 @@ export function AutomationSettingsTab() {
     } catch {}
     return DEFAULT_SETTINGS;
   });
+  const isSubmitting = useRef(false);
+
   useEffect(() => {
-    if (settings) {
+    if (settings && !isSubmitting.current) {
       setForm(settings);
       localStorage.setItem("automation_settings_form", JSON.stringify(settings));
     }
