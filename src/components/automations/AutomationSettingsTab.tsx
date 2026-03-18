@@ -182,7 +182,7 @@ export function AutomationSettingsTab() {
                     </CardTitle>
                     <Switch
                       checked={!!form.welcome_enabled}
-                      onCheckedChange={(v) => update("welcome_enabled", v)}
+                      onCheckedChange={(checked) => handleToggleChange("welcome_enabled", checked)}
                     />
                   </div>
                   <CardDescription>נשלחת אוטומטית כשנכנס ליד חדש (ללא לחיצה ידנית)</CardDescription>
