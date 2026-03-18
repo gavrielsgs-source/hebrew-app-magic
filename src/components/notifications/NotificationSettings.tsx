@@ -39,7 +39,7 @@ export function NotificationSettings() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 ml-4">
               {permission === "granted" ? (
-                <div className="flex items-center gap-2 text-green-600">
+                <div className="flex items-center gap-2 text-foreground">
                   <Smartphone className="h-4 w-4" />
                   <span className="text-sm">פעיל</span>
                 </div>
@@ -71,7 +71,7 @@ export function NotificationSettings() {
         </div>
 
         {permission === "granted" && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="rounded-lg border border-border bg-muted/40 p-3">
             <div className="flex items-center justify-between">
               <Button 
                 onClick={sendTestNotification}
@@ -83,8 +83,8 @@ export function NotificationSettings() {
                 שלח התראת בדיקה
               </Button>
               <div className="text-right flex-1 mr-4">
-                <Label className="text-sm font-medium text-blue-800">בדיקת התראות</Label>
-                <p className="text-xs text-blue-600">
+                <Label className="text-sm font-medium text-foreground">בדיקת התראות</Label>
+                <p className="text-xs text-muted-foreground">
                   לחץ כדי לבדוק שההתראות עובדות
                 </p>
               </div>
@@ -151,8 +151,8 @@ export function NotificationSettings() {
         </div>
 
         {permission === "default" && (
-          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800 text-right">
+          <div className="rounded-lg border border-border bg-muted/40 p-3">
+            <p className="text-sm text-foreground text-right">
               כדי לקבל התראות פוש, יש לאשר הרשאות בדפדפן
             </p>
           </div>
