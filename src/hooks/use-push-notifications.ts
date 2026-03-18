@@ -24,6 +24,14 @@ const urlBase64ToUint8Array = (base64String: string) => {
   return outputArray;
 };
 
+const getBrowserPermission = (): NotificationPermission => {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return 'default';
+  }
+
+  return Notification.permission;
+};
+
 export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSupported, setIsSupported] = useState(false);
@@ -37,11 +45,32 @@ export function usePushNotifications() {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Check if notifications are supported
-    if ('Notification' in window) {
-      setIsSupported(true);
-      setPermission(Notification.permission);
+    if (!('Notification' in window)) {
+      setIsSupported(false);
+      return;
     }
+
+    setIsSupported(true);
+
+    const syncPermission = () => {
+      setPermission(getBrowserPermission());
+    };
+
+    syncPermission();
+    window.addEventListener('focus', syncPermission);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncPermission();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', syncPermission);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -68,7 +97,6 @@ export function usePushNotifications() {
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
-      // Keep localStorage values (already set as initial state)
     }
   };
 
@@ -105,32 +133,41 @@ export function usePushNotifications() {
     }
 
     try {
+      const currentPermission = getBrowserPermission();
+      setPermission(currentPermission);
+
+      if (currentPermission === 'granted') {
+        toast.success('הרשאת התראות כבר מאושרת');
+        return true;
+      }
+
+      if (currentPermission === 'denied') {
+        toast.error('ההתראות חסומות בדפדפן. צריך לאפשר אותן בהגדרות האתר ואז לנסות שוב');
+        return false;
+      }
+
       const result = await Notification.requestPermission();
       setPermission(result);
-      
+
       if (result === 'granted') {
         toast.success('הרשאת התראות אושרה בהצלחה');
-        
-        // Try to register service worker if available
+
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           try {
-            // Register service worker
             const registration = await navigator.serviceWorker.register('/sw.js');
             console.log('Service Worker registered successfully');
-            
-            // Subscribe to push notifications
+
             const subscription = await (registration as any).pushManager.subscribe({
               userVisibleOnly: true,
               applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
             });
 
-            // Save subscription to database
             if (user && subscription) {
               const subscriptionJson = subscription.toJSON();
-              
+
               const { error } = await supabase
                 .from('profiles')
-                .update({ 
+                .update({
                   push_subscription: subscriptionJson as any,
                   notification_preferences: preferences as any
                 })
@@ -146,12 +183,12 @@ export function usePushNotifications() {
             console.log('Service Worker registration failed, but basic notifications will still work:', swError);
           }
         }
-        
+
         return true;
-      } else {
-        toast.error('הרשאת התראות נדחתה');
-        return false;
       }
+
+      toast.error('הרשאת התראות נדחתה');
+      return false;
     } catch (error) {
       console.error('Error requesting notification permission:', error);
       toast.error('שגיאה בבקשת הרשאת התראות');
@@ -173,7 +210,6 @@ export function usePushNotifications() {
     }
 
     try {
-      // Create notification record in database
       const { data, error } = await supabase
         .from("notifications")
         .insert({
@@ -195,30 +231,30 @@ export function usePushNotifications() {
 
       console.log('Notification record created:', data);
 
-      // If the notification is scheduled for soon (within 5 minutes), show it immediately for testing
       const now = new Date();
       const timeDiff = scheduledFor.getTime() - now.getTime();
-      
-      if (timeDiff <= 300000 && timeDiff > 0 && permission === 'granted') { // 5 minutes
+      const currentPermission = getBrowserPermission();
+      setPermission(currentPermission);
+
+      if (timeDiff <= 300000 && timeDiff > 0 && currentPermission === 'granted') {
         setTimeout(() => {
           new Notification(title, {
             body: message,
             icon: "/favicon.ico",
             tag: entityId || 'notification'
           });
-          
+
           toast(title, {
             description: message
           });
         }, timeDiff);
-      } else if (timeDiff <= 0 && permission === 'granted') {
-        // Show immediately if time has passed
+      } else if (timeDiff <= 0 && currentPermission === 'granted') {
         new Notification(title, {
           body: message,
           icon: "/favicon.ico",
           tag: entityId || 'notification'
         });
-        
+
         toast(title, {
           description: message
         });
@@ -233,16 +269,37 @@ export function usePushNotifications() {
   };
 
   const showTestNotification = () => {
-    if (permission === 'granted') {
-      new Notification('התראת בדיקה', {
-        body: 'זוהי התראת בדיקה מהמערכת',
-        icon: '/favicon.ico'
-      });
-      
-      toast.success('התראת בדיקה נשלחה');
-    } else {
-      toast.error('יש להעניק הרשאה להתראות תחילה');
+    if (!isSupported) {
+      toast.error('התראות לא נתמכות בדפדפן זה');
+      return false;
     }
+
+    const currentPermission = getBrowserPermission();
+    setPermission(currentPermission);
+
+    if (currentPermission === 'granted') {
+      try {
+        new Notification('התראת בדיקה', {
+          body: 'זוהי התראת בדיקה מהמערכת',
+          icon: '/favicon.ico'
+        });
+
+        toast.success('התראת בדיקה נשלחה');
+        return true;
+      } catch (error) {
+        console.error('Error showing test notification:', error);
+        toast.error('שגיאה בהצגת התראת בדיקה');
+        return false;
+      }
+    }
+
+    if (currentPermission === 'denied') {
+      toast.error('ההתראות חסומות בדפדפן. צריך לאפשר אותן בהגדרות האתר ואז לנסות שוב');
+      return false;
+    }
+
+    toast.error('יש להעניק הרשאה להתראות תחילה');
+    return false;
   };
 
   const sendTestNotification = showTestNotification;

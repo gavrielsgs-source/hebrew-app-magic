@@ -13,19 +13,24 @@ export function MobileNotificationSettings() {
   const { toast } = useToast();
 
   const handleRequestPermission = async () => {
-    try {
-      await requestPermission();
+    const granted = await requestPermission();
+
+    if (granted) {
       toast({
         title: "הרשאה נתקבלה",
         description: "התראות push מופעלות בהצלחה",
       });
-    } catch (error) {
-      toast({
-        title: "שגיאה",
-        description: "לא ניתן להפעיל התראות push",
-        variant: "destructive",
-      });
+      return;
     }
+
+    toast({
+      title: permission === "denied" ? "ההתראות חסומות" : "לא ניתן להפעיל התראות push",
+      description:
+        permission === "denied"
+          ? "יש לאפשר התראות בהגדרות האתר בדפדפן ואז לנסות שוב"
+          : "לא ניתן להפעיל התראות push כרגע",
+      variant: "destructive",
+    });
   };
 
   const handlePreferenceChange = (key: keyof typeof preferences, value: boolean) => {
@@ -48,7 +53,6 @@ export function MobileNotificationSettings() {
       </div>
 
       <div className="space-y-4">
-        {/* Push Notifications */}
         <Card className="border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center justify-start gap-3">
@@ -59,12 +63,12 @@ export function MobileNotificationSettings() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground text-right">
-                {permission === "granted" ? "מופעל" : permission === "denied" ? "נדחה" : "לא מופעל"}
+                {permission === "granted" ? "מופעל" : permission === "denied" ? "חסום בדפדפן" : "לא מופעל"}
               </div>
               <div className="text-sm font-medium">סטטוס נוכחי</div>
             </div>
             
-            {permission !== "granted" && (
+            {permission === "default" && (
               <Button 
                 onClick={handleRequestPermission}
                 size="sm"
@@ -74,10 +78,15 @@ export function MobileNotificationSettings() {
                 {!isSupported ? "לא נתמך בדפדפן זה" : "אפשר התראות דחיפה"}
               </Button>
             )}
+
+            {permission === "denied" && (
+              <p className="text-xs text-destructive text-right">
+                ההתראות חסומות ברמת הדפדפן. צריך לאפשר אותן בהגדרות האתר.
+              </p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Notification Type Preferences - persisted to DB */}
         <Card className="border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center justify-start gap-3">
