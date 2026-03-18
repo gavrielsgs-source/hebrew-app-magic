@@ -65,23 +65,38 @@ export function useUpsertAutomationSettings() {
   return useMutation({
     mutationFn: async (settings: Partial<AutomationSettings>) => {
       if (!user) throw new Error("Not authenticated");
-      
-      console.log("🔧 [automation] Upserting settings for user:", user.id, settings);
-      
-      const { data, error } = await supabase
-        .from("automation_settings")
-        .upsert(
-          { ...settings, user_id: user.id, updated_at: new Date().toISOString() },
-          { onConflict: "user_id" }
-        )
-        .select("*")
-        .single();
+
+      console.log("🔧 [automation] Saving settings for user:", user.id, settings);
+
+      const payload = {
+        ...settings,
+        user_id: user.id,
+        updated_at: new Date().toISOString(),
+      };
+
+      const hasExistingRow = typeof settings.id === "string" && settings.id.length > 0;
+
+      const query = hasExistingRow
+        ? supabase
+            .from("automation_settings")
+            .update(payload)
+            .eq("user_id", user.id)
+            .select("*")
+            .single()
+        : supabase
+            .from("automation_settings")
+            .insert(payload)
+            .select("*")
+            .single();
+
+      const { data, error } = await query;
 
       if (error) {
-        console.error("🔧 [automation] Upsert error:", error);
+        console.error("🔧 [automation] Save error:", error);
         throw error;
       }
-      console.log("🔧 [automation] Upsert success:", data);
+
+      console.log("🔧 [automation] Save success:", data);
       return data as AutomationSettings;
     },
     onSuccess: () => {
