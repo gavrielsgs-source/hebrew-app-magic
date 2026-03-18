@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { addMinutes, isBefore, isAfter } from "date-fns";
+import { addMinutes } from "date-fns";
 
 type Notification = {
   id: string;
@@ -23,13 +23,71 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Check for upcoming tasks and create notifications
+  const mapRow = (row: any): Notification => ({
+    id: String(row.id),
+    title: String(row.title || ""),
+    message: String(row.message || ""),
+    type: (row.type || "system") as Notification["type"],
+    read: !!row.read_at,
+    created_at: String(row.created_at),
+    entityId: row.entity_id ? String(row.entity_id) : undefined,
+    entityType: row.entity_type ? String(row.entity_type) : undefined,
+    scheduledFor: row.scheduled_for ? String(row.scheduled_for) : undefined,
+  });
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      const mapped = (data || []).map(mapRow);
+      setNotifications(mapped);
+      setUnreadCount(mapped.filter((n) => !n.read).length);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Fetch on mount + realtime subscription
+  useEffect(() => {
+    if (!user) return;
+    fetchNotifications();
+
+    const channel = supabase
+      .channel("notifications-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchNotifications]);
+
+  // Check for upcoming tasks and create reminder notifications
   useEffect(() => {
     if (!user) return;
 
     const checkUpcomingTasks = async () => {
       const now = new Date();
-      const in30Minutes = addMinutes(now, 30);
       const in1Hour = addMinutes(now, 60);
 
       try {
@@ -44,16 +102,15 @@ export function useNotifications() {
         if (upcomingTasks) {
           for (const task of upcomingTasks) {
             const dueDateValue = (task as any).due_date;
-            if (typeof dueDateValue === 'string' || typeof dueDateValue === 'number' || dueDateValue instanceof Date) {
+            if (typeof dueDateValue === "string" || typeof dueDateValue === "number" || dueDateValue instanceof Date) {
               const taskDate = new Date(dueDateValue);
               const timeDiff = Math.ceil((taskDate.getTime() - now.getTime()) / (1000 * 60));
 
               if (timeDiff <= 30 && timeDiff > 0) {
-                const taskId = String((task as any).id || '');
-                const taskTitle = String((task as any).title || '');
-                const taskType = String((task as any).type || '');
-                
-                // בדיקה אם כבר יצרנו התראה למשימה הזו
+                const taskId = String((task as any).id || "");
+                const taskTitle = String((task as any).title || "");
+                const taskType = String((task as any).type || "");
+
                 const { data: existingNotification } = await supabase
                   .from("notifications")
                   .select("id")
@@ -62,61 +119,29 @@ export function useNotifications() {
                   .eq("entity_id", taskId)
                   .eq("type", "reminder")
                   .maybeSingle();
-                
-                // אם כבר יש התראה - דלג
-                if (existingNotification) {
-                  console.log(`Notification already exists for task ${taskId}, skipping`);
-                  continue;
-                }
-                
-                const notification: Notification = {
-                  id: `task-reminder-${taskId}`,
-                  title: "תזכורת למשימה",
-                  message: `יש לך ${taskType === "meeting" ? "פגישה" : "משימה"} בעוד ${timeDiff} דקות: ${taskTitle}`,
+
+                if (existingNotification) continue;
+
+                const title = "תזכורת למשימה";
+                const message = `יש לך ${taskType === "meeting" ? "פגישה" : "משימה"} בעוד ${timeDiff} דקות: ${taskTitle}`;
+
+                await supabase.from("notifications").insert({
+                  user_id: user.id,
+                  title,
+                  message,
                   type: "reminder",
-                  read: false,
-                  created_at: new Date().toISOString(),
-                  entityId: taskId,
-                  entityType: "task",
-                  scheduledFor: dueDateValue.toString()
-                };
-
-                // שמירת ההתראה בטבלה לפני הצגתה
-                await supabase
-                  .from("notifications")
-                  .insert({
-                    user_id: user.id,
-                    title: notification.title,
-                    message: notification.message,
-                    type: "reminder",
-                    entity_type: "task",
-                    entity_id: taskId,
-                    scheduled_for: dueDateValue.toString()
-                  });
-
-                // Show browser notification if supported
-                if (Notification.permission === "granted") {
-                  new Notification(notification.title, {
-                    body: notification.message,
-                    icon: "/favicon.ico"
-                  });
-                }
-
-                // Show toast notification
-                toast(notification.title, {
-                  description: notification.message,
-                  action: {
-                    label: "צפה במשימה",
-                    onClick: () => window.location.href = "/tasks"
-                  }
+                  entity_type: "task",
+                  entity_id: taskId,
+                  scheduled_for: dueDateValue.toString(),
                 });
 
-                setNotifications(prev => {
-                  const exists = prev.some(n => n.id === notification.id);
-                  if (!exists) {
-                    return [notification, ...prev];
-                  }
-                  return prev;
+                if (Notification.permission === "granted") {
+                  new Notification(title, { body: message, icon: "/favicon.ico" });
+                }
+
+                toast(title, {
+                  description: message,
+                  action: { label: "צפה במשימה", onClick: () => (window.location.href = "/tasks") },
                 });
               }
             }
@@ -127,78 +152,40 @@ export function useNotifications() {
       }
     };
 
-    // Request notification permission
     if (Notification.permission === "default") {
       Notification.requestPermission();
     }
 
-    // Check immediately and then every minute
     checkUpcomingTasks();
     const interval = setInterval(checkUpcomingTasks, 60000);
-
     return () => clearInterval(interval);
   }, [user]);
 
-  // Load initial notifications
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchNotifications = async () => {
-      setLoading(true);
-      
-      try {
-        // Create some sample notifications for demonstration
-        const sampleNotifications: Notification[] = [
-          {
-            id: "1",
-            title: "לידים שלא טופלו",
-            message: "יש לך 3 לידים שלא טופלו מעל 24 שעות",
-            type: "lead",
-            read: false,
-            created_at: new Date().toISOString(),
-            entityType: "lead"
-          },
-          {
-            id: "2",
-            title: "רכבים לפרסום",
-            message: "2 רכבים מחכים לפרסום",
-            type: "car",
-            read: false,
-            created_at: new Date().toISOString(),
-            entityType: "car"
-          }
-        ];
-        
-        setNotifications(sampleNotifications);
-        setUnreadCount(sampleNotifications.filter(n => !n.read).length);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchNotifications();
-  }, [user]);
-
   const markAsRead = async (notificationId: string) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === notificationId ? { ...notification, read: true } : notification
-    ));
-    
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("id", notificationId);
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
+  const markAllAsRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);
+
+    if (unreadIds.length > 0 && user) {
+      await supabase
+        .from("notifications")
+        .update({ read_at: new Date().toISOString() })
+        .eq("user_id", user.id)
+        .is("read_at", null);
+    }
   };
 
-  return {
-    notifications,
-    loading,
-    unreadCount,
-    markAsRead,
-    markAllAsRead
-  };
+  return { notifications, loading, unreadCount, markAsRead, markAllAsRead };
 }
