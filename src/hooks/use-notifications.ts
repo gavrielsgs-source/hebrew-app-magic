@@ -152,10 +152,6 @@ export function useNotifications() {
       }
     };
 
-    if (Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-
     checkUpcomingTasks();
     const interval = setInterval(checkUpcomingTasks, 60000);
     return () => clearInterval(interval);
