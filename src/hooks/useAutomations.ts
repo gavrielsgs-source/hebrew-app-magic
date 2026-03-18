@@ -118,8 +118,8 @@ export function useUpsertAutomationSettings() {
       console.log("🔧 [automation] Save success:", data);
       return data as AutomationSettings;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["automation_settings"] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(["automation_settings", user?.id], data);
       toast.success("הגדרות האוטומציה נשמרו");
     },
     onError: (err: any) => {
