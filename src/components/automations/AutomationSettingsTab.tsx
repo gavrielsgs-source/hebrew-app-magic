@@ -54,8 +54,7 @@ export function AutomationSettingsTab() {
   const { data: settings, isLoading } = useAutomationSettings();
   const { data: queue } = useAutomationQueue();
   const upsert = useUpsertAutomationSettings();
-  const hasUnsavedManualChanges = useRef(false);
-  const isToggleSyncing = useRef(false);
+  const userDirty = useRef(false);
   const [form, setForm] = useState<Partial<AutomationSettings>>(() => {
     try {
       const cached = localStorage.getItem("automation_settings_form");
@@ -65,69 +64,89 @@ export function AutomationSettingsTab() {
     }
   });
 
+  // Keep a ref that always points to the latest form so closures never go stale
+  const formRef = useRef(form);
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
+
   const persistForm = (nextForm: Partial<AutomationSettings>) => {
+    formRef.current = nextForm;
     setForm(nextForm);
     localStorage.setItem("automation_settings_form", JSON.stringify(nextForm));
   };
 
+  // Only sync from DB on initial load (when user hasn't touched anything)
+  const initialSyncDone = useRef(false);
   useEffect(() => {
-    if (settings && !isToggleSyncing.current && !hasUnsavedManualChanges.current) {
+    if (settings && !initialSyncDone.current && !userDirty.current) {
+      initialSyncDone.current = true;
       persistForm(settings);
-      return;
     }
-
-    if (!settings && !isLoading && !hasUnsavedManualChanges.current && !isToggleSyncing.current) {
-      persistForm(DEFAULT_SETTINGS);
-    }
-  }, [settings, isLoading]);
+  }, [settings]);
 
   function update(key: keyof AutomationSettings, value: string | number | boolean) {
-    hasUnsavedManualChanges.current = true;
-    persistForm({ ...form, [key]: value });
+    userDirty.current = true;
+    const nextForm = { ...formRef.current, [key]: value };
+    persistForm(nextForm);
   }
 
   function handleToggleChange(key: ToggleKey, checked: boolean) {
-    const nextForm = { ...form, [key]: checked };
-    isToggleSyncing.current = true;
+    userDirty.current = true;
+    // Always read from ref to avoid stale closures
+    const nextForm = { ...formRef.current, [key]: checked };
     persistForm(nextForm);
 
+    console.log("🔧 [automation] Toggle", key, "→", checked, "| form snapshot:", {
+      welcome_enabled: nextForm.welcome_enabled,
+      followup1_enabled: nextForm.followup1_enabled,
+      followup2_enabled: nextForm.followup2_enabled,
+      car_match_enabled: nextForm.car_match_enabled,
+    });
+
     upsert.mutate(
-      { id: form.id, [key]: checked },
+      { id: formRef.current.id, [key]: checked },
       {
         onSuccess: (savedData) => {
-          isToggleSyncing.current = false;
+          // Merge server metadata into current form without overwriting user's local toggle state
           persistForm({
-            ...nextForm,
+            ...formRef.current,
             id: savedData.id,
             user_id: savedData.user_id,
             created_at: savedData.created_at,
             updated_at: savedData.updated_at,
           });
         },
-        onError: () => {
-          isToggleSyncing.current = false;
-        },
       }
     );
   }
 
   function save() {
+    // Always read from ref to get latest state
+    const current = formRef.current;
+    console.log("🔧 [automation] Save button clicked, current form:", {
+      welcome_enabled: current.welcome_enabled,
+      followup1_enabled: current.followup1_enabled,
+      followup2_enabled: current.followup2_enabled,
+      car_match_enabled: current.car_match_enabled,
+    });
+
     upsert.mutate({
-      id: form.id,
-      welcome_enabled: !!form.welcome_enabled,
-      welcome_delay_minutes: form.welcome_delay_minutes ?? 5,
-      welcome_template: form.welcome_template ?? "welcome_message",
-      followup1_enabled: !!form.followup1_enabled,
-      followup1_delay_hours: form.followup1_delay_hours ?? 24,
-      followup1_template: form.followup1_template ?? "lead_followup",
-      followup2_enabled: !!form.followup2_enabled,
-      followup2_delay_hours: form.followup2_delay_hours ?? 72,
-      followup2_template: form.followup2_template ?? "lead_followup",
-      car_match_enabled: !!form.car_match_enabled,
-      car_match_template: form.car_match_template ?? "car_match_alert",
+      id: current.id,
+      welcome_enabled: !!current.welcome_enabled,
+      welcome_delay_minutes: current.welcome_delay_minutes ?? 5,
+      welcome_template: current.welcome_template ?? "welcome_message",
+      followup1_enabled: !!current.followup1_enabled,
+      followup1_delay_hours: current.followup1_delay_hours ?? 24,
+      followup1_template: current.followup1_template ?? "lead_followup",
+      followup2_enabled: !!current.followup2_enabled,
+      followup2_delay_hours: current.followup2_delay_hours ?? 72,
+      followup2_template: current.followup2_template ?? "lead_followup",
+      car_match_enabled: !!current.car_match_enabled,
+      car_match_template: current.car_match_template ?? "car_match_alert",
     }, {
       onSuccess: (savedData) => {
-        hasUnsavedManualChanges.current = false;
+        userDirty.current = false;
         persistForm(savedData);
       },
     });
