@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useAutomationSettings, useUpsertAutomationSettings, useAutomationQueue, AutomationSettings } from "@/hooks/useAutomations";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,9 @@ const TYPE_LABELS: Record<string, string> = {
   followup_2: "מעקב שני",
   car_match: "התאמת רכב",
 };
+
+const TOGGLE_KEYS = ["welcome_enabled", "followup1_enabled", "followup2_enabled", "car_match_enabled"] as const;
+type ToggleKey = typeof TOGGLE_KEYS[number];
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("he-IL", {
@@ -51,94 +54,50 @@ export function AutomationSettingsTab() {
   const { data: settings, isLoading } = useAutomationSettings();
   const { data: queue } = useAutomationQueue();
   const upsert = useUpsertAutomationSettings();
-
-  const [form, setForm] = useState<Partial<AutomationSettings>>(() => {
-    try {
-      const cached = localStorage.getItem("automation_settings_form");
-      if (cached) return JSON.parse(cached);
-    } catch {}
-    return DEFAULT_SETTINGS;
-  });
-  const formRef = useRef<Partial<AutomationSettings>>(form);
-  const pendingMutations = useRef(0);
-  const latestToggleRevision = useRef(0);
-  const hasUnsavedManualChanges = useRef(false);
-
-  const persistLocalForm = (nextForm: Partial<AutomationSettings>) => {
-    formRef.current = nextForm;
-    setForm(nextForm);
-    localStorage.setItem("automation_settings_form", JSON.stringify(nextForm));
-  };
+  const [form, setForm] = useState<Partial<AutomationSettings>>(DEFAULT_SETTINGS);
 
   useEffect(() => {
-    formRef.current = form;
-  }, [form]);
-
-  useEffect(() => {
-    if (settings && pendingMutations.current === 0 && !hasUnsavedManualChanges.current) {
-      persistLocalForm(settings);
+    if (settings) {
+      setForm(settings);
+      return;
     }
-  }, [settings]);
 
-  const TOGGLE_KEYS = ['welcome_enabled', 'followup1_enabled', 'followup2_enabled', 'car_match_enabled'] as const;
-  type ToggleKey = typeof TOGGLE_KEYS[number];
+    if (!isLoading) {
+      setForm(DEFAULT_SETTINGS);
+    }
+  }, [settings, isLoading]);
 
-  function update(key: keyof AutomationSettings, value: any) {
-    const updated = { ...formRef.current, [key]: value };
-    persistLocalForm(updated);
-    hasUnsavedManualChanges.current = true;
+  function update(key: keyof AutomationSettings, value: string | number | boolean) {
+    setForm((current) => ({ ...current, [key]: value }));
   }
 
   function handleToggleChange(key: ToggleKey, checked: boolean) {
-    const updated = { ...formRef.current, [key]: checked };
-    persistLocalForm(updated);
+    setForm((current) => {
+      const nextForm = { ...current, [key]: checked };
 
-    const currentRevision = ++latestToggleRevision.current;
-    pendingMutations.current += 1;
-    upsert.mutate({ [key]: checked }, {
-      onSuccess: (savedData) => {
-        if (currentRevision === latestToggleRevision.current) {
-          persistLocalForm({
-            ...formRef.current,
-            [key]: checked,
-            id: savedData.id,
-            user_id: savedData.user_id,
-            created_at: savedData.created_at,
-            updated_at: savedData.updated_at,
-          });
-        }
-      },
-      onSettled: () => {
-        pendingMutations.current = Math.max(0, pendingMutations.current - 1);
-      }
+      upsert.mutate({
+        id: current.id,
+        [key]: checked,
+      });
+
+      return nextForm;
     });
   }
 
   function save() {
-    const {
-      welcome_enabled: _welcomeEnabled,
-      followup1_enabled: _followup1Enabled,
-      followup2_enabled: _followup2Enabled,
-      car_match_enabled: _carMatchEnabled,
-      ...manualFields
-    } = formRef.current;
-
-    pendingMutations.current += 1;
-    upsert.mutate(manualFields, {
-      onSuccess: (savedData) => {
-        hasUnsavedManualChanges.current = false;
-        persistLocalForm({
-          ...formRef.current,
-          ...manualFields,
-          id: savedData.id,
-          user_id: savedData.user_id,
-          created_at: savedData.created_at,
-          updated_at: savedData.updated_at,
-        });
-      },
-      onSettled: () => {
-        pendingMutations.current = Math.max(0, pendingMutations.current - 1);
-      },
+    upsert.mutate({
+      id: form.id,
+      welcome_enabled: !!form.welcome_enabled,
+      welcome_delay_minutes: form.welcome_delay_minutes ?? 5,
+      welcome_template: form.welcome_template ?? "welcome_message",
+      followup1_enabled: !!form.followup1_enabled,
+      followup1_delay_hours: form.followup1_delay_hours ?? 24,
+      followup1_template: form.followup1_template ?? "lead_followup",
+      followup2_enabled: !!form.followup2_enabled,
+      followup2_delay_hours: form.followup2_delay_hours ?? 72,
+      followup2_template: form.followup2_template ?? "lead_followup",
+      car_match_enabled: !!form.car_match_enabled,
+      car_match_template: form.car_match_template ?? "car_match_alert",
     });
   }
 
@@ -148,11 +107,11 @@ export function AutomationSettingsTab() {
 
   return (
     <div dir="rtl">
-      <div className="flex items-center gap-3 mb-6">
+      <div className="mb-6 flex items-center gap-3">
         <Zap className="h-6 w-6 text-yellow-400" />
         <div>
           <h2 className="text-xl font-bold">אוטומציות WhatsApp</h2>
-          <p className="text-muted-foreground text-sm">הגדר הודעות אוטומטיות ללידים וללקוחות</p>
+          <p className="text-sm text-muted-foreground">הגדר הודעות אוטומטיות ללידים וללקוחות</p>
         </div>
       </div>
 
@@ -169,14 +128,13 @@ export function AutomationSettingsTab() {
 
         <TabsContent value="settings">
           {isLoading ? (
-            <p className="text-muted-foreground text-sm">טוען...</p>
+            <p className="text-sm text-muted-foreground">טוען...</p>
           ) : (
             <div className="space-y-4">
-              {/* Welcome */}
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <MessageSquare className="h-4 w-4 text-green-500" />
                       הודעת ברוכים הבאים
                     </CardTitle>
@@ -211,11 +169,10 @@ export function AutomationSettingsTab() {
                 )}
               </Card>
 
-              {/* Follow-up 1 */}
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <MessageSquare className="h-4 w-4 text-blue-500" />
                       מעקב ראשון
                     </CardTitle>
@@ -250,11 +207,10 @@ export function AutomationSettingsTab() {
                 )}
               </Card>
 
-              {/* Follow-up 2 */}
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <MessageSquare className="h-4 w-4 text-purple-500" />
                       מעקב שני
                     </CardTitle>
@@ -289,11 +245,10 @@ export function AutomationSettingsTab() {
                 )}
               </Card>
 
-              {/* Car match */}
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
                       <Car className="h-4 w-4 text-orange-500" />
                       התאמת רכב ללידים
                     </CardTitle>
@@ -306,7 +261,7 @@ export function AutomationSettingsTab() {
                 </CardHeader>
                 {form.car_match_enabled && (
                   <CardContent>
-                    <div className="space-y-1 max-w-xs">
+                    <div className="max-w-xs space-y-1">
                       <Label>שם תבנית</Label>
                       <Input
                         value={form.car_match_template ?? "car_match_alert"}
@@ -327,36 +282,37 @@ export function AutomationSettingsTab() {
         <TabsContent value="log">
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              <Card className="text-center p-3">
+              <Card className="p-3 text-center">
                 <div className="text-2xl font-bold text-yellow-500">{pendingCount}</div>
                 <div className="text-xs text-muted-foreground">ממתינים</div>
               </Card>
-              <Card className="text-center p-3">
+              <Card className="p-3 text-center">
                 <div className="text-2xl font-bold text-green-500">{sentCount}</div>
                 <div className="text-xs text-muted-foreground">נשלחו</div>
               </Card>
-              <Card className="text-center p-3">
+              <Card className="p-3 text-center">
                 <div className="text-2xl font-bold text-red-500">{failedCount}</div>
                 <div className="text-xs text-muted-foreground">נכשלו</div>
               </Card>
             </div>
 
             {!queue || queue.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8 text-sm">אין פריטים בתור</p>
+              <p className="py-8 text-center text-sm text-muted-foreground">אין פריטים בתור</p>
             ) : (
-              <div className="rounded-md border overflow-hidden">
+              <div className="overflow-hidden rounded-md border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="text-right px-3 py-2 font-medium">סוג</th>
-                      <th className="text-right px-3 py-2 font-medium">טלפון</th>
-                      <th className="text-right px-3 py-2 font-medium">מתוזמן ל</th>
-                      <th className="text-right px-3 py-2 font-medium">סטטוס</th>
+                      <th className="px-3 py-2 text-right font-medium">סוג</th>
+                      <th className="px-3 py-2 text-right font-medium">טלפון</th>
+                      <th className="px-3 py-2 text-right font-medium">מתוזמן ל</th>
+                      <th className="px-3 py-2 text-right font-medium">סטטוס</th>
                     </tr>
                   </thead>
                   <tbody>
                     {queue.map((item) => {
                       const s = STATUS_LABELS[item.status] ?? { label: item.status, variant: "outline" as const };
+
                       return (
                         <tr key={item.id} className="border-t hover:bg-muted/30">
                           <td className="px-3 py-2">{TYPE_LABELS[item.automation_type] ?? item.automation_type}</td>
@@ -365,7 +321,7 @@ export function AutomationSettingsTab() {
                           <td className="px-3 py-2">
                             <Badge variant={s.variant}>{s.label}</Badge>
                             {item.last_error && (
-                              <span className="block text-[10px] text-red-400 mt-0.5 max-w-[200px] truncate" title={item.last_error}>
+                              <span className="mt-0.5 block max-w-[200px] truncate text-[10px] text-red-400" title={item.last_error}>
                                 {item.last_error}
                               </span>
                             )}
