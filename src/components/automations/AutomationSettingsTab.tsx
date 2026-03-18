@@ -260,7 +260,7 @@ export function AutomationSettingsTab() {
                     </CardTitle>
                     <Switch
                       checked={!!form.followup2_enabled}
-                      onCheckedChange={(v) => update("followup2_enabled", v)}
+                      onCheckedChange={(checked) => handleToggleChange("followup2_enabled", checked)}
                     />
                   </div>
                   <CardDescription>מבוטל אוטומטית אם הליד קיבל טיפול</CardDescription>
