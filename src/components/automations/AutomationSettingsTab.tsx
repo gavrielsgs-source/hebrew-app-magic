@@ -299,7 +299,7 @@ export function AutomationSettingsTab() {
                     </CardTitle>
                     <Switch
                       checked={!!form.car_match_enabled}
-                      onCheckedChange={(v) => update("car_match_enabled", v)}
+                      onCheckedChange={(checked) => handleToggleChange("car_match_enabled", checked)}
                     />
                   </div>
                   <CardDescription>כשרכב חדש נכנס למלאי, נשלחת הודעה ללידים שחיפשו רכב כזה</CardDescription>
