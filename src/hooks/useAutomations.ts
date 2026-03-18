@@ -58,34 +58,53 @@ export function useAutomationSettings() {
   });
 }
 
+type AutomationSettingsMutationInput = Partial<
+  Omit<AutomationSettings, "id" | "user_id" | "created_at" | "updated_at">
+> & {
+  id?: string;
+};
+
 export function useUpsertAutomationSettings() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (settings: Partial<AutomationSettings>) => {
+    mutationFn: async (settings: AutomationSettingsMutationInput) => {
       if (!user) throw new Error("Not authenticated");
 
-      console.log("🔧 [automation] Saving settings for user:", user.id, settings);
-
       const payload = {
-        ...settings,
-        user_id: user.id,
+        welcome_enabled: settings.welcome_enabled,
+        welcome_delay_minutes: settings.welcome_delay_minutes,
+        welcome_template: settings.welcome_template,
+        followup1_enabled: settings.followup1_enabled,
+        followup1_delay_hours: settings.followup1_delay_hours,
+        followup1_template: settings.followup1_template,
+        followup2_enabled: settings.followup2_enabled,
+        followup2_delay_hours: settings.followup2_delay_hours,
+        followup2_template: settings.followup2_template,
+        car_match_enabled: settings.car_match_enabled,
+        car_match_template: settings.car_match_template,
         updated_at: new Date().toISOString(),
       };
+
+      const cleanedPayload = Object.fromEntries(
+        Object.entries(payload).filter(([, value]) => value !== undefined)
+      );
+
+      console.log("🔧 [automation] Saving settings for user:", user.id, cleanedPayload);
 
       const hasExistingRow = typeof settings.id === "string" && settings.id.length > 0;
 
       const query = hasExistingRow
         ? supabase
             .from("automation_settings")
-            .update(payload)
+            .update(cleanedPayload)
             .eq("user_id", user.id)
             .select("*")
             .single()
         : supabase
             .from("automation_settings")
-            .insert(payload)
+            .insert({ ...cleanedPayload, user_id: user.id })
             .select("*")
             .single();
 
