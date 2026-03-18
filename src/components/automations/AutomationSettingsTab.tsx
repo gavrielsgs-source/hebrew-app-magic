@@ -59,37 +59,52 @@ export function AutomationSettingsTab() {
     } catch {}
     return DEFAULT_SETTINGS;
   });
-  const isSubmitting = useRef(false);
+  const formRef = useRef<Partial<AutomationSettings>>(form);
+  const pendingMutations = useRef(0);
+
+  const persistLocalForm = (nextForm: Partial<AutomationSettings>) => {
+    formRef.current = nextForm;
+    setForm(nextForm);
+    localStorage.setItem("automation_settings_form", JSON.stringify(nextForm));
+  };
 
   useEffect(() => {
-    if (settings && !isSubmitting.current) {
-      setForm(settings);
-      localStorage.setItem("automation_settings_form", JSON.stringify(settings));
+    formRef.current = form;
+  }, [form]);
+
+  useEffect(() => {
+    if (settings && pendingMutations.current === 0) {
+      persistLocalForm(settings);
     }
   }, [settings]);
 
   const TOGGLE_KEYS: (keyof AutomationSettings)[] = ['welcome_enabled', 'followup1_enabled', 'followup2_enabled', 'car_match_enabled'];
 
   function update(key: keyof AutomationSettings, value: any) {
-    const updated = { ...form, [key]: value };
-    setForm(updated);
-    localStorage.setItem("automation_settings_form", JSON.stringify(updated));
+    const updated = { ...formRef.current, [key]: value };
+    persistLocalForm(updated);
 
     if (TOGGLE_KEYS.includes(key)) {
-      isSubmitting.current = true;
+      pendingMutations.current += 1;
       upsert.mutate(updated, {
+        onSuccess: (savedData) => {
+          persistLocalForm(savedData);
+        },
         onSettled: () => {
-          isSubmitting.current = false;
+          pendingMutations.current = Math.max(0, pendingMutations.current - 1);
         }
       });
     }
   }
 
   function save() {
-    upsert.mutate(form, {
+    pendingMutations.current += 1;
+    upsert.mutate(formRef.current, {
       onSuccess: (savedData) => {
-        setForm(savedData);
-        localStorage.setItem("automation_settings_form", JSON.stringify(savedData));
+        persistLocalForm(savedData);
+      },
+      onSettled: () => {
+        pendingMutations.current = Math.max(0, pendingMutations.current - 1);
       },
     });
   }
