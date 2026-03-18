@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Smartphone, Monitor, TestTube } from "lucide-react";
+import { Bell, Smartphone, Monitor, TestTube } from "lucide-react";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 export function NotificationSettings() {
@@ -35,7 +35,6 @@ export function NotificationSettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Push Notifications Permission */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 ml-4">
@@ -44,6 +43,8 @@ export function NotificationSettings() {
                   <Smartphone className="h-4 w-4" />
                   <span className="text-sm">פעיל</span>
                 </div>
+              ) : permission === "denied" ? (
+                <div className="text-sm text-destructive">חסום בדפדפן</div>
               ) : (
                 <Button 
                   onClick={requestPermission}
@@ -61,9 +62,14 @@ export function NotificationSettings() {
               </p>
             </div>
           </div>
+
+          {permission === "denied" && (
+            <p className="text-sm text-right text-destructive">
+              ההתראות חסומות בהגדרות האתר בדפדפן, ולכן התראת בדיקה לא יכולה לקפוץ.
+            </p>
+          )}
         </div>
 
-        {/* Test Notification Button */}
         {permission === "granted" && (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center justify-between">
@@ -86,7 +92,6 @@ export function NotificationSettings() {
           </div>
         )}
 
-        {/* Notification Type Preferences */}
         <div className="space-y-4">
           <Label className="text-base font-medium text-right block">סוגי התראות</Label>
           
@@ -145,7 +150,7 @@ export function NotificationSettings() {
           </div>
         </div>
 
-        {permission !== "granted" && (
+        {permission === "default" && (
           <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800 text-right">
               כדי לקבל התראות פוש, יש לאשר הרשאות בדפדפן
