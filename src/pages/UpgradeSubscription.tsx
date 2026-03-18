@@ -192,7 +192,7 @@ export default function UpgradeSubscription() {
                   </p>
                 )}
                 <p className="text-muted-foreground">
-                  סה״כ לפני מע״מ: ₪{getBaseSum(selectedPlan)} | מע״מ (18%): ₪{getVatAmount(getBaseSum(selectedPlan))} | <span className="font-bold text-foreground">סה״כ: ₪{addVat(getBaseSum(selectedPlan))}</span>
+                  <span className="font-bold text-foreground">סה״כ: ₪{addVat(getBaseSum(selectedPlan))}</span>
                 </p>
               </div>
             )}
