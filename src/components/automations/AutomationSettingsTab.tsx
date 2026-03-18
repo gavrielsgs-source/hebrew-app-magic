@@ -87,16 +87,12 @@ export function AutomationSettingsTab() {
   function save() {
     upsert.mutate({
       id: form.id,
-      welcome_enabled: !!form.welcome_enabled,
       welcome_delay_minutes: form.welcome_delay_minutes ?? 5,
       welcome_template: form.welcome_template ?? "welcome_message",
-      followup1_enabled: !!form.followup1_enabled,
       followup1_delay_hours: form.followup1_delay_hours ?? 24,
       followup1_template: form.followup1_template ?? "lead_followup",
-      followup2_enabled: !!form.followup2_enabled,
       followup2_delay_hours: form.followup2_delay_hours ?? 72,
       followup2_template: form.followup2_template ?? "lead_followup",
-      car_match_enabled: !!form.car_match_enabled,
       car_match_template: form.car_match_template ?? "car_match_alert",
     });
   }
