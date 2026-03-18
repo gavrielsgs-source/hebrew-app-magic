@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAutomationSettings, useUpsertAutomationSettings, useAutomationQueue, AutomationSettings } from "@/hooks/useAutomations";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -54,34 +54,61 @@ export function AutomationSettingsTab() {
   const { data: settings, isLoading } = useAutomationSettings();
   const { data: queue } = useAutomationQueue();
   const upsert = useUpsertAutomationSettings();
-  const [form, setForm] = useState<Partial<AutomationSettings>>(DEFAULT_SETTINGS);
+  const hasUnsavedManualChanges = useRef(false);
+  const isToggleSyncing = useRef(false);
+  const [form, setForm] = useState<Partial<AutomationSettings>>(() => {
+    try {
+      const cached = localStorage.getItem("automation_settings_form");
+      return cached ? JSON.parse(cached) : DEFAULT_SETTINGS;
+    } catch {
+      return DEFAULT_SETTINGS;
+    }
+  });
+
+  const persistForm = (nextForm: Partial<AutomationSettings>) => {
+    setForm(nextForm);
+    localStorage.setItem("automation_settings_form", JSON.stringify(nextForm));
+  };
 
   useEffect(() => {
-    if (settings) {
-      setForm(settings);
+    if (settings && !isToggleSyncing.current && !hasUnsavedManualChanges.current) {
+      persistForm(settings);
       return;
     }
 
-    if (!isLoading) {
-      setForm(DEFAULT_SETTINGS);
+    if (!settings && !isLoading && !hasUnsavedManualChanges.current && !isToggleSyncing.current) {
+      persistForm(DEFAULT_SETTINGS);
     }
   }, [settings, isLoading]);
 
   function update(key: keyof AutomationSettings, value: string | number | boolean) {
-    setForm((current) => ({ ...current, [key]: value }));
+    hasUnsavedManualChanges.current = true;
+    persistForm({ ...form, [key]: value });
   }
 
   function handleToggleChange(key: ToggleKey, checked: boolean) {
-    setForm((current) => {
-      const nextForm = { ...current, [key]: checked };
+    const nextForm = { ...form, [key]: checked };
+    isToggleSyncing.current = true;
+    persistForm(nextForm);
 
-      upsert.mutate({
-        id: current.id,
-        [key]: checked,
-      });
-
-      return nextForm;
-    });
+    upsert.mutate(
+      { id: form.id, [key]: checked },
+      {
+        onSuccess: (savedData) => {
+          isToggleSyncing.current = false;
+          persistForm({
+            ...nextForm,
+            id: savedData.id,
+            user_id: savedData.user_id,
+            created_at: savedData.created_at,
+            updated_at: savedData.updated_at,
+          });
+        },
+        onError: () => {
+          isToggleSyncing.current = false;
+        },
+      }
+    );
   }
 
   function save() {
@@ -98,6 +125,11 @@ export function AutomationSettingsTab() {
       followup2_template: form.followup2_template ?? "lead_followup",
       car_match_enabled: !!form.car_match_enabled,
       car_match_template: form.car_match_template ?? "car_match_alert",
+    }, {
+      onSuccess: (savedData) => {
+        hasUnsavedManualChanges.current = false;
+        persistForm(savedData);
+      },
     });
   }
 
