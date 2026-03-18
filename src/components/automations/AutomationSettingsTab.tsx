@@ -80,43 +80,61 @@ export function AutomationSettingsTab() {
     }
   }, [settings]);
 
-  const TOGGLE_KEYS: (keyof AutomationSettings)[] = ['welcome_enabled', 'followup1_enabled', 'followup2_enabled', 'car_match_enabled'];
+  const TOGGLE_KEYS = ['welcome_enabled', 'followup1_enabled', 'followup2_enabled', 'car_match_enabled'] as const;
+  type ToggleKey = typeof TOGGLE_KEYS[number];
 
   function update(key: keyof AutomationSettings, value: any) {
     const updated = { ...formRef.current, [key]: value };
     persistLocalForm(updated);
-
-    if (TOGGLE_KEYS.includes(key)) {
-      const currentRevision = ++latestToggleRevision.current;
-      pendingMutations.current += 1;
-      upsert.mutate({ [key]: value }, {
-        onSuccess: (savedData) => {
-          if (currentRevision === latestToggleRevision.current) {
-            persistLocalForm({
-              ...formRef.current,
-              id: savedData.id,
-              user_id: savedData.user_id,
-              created_at: savedData.created_at,
-              updated_at: savedData.updated_at,
-            });
-          }
-        },
-        onSettled: () => {
-          pendingMutations.current = Math.max(0, pendingMutations.current - 1);
-        }
-      });
-      return;
-    }
-
     hasUnsavedManualChanges.current = true;
   }
 
-  function save() {
+  function handleToggleChange(key: ToggleKey, checked: boolean) {
+    const updated = { ...formRef.current, [key]: checked };
+    persistLocalForm(updated);
+
+    const currentRevision = ++latestToggleRevision.current;
     pendingMutations.current += 1;
-    upsert.mutate(formRef.current, {
+    upsert.mutate({ [key]: checked }, {
+      onSuccess: (savedData) => {
+        if (currentRevision === latestToggleRevision.current) {
+          persistLocalForm({
+            ...formRef.current,
+            [key]: checked,
+            id: savedData.id,
+            user_id: savedData.user_id,
+            created_at: savedData.created_at,
+            updated_at: savedData.updated_at,
+          });
+        }
+      },
+      onSettled: () => {
+        pendingMutations.current = Math.max(0, pendingMutations.current - 1);
+      }
+    });
+  }
+
+  function save() {
+    const {
+      welcome_enabled: _welcomeEnabled,
+      followup1_enabled: _followup1Enabled,
+      followup2_enabled: _followup2Enabled,
+      car_match_enabled: _carMatchEnabled,
+      ...manualFields
+    } = formRef.current;
+
+    pendingMutations.current += 1;
+    upsert.mutate(manualFields, {
       onSuccess: (savedData) => {
         hasUnsavedManualChanges.current = false;
-        persistLocalForm(savedData);
+        persistLocalForm({
+          ...formRef.current,
+          ...manualFields,
+          id: savedData.id,
+          user_id: savedData.user_id,
+          created_at: savedData.created_at,
+          updated_at: savedData.updated_at,
+        });
       },
       onSettled: () => {
         pendingMutations.current = Math.max(0, pendingMutations.current - 1);
