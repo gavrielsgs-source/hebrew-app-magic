@@ -34,9 +34,11 @@ export function applyDiscount(sum: number, discountPercent: number): number {
 }
 
 export function addVat(sum: number): number {
-  return Math.round(sum * (1 + VAT_RATE));
+  // VAT disabled — עוסק פטור. To re-enable: return Math.round(sum * (1 + VAT_RATE));
+  return sum;
 }
 
 export function getVatAmount(sum: number): number {
-  return Math.round(sum * VAT_RATE);
+  // VAT disabled — עוסק פטור. To re-enable: return Math.round(sum * VAT_RATE);
+  return 0;
 }

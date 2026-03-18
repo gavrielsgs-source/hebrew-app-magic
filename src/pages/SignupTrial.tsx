@@ -216,7 +216,7 @@ export default function SignupTrial() {
                 <CardTitle className="text-center">השלם תשלום</CardTitle>
                 <CardDescription className="text-center">
                   מנוי {plans.find(p => p.id === selectedPlan)?.name} - {billingCycle === 'yearly' ? 'שנתי' : 'חודשי'}
-                  {' '} | סה״כ כולל מע״מ: ₪{tranzilaData.finalSum}
+                  {' '} | סה״כ: ₪{tranzilaData.finalSum}
                   {discountStatus?.valid && (
                     <span className="text-green-600 font-bold"> ({discountStatus.percent}% הנחה)</span>
                   )}
@@ -459,18 +459,8 @@ export default function SignupTrial() {
                                 </span>
                               </div>
                             )}
-                            <div className="flex justify-between">
-                              <span>סכום לפני מע״מ:</span>
-                              <span className="font-medium">
-                                ₪{getBaseSumBeforeVat()}/{billingCycle === "yearly" ? "שנה" : "חודש"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>מע״מ (18%):</span>
-                              <span className="font-medium">₪{getVatAmount(getBaseSumBeforeVat())}</span>
-                            </div>
                             <div className="flex justify-between font-bold border-t pt-1">
-                              <span>תשלום עתידי כולל מע״מ:</span>
+                              <span>תשלום עתידי:</span>
                               <span>₪{addVat(getBaseSumBeforeVat())}/{billingCycle === "yearly" ? "שנה" : "חודש"}</span>
                             </div>
                             <div className="flex justify-between text-green-600 font-medium">

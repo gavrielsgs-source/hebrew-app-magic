@@ -228,7 +228,7 @@ export default function Payment() {
                   </p>
                 )}
                 <p className="text-muted-foreground">
-                  סה״כ לפני מע״מ: ₪{getBaseSum(selectedPlan)} | מע״מ (18%): ₪{getVatAmount(getBaseSum(selectedPlan))} | <span className="font-bold text-foreground">סה״כ: ₪{addVat(getBaseSum(selectedPlan))}</span>
+                  <span className="font-bold text-foreground">סה״כ: ₪{addVat(getBaseSum(selectedPlan))}</span>
                 </p>
               </div>
             )}
@@ -278,7 +278,7 @@ export default function Payment() {
 
           <DrawerFooter className="pt-2">
             <p className={`text-center text-muted-foreground ${isMobile ? "text-xs" : "text-sm"}`}>
-              התשלום מאובטח ומוצפן בתקן PCI DSS | המחירים אינם כוללים מע״מ
+              התשלום מאובטח ומוצפן בתקן PCI DSS
             </p>
           </DrawerFooter>
         </DrawerContent>
