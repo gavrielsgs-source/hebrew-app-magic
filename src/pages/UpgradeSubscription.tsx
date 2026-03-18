@@ -233,7 +233,7 @@ export default function UpgradeSubscription() {
           
           <DrawerFooter className="pt-2">
             <p className={`text-center text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              התשלום מאובטח ומוצפן בתקן PCI DSS | המחירים אינם כוללים מע״מ
+              התשלום מאובטח ומוצפן בתקן PCI DSS
             </p>
           </DrawerFooter>
         </DrawerContent>
