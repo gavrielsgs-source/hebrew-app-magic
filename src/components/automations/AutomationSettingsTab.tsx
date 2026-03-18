@@ -61,6 +61,8 @@ export function AutomationSettingsTab() {
   });
   const formRef = useRef<Partial<AutomationSettings>>(form);
   const pendingMutations = useRef(0);
+  const latestToggleRevision = useRef(0);
+  const hasUnsavedManualChanges = useRef(false);
 
   const persistLocalForm = (nextForm: Partial<AutomationSettings>) => {
     formRef.current = nextForm;
@@ -73,7 +75,7 @@ export function AutomationSettingsTab() {
   }, [form]);
 
   useEffect(() => {
-    if (settings && pendingMutations.current === 0) {
+    if (settings && pendingMutations.current === 0 && !hasUnsavedManualChanges.current) {
       persistLocalForm(settings);
     }
   }, [settings]);
@@ -85,22 +87,35 @@ export function AutomationSettingsTab() {
     persistLocalForm(updated);
 
     if (TOGGLE_KEYS.includes(key)) {
+      const currentRevision = ++latestToggleRevision.current;
       pendingMutations.current += 1;
-      upsert.mutate(updated, {
+      upsert.mutate({ [key]: value }, {
         onSuccess: (savedData) => {
-          persistLocalForm(savedData);
+          if (currentRevision === latestToggleRevision.current) {
+            persistLocalForm({
+              ...formRef.current,
+              id: savedData.id,
+              user_id: savedData.user_id,
+              created_at: savedData.created_at,
+              updated_at: savedData.updated_at,
+            });
+          }
         },
         onSettled: () => {
           pendingMutations.current = Math.max(0, pendingMutations.current - 1);
         }
       });
+      return;
     }
+
+    hasUnsavedManualChanges.current = true;
   }
 
   function save() {
     pendingMutations.current += 1;
     upsert.mutate(formRef.current, {
       onSuccess: (savedData) => {
+        hasUnsavedManualChanges.current = false;
         persistLocalForm(savedData);
       },
       onSettled: () => {
