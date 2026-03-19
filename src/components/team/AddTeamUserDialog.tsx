@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Shield, Eye, DollarSign, Users } from "lucide-react";
+import { AlertCircle, Shield, Eye, DollarSign, Users, Copy, Check, Link } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import type { TeamUserRole } from "./TeamUsersTable";
