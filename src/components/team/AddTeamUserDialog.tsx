@@ -66,6 +66,8 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleSubmit = async () => {
     try {
