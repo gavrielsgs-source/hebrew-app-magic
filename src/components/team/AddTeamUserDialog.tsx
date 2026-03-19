@@ -110,6 +110,24 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
     }
   };
 
+  const handleCopyLink = async () => {
+    if (!inviteLink) return;
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    toast.success("הקישור הועתק!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleClose = (open: boolean) => {
+    if (!open) {
+      setInviteLink(null);
+      setCopied(false);
+      setFormData({ name: '', email: '', role: '' });
+      setErrors({});
+    }
+    onOpenChange(open);
+  };
+
   const selectedRoleConfig = roleOptions.find(r => r.value === formData.role);
 
   return (
