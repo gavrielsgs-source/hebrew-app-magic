@@ -227,23 +227,57 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
               </p>
             </div>
           )}
+
+          {/* Invite Link Fallback */}
+          {inviteLink && (
+            <Alert className="border-primary/30 bg-primary/5">
+              <Link className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-foreground">
+                <p className="font-medium mb-2">ההזמנה נוצרה! שתף את הקישור עם המשתמש:</p>
+                <div className="flex items-center gap-2">
+                  <Input 
+                    value={inviteLink} 
+                    readOnly 
+                    className="text-xs bg-background" 
+                    dir="ltr"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCopyLink}
+                    className="shrink-0"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
-            ביטול
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading || !canAddMore}
-            className="bg-primary hover:bg-primary/90"
-          >
-            {isLoading ? "מוסיף..." : "הוסף משתמש"}
-          </Button>
+          {inviteLink ? (
+            <Button onClick={() => handleClose(false)}>
+              סגור
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => handleClose(false)}
+                disabled={isLoading}
+              >
+                ביטול
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isLoading || !canAddMore}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {isLoading ? "מוסיף..." : "הוסף משתמש"}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
