@@ -16,7 +16,7 @@ interface AddTeamUserDialogProps {
   canAddMore: boolean;
   userLimit: number;
   currentUsage: number;
-  onAddUser: (userData: { name: string; email: string; role: TeamUserRole }) => Promise<void>;
+  onAddUser: (userData: { name: string; email: string; role: TeamUserRole }) => Promise<any>;
 }
 
 const addUserSchema = z.object({
