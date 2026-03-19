@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Shield, Eye, DollarSign, Users } from "lucide-react";
+import { AlertCircle, Shield, Eye, DollarSign, Users, Copy, Check, Link } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import type { TeamUserRole } from "./TeamUsersTable";
@@ -16,7 +16,7 @@ interface AddTeamUserDialogProps {
   canAddMore: boolean;
   userLimit: number;
   currentUsage: number;
-  onAddUser: (userData: { name: string; email: string; role: TeamUserRole }) => Promise<void>;
+  onAddUser: (userData: { name: string; email: string; role: TeamUserRole }) => Promise<any>;
 }
 
 const addUserSchema = z.object({
@@ -66,6 +66,8 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleSubmit = async () => {
     try {
@@ -80,13 +82,17 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
       setIsLoading(true);
       setErrors({});
 
-      // Call the actual add user function passed from parent
-      await onAddUser(validatedData as { name: string; email: string; role: TeamUserRole });
+      const result = await onAddUser(validatedData as { name: string; email: string; role: TeamUserRole });
       
-      // Reset form and close dialog
-      setFormData({ name: '', email: '', role: '' });
-      onOpenChange(false);
-      
+      // If email wasn't sent, show the invite link
+      if (result && !result.emailSent && result.inviteUrl) {
+        setInviteLink(result.inviteUrl);
+      } else {
+        // Email sent successfully - close dialog
+        setFormData({ name: '', email: '', role: '' });
+        setInviteLink(null);
+        onOpenChange(false);
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
@@ -104,10 +110,28 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
     }
   };
 
+  const handleCopyLink = async () => {
+    if (!inviteLink) return;
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    toast.success("הקישור הועתק!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleClose = (open: boolean) => {
+    if (!open) {
+      setInviteLink(null);
+      setCopied(false);
+      setFormData({ name: '', email: '', role: '' });
+      setErrors({});
+    }
+    onOpenChange(open);
+  };
+
   const selectedRoleConfig = roleOptions.find(r => r.value === formData.role);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]" dir="rtl">
         <DialogHeader>
           <DialogTitle>הוסף משתמש לצוות</DialogTitle>
@@ -203,23 +227,57 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
               </p>
             </div>
           )}
+
+          {/* Invite Link Fallback */}
+          {inviteLink && (
+            <Alert className="border-primary/30 bg-primary/5">
+              <Link className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-foreground">
+                <p className="font-medium mb-2">ההזמנה נוצרה! שתף את הקישור עם המשתמש:</p>
+                <div className="flex items-center gap-2">
+                  <Input 
+                    value={inviteLink} 
+                    readOnly 
+                    className="text-xs bg-background" 
+                    dir="ltr"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCopyLink}
+                    className="shrink-0"
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
-            ביטול
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading || !canAddMore}
-            className="bg-primary hover:bg-primary/90"
-          >
-            {isLoading ? "מוסיף..." : "הוסף משתמש"}
-          </Button>
+          {inviteLink ? (
+            <Button onClick={() => handleClose(false)}>
+              סגור
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => handleClose(false)}
+                disabled={isLoading}
+              >
+                ביטול
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isLoading || !canAddMore}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {isLoading ? "מוסיף..." : "הוסף משתמש"}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -127,7 +127,8 @@ export default function TeamManagement() {
         userLimit={userLimit}
         currentUsage={currentUsage}
         onAddUser={async (userData) => {
-          await addTeamUser.mutateAsync(userData);
+          const result = await addTeamUser.mutateAsync(userData);
+          return result;
         }}
       />
     </div>

@@ -196,9 +196,15 @@ export function useTeamManagement() {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["team-users"] });
-      toast.success("ההזמנה נשלחה בהצלחה! בדוק את תיבת הדואר (כולל דואר זבל)");
+      if (data?.emailSent) {
+        toast.success("ההזמנה נשלחה בהצלחה! בדוק את תיבת הדואר (כולל דואר זבל)");
+      } else if (data?.inviteUrl) {
+        toast.success("ההזמנה נוצרה! שתף את הקישור עם המשתמש", {
+          duration: 8000,
+        });
+      }
     },
     onError: (error: any) => {
       console.error("Error adding team user:", error);

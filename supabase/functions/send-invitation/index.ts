@@ -19,52 +19,34 @@ interface InvitationRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Extract JWT token from Authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.error("Missing or invalid Authorization header");
       return new Response(
         JSON.stringify({ error: "Missing authentication token" }), 
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
     const token = authHeader.replace("Bearer ", "");
-    console.log("Request started with token present");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
+      { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Get the authenticated user with explicit token
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
 
     if (authError || !user) {
       console.error("Authentication error:", authError);
       return new Response(
         JSON.stringify({ error: "Invalid or expired authentication token" }), 
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
@@ -75,8 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending invitation to ${email} for role ${role} in company ${companyName}`);
 
     // Check if user is Super Admin
-    const { data: isAdminResult, error: adminError } = await supabaseClient
-      .rpc("is_admin");
+    const { data: isAdminResult, error: adminError } = await supabaseClient.rpc("is_admin");
 
     if (adminError) {
       console.error("Error checking admin status:", adminError);
@@ -86,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Verify user has permission to invite (is Super Admin OR owner of company)
+    // Verify user has permission to invite
     if (!isAdminResult) {
       const { data: company, error: companyError } = await supabaseClient
         .from("companies")
@@ -104,8 +85,6 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log(`User permission verified: ${isAdminResult ? 'Super Admin' : 'Company Owner'}`);
-
     // Verify the target company exists
     const { data: targetCompany, error: targetError } = await supabaseClient
       .from("companies")
@@ -114,7 +93,6 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (targetError || !targetCompany) {
-      console.error("Target company not found:", targetError);
       return new Response(
         JSON.stringify({ error: "Company not found" }),
         { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -142,120 +120,118 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Send invitation email
+    // Build invite URL
     const origin = req.headers.get("origin") || req.headers.get("referer")?.split("/").slice(0, 3).join("/") || "https://carsleadapp.com";
     const inviteUrl = `${origin}/accept-invitation?token=${invitation.token}`;
     
     console.log(`Generated invite URL: ${inviteUrl}`);
     
-    const roleNames = {
+    const roleNames: Record<string, string> = {
       'viewer': 'צפייה בלבד',
       'sales_agent': 'איש מכירות',
       'agency_manager': 'מנהל סוכנות',
       'admin': 'מנהל מערכת'
     };
     
-    // Use Resend's test domain - works without domain verification
-    const fromAddress = "CRM System <onboarding@resend.dev>";
+    // Use custom from address if configured, otherwise fall back to Resend test domain
+    const customFrom = Deno.env.get("RESEND_FROM_EMAIL");
+    const fromAddress = customFrom ? `CarsLead <${customFrom}>` : "CarsLead <onboarding@resend.dev>";
 
-    // In Resend test mode you can only send to your own email. Allow overriding the recipient via secret.
+    // In Resend test mode you can only send to your own email
     const forceTestTo = Deno.env.get("RESEND_FORCE_TEST_TO");
     const toAddress = forceTestTo ? forceTestTo : email;
     
     console.log(`Email will be sent from: ${fromAddress} to: ${toAddress} (original: ${email})`);
 
-    const emailResponse = await resend.emails.send({
-      from: fromAddress,
-      to: [toAddress],
-      subject: `הזמנה להצטרף ל-${companyName}`,
-      html: `
-        <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; color: white; text-align: center; margin-bottom: 30px;">
-            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🎉 הוזמנת להצטרף!</h1>
-          </div>
-          
-          <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <h2 style="color: #2d3748; margin-bottom: 20px;">שלום!</h2>
-            
-            <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-              הוזמנת להצטרף לחברת <strong>${companyName}</strong> במערכת ניהול הלקוחות שלנו.
-            </p>
-            
-            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-              <p style="margin: 0; color: #2d3748;"><strong>התפקיד שלך:</strong> ${roleNames[role as keyof typeof roleNames] || role}</p>
+    // Try to send the email, but don't fail the invitation if email fails
+    let emailSent = false;
+    let emailError: string | null = null;
+
+    try {
+      const emailResponse = await resend.emails.send({
+        from: fromAddress,
+        to: [toAddress],
+        subject: `הזמנה להצטרף ל-${companyName}`,
+        html: `
+          <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; color: white; text-align: center; margin-bottom: 30px;">
+              <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🎉 הוזמנת להצטרף!</h1>
             </div>
             
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${inviteUrl}" 
-                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        color: white; 
-                        padding: 15px 40px; 
-                        text-decoration: none; 
-                        border-radius: 25px; 
-                        font-weight: bold; 
-                        font-size: 16px;
-                        display: inline-block;
-                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
-                🚀 קבל הזמנה
-              </a>
+            <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <h2 style="color: #2d3748; margin-bottom: 20px;">שלום!</h2>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                הוזמנת להצטרף לחברת <strong>${companyName}</strong> במערכת ניהול הלקוחות שלנו.
+              </p>
+              
+              <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                <p style="margin: 0; color: #2d3748;"><strong>התפקיד שלך:</strong> ${roleNames[role] || role}</p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${inviteUrl}" 
+                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                          color: white; 
+                          padding: 15px 40px; 
+                          text-decoration: none; 
+                          border-radius: 25px; 
+                          font-weight: bold; 
+                          font-size: 16px;
+                          display: inline-block;
+                          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
+                  🚀 קבל הזמנה
+                </a>
+              </div>
+              
+              <p style="color: #718096; font-size: 14px; text-align: center; margin-top: 25px;">
+                הקישור תקף ל-7 ימים מיום שליחת המייל.
+              </p>
+              
+              <hr style="border: none; height: 1px; background: #e2e8f0; margin: 25px 0;">
+              
+              <p style="color: #a0aec0; font-size: 12px; text-align: center; margin: 0;">
+                אם לא ביקשת הזמנה זו, ניתן להתעלם מהמייל הזה.
+              </p>
             </div>
-            
-            <p style="color: #718096; font-size: 14px; text-align: center; margin-top: 25px;">
-              הקישור תקף ל-7 ימים מיום שליחת המייל.
-            </p>
-            
-            <hr style="border: none; height: 1px; background: #e2e8f0; margin: 25px 0;">
-            
-            <p style="color: #a0aec0; font-size: 12px; text-align: center; margin: 0;">
-              אם לא ביקשת הזמנה זו, ניתן להתעלם מהמייל הזה.
-            </p>
           </div>
-        </div>
-      `,
-    });
+        `,
+      });
 
-    if (emailResponse.error) {
-      console.error("Error sending email:", emailResponse.error);
-      // Clean up the created invitation to avoid dead tokens
-      await supabaseClient
-        .from("user_invitations")
-        .delete()
-        .eq("id", invitation.id);
-
-      // Return detailed error to the client
-      return new Response(
-        JSON.stringify({ 
-          error: "Failed to send invitation email",
-          details: emailResponse.error
-        }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      if (emailResponse.error) {
+        console.error("Email send error (non-fatal):", emailResponse.error);
+        emailError = JSON.stringify(emailResponse.error);
+      } else {
+        emailSent = true;
+        console.log("Invitation email sent successfully:", emailResponse);
+      }
+    } catch (err) {
+      console.error("Email send exception (non-fatal):", err);
+      emailError = err instanceof Error ? err.message : "Unknown email error";
     }
 
-    console.log("Invitation email sent successfully:", emailResponse);
-
+    // Always return success with the invite URL - the invitation was created regardless
     return new Response(
       JSON.stringify({ 
         success: true, 
         invitationId: invitation.id,
-        message: "ההזמנה נשלחה בהצלחה!"
+        inviteUrl,
+        emailSent,
+        emailError,
+        message: emailSent 
+          ? "ההזמנה נשלחה בהצלחה!" 
+          : "ההזמנה נוצרה בהצלחה! לא הצלחנו לשלוח מייל - ניתן לשתף את הקישור ידנית."
       }),
       {
         status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
-      }
-    );
-  } catch (error: any) {
-    console.error("Error in send-invitation function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
+    );
+  } catch (error: unknown) {
+    console.error("Error in send-invitation function:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 };
