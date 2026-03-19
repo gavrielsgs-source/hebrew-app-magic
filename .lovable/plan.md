@@ -1,33 +1,28 @@
 
+## הבעיה
 
-## Analysis
+כשמשתמש מנסה להוסיף חבר צוות, הקוד מנסה ליצור חברה (company) אם אין כזו. יצירת החברה נכשלת בגלל **שני טריגרים סותרים** על טבלת `companies`:
 
-I investigated the full flow of adding team users from the Team Management page. There are **two potential issues** causing the failure:
+1. `on_company_created` → `handle_new_company_subscription` — עובד תקין, יוצר מנוי
+2. `trigger_handle_new_company_with_agency` → `handle_new_company_with_agency` — **שבור**: קורא `PERFORM public.handle_new_company_subscription()` בלי העברת `NEW`, מה שגורם לקריסה
 
-### Issue 1: Resend Email Limitation (Most Likely)
-The `send-invitation` edge function sends emails via Resend using the test domain (`onboarding@resend.dev`). In Resend's free/test mode, you can only send emails to the account owner's verified email address. Sending to any other email will fail with a 403 error. The `RESEND_FORCE_TEST_TO` secret exists as a workaround but may not be set, or may not match the target email.
+בנוסף, גם אם הטריגר הראשון היה מצליח, יש **אינדקס ייחודי** על `subscriptions.user_id` — ולמשתמש כבר יש מנוי מרגע ההרשמה (מטריגר `handle_new_user_subscription`), מה שגורם לכפילות.
 
-When the email fails, the edge function cleans up the invitation record and returns an error, so the user sees "שגיאה בשליחת ההזמנה".
+**תוצאה**: יצירת חברה נכשלת → הזמנת משתמש נכשלת → "Failed to create or find company".
 
-### Issue 2: Subscription User Limit
-The `premium` trial tier has `userLimit: 2` and `max_users: 2` in the database. The owner counts as 1, so only 1 additional user can be invited. This is not a bug per se, but might block adding more than 1 team member.
+## פתרון
 
-## Plan
+### שלב 1: מחיקת הטריגר השבור
+- הסרת `trigger_handle_new_company_with_agency` מטבלת `companies` — הוא מיותר ושבור
+- הטריגר `on_company_created` כבר מטפל ביצירת מנוי
 
-### Step 1: Fix the send-invitation edge function to not fail on email errors
-- Modify `send-invitation/index.ts` so that if the email fails to send, it **keeps the invitation record** instead of deleting it, and returns a success response with a warning that the email failed
-- This way the invitation is created and the user can share the invite link manually
-- Add better error logging for debugging
+### שלב 2: עדכון `handle_new_company_subscription`
+- הפונקציה כבר בודקת `IF NOT EXISTS` וכוללת `UPDATE` כ-fallback, אבל צריך לוודא שהיא עובדת נכון עם האינדקס הייחודי על `user_id`
 
-### Step 2: Add a custom "From" email if RESEND_FROM_EMAIL is set
-- The `RESEND_FROM_EMAIL` secret already exists in the project
-- Update the edge function to use it instead of always using `onboarding@resend.dev`
+### שלב 3: יצירת סוכנות ברירת מחדל בטריגר התקין
+- להעביר את לוגיקת יצירת הסוכנות מהטריגר השבור לתוך `handle_new_company_subscription`, כך שגם חברה וגם סוכנות ייווצרו אוטומטית
 
-### Step 3: Show the invitation link in the UI as fallback
-- In `AddTeamUserDialog` / `useTeamManagement`, when the invitation is created successfully but the email might have failed, show the invite link to the user so they can share it manually (via WhatsApp, copy link, etc.)
-
-### Step 4: Ensure trial users have adequate user limit
-- Keep `userLimit: 2` for premium trial (this is a business decision), but ensure the UI clearly shows the limit and doesn't show a generic error
-
-This is a 2-3 file change: edge function fix + team management hook update + optional UI update.
-
+### פרטים טכניים
+- מיגרציה חדשה: `DROP TRIGGER trigger_handle_new_company_with_agency ON companies`
+- עדכון פונקציית `handle_new_company_subscription` לכלול יצירת סוכנות ברירת מחדל
+- שינוי קטן: 1 קובץ מיגרציה חדש
