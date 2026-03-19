@@ -131,7 +131,7 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
   const selectedRoleConfig = roleOptions.find(r => r.value === formData.role);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]" dir="rtl">
         <DialogHeader>
           <DialogTitle>הוסף משתמש לצוות</DialogTitle>
