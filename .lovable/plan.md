@@ -1,35 +1,33 @@
 
 
-## Problem
+## Analysis
 
-The project has **no `manifest.json`** (Web App Manifest). When a user creates a home screen shortcut ("Add to Home Screen"), the browser has no metadata for:
-- App icon (logo)
-- App name
-- Theme color
-- Standalone display mode (app-like experience without browser chrome)
+I investigated the full flow of adding team users from the Team Management page. There are **two potential issues** causing the failure:
 
-The favicon is set to `/lovable-uploads/8b7d63b5-191f-4ad8-92fa-f9c31ab1f55b.png` which is the CarsLead logo — but without a manifest, the home screen icon may show a generic browser icon or a low-quality screenshot.
+### Issue 1: Resend Email Limitation (Most Likely)
+The `send-invitation` edge function sends emails via Resend using the test domain (`onboarding@resend.dev`). In Resend's free/test mode, you can only send emails to the account owner's verified email address. Sending to any other email will fail with a 403 error. The `RESEND_FORCE_TEST_TO` secret exists as a workaround but may not be set, or may not match the target email.
+
+When the email fails, the edge function cleans up the invitation record and returns an error, so the user sees "שגיאה בשליחת ההזמנה".
+
+### Issue 2: Subscription User Limit
+The `premium` trial tier has `userLimit: 2` and `max_users: 2` in the database. The owner counts as 1, so only 1 additional user can be invited. This is not a bug per se, but might block adding more than 1 team member.
 
 ## Plan
 
-### 1. Create `public/manifest.json`
-Define a standard PWA manifest with:
-- `name`: "CarsLead - מערכת ניהול לסוחרי רכב"
-- `short_name`: "CarsLead"
-- `start_url`: "/dashboard"
-- `display`: "standalone" (removes browser chrome, feels like an app)
-- `background_color`: "#ffffff"
-- `theme_color`: "#2F3C7E" (matches existing brand color)
-- `dir`: "rtl", `lang`: "he"
-- `icons`: array pointing to the existing logo at `/lovable-uploads/8b7d63b5-191f-4ad8-92fa-f9c31ab1f55b.png` in multiple sizes (192x192, 512x512)
+### Step 1: Fix the send-invitation edge function to not fail on email errors
+- Modify `send-invitation/index.ts` so that if the email fails to send, it **keeps the invitation record** instead of deleting it, and returns a success response with a warning that the email failed
+- This way the invitation is created and the user can share the invite link manually
+- Add better error logging for debugging
 
-### 2. Update `index.html`
-Add the manifest link and meta tags:
-- `<link rel="manifest" href="/manifest.json">`
-- `<meta name="theme-color" content="#2F3C7E">`
-- `<meta name="apple-mobile-web-app-capable" content="yes">`
-- `<meta name="apple-mobile-web-app-status-bar-style" content="default">`
-- `<link rel="apple-touch-icon" href="/lovable-uploads/8b7d63b5-191f-4ad8-92fa-f9c31ab1f55b.png">`
+### Step 2: Add a custom "From" email if RESEND_FROM_EMAIL is set
+- The `RESEND_FROM_EMAIL` secret already exists in the project
+- Update the edge function to use it instead of always using `onboarding@resend.dev`
 
-This is a 2-file change (1 new, 1 edit) that will make the home screen shortcut show the CarsLead logo and open in standalone app mode.
+### Step 3: Show the invitation link in the UI as fallback
+- In `AddTeamUserDialog` / `useTeamManagement`, when the invitation is created successfully but the email might have failed, show the invite link to the user so they can share it manually (via WhatsApp, copy link, etc.)
+
+### Step 4: Ensure trial users have adequate user limit
+- Keep `userLimit: 2` for premium trial (this is a business decision), but ensure the UI clearly shows the limit and doesn't show a generic error
+
+This is a 2-3 file change: edge function fix + team management hook update + optional UI update.
 
