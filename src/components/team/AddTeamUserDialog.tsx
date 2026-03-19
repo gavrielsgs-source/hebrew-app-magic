@@ -82,13 +82,17 @@ export function AddTeamUserDialog({ open, onOpenChange, canAddMore, userLimit, c
       setIsLoading(true);
       setErrors({});
 
-      // Call the actual add user function passed from parent
-      await onAddUser(validatedData as { name: string; email: string; role: TeamUserRole });
+      const result = await onAddUser(validatedData as { name: string; email: string; role: TeamUserRole });
       
-      // Reset form and close dialog
-      setFormData({ name: '', email: '', role: '' });
-      onOpenChange(false);
-      
+      // If email wasn't sent, show the invite link
+      if (result && !result.emailSent && result.inviteUrl) {
+        setInviteLink(result.inviteUrl);
+      } else {
+        // Email sent successfully - close dialog
+        setFormData({ name: '', email: '', role: '' });
+        setInviteLink(null);
+        onOpenChange(false);
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
