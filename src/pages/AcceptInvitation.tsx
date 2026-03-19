@@ -43,10 +43,11 @@ export default function AcceptInvitation() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const roleNames = {
+  const roleNames: Record<string, string> = {
     'viewer': 'צפייה בלבד',
     'sales_agent': 'איש מכירות',
-    'agency_manager': 'מנהל סוכנות'
+    'agency_manager': 'מנהל סוכנות',
+    'admin': 'מנהל מערכת'
   };
 
   useEffect(() => {
@@ -73,13 +74,12 @@ export default function AcceptInvitation() {
         return;
       }
 
-      // Transform data to match expected format
       setInvitation({
-        id: '', // Not needed for display
+        id: '',
         email: data.email,
         role: data.role,
-        company_id: '', // Not needed for display
-        agency_id: '', // Not needed for display
+        company_id: '',
+        agency_id: '',
         expires_at: data.expiresAt,
         companies: {
           name: data.companyName
@@ -112,45 +112,13 @@ export default function AcceptInvitation() {
     setError("");
 
     try {
-      let currentUser = user;
-
-      // If user is not logged in, sign them up or sign them in
-      if (!currentUser) {
-        // Try to sign in first
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: invitation.email,
-          password: password
-        });
-
-        if (signInError) {
-          // If sign in fails, try to sign up
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: invitation.email,
-            password: password,
-            options: {
-              emailRedirectTo: `${window.location.origin}/`
-            }
-          });
-
-          if (signUpError) {
-            throw signUpError;
-          }
-          
-          currentUser = signUpData.user;
-        } else {
-          currentUser = signInData.user;
-        }
-      }
-
-      if (!currentUser) {
-        throw new Error("Failed to authenticate user");
-      }
-
-      // Accept invitation using Edge Function
+      // Call the edge function - it handles user creation via admin API
       const { data: acceptData, error: acceptError } = await supabase.functions.invoke('accept-invitation', {
         body: {
           action: 'accept',
-          token: token
+          token: token,
+          email: invitation.email,
+          password: !user ? password : undefined,
         }
       });
 
@@ -163,6 +131,21 @@ export default function AcceptInvitation() {
       }
 
       toast.success(acceptData.message || "התצטרפת בהצלחה לחברה!");
+
+      // If user was created by admin API (no session), sign them in
+      if (acceptData.needsLogin && !user) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: invitation.email,
+          password: password,
+        });
+
+        if (signInError) {
+          toast.info("החשבון נוצר בהצלחה! אנא התחבר עם הסיסמה שהגדרת.");
+          navigate("/auth");
+          return;
+        }
+      }
+
       navigate("/");
     } catch (err: any) {
       console.error("Error accepting invitation:", err);
@@ -229,7 +212,7 @@ export default function AcceptInvitation() {
               <div className="flex justify-between">
                 <span className="font-medium text-gray-700">תפקיד:</span>
                 <span className="text-purple-600 font-medium">
-                  {roleNames[invitation.role as keyof typeof roleNames] || invitation.role}
+                  {roleNames[invitation.role] || invitation.role}
                 </span>
               </div>
               <div className="flex justify-between">
