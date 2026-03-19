@@ -14,18 +14,20 @@ interface InvitationInfoRequest {
 interface InvitationAcceptRequest {
   action: "accept";
   token: string;
+  email: string;
+  password: string;
 }
 
 type InvitationRequest = InvitationInfoRequest | InvitationAcceptRequest;
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action, token }: InvitationRequest = await req.json();
+    const body = await req.json();
+    const { action, token } = body;
 
     console.log(`Processing invitation ${action} for token: ${token?.substring(0, 8)}...`);
 
@@ -36,14 +38,12 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create Supabase client with service role for bypassing RLS
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     if (action === "info") {
-      // Fetch invitation info without auth requirement
       const { data: invitation, error } = await supabaseAdmin
         .from("user_invitations")
         .select(`
@@ -66,7 +66,6 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      // Check if invitation is still valid
       const now = new Date();
       const expiresAt = new Date(invitation.expires_at);
       
@@ -91,34 +90,72 @@ const handler = async (req: Request): Promise<Response> => {
           companyName: (invitation.companies as any).name,
           expiresAt: invitation.expires_at
         }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders }
-        }
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
 
     } else if (action === "accept") {
-      // Accept invitation - requires authentication
-      const supabaseClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-        {
-          global: {
-            headers: { Authorization: req.headers.get("Authorization")! },
-          },
+      const { email, password } = body;
+
+      // First check if user is already authenticated via header
+      let userId: string | null = null;
+      let userEmail: string | null = null;
+
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader) {
+        const supabaseClient = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+          { global: { headers: { Authorization: authHeader } } }
+        );
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user) {
+          userId = user.id;
+          userEmail = user.email ?? null;
+          console.log(`Authenticated user found: ${userEmail}`);
         }
-      );
+      }
 
-      // Get the authenticated user
-      const {
-        data: { user },
-        error: authError,
-      } = await supabaseClient.auth.getUser();
+      // If no authenticated user, try to sign up or find user via admin
+      if (!userId && email && password) {
+        console.log(`No session, attempting signup/signin for ${email}`);
 
-      if (authError || !user) {
-        console.error("Authentication error:", authError);
+        // Try to create user with admin API (auto-confirms email)
+        const { data: signUpData, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true, // Auto-confirm so they can log in immediately
+        });
+
+        if (signUpError) {
+          // User might already exist - try to find them
+          if (signUpError.message?.includes("already been registered") || signUpError.message?.includes("already exists")) {
+            console.log("User already exists, looking up by email");
+            const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+            const existingUser = users?.find(u => u.email === email);
+            if (existingUser) {
+              userId = existingUser.id;
+              userEmail = existingUser.email ?? null;
+              
+              // Update password for existing user
+              await supabaseAdmin.auth.admin.updateUser(existingUser.id, { password });
+            }
+          } else {
+            console.error("Error creating user:", signUpError);
+            return new Response(
+              JSON.stringify({ error: "שגיאה ביצירת חשבון: " + signUpError.message }),
+              { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+            );
+          }
+        } else if (signUpData?.user) {
+          userId = signUpData.user.id;
+          userEmail = signUpData.user.email ?? null;
+          console.log(`Created new user: ${userEmail}`);
+        }
+      }
+
+      if (!userId) {
         return new Response(
-          JSON.stringify({ error: "נדרשת התחברות לקבלת ההזמנה" }),
+          JSON.stringify({ error: "נדרשת התחברות או הרשמה לקבלת ההזמנה" }),
           { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
@@ -138,16 +175,16 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      // Verify user email matches invitation email
-      if (user.email !== invitation.email) {
-        console.error(`Email mismatch: user ${user.email} vs invitation ${invitation.email}`);
+      // Verify email matches invitation
+      if (userEmail !== invitation.email) {
+        console.error(`Email mismatch: user ${userEmail} vs invitation ${invitation.email}`);
         return new Response(
-          JSON.stringify({ error: "האימייל המחובר לא תואם להזמנה" }),
+          JSON.stringify({ error: "האימייל לא תואם להזמנה" }),
           { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
 
-      // Check if invitation is still valid
+      // Check validity
       const now = new Date();
       const expiresAt = new Date(invitation.expires_at);
       
@@ -165,68 +202,47 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
 
-      // Check if user already has role for this company/agency (idempotent)
+      // Check if role already exists
       const { data: existingRole } = await supabaseAdmin
         .from("user_roles")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("company_id", invitation.company_id)
         .eq("role", invitation.role)
-        .eq("agency_id", invitation.agency_id)
-        .single();
+        .maybeSingle();
 
-      if (existingRole) {
-        console.log("Role already exists, updating invitation as accepted");
-        // Mark invitation as accepted (idempotent)
-        await supabaseAdmin
-          .from("user_invitations")
-          .update({ accepted_at: now.toISOString() })
-          .eq("id", invitation.id);
+      if (!existingRole) {
+        const { error: roleError } = await supabaseAdmin
+          .from("user_roles")
+          .insert({
+            user_id: userId,
+            role: invitation.role,
+            company_id: invitation.company_id,
+            agency_id: invitation.agency_id
+          });
 
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: "התצטרפת בהצלחה!" 
-          }),
-          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-      }
-
-      // Create user role using admin client to bypass RLS
-      const { error: roleError } = await supabaseAdmin
-        .from("user_roles")
-        .insert({
-          user_id: user.id,
-          role: invitation.role,
-          company_id: invitation.company_id,
-          agency_id: invitation.agency_id
-        });
-
-      if (roleError) {
-        console.error("Error creating user role:", roleError);
-        return new Response(
-          JSON.stringify({ error: "שגיאה ביצירת הרשאות משתמש" }),
-          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
+        if (roleError) {
+          console.error("Error creating user role:", roleError);
+          return new Response(
+            JSON.stringify({ error: "שגיאה ביצירת הרשאות משתמש" }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
       }
 
       // Mark invitation as accepted
-      const { error: acceptError } = await supabaseAdmin
+      await supabaseAdmin
         .from("user_invitations")
         .update({ accepted_at: now.toISOString() })
         .eq("id", invitation.id);
 
-      if (acceptError) {
-        console.error("Error accepting invitation:", acceptError);
-        // Don't fail completely, role was created successfully
-      }
-
-      console.log(`Successfully accepted invitation for user ${user.email} with role ${invitation.role}`);
+      console.log(`Successfully accepted invitation for ${userEmail} with role ${invitation.role}`);
 
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "התצטרפת בהצלחה לחברה!" 
+          message: "התצטרפת בהצלחה לחברה!",
+          needsLogin: !authHeader, // Tell frontend if user needs to log in
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
