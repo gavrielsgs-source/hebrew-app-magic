@@ -1,0 +1,22 @@
+{
+  "name": "CarsLead - מערכת ניהול לסוחרי רכב",
+  "short_name": "CarsLead",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2F3C7E",
+  "dir": "rtl",
+  "lang": "he",
+  "icons": [
+    {
+      "src": "/lovable-uploads/8b7d63b5-191f-4ad8-92fa-f9c31ab1f55b.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/lovable-uploads/8b7d63b5-191f-4ad8-92fa-f9c31ab1f55b.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
