@@ -24,6 +24,7 @@ export default function AccountantReports() {
     format(endOfMonth(subMonths(new Date(), 1)), "yyyy-MM-dd")
   );
   const [reportData, setReportData] = useState<GenerateReportResponse | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   const { mutate: generateReport, isPending } = useGenerateAccountantReport();
   const { profile } = useProfile();
@@ -73,12 +74,15 @@ export default function AccountantReports() {
     }
 
     if (!reportData?.reportUrl) {
-      toast.error("אין דוח זמין לשליחה");
+      toast.error("אין דוח זמין לשליחה", {
+        description: "יש להפיק דוח לפני השליחה",
+      });
       return;
     }
 
+    setIsSending(true);
     try {
-      const { error } = await supabase.functions.invoke("send-email", {
+      const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
           to: profile.accountant_email,
           template: "accountant_report",
@@ -98,12 +102,16 @@ export default function AccountantReports() {
 
       if (error) throw error;
 
-      toast.success("הדוח נשלח לרואה החשבון בהצלחה!");
+      toast.success("הדוח נשלח לרואה החשבון בהצלחה!", {
+        description: `נשלח ל: ${profile.accountant_email}`,
+      });
     } catch (error: any) {
       console.error("Error sending email:", error);
       toast.error("שגיאה בשליחת המייל", {
-        description: error.message,
+        description: error.message || "נסה שוב מאוחר יותר",
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -269,10 +277,10 @@ export default function AccountantReports() {
                 <Button
                   onClick={handleSendToAccountant}
                   className="flex-1 h-11 rounded-xl bg-gradient-to-l from-primary to-primary/80"
-                  disabled={!profile?.accountant_email}
+                  disabled={!profile?.accountant_email || isSending}
                 >
                   <Mail className="ml-2 h-4 w-4" />
-                  שלח לרו״ח
+                  {isSending ? "שולח..." : "שלח לרו״ח"}
                 </Button>
               </div>
             )}
