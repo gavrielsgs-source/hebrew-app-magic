@@ -74,12 +74,15 @@ export default function AccountantReports() {
     }
 
     if (!reportData?.reportUrl) {
-      toast.error("אין דוח זמין לשליחה");
+      toast.error("אין דוח זמין לשליחה", {
+        description: "יש להפיק דוח לפני השליחה",
+      });
       return;
     }
 
+    setIsSending(true);
     try {
-      const { error } = await supabase.functions.invoke("send-email", {
+      const { data, error } = await supabase.functions.invoke("send-email", {
         body: {
           to: profile.accountant_email,
           template: "accountant_report",
@@ -99,12 +102,16 @@ export default function AccountantReports() {
 
       if (error) throw error;
 
-      toast.success("הדוח נשלח לרואה החשבון בהצלחה!");
+      toast.success("הדוח נשלח לרואה החשבון בהצלחה!", {
+        description: `נשלח ל: ${profile.accountant_email}`,
+      });
     } catch (error: any) {
       console.error("Error sending email:", error);
       toast.error("שגיאה בשליחת המייל", {
-        description: error.message,
+        description: error.message || "נסה שוב מאוחר יותר",
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
