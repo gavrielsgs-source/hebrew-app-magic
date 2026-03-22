@@ -1,6 +1,6 @@
 export interface AccountantReportTransaction {
   date: string;
-  transaction_type: 'sale' | 'purchase' | 'expense' | 'tax_invoice' | 'payment';
+  transaction_type: 'sale' | 'purchase' | 'expense' | 'tax_invoice' | 'payment' | 'tax_invoice_receipt' | 'tax_invoice_credit';
   description: string;
   car_make?: string;
   car_model?: string;
