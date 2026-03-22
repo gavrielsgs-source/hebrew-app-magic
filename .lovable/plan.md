@@ -1,28 +1,33 @@
 
+
 ## הבעיה
 
-כשמשתמש מנסה להוסיף חבר צוות, הקוד מנסה ליצור חברה (company) אם אין כזו. יצירת החברה נכשלת בגלל **שני טריגרים סותרים** על טבלת `companies`:
-
-1. `on_company_created` → `handle_new_company_subscription` — עובד תקין, יוצר מנוי
-2. `trigger_handle_new_company_with_agency` → `handle_new_company_with_agency` — **שבור**: קורא `PERFORM public.handle_new_company_subscription()` בלי העברת `NEW`, מה שגורם לקריסה
-
-בנוסף, גם אם הטריגר הראשון היה מצליח, יש **אינדקס ייחודי** על `subscriptions.user_id` — ולמשתמש כבר יש מנוי מרגע ההרשמה (מטריגר `handle_new_user_subscription`), מה שגורם לכפילות.
-
-**תוצאה**: יצירת חברה נכשלת → הזמנת משתמש נכשלת → "Failed to create or find company".
+כשמשתמש מחובר למערכת עם אימייל X ופותח הזמנה של אימייל Y:
+1. ה-Edge Function מזהה את המשתמש המחובר (X)
+2. משווה את X לאימייל ההזמנה (Y) 
+3. מחזיר שגיאה 403 "האימייל לא תואם להזמנה"
+4. `supabase.functions.invoke` מציג הודעה גנרית "Edge Function returned a non-2xx status code" במקום השגיאה האמיתית
 
 ## פתרון
 
-### שלב 1: מחיקת הטריגר השבור
-- הסרת `trigger_handle_new_company_with_agency` מטבלת `companies` — הוא מיותר ושבור
-- הטריגר `on_company_created` כבר מטפל ביצירת מנוי
+### שלב 1: Edge Function — התעלם ממשתמש מחובר שלא תואם (`accept-invitation/index.ts`)
+- כשמשתמש מחובר אבל האימייל שלו **לא תואם** להזמנה (case-insensitive) — התעלם ממנו ועבור לנתיב יצירת משתמש חדש עם email+password
+- הסר את בלוק השגיאה של "האימייל לא תואם" — במקום זה פשוט לא להשתמש ב-userId של המשתמש המחובר
+- הוסף השוואת אימייל case-insensitive בכל מקום
 
-### שלב 2: עדכון `handle_new_company_subscription`
-- הפונקציה כבר בודקת `IF NOT EXISTS` וכוללת `UPDATE` כ-fallback, אבל צריך לוודא שהיא עובדת נכון עם האינדקס הייחודי על `user_id`
+### שלב 2: Frontend — טיפול באי-התאמת אימייל (`AcceptInvitation.tsx`)
+- אם המשתמש מחובר אבל האימייל שלו **שונה** מהמוזמן — הצג טופס סיסמה (כמו למשתמש לא מחובר) + הודעה "ההזמנה היא עבור {email}, הגדר סיסמה לחשבון זה"
+- לפני שליחת הבקשה, בצע `supabase.auth.signOut()` כדי שה-Edge Function לא ישלח את ה-Authorization header של המשתמש הלא-נכון
+- אחרי קבלה מוצלחת, התחבר אוטומטית עם האימייל+סיסמה של ההזמנה
 
-### שלב 3: יצירת סוכנות ברירת מחדל בטריגר התקין
-- להעביר את לוגיקת יצירת הסוכנות מהטריגר השבור לתוך `handle_new_company_subscription`, כך שגם חברה וגם סוכנות ייווצרו אוטומטית
+### שלב 3: תיקון טיפול בשגיאות בפרונטאנד
+- כש-`supabase.functions.invoke` מחזיר שגיאה, לחלץ את ההודעה מ-`data?.error` (כי ב-non-2xx ה-SDK שם את ה-body ב-`error` אבל גם ב-`data`)
+- להציג הודעות שגיאה בעברית במקום הודעות גנריות
 
-### פרטים טכניים
-- מיגרציה חדשה: `DROP TRIGGER trigger_handle_new_company_with_agency ON companies`
-- עדכון פונקציית `handle_new_company_subscription` לכלול יצירת סוכנות ברירת מחדל
-- שינוי קטן: 1 קובץ מיגרציה חדש
+### תוצאה צפויה
+- משתמש לא מחובר → מגדיר סיסמה → מצטרף → מתחבר אוטומטית ✅
+- משתמש מחובר עם אותו אימייל → מצטרף ישירות ✅  
+- משתמש מחובר עם אימייל אחר → מתנתק, מגדיר סיסמה, מצטרף, מתחבר ✅
+
+שינויים ב-2 קבצים + deploy של ה-Edge Function.
+
