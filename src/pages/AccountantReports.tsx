@@ -314,6 +314,22 @@ export default function AccountantReports() {
                   </span>
                   <span className="text-muted-foreground">סה״כ קבלות</span>
                 </div>
+                {(reportData.summary.totalTaxInvoiceReceipts > 0) && (
+                  <div className="flex justify-between text-sm">
+                    <span className="font-semibold text-indigo-600">
+                      ₪{reportData.summary.totalTaxInvoiceReceipts.toLocaleString()}
+                    </span>
+                    <span className="text-muted-foreground">סה״כ חשבוניות מס קבלה</span>
+                  </div>
+                )}
+                {(reportData.summary.totalCredits > 0) && (
+                  <div className="flex justify-between text-sm">
+                    <span className="font-semibold text-pink-600">
+                      -₪{reportData.summary.totalCredits.toLocaleString()}
+                    </span>
+                    <span className="text-muted-foreground">סה״כ חשבוניות זיכוי</span>
+                  </div>
+                )}
                 <Separator />
                 <div className="flex justify-between text-sm">
                   <span className="font-semibold">

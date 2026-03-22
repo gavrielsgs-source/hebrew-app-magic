@@ -287,16 +287,52 @@ serve(async (req) => {
       });
     }
 
-    // 6. Fetch Customer Documents - organize into folders
+    // 6. Fetch Customer Documents - organize into folders, FILTER OUT CANCELLED
     const { data: customerDocs, error: customerDocsError } = await supabaseClient
       .from("customer_documents")
       .select(`*, customer:customers(full_name)`)
       .gte("date", startDate)
       .lte("date", endDate)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .neq("status", "cancelled");
 
     if (customerDocsError) throw customerDocsError;
 
+    // 6b. Extract tax_invoice_receipt and tax_invoice_credit as transaction rows
+    for (const doc of customerDocs || []) {
+      if (doc.type === 'tax_invoice_receipt') {
+        const docAmount = doc.amount || 0;
+        const vatAmount = Math.round((docAmount / (1 + VAT_RATE) * VAT_RATE) * 100) / 100;
+        transactions.push({
+          date: doc.date,
+          transaction_type: "tax_invoice_receipt",
+          description: `חשבונית מס קבלה ${doc.document_number} - ${doc.customer?.full_name || ""}`,
+          customer_name: doc.customer?.full_name,
+          amount: docAmount,
+          vat_amount: vatAmount,
+          total_with_vat: docAmount,
+          invoice_number: doc.document_number,
+          notes: doc.title,
+        });
+      } else if (doc.type === 'tax_invoice_credit') {
+        const docAmount = doc.amount || 0;
+        const vatAmount = Math.round((docAmount / (1 + VAT_RATE) * VAT_RATE) * 100) / 100;
+        // Credit notes are NEGATIVE — they reduce totals
+        transactions.push({
+          date: doc.date,
+          transaction_type: "tax_invoice_credit",
+          description: `חשבונית זיכוי ${doc.document_number} - ${doc.customer?.full_name || ""}`,
+          customer_name: doc.customer?.full_name,
+          amount: -docAmount,
+          vat_amount: -vatAmount,
+          total_with_vat: -docAmount,
+          invoice_number: doc.document_number,
+          notes: doc.title,
+        });
+      }
+    }
+
+    // Download document files into folders
     for (const doc of customerDocs || []) {
       if (doc.file_path) {
         try {
@@ -310,7 +346,7 @@ serve(async (req) => {
             
             // Route to appropriate folder
             let folder = "Agreements";
-            if (doc.type === 'tax_invoice' || doc.type === 'invoice' || doc.type === 'receipt' || doc.type === 'tax_invoice_receipt') {
+            if (doc.type === 'tax_invoice' || doc.type === 'invoice' || doc.type === 'receipt' || doc.type === 'tax_invoice_receipt' || doc.type === 'tax_invoice_credit') {
               folder = "Invoices_Sales";
             } else if (doc.type === 'purchase_agreement' || doc.type === 'expense') {
               folder = "Expenses_Purchases";
@@ -338,9 +374,15 @@ serve(async (req) => {
       .filter((t) => t.transaction_type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
     const totalPayments = (payments || []).reduce((sum, p) => sum + (p.amount || 0), 0);
+    const totalTaxInvoiceReceipts = transactions
+      .filter((t) => t.transaction_type === "tax_invoice_receipt")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalCredits = transactions
+      .filter((t) => t.transaction_type === "tax_invoice_credit")
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
     const totalVAT = transactions.reduce((sum, t) => sum + t.vat_amount, 0);
     const grossProfit = totalSales - totalPurchases;
-    const netProfit = grossProfit - totalExpenses;
+    const netProfit = grossProfit - totalExpenses - totalCredits;
 
     // 7. Inventory Snapshot
     const { data: inventory, error: inventoryError } = await supabaseClient
@@ -405,6 +447,8 @@ serve(async (req) => {
       totalPurchases,
       totalExpenses,
       totalPayments,
+      totalTaxInvoiceReceipts,
+      totalCredits,
       grossProfit,
       totalVAT,
       netProfit,
@@ -430,6 +474,8 @@ serve(async (req) => {
       expense: "הוצאה",
       tax_invoice: "חשבונית מס",
       payment: "קבלה",
+      tax_invoice_receipt: "חשבונית מס קבלה",
+      tax_invoice_credit: "חשבונית זיכוי",
     };
 
     const taxTypeMap: Record<string, string> = {
@@ -507,6 +553,8 @@ serve(async (req) => {
       `סה"כ רכישות,${totalPurchases.toFixed(2)}`,
       `סה"כ הוצאות,${totalExpenses.toFixed(2)}`,
       `סה"כ קבלות,${totalPayments.toFixed(2)}`,
+      `סה"כ חשבוניות מס קבלה,${totalTaxInvoiceReceipts.toFixed(2)}`,
+      `סה"כ חשבוניות זיכוי,${totalCredits.toFixed(2)}`,
       `רווח גולמי,${grossProfit.toFixed(2)}`,
       `רווח נקי,${netProfit.toFixed(2)}`,
       `סה"כ מע"מ,${totalVAT.toFixed(2)}`,
