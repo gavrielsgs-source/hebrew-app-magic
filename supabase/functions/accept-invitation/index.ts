@@ -161,7 +161,14 @@ const handler = async (req: Request): Promise<Response> => {
             const existingUser = users?.find(u => u.email?.toLowerCase() === invitationEmailLower);
             if (existingUser) {
               userId = existingUser.id;
-              await supabaseAdmin.auth.admin.updateUser(existingUser.id, { password });
+              const { error: updateUserError } = await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { password });
+              if (updateUserError) {
+                console.error("Error updating existing user password:", updateUserError);
+                return new Response(
+                  JSON.stringify({ error: "שגיאה בעדכון סיסמת המשתמש הקיים" }),
+                  { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+                );
+              }
             }
           } else {
             console.error("Error creating user:", signUpError);
