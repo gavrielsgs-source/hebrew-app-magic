@@ -162,12 +162,12 @@ export default function SalesAgreement() {
       const agreementData = {
         date: format(data.date, "dd MMMM yyyy", { locale: he }),
         seller: {
-          company: profile?.company_name || profile?.full_name || "חברת רכב בע\"מ",
-          id: "000000000",
-          phone: profile?.phone || "052-0000000",
+          company: profile?.company_name || profile?.full_name || "",
+          id: profile?.company_hp || "",
+          phone: profile?.phone || "",
           address: {
-            street: "רחוב ראשי 1",
-            city: "תל אביב",
+            street: profile?.company_address || "",
+            city: "",
             country: "ישראל"
           }
         },
