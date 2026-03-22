@@ -24,6 +24,7 @@ export default function AccountantReports() {
     format(endOfMonth(subMonths(new Date(), 1)), "yyyy-MM-dd")
   );
   const [reportData, setReportData] = useState<GenerateReportResponse | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   const { mutate: generateReport, isPending } = useGenerateAccountantReport();
   const { profile } = useProfile();
