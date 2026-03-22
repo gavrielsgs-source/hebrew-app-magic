@@ -68,7 +68,7 @@ export const SalesAgreementPreview: React.FC<SalesAgreementPreviewProps> = ({ da
         {/* Agreement Opening */}
         <div className="mb-6">
           <p className="text-base leading-relaxed">
-            שנערך ונחתם ב{data.seller?.address?.city || '______'} בתאריך {data.date ? new Date(data.date).toLocaleDateString('he-IL') : new Date().toLocaleDateString('he-IL')}
+            תאריך: {data.date ? new Date(data.date).toLocaleDateString('he-IL') : new Date().toLocaleDateString('he-IL')}
           </p>
         </div>
 
