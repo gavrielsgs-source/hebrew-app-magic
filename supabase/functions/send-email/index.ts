@@ -10,7 +10,35 @@ import { PaymentReceiptEmail } from "../_shared/email-templates/payment-receipt-
 import { AccountantReportEmail } from "../_shared/email-templates/accountant-report-email.tsx";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
-const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "CarsLeadApp <onboarding@carsleadapp.com>";
+const DEFAULT_FROM_EMAIL = "CarsLeadApp <onboarding@carsleadapp.com>";
+
+const normalizeFromEmail = (value?: string | null) => {
+  const candidate = value?.replace(/\s+/g, " ").trim();
+
+  if (!candidate) {
+    return DEFAULT_FROM_EMAIL;
+  }
+
+  const plainEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const namedEmailPattern = /^[^<>]+<\s*[^\s@]+@[^\s@]+\.[^\s@]+\s*>$/;
+
+  if (plainEmailPattern.test(candidate)) {
+    return candidate;
+  }
+
+  if (namedEmailPattern.test(candidate)) {
+    const match = candidate.match(/^(.*?)<\s*([^\s@]+@[^\s@]+\.[^\s@]+)\s*>$/);
+    if (match) {
+      const [, name, email] = match;
+      return `${name.trim()} <${email.trim()}>`;
+    }
+  }
+
+  console.warn("Invalid RESEND_FROM_EMAIL format, falling back to default sender");
+  return DEFAULT_FROM_EMAIL;
+};
+
+const fromEmail = normalizeFromEmail(Deno.env.get("RESEND_FROM_EMAIL"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
