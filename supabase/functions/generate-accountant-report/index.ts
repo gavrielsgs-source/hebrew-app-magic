@@ -36,7 +36,17 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
+
+    console.log("[generate-accountant-report] incoming request", {
+      method: req.method,
+      hasAuthorizationHeader: Boolean(authHeader),
+      hasBearerPrefix: authHeader?.startsWith("Bearer ") ?? false,
+      origin: req.headers.get("origin"),
+      referer: req.headers.get("referer"),
+    });
+
     if (!authHeader?.startsWith("Bearer ")) {
+      console.error("[generate-accountant-report] missing or invalid authorization header");
       return new Response(
         JSON.stringify({ error: "Missing authorization header" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -53,12 +63,15 @@ serve(async (req) => {
       }
     );
 
-    // Use getClaims for JWT verification
     const token = authHeader.replace("Bearer ", "");
     const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
 
     if (claimsError || !claimsData?.claims) {
-      console.error("Auth error:", claimsError);
+      console.error("[generate-accountant-report] auth claims failure", {
+        message: claimsError?.message,
+        name: claimsError?.name,
+        hasClaims: Boolean(claimsData?.claims),
+      });
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -68,7 +81,11 @@ serve(async (req) => {
     const userId = claimsData.claims.sub as string;
 
     const { startDate, endDate } = await req.json();
-    console.log(`📊 Generating report for user ${userId} from ${startDate} to ${endDate}`);
+    console.log("[generate-accountant-report] authenticated", {
+      userId,
+      startDate,
+      endDate,
+    });
 
     // Fetch company profile details for the report header
     const { data: profile } = await supabaseClient
