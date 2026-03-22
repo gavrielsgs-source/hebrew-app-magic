@@ -18,16 +18,11 @@ const passwordSchema = z.object({
   path: ["confirmPassword"]
 });
 
-interface InvitationData {
-  id: string;
+interface InvitationInfo {
   email: string;
   role: string;
-  company_id: string;
-  agency_id?: string;
-  expires_at: string;
-  companies: {
-    name: string;
-  };
+  companyName: string;
+  expiresAt: string;
 }
 
 export default function AcceptInvitation() {
@@ -36,7 +31,7 @@ export default function AcceptInvitation() {
   const { user } = useAuth();
   const token = searchParams.get("token");
 
-  const [invitation, setInvitation] = useState<InvitationData | null>(null);
+  const [invitation, setInvitation] = useState<InvitationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
   const [password, setPassword] = useState("");
@@ -50,40 +45,46 @@ export default function AcceptInvitation() {
     'admin': 'מנהל מערכת'
   };
 
+  // Check if logged-in user's email matches invitation email
+  const emailMatches = user && invitation
+    ? user.email?.toLowerCase() === invitation.email.toLowerCase()
+    : false;
+
+  // Show password form if not logged in OR logged in with different email
+  const needsPasswordForm = !user || !emailMatches;
+
   useEffect(() => {
     if (!token) {
       setError("קישור הזמנה לא תקין");
       setLoading(false);
       return;
     }
-
     fetchInvitation();
   }, [token]);
 
   const fetchInvitation = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('accept-invitation', {
-        body: {
-          action: 'info',
-          token: token
-        }
+      const { data, error: fnError } = await supabase.functions.invoke('accept-invitation', {
+        body: { action: 'info', token }
       });
 
-      if (error || !data) {
-        setError(error?.message || "הזמנה לא נמצאה או שפגה תוקפה");
+      if (fnError) {
+        // Try to extract Hebrew error from response
+        const errorMsg = data?.error || fnError.message || "הזמנה לא נמצאה או שפגה תוקפה";
+        setError(errorMsg);
+        return;
+      }
+
+      if (data?.error) {
+        setError(data.error);
         return;
       }
 
       setInvitation({
-        id: '',
         email: data.email,
         role: data.role,
-        company_id: '',
-        agency_id: '',
-        expires_at: data.expiresAt,
-        companies: {
-          name: data.companyName
-        }
+        companyName: data.companyName,
+        expiresAt: data.expiresAt
       });
     } catch (err) {
       console.error("Error fetching invitation:", err);
@@ -96,8 +97,8 @@ export default function AcceptInvitation() {
   const handleAcceptInvitation = async () => {
     if (!invitation) return;
 
-    // Validate password if user needs to sign up
-    if (!user) {
+    // Validate password if needed
+    if (needsPasswordForm) {
       try {
         passwordSchema.parse({ password, confirmPassword });
       } catch (validationError) {
@@ -112,18 +113,25 @@ export default function AcceptInvitation() {
     setError("");
 
     try {
-      // Call the edge function - it handles user creation via admin API
+      // If logged in with a different email, sign out first so the edge function
+      // doesn't pick up the wrong Authorization header
+      if (user && !emailMatches) {
+        await supabase.auth.signOut();
+      }
+
       const { data: acceptData, error: acceptError } = await supabase.functions.invoke('accept-invitation', {
         body: {
           action: 'accept',
-          token: token,
+          token,
           email: invitation.email,
-          password: !user ? password : undefined,
+          password: needsPasswordForm ? password : undefined,
         }
       });
 
+      // Handle errors - extract Hebrew message from response
       if (acceptError) {
-        throw new Error(acceptError.message || "שגיאה בקבלת ההזמנה");
+        const errorMsg = acceptData?.error || acceptError.message || "שגיאה בקבלת ההזמנה";
+        throw new Error(errorMsg);
       }
 
       if (!acceptData?.success) {
@@ -132,11 +140,11 @@ export default function AcceptInvitation() {
 
       toast.success(acceptData.message || "התצטרפת בהצלחה לחברה!");
 
-      // If user was created by admin API (no session), sign them in
-      if (acceptData.needsLogin && !user) {
+      // If user needs to log in with the invitation credentials
+      if (needsPasswordForm && password) {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: invitation.email,
-          password: password,
+          password,
         });
 
         if (signInError) {
@@ -198,7 +206,7 @@ export default function AcceptInvitation() {
         <CardHeader className="text-center bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
           <CardTitle className="text-2xl font-bold">🎉 הזמנה מיוחדת!</CardTitle>
           <CardDescription className="text-purple-100">
-            הוזמנת להצטרף לחברת {invitation?.companies.name}
+            הוזמנת להצטרף לחברת {invitation?.companyName}
           </CardDescription>
         </CardHeader>
         
@@ -217,12 +225,22 @@ export default function AcceptInvitation() {
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-gray-700">חברה:</span>
-                <span className="text-gray-900">{invitation.companies.name}</span>
+                <span className="text-gray-900">{invitation.companyName}</span>
               </div>
             </div>
           )}
 
-          {!user && (
+          {/* Show message if logged in with different email */}
+          {user && !emailMatches && (
+            <Alert className="border-amber-200 bg-amber-50">
+              <AlertDescription className="text-amber-700 text-right">
+                אתה מחובר כ-{user.email}. ההזמנה היא עבור {invitation?.email}. 
+                הגדר סיסמה לחשבון המוזמן — המערכת תתנתק ותחבר אותך אוטומטית.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {needsPasswordForm && (
             <div className="space-y-4">
               <div className="text-center text-sm text-gray-600 mb-4">
                 כדי להצטרף, הגדר סיסמה עבור החשבון שלך
@@ -254,7 +272,7 @@ export default function AcceptInvitation() {
             </div>
           )}
 
-          {user && (
+          {user && emailMatches && (
             <Alert className="border-green-200 bg-green-50">
               <AlertDescription className="text-green-700 text-right">
                 אתה כבר מחובר כ-{user.email}
@@ -273,7 +291,7 @@ export default function AcceptInvitation() {
           <div className="space-y-3">
             <Button
               onClick={handleAcceptInvitation}
-              disabled={isAccepting || (!user && (!password || !confirmPassword))}
+              disabled={isAccepting || (needsPasswordForm && (!password || !confirmPassword))}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 h-12 text-lg font-semibold"
             >
               {isAccepting ? (
