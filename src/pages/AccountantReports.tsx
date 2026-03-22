@@ -277,10 +277,10 @@ export default function AccountantReports() {
                 <Button
                   onClick={handleSendToAccountant}
                   className="flex-1 h-11 rounded-xl bg-gradient-to-l from-primary to-primary/80"
-                  disabled={!profile?.accountant_email}
+                  disabled={!profile?.accountant_email || isSending}
                 >
                   <Mail className="ml-2 h-4 w-4" />
-                  שלח לרו״ח
+                  {isSending ? "שולח..." : "שלח לרו״ח"}
                 </Button>
               </div>
             )}
