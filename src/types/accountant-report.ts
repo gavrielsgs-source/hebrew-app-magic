@@ -35,6 +35,8 @@ export interface FinancialSummary {
   totalPurchases: number;
   totalExpenses: number;
   totalPayments: number;
+  totalTaxInvoiceReceipts: number;
+  totalCredits: number;
   grossProfit: number;
   totalVAT: number;
   netProfit: number;
