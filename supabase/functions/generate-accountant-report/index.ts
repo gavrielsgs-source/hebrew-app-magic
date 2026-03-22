@@ -68,13 +68,13 @@ serve(async (req) => {
     const userId = claimsData.claims.sub as string;
 
     const { startDate, endDate } = await req.json();
-    console.log(`📊 Generating report for user ${user.id} from ${startDate} to ${endDate}`);
+    console.log(`📊 Generating report for user ${userId} from ${startDate} to ${endDate}`);
 
     // Fetch company profile details for the report header
     const { data: profile } = await supabaseClient
       .from("profiles")
       .select("company_name, company_hp, company_address, company_type, full_name")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single();
 
     const transactions: Transaction[] = [];
@@ -87,7 +87,7 @@ serve(async (req) => {
       .select(`*, car:cars(make, model, year, purchase_cost, purchase_source, vat_paid), customer:customers(full_name)`)
       .gte("sale_date", startDate)
       .lte("sale_date", endDate)
-      .eq("cars.user_id", user.id);
+      .eq("cars.user_id", userId);
 
     if (salesError) throw salesError;
 
@@ -151,7 +151,7 @@ serve(async (req) => {
       .select(`*, car:cars(make, model, year, supplier_name, purchase_source, vat_paid), customer:customers(full_name)`)
       .gte("purchase_date", startDate)
       .lte("purchase_date", endDate)
-      .eq("cars.user_id", user.id);
+      .eq("cars.user_id", userId);
 
     if (purchasesError) throw purchasesError;
 
@@ -197,7 +197,7 @@ serve(async (req) => {
       .select(`*, car:cars(make, model, year)`)
       .gte("expense_date", startDate)
       .lte("expense_date", endDate)
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     if (expensesError) throw expensesError;
 
@@ -251,7 +251,7 @@ serve(async (req) => {
       .select("*")
       .gte("date", startDate)
       .lte("date", endDate)
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     if (invoicesError) throw invoicesError;
 
@@ -275,7 +275,7 @@ serve(async (req) => {
       .select(`*, customer:customers(full_name)`)
       .gte("payment_date", startDate)
       .lte("payment_date", endDate)
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     if (paymentsError) throw paymentsError;
 
@@ -306,7 +306,7 @@ serve(async (req) => {
       .select(`*, customer:customers(full_name)`)
       .gte("date", startDate)
       .lte("date", endDate)
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .neq("status", "cancelled");
 
     if (customerDocsError) throw customerDocsError;
@@ -401,7 +401,7 @@ serve(async (req) => {
     const { data: inventory, error: inventoryError } = await supabaseClient
       .from("cars")
       .select("id, make, model, year, chassis_number, license_number, purchase_cost, purchase_date, status, kilometers, purchase_source")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("status", "available");
 
     if (inventoryError) throw inventoryError;
@@ -412,7 +412,7 @@ serve(async (req) => {
     const { data: allCustomers, error: customersError } = await supabaseClient
       .from("customers")
       .select("id, full_name, id_number, phone")
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     if (customersError) throw customersError;
 
@@ -593,7 +593,7 @@ serve(async (req) => {
 
     const { error: uploadError } = await supabaseClient.storage
       .from("documents")
-      .upload(`reports/${user.id}/${filename}`, zipped, {
+      .upload(`reports/${userId}/${filename}`, zipped, {
         contentType: "application/zip",
         upsert: true,
       });
@@ -601,7 +601,7 @@ serve(async (req) => {
     if (uploadError) throw uploadError;
 
     // Use signed URL (valid 7 days) instead of public URL
-    const storagePath = `reports/${user.id}/${filename}`;
+    const storagePath = `reports/${userId}/${filename}`;
     const { data: signedData, error: signedError } = await supabaseClient.storage
       .from("documents")
       .createSignedUrl(storagePath, 60 * 60 * 24 * 7); // 7 days
