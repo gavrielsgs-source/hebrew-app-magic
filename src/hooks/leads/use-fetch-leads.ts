@@ -72,9 +72,8 @@ const fetchLeads = async () => {
       // Extract email
       const email = getFieldValue(fieldData, 'email');
       
-      // Read platform from lead_data.platform (set by webhook edge function)
-      // Falls back to lead_data.source (user-edited) then 'Facebook'
-      const sourcePlatform = leadData.source || leadData.platform || 'Facebook';
+      // Read platform from lead_data: user-edited source > detected platform > fallback to 'Meta'
+      const sourcePlatform = leadData.source || leadData.platform || 'Meta';
 
       return {
         id: fbLead.lead_id,

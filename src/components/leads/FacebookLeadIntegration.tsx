@@ -231,7 +231,7 @@ export function FacebookLeadIntegration() {
       },
       {
       scope:
-          "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads,instagram_basic",
+          "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads,ads_read,instagram_basic",
       },
     );
   };
