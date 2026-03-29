@@ -131,10 +131,28 @@ serve(async (req) => {
 
           const formattedPhone = formatPhoneForWhatsApp(leadPhone);
 
-          // Detect if lead came from Instagram or Facebook
-          const platform = leadDetails.platform || 
-            (leadData.ad_id && leadDetails.ad_id ? 'Instagram' : null) || 
-            'Facebook';
+          // Detect platform: query the ad to check placement
+          // Meta does NOT return a "platform" field on leads directly.
+          // Reliable method: check if the ad was served on Instagram via the Ads API.
+          let platform = 'Facebook'; // default
+          const adId = leadDetails.ad_id || leadData.ad_id;
+          
+          if (adId && pageAccessToken) {
+            try {
+              const adRes = await fetch(
+                `https://graph.facebook.com/v17.0/${adId}?fields=effective_instagram_media_url,instagram_actor_id&access_token=${pageAccessToken}`
+              );
+              if (adRes.ok) {
+                const adData = await adRes.json();
+                // If ad has instagram_actor_id, it was served on Instagram
+                if (adData.instagram_actor_id || adData.effective_instagram_media_url) {
+                  platform = 'Instagram';
+                }
+              }
+            } catch (adErr) {
+              console.log("⚠️ Could not determine ad platform, defaulting to Facebook:", adErr);
+            }
+          }
 
           const formattedLead = {
             created_at: new Date(leadDetails.created_time).toISOString(),
@@ -142,7 +160,7 @@ serve(async (req) => {
             created_time: leadDetails.created_time,
             field_data: leadDetails.field_data || [],
             platform,
-            ad_id: leadDetails.ad_id || leadData.ad_id || null,
+            ad_id: adId || null,
             form_id: leadData.form_id || null,
           };
 
