@@ -230,8 +230,8 @@ export function FacebookLeadIntegration() {
         }
       },
       {
-        scope:
-          "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads",
+      scope:
+          "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads,instagram_basic,instagram_manage_messages",
       },
     );
   };
@@ -365,7 +365,7 @@ export function FacebookLeadIntegration() {
     <div className="p-4 text-right space-y-4">
       {/* Status Display */}
       <div className="bg-muted/50 p-3 rounded-lg">
-        <div className="text-sm font-medium">סטטוס חיבור: {connectionStatus}</div>
+        <div className="text-sm font-medium">סטטוס חיבור Meta (פייסבוק + אינסטגרם): {connectionStatus}</div>
         {tokens && tokens.length > 0 && (
           <div className="text-xs text-muted-foreground mt-1">
             דפים מחוברים: {tokens.map((t) => t.page_name).join(", ")}
@@ -376,7 +376,7 @@ export function FacebookLeadIntegration() {
       {/* Action Buttons */}
       <div className="flex gap-2 flex-wrap">
         <button className="btn-primary" onClick={loginAndSubscribe} disabled={!fbInitialized || loading}>
-          {loading ? "טוען..." : "התחבר לפייסבוק והרשם לכל הדפים"}
+          {loading ? "טוען..." : "התחבר ל-Meta (פייסבוק + אינסטגרם)"}
         </button>
 
         <button
@@ -384,7 +384,7 @@ export function FacebookLeadIntegration() {
           onClick={fetchAllLeadsFromFacebook}
           disabled={!tokens || tokens.length === 0 || loading}
         >
-          רענון לידים מפייסבוק
+          רענון לידים מ-Meta
         </button>
 
         <button className="btn-secondary" onClick={resetConnection} disabled={loading}>

@@ -131,11 +131,19 @@ serve(async (req) => {
 
           const formattedPhone = formatPhoneForWhatsApp(leadPhone);
 
+          // Detect if lead came from Instagram or Facebook
+          const platform = leadDetails.platform || 
+            (leadData.ad_id && leadDetails.ad_id ? 'Instagram' : null) || 
+            'Facebook';
+
           const formattedLead = {
             created_at: new Date(leadDetails.created_time).toISOString(),
             id: leadDetails.id,
             created_time: leadDetails.created_time,
             field_data: leadDetails.field_data || [],
+            platform,
+            ad_id: leadDetails.ad_id || leadData.ad_id || null,
+            form_id: leadData.form_id || null,
           };
 
           const { error } = await supabase.rpc("save_facebook_lead" as any, {
