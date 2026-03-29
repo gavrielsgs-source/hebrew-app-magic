@@ -14,16 +14,16 @@ function formatPhoneForWhatsApp(phone: string | null | undefined): string | null
 // CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-hub-signature",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-hub-signature-256",
 };
 
-// Verify Facebook signature
-async function verifyFacebookSignature(body: string, signature: string, secret: string): Promise<boolean> {
-  if (!signature || !signature.startsWith("sha1=")) return false;
-  const expectedSignature = signature.slice(5);
+// Verify Meta webhook signature using SHA-256 (x-hub-signature-256)
+async function verifyMetaSignature(body: string, signature: string, secret: string): Promise<boolean> {
+  if (!signature || !signature.startsWith("sha256=")) return false;
+  const expectedSignature = signature.slice(7);
   const encoder = new TextEncoder();
   const key = encoder.encode(secret);
-  const hmac = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  const hmac = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const digest = await crypto.subtle.sign("HMAC", hmac, encoder.encode(body));
   const hash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
   return expectedSignature === hash;
@@ -51,7 +51,7 @@ async function detectPlatform(
 
   try {
     const adRes = await fetch(
-      `https://graph.facebook.com/v17.0/${adId}?fields=effective_instagram_media_url,instagram_actor_id&access_token=${pageAccessToken}`
+      `https://graph.facebook.com/v21.0/${adId}?fields=effective_instagram_media_url,instagram_actor_id&access_token=${pageAccessToken}`
     );
 
     if (!adRes.ok) {
@@ -121,10 +121,10 @@ serve(async (req) => {
       if (!appSecret || !supabaseUrl || !supabaseKey) throw new Error("Missing required environment variables");
 
       const bodyText = await req.text();
-      const signatureHeader = req.headers.get("x-hub-signature");
+      const signatureHeader = req.headers.get("x-hub-signature-256");
 
-      const signatureValid = await verifyFacebookSignature(bodyText, signatureHeader || "", appSecret);
-      if (!signatureValid) return new Response("Invalid Facebook signature", { status: 401, headers: corsHeaders });
+      const signatureValid = await verifyMetaSignature(bodyText, signatureHeader || "", appSecret);
+      if (!signatureValid) return new Response("Invalid Meta signature", { status: 401, headers: corsHeaders });
 
       const supabase = createClient(supabaseUrl, supabaseKey);
       const webhookData = JSON.parse(bodyText);
@@ -163,7 +163,7 @@ serve(async (req) => {
               const pageAccessToken = tokenData.access_token;
 
               // Fetch lead details from Meta Graph API
-              const leadRes = await fetch(`https://graph.facebook.com/v17.0/${leadData.leadgen_id}?access_token=${pageAccessToken}`);
+              const leadRes = await fetch(`https://graph.facebook.com/v21.0/${leadData.leadgen_id}?access_token=${pageAccessToken}`);
 
               if (!leadRes.ok) {
                 const errorText = await leadRes.text();

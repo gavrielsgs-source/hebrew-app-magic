@@ -39,7 +39,7 @@ export function FacebookLeadIntegration() {
         appId: "2106125989900776",
         cookie: true,
         xfbml: false,
-        version: "v17.0",
+        version: "v21.0",
       });
       addDebugLog("Facebook SDK initialized successfully");
       setFbInitialized(true);
