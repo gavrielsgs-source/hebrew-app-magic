@@ -72,19 +72,17 @@ const fetchLeads = async () => {
       // Extract email
       const email = getFieldValue(fieldData, 'email');
       
-      // Detect source platform from lead_data or page info
-      const sourcePlatform = leadData.source || leadData.platform || 
-        (leadData.ad_id ? 'Instagram' : null) ||
-        (leadData.is_organic && leadData.instagram_business_id ? 'Instagram' : null) ||
-        'Facebook';
+      // Read platform from lead_data.platform (set by webhook edge function)
+      // Falls back to lead_data.source (user-edited) then 'Facebook'
+      const sourcePlatform = leadData.source || leadData.platform || 'Facebook';
 
       return {
-        id: fbLead.lead_id, // שימוש ב-lead_id כדי שיתאים ללוגיקת העדכון
+        id: fbLead.lead_id,
         user_id: fbLead.user_id,
         name,
         phone,
         email,
-        status: leadData.status || 'new', // קריאת הסטטוס מתוך lead_data אם קיים
+        status: leadData.status || 'new',
         source: sourcePlatform,
         notes: leadData.notes || getFieldValue(fieldData, 'notes') || null,
         created_at: fbLead.created_at,
