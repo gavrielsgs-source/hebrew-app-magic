@@ -81,13 +81,20 @@ export function TaskDateAndStatus({ hiddenOnMobile = false }: TaskDateAndStatusP
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto max-w-[calc(100vw-2rem)] p-0 z-[200] bg-background" align="center" side="bottom" collisionPadding={16} avoidCollisions={true}>
+                <PopoverContent 
+                  className="w-auto p-0 z-[200] bg-background mx-auto" 
+                  align="center" 
+                  side="bottom" 
+                  collisionPadding={{ left: 16, right: 16, top: 8, bottom: 8 }}
+                  avoidCollisions={true}
+                  style={{ maxWidth: 'calc(100vw - 2rem)' }}
+                >
                   <Calendar
                     mode="single"
                     selected={field.value}
                     onSelect={handleDateSelect}
                     initialFocus
-                    className={cn("p-3 pointer-events-auto")}
+                    className={cn("p-3 pointer-events-auto w-full")}
                   />
                 </PopoverContent>
               </Popover>

@@ -11,12 +11,14 @@ const PopoverTrigger = PopoverPrimitive.Trigger
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
->(({ className, align = "center", sideOffset = 8, ...props }, ref) => (
+>(({ className, align = "center", sideOffset = 8, collisionPadding = 16, ...props }, ref) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
       ref={ref}
       align={align}
       sideOffset={sideOffset}
+      collisionPadding={collisionPadding}
+      avoidCollisions={true}
       className={cn(
         // Base styles - modern card design
         "z-[100] w-80 max-w-[calc(100vw-2rem)] overflow-hidden",
