@@ -19,7 +19,7 @@ const PopoverContent = React.forwardRef<
       sideOffset={sideOffset}
       className={cn(
         // Base styles - modern card design
-        "z-[100] w-80 overflow-hidden",
+        "z-[100] w-80 max-w-[calc(100vw-2rem)] overflow-hidden",
         "rounded-2xl border-2 border-border/50",
         "bg-popover/98 backdrop-blur-xl",
         "p-4 text-popover-foreground",
