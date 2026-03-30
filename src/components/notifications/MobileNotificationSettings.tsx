@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Bell, Smartphone, Monitor } from "lucide-react";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useToast } from "@/hooks/use-toast";
+import { Send } from "lucide-react";
 
 export function MobileNotificationSettings() {
-  const { permission, isSupported, preferences, requestPermission, updatePreferences } = usePushNotifications();
+  const { permission, isSupported, preferences, requestPermission, updatePreferences, sendTestNotification } = usePushNotifications();
   const { toast } = useToast();
 
   const handleRequestPermission = async () => {
@@ -83,6 +84,18 @@ export function MobileNotificationSettings() {
               <p className="text-xs text-destructive text-right">
                 ההתראות חסומות ברמת הדפדפן. צריך לאפשר אותן בהגדרות האתר.
               </p>
+            )}
+
+            {permission === "granted" && (
+              <Button 
+                onClick={sendTestNotification}
+                variant="outline"
+                size="sm"
+                className="w-full mt-2"
+              >
+                <Send className="h-4 w-4 ml-2" />
+                שלח התראת בדיקה
+              </Button>
             )}
           </CardContent>
         </Card>
