@@ -686,7 +686,7 @@ export default function MetaAppReview() {
               <span className="text-muted-foreground">No activity yet</span>
             ) : (
               logs.map((l, i) => (
-                <div key={i} className={l.includes("❌") ? "text-red-500" : l.includes("⚠️") ? "text-yellow-600" : "text-foreground"}>
+                <div key={i} className={l.includes("❌") ? "text-destructive" : l.includes("⚠️") ? "text-accent-foreground" : "text-foreground"}>
                   {l}
                 </div>
               ))
