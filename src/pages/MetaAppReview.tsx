@@ -114,46 +114,48 @@ export default function MetaAppReview() {
   const connectMeta = () => {
     setLoading("connect");
     log("Starting Meta login with scopes: " + SCOPES);
-    window.FB.login(async (response: any) => {
+    window.FB.login((response: any) => {
       if (response.authResponse) {
         const token = response.authResponse.accessToken;
         log("✅ Login successful, got short-lived token");
         
-        // Exchange for long-lived token
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/exchange-for-long-lived-token`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              Authorization: `Bearer ${session?.access_token}`,
-            },
-            body: JSON.stringify({ shortLivedToken: token }),
-          });
-          const data = await res.json();
-          const longToken = data.access_token;
-          log("✅ Exchanged for long-lived token");
-          setUserToken(longToken);
+        // Handle async work inside a non-async callback
+        (async () => {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/exchange-for-long-lived-token`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                Authorization: `Bearer ${session?.access_token}`,
+              },
+              body: JSON.stringify({ shortLivedToken: token }),
+            });
+            const data = await res.json();
+            const longToken = data.access_token;
+            log("✅ Exchanged for long-lived token");
+            setUserToken(longToken);
 
-          // Get user name
-          const me = await fbApi<{ name: string }>("/me", "GET", { access_token: longToken });
-          setUserName(me.name);
-          setConnected(true);
-          log(`✅ Connected as: ${me.name}`);
-          toast({ title: "חיבור הצליח", description: `מחובר בתור ${me.name}` });
+            const me = await fbApi<{ name: string }>("/me", "GET", { access_token: longToken });
+            setUserName(me.name);
+            setConnected(true);
+            log(`✅ Connected as: ${me.name}`);
+            toast({ title: "חיבור הצליח", description: `מחובר בתור ${me.name}` });
 
-          // Fetch pages immediately
-          fetchPages(longToken);
-        } catch (err: any) {
-          log(`❌ Token exchange failed: ${err.message}`);
-          toast({ title: "שגיאה", description: err.message, variant: "destructive" });
-        }
+            fetchPages(longToken);
+          } catch (err: any) {
+            log(`❌ Token exchange failed: ${err.message}`);
+            toast({ title: "שגיאה", description: err.message, variant: "destructive" });
+          } finally {
+            setLoading("");
+          }
+        })();
       } else {
         log("❌ Login cancelled or failed");
         toast({ title: "חיבור נכשל", description: "המשתמש ביטל את ההתחברות", variant: "destructive" });
+        setLoading("");
       }
-      setLoading("");
     }, { scope: SCOPES });
   };
 
