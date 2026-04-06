@@ -379,7 +379,7 @@ export default function MetaAppReview() {
             Step 1: Connect Meta Account
             {connected && <StatusIcon ok={true} />}
           </CardTitle>
-          <CardDescription>Login with Facebook and grant required permissions</CardDescription>
+          <CardDescription>Log in with Facebook and grant the required permissions for Meta lead syncing and attribution.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-sm text-muted-foreground">
@@ -584,6 +584,9 @@ export default function MetaAppReview() {
                 </div>
               </div>
             )}
+            <p className="text-xs text-muted-foreground italic mt-2">
+              This app uses <code>ads_read</code> only for read-only lead attribution and troubleshooting. It does not create, edit, pause, or manage ads.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -663,14 +666,14 @@ export default function MetaAppReview() {
           <CardDescription>Follow these steps when recording for Meta App Review</CardDescription>
         </CardHeader>
         <CardContent>
-          <ol className="list-decimal list-inside space-y-2 text-sm">
-            <li><strong>Connect Meta</strong> — Click "Connect Meta Account", complete the login dialog, show granted permissions</li>
-            <li><strong>Select Page</strong> — Choose your Facebook Page from the list, show it saved</li>
-            <li><strong>Instagram Check</strong> — Show the linked Instagram Business Account ID (proves <code>instagram_basic</code> works)</li>
-            <li><strong>Leadgen Subscription</strong> — Show the Page is subscribed to receive leads</li>
-            <li><strong>Ads Read</strong> — Click "Test ads_read", show ad accounts and sample ad (proves <code>ads_read</code> works)</li>
-            <li><strong>Lead Attribution</strong> — Load recent leads, show how platform detection works (Facebook / Instagram / Meta)</li>
-            <li><strong>CRM View</strong> — Navigate to the Leads page, show leads with correct source labels</li>
+          <ol className="list-decimal list-inside space-y-3 text-sm">
+            <li><strong>Connect Meta</strong> — Click "Connect Meta Account", complete the login dialog, and show the granted permissions.</li>
+            <li><strong>Select Page</strong> — Choose your Facebook Page from the list and show that it was saved.</li>
+            <li><strong>Instagram Check</strong> — Show the linked Instagram Business Account ID for the selected Page. This demonstrates <code>instagram_basic</code> usage.</li>
+            <li><strong>Leadgen Subscription</strong> — Show that the selected Page is subscribed to receive leadgen webhook events.</li>
+            <li><strong>ads_read Test</strong> — Click "Test ads_read" and show the ad account and sample ad metadata returned by the API. Explain that this is read-only and used only for lead attribution and troubleshooting.</li>
+            <li><strong>Lead Attribution</strong> — Load recent leads and show how the app detects and stores the source as Facebook, Instagram, or Meta.</li>
+            <li><strong>CRM View</strong> — Open the Leads page and show the lead records with the correct source labels.</li>
           </ol>
         </CardContent>
       </Card>
