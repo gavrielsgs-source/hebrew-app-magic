@@ -181,6 +181,7 @@ function AppLayout() {
                 <Route path="/company/:companyId/users" element={<CompanyUsers />} />
                 <Route path="/team-management" element={<TeamManagement />} />
                 
+                <Route path="/meta-app-review" element={<MetaAppReview />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/open-format" element={<OpenFormat />} />
                 <Route path="*" element={<NotFound />} />
