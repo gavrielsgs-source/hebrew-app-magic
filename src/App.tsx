@@ -67,6 +67,7 @@ import AccountantReports from "./pages/AccountantReports";
 import PublicInventory from "./pages/PublicInventory";
 import SharedDocument from "./pages/SharedDocument";
 import OpenFormat from "./pages/OpenFormat";
+import MetaAppReview from "./pages/MetaAppReview";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
