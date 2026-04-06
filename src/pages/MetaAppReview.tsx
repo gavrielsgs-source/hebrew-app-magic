@@ -484,6 +484,9 @@ export default function MetaAppReview() {
             <Button variant="outline" size="sm" onClick={() => checkInstagram(selectedPage.id, selectedPage.access_token)}>
               <RefreshCw className="mr-2 h-3 w-3" /> Re-check
             </Button>
+            <p className="text-xs text-muted-foreground italic mt-2">
+              This app uses <code>instagram_basic</code> only to verify the Instagram Business account linked to the selected Facebook Page for lead attribution and onboarding.
+            </p>
           </CardContent>
         </Card>
       )}
