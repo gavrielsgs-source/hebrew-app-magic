@@ -82,7 +82,7 @@ export interface AttributionResult {
 
 /**
  * Resolve whether the enhanced attribution flow should run for this user.
- * Global env var OR per-user profile flag.
+ * Both flags must be ON: global env var AND per-user profile flag.
  */
 export function isEnhancedEnabled(perUserOverride: boolean | null | undefined): boolean {
   const globalFlag = (Deno.env.get("FEATURE_ENHANCED_ATTRIBUTION") ?? "").toLowerCase();
