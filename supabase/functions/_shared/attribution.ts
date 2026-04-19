@@ -87,7 +87,7 @@ export interface AttributionResult {
 export function isEnhancedEnabled(perUserOverride: boolean | null | undefined): boolean {
   const globalFlag = (Deno.env.get("FEATURE_ENHANCED_ATTRIBUTION") ?? "").toLowerCase();
   const globalOn = globalFlag === "true" || globalFlag === "1" || globalFlag === "yes";
-  return globalOn || perUserOverride === true;
+  return globalOn && perUserOverride === true;
 }
 
 /**
