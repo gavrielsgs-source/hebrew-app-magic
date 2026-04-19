@@ -168,6 +168,23 @@ serve(async (req) => {
             const enhanced = isEnhancedEnabled(profile?.attribution_enhanced);
             const adId = leadDetails.ad_id || leadData.ad_id || null;
 
+            // ---- Internal timeline: webhook + lead retrieval (always logged, owner-scoped) ----
+            const logEvent = async (event_type: string, details: Record<string, unknown> = {}) => {
+              const { error: evErr } = await supabase.from("attribution_events").insert({
+                user_id: tokenData.user_id,
+                lead_ref_id: leadDetails.id,
+                lead_source_table: "facebook_leads",
+                event_type,
+                details,
+              });
+              if (evErr) console.error("⚠️ attribution_events insert failed:", evErr.message);
+            };
+            await logEvent("webhook_received", { page_id: leadData.page_id, form_id: leadData.form_id });
+            await logEvent("lead_retrieved", { ad_id: adId, has_phone: !!leadPhone });
+            await logEvent(enhanced ? "enhanced_lookup_attempted" : "enhanced_lookup_skipped", {
+              reason: enhanced ? "flag_on" : "flag_off_safe_mode",
+            });
+
             const attribution: AttributionResult = await resolveAttribution({
               adId,
               formId: leadData.form_id || null,
@@ -249,6 +266,13 @@ serve(async (req) => {
                 );
               if (attrErr) console.error("❌ lead_attributions upsert failed:", attrErr);
             }
+
+            await logEvent(enhanced ? "final_attribution_assigned" : "safe_default_applied", {
+              display: attribution.lead_source_display,
+              method: attribution.detection_method,
+              confidence: attribution.detection_confidence,
+              enhanced_used: attribution.enhanced_used,
+            });
 
             // -------- Welcome WhatsApp (unchanged) --------
             if (formattedPhone && leadName) {

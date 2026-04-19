@@ -70,6 +70,39 @@ export type Database = {
           },
         ]
       }
+      attribution_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          lead_ref_id: string
+          lead_source_table: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          lead_ref_id: string
+          lead_source_table?: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          lead_ref_id?: string
+          lead_source_table?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1080,6 +1113,10 @@ export type Database = {
           lead_source_display: string | null
           lead_source_raw: string | null
           lead_source_table: string
+          overridden_at: string | null
+          overridden_by: string | null
+          override_reason: string | null
+          override_value: string | null
           page_id: string | null
           updated_at: string
           user_id: string
@@ -1098,6 +1135,10 @@ export type Database = {
           lead_source_display?: string | null
           lead_source_raw?: string | null
           lead_source_table?: string
+          overridden_at?: string | null
+          overridden_by?: string | null
+          override_reason?: string | null
+          override_value?: string | null
           page_id?: string | null
           updated_at?: string
           user_id: string
@@ -1116,6 +1157,10 @@ export type Database = {
           lead_source_display?: string | null
           lead_source_raw?: string | null
           lead_source_table?: string
+          overridden_at?: string | null
+          overridden_by?: string | null
+          override_reason?: string | null
+          override_value?: string | null
           page_id?: string | null
           updated_at?: string
           user_id?: string

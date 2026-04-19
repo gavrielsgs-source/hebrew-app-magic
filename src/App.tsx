@@ -68,6 +68,7 @@ import PublicInventory from "./pages/PublicInventory";
 import SharedDocument from "./pages/SharedDocument";
 import OpenFormat from "./pages/OpenFormat";
 import MetaAppReview from "./pages/MetaAppReview";
+import AdminAttribution from "./pages/AdminAttribution";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -183,6 +184,7 @@ function AppLayout() {
                 
                 <Route path="/meta-app-review" element={<MetaAppReview />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/attribution" element={<AdminAttribution />} />
                 <Route path="/open-format" element={<OpenFormat />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
