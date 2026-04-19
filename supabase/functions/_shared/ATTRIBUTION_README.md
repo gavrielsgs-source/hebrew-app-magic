@@ -44,7 +44,7 @@ Facebook vs Instagram attribution** logic so we can ship one without the other.
 | Global      | Edge Function env var `FEATURE_ENHANCED_ATTRIBUTION`   | `false` |
 | Per-user    | `public.profiles.attribution_enhanced` (boolean)       | `false` |
 
-Resolution: `enabled = global || perUser`. Implemented in
+Resolution: `enabled = global && perUser`. Implemented in
 `_shared/attribution.ts → isEnhancedEnabled()`.
 
 ## Storage
