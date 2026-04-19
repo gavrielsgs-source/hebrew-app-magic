@@ -267,6 +267,13 @@ serve(async (req) => {
               if (attrErr) console.error("❌ lead_attributions upsert failed:", attrErr);
             }
 
+            await logEvent(enhanced ? "final_attribution_assigned" : "safe_default_applied", {
+              display: attribution.lead_source_display,
+              method: attribution.detection_method,
+              confidence: attribution.detection_confidence,
+              enhanced_used: attribution.enhanced_used,
+            });
+
             // -------- Welcome WhatsApp (unchanged) --------
             if (formattedPhone && leadName) {
               try {
