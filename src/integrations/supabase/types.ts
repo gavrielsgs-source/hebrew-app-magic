@@ -1065,6 +1065,63 @@ export type Database = {
           },
         ]
       }
+      lead_attributions: {
+        Row: {
+          ad_id: string | null
+          campaign_id: string | null
+          created_at: string
+          detection_confidence: string | null
+          detection_error: string | null
+          detection_method: string | null
+          evidence: Json
+          form_id: string | null
+          id: string
+          lead_ref_id: string
+          lead_source_display: string | null
+          lead_source_raw: string | null
+          lead_source_table: string
+          page_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ad_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          detection_confidence?: string | null
+          detection_error?: string | null
+          detection_method?: string | null
+          evidence?: Json
+          form_id?: string | null
+          id?: string
+          lead_ref_id: string
+          lead_source_display?: string | null
+          lead_source_raw?: string | null
+          lead_source_table?: string
+          page_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ad_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          detection_confidence?: string | null
+          detection_error?: string | null
+          detection_method?: string | null
+          evidence?: Json
+          form_id?: string | null
+          id?: string
+          lead_ref_id?: string
+          lead_source_display?: string | null
+          lead_source_raw?: string | null
+          lead_source_table?: string
+          page_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           agency_id: string | null
@@ -1464,6 +1521,7 @@ export type Database = {
       profiles: {
         Row: {
           accountant_email: string | null
+          attribution_enhanced: boolean
           avatar_url: string | null
           company_address: string | null
           company_authorized_dealer: boolean | null
@@ -1485,6 +1543,7 @@ export type Database = {
         }
         Insert: {
           accountant_email?: string | null
+          attribution_enhanced?: boolean
           avatar_url?: string | null
           company_address?: string | null
           company_authorized_dealer?: boolean | null
@@ -1506,6 +1565,7 @@ export type Database = {
         }
         Update: {
           accountant_email?: string | null
+          attribution_enhanced?: boolean
           avatar_url?: string | null
           company_address?: string | null
           company_authorized_dealer?: boolean | null

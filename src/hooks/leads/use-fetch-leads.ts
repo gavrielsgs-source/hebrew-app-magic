@@ -72,8 +72,13 @@ const fetchLeads = async () => {
       // Extract email
       const email = getFieldValue(fieldData, 'email');
       
-      // Read platform from lead_data: user-edited source > detected platform > fallback to 'Meta'
-      const sourcePlatform = leadData.source || leadData.platform || 'Meta';
+      // Source priority: user-edited > nested attribution display > legacy platform > 'Meta'
+      const attribution = leadData.attribution || null;
+      const sourcePlatform =
+        leadData.source ||
+        attribution?.lead_source_display ||
+        leadData.platform ||
+        'Meta';
 
       return {
         id: fbLead.lead_id,
@@ -89,7 +94,9 @@ const fetchLeads = async () => {
         car_id: null,
         agency_id: null,
         assigned_to: null,
-        follow_up_notes: null
+        follow_up_notes: null,
+        // Future-ready: surfaces attribution evidence to UI without breaking existing consumers
+        attribution,
       };
     });
 
