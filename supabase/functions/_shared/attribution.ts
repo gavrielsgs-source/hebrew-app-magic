@@ -31,7 +31,7 @@
  *  - Set the edge function env var FEATURE_ENHANCED_ATTRIBUTION=true
  *    (controlled globally), OR
  *  - Set profiles.attribution_enhanced=true for a specific user.
- *  - The webhook calls isEnhancedEnabled() which OR-merges both.
+ *  - The webhook calls isEnhancedEnabled() which AND-merges both (both must be true).
  *
  *  STORAGE
  *  -------
