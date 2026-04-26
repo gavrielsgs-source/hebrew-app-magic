@@ -72,13 +72,16 @@ const fetchLeads = async () => {
       // Extract email
       const email = getFieldValue(fieldData, 'email');
       
-      // Source priority: user-edited > nested attribution display > legacy platform > 'Meta'
+      // Source priority: user-edited > nested attribution display > legacy platform > 'Facebook'
+      // Default is 'Facebook' (not 'Meta') because every row in facebook_leads came through
+      // a Facebook Page leadgen webhook (page_id is required to insert), matching the
+      // backend safe-mode default in supabase/functions/_shared/attribution.ts.
       const attribution = leadData.attribution || null;
       const sourcePlatform =
         leadData.source ||
         attribution?.lead_source_display ||
         leadData.platform ||
-        'Meta';
+        'Facebook';
 
       return {
         id: fbLead.lead_id,
