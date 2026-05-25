@@ -52,11 +52,11 @@ function validateSumServer(
     baseSum = billingCycle === 'yearly' ? planPrices.yearly : planPrices.monthly;
   }
 
-  // Expected sum includes 18% VAT
+  // Expected sum (VAT-aware; currently 0% — עוסק פטור)
   const expectedSum = Math.round(baseSum * (1 + VAT_RATE));
 
   if (sum !== expectedSum) {
-    console.error(`Sum validation failed: expected ${expectedSum} (base ${baseSum} + VAT), got ${sum}`);
+    console.error(`Sum validation failed: expected ${expectedSum} (base ${baseSum}, VAT ${VAT_RATE * 100}%), got ${sum}`);
     return { valid: false, error: 'Sum does not match expected amount' };
   }
 
