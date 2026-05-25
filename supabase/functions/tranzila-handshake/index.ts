@@ -6,7 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const VAT_RATE = 0.18;
+// VAT disabled — עוסק פטור (matches frontend src/utils/discount-codes.ts addVat()).
+// To re-enable: set VAT_RATE = 0.18.
+const VAT_RATE = 0;
 
 // Server-side discount code validation
 const VALID_DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean; allowedPlans: string[] }> = {
