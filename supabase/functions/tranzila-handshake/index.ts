@@ -6,7 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const VAT_RATE = 0.18;
+// VAT disabled — עוסק פטור (matches frontend src/utils/discount-codes.ts addVat()).
+// To re-enable: set VAT_RATE = 0.18.
+const VAT_RATE = 0;
 
 // Server-side discount code validation
 const VALID_DISCOUNT_CODES: Record<string, { percent: number; yearlyOnly: boolean; allowedPlans: string[] }> = {
@@ -50,11 +52,11 @@ function validateSumServer(
     baseSum = billingCycle === 'yearly' ? planPrices.yearly : planPrices.monthly;
   }
 
-  // Expected sum includes 18% VAT
+  // Expected sum (VAT-aware; currently 0% — עוסק פטור)
   const expectedSum = Math.round(baseSum * (1 + VAT_RATE));
 
   if (sum !== expectedSum) {
-    console.error(`Sum validation failed: expected ${expectedSum} (base ${baseSum} + VAT), got ${sum}`);
+    console.error(`Sum validation failed: expected ${expectedSum} (base ${baseSum}, VAT ${VAT_RATE * 100}%), got ${sum}`);
     return { valid: false, error: 'Sum does not match expected amount' };
   }
 
