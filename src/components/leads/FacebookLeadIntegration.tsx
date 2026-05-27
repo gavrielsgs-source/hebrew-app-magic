@@ -331,6 +331,7 @@ export function FacebookLeadIntegration() {
         for (const form of forms) {
           const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", { access_token });
           const leads = leadsResponse.data || [];
+          console.log("ALL LEADS:", leads);
           addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
 
           for (const lead of leads) {
