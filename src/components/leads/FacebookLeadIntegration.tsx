@@ -189,7 +189,7 @@ export function FacebookLeadIntegration() {
                   const leadsResponse = await fbApi<{ data: any[] }>(`/${form.id}/leads`, "GET", {
                     access_token: longLivedPageToken,
                   });
-                  const leads = leadsResponse.data || [];
+                  const leads = leadsResponse.data || console.log("ALL LEADS:", leads);
                   addDebugLog(`Fetched ${leads.length} leads for form ${form.id}`);
 
                   for (const lead of leads) {
@@ -230,7 +230,7 @@ export function FacebookLeadIntegration() {
         }
       },
       {
-      scope:
+        scope:
           "public_profile,email,pages_show_list,pages_manage_metadata,leads_retrieval,business_management,pages_manage_ads",
       },
     );
