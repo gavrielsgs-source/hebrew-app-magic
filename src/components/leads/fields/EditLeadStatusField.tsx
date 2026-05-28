@@ -26,6 +26,9 @@ export function EditLeadStatusField({ control }: Props) {
               <SelectItem value="meeting_scheduled" className="justify-end text-right">נקבעה פגישה</SelectItem>
               {/* follow_up removed */}
               <SelectItem value="handled" className="justify-end text-right">טופל</SelectItem>
+              <SelectItem value="no_answer" className="justify-end text-right">אין מענה</SelectItem>
+              <SelectItem value="call_back" className="justify-end text-right">לחזור</SelectItem>
+              <SelectItem value="searching_specific_car" className="justify-end text-right">מחפש רכב ספציפי</SelectItem>
               <SelectItem value="not_relevant" className="justify-end text-right">לא רלוונטי</SelectItem>
             </SelectContent>
           </Select>
