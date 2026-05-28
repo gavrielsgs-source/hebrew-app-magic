@@ -9,6 +9,9 @@ export const getStatusBadgeColor = (status: string | null) => {
     case "meeting_scheduled": return "bg-green-500 hover:bg-green-600 text-white";
     case "follow_up": return "bg-orange-500 hover:bg-orange-600 text-white";
     case "handled": return "bg-green-600 hover:bg-green-700 text-white";
+    case "no_answer": return "bg-gray-500 hover:bg-gray-600 text-white";
+    case "call_back": return "bg-amber-500 hover:bg-amber-600 text-white";
+    case "searching_specific_car": return "bg-indigo-500 hover:bg-indigo-600 text-white";
     case "not_relevant": return "bg-red-500 hover:bg-red-600 text-white";
     default: return "bg-blue-500 hover:bg-blue-600 text-white";
   }
@@ -22,6 +25,9 @@ export const getStatusText = (status: string | null) => {
     case "meeting_scheduled": return "נקבעה פגישה";
     case "follow_up": return "לעקוב";
     case "handled": return "טופל";
+    case "no_answer": return "אין מענה";
+    case "call_back": return "לחזור";
+    case "searching_specific_car": return "מחפש רכב ספציפי";
     case "not_relevant": return "לא רלוונטי";
     default: return "לא ידוע";
   }
