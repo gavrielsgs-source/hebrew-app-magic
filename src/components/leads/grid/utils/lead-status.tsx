@@ -25,6 +25,9 @@ export const getStatusText = (status: string | null) => {
     case "meeting_scheduled": return "נקבעה פגישה";
     case "follow_up": return "לעקוב";
     case "handled": return "טופל";
+    case "no_answer": return "אין מענה";
+    case "call_back": return "לחזור";
+    case "searching_specific_car": return "מחפש רכב ספציפי";
     case "not_relevant": return "לא רלוונטי";
     default: return "לא ידוע";
   }
