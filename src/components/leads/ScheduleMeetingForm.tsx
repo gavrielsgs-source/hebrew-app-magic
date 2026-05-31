@@ -91,7 +91,7 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
       const createdId = Array.isArray(newTask) ? newTask[0]?.id : newTask?.id;
       
       // Create notifications if requested
-      if (shouldCreateNotification && newTask && newTask[0] && selectedNotificationOptions.length > 0) {
+      if (shouldCreateNotification && createdId && selectedNotificationOptions.length > 0) {
         for (const option of selectedNotificationOptions) {
           const minutesBefore = getMinutesFromOption(option);
           const reminderTime = new Date(dueDate.getTime() - minutesBefore * 60 * 1000);
@@ -100,9 +100,9 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
             `תזכורת ל${data.type === "meeting" ? "פגישה" : "שיחה"}: ${data.title}`,
             `${data.type === "meeting" ? "הפגישה" : "השיחה"} מתחילה בעוד ${option === "5_minutes" ? "5 דקות" : option === "1_hour" ? "שעה" : "24 שעות"}`,
             reminderTime,
-            data.type,
+            dbType,
             "task",
-            newTask[0].id
+            createdId
           );
         }
       }
