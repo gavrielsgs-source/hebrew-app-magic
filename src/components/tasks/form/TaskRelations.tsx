@@ -35,7 +35,7 @@ export function TaskRelations() {
         render={({ field }) => (
           <FormItem>
             <FormLabel>ליד קשור (אופציונלי)</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || "none"}>
               <FormControl>
                 <SelectTrigger className="text-right rounded-xl [&>span]:w-full [&>span]:text-right">
                   <SelectValue placeholder="בחר ליד" />
