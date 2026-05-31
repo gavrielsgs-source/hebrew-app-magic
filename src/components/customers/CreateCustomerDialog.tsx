@@ -131,6 +131,9 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
                   <SelectItem value="טלפון">טלפון</SelectItem>
                   <SelectItem value="אינטרנט">אינטרנט</SelectItem>
                   <SelectItem value="פייסבוק">פייסבוק</SelectItem>
+                  <SelectItem value="קארוויז">קארוויז</SelectItem>
+                  <SelectItem value="יד 2">יד 2</SelectItem>
+                  <SelectItem value="נכנס לעסק">נכנס לעסק</SelectItem>
                   <SelectItem value="אחר">אחר</SelectItem>
                 </SelectContent>
               </Select>
