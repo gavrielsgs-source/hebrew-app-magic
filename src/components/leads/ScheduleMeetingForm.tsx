@@ -72,21 +72,26 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
       const dueDate = new Date(data.date);
       dueDate.setHours(parseInt(hours), parseInt(minutes));
 
+      // DB CHECK constraint allows only: task | call | meeting | follow_up | test
+      // Map UI "reminder" to "follow_up" for persistence.
+      const dbType = data.type === "reminder" ? "follow_up" : data.type;
+
       const taskData = {
         title: `${data.title} - ${lead.name}`,
         description: data.description || null,
         status: "pending",
         priority: data.priority,
-        type: data.type,
+        type: dbType,
         due_date: dueDate.toISOString(),
         lead_id: lead.id,
         car_id: lead.car_id || null,
       };
 
-      const newTask = await addTask.mutateAsync(taskData);
+      const newTask: any = await addTask.mutateAsync(taskData);
+      const createdId = Array.isArray(newTask) ? newTask[0]?.id : newTask?.id;
       
       // Create notifications if requested
-      if (shouldCreateNotification && newTask && newTask[0] && selectedNotificationOptions.length > 0) {
+      if (shouldCreateNotification && createdId && selectedNotificationOptions.length > 0) {
         for (const option of selectedNotificationOptions) {
           const minutesBefore = getMinutesFromOption(option);
           const reminderTime = new Date(dueDate.getTime() - minutesBefore * 60 * 1000);
@@ -95,9 +100,9 @@ export function ScheduleMeetingForm({ lead, onSuccess }: ScheduleMeetingFormProp
             `תזכורת ל${data.type === "meeting" ? "פגישה" : "שיחה"}: ${data.title}`,
             `${data.type === "meeting" ? "הפגישה" : "השיחה"} מתחילה בעוד ${option === "5_minutes" ? "5 דקות" : option === "1_hour" ? "שעה" : "24 שעות"}`,
             reminderTime,
-            data.type,
+            dbType,
             "task",
-            newTask[0].id
+            createdId
           );
         }
       }
