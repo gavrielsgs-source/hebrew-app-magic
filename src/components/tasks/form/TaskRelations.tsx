@@ -35,7 +35,10 @@ export function TaskRelations() {
         render={({ field }) => (
           <FormItem>
             <FormLabel>ליד קשור (אופציונלי)</FormLabel>
-            <Select onValueChange={(v) => field.onChange(v === "none" ? null : v)} value={field.value || "none"}>
+            <Select
+              onValueChange={(v) => field.onChange(v === "none" ? "" : v)}
+              value={field.value && field.value !== "" ? field.value : "none"}
+            >
               <FormControl>
                 <SelectTrigger className="text-right rounded-xl [&>span]:w-full [&>span]:text-right">
                   <SelectValue placeholder="בחר ליד" />
@@ -46,7 +49,7 @@ export function TaskRelations() {
                 align="end" 
                 avoidCollisions={false} 
                 sideOffset={6}
-                className="z-50 min-w-[var(--radix-select-trigger-width)] rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
+                className="z-50 min-w-[var(--radix-select-trigger-width)] max-h-[300px] rounded-xl border border-border/50 bg-popover/95 backdrop-blur-sm shadow-lg"
               >
                 <SelectItem value="none" className="justify-end text-right cursor-pointer rounded-lg mx-1 my-0.5">
                   ללא שיוך לליד
