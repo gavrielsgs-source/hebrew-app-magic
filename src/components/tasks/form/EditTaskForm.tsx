@@ -98,7 +98,7 @@ export function EditTaskForm({ task, onSuccess, isMobile = false }: EditTaskForm
         <TaskBasicDetails />
         <TaskDateAndStatus hiddenOnMobile={isMobile} />
         {!isMobile && <TaskTypeAndPriority />}
-        {!isMobile && <TaskRelations />}
+        <TaskRelations />
         
         {/* Notification Option */}
         {watchedDueDate && (
