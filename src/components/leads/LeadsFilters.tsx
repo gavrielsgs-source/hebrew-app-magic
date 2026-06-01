@@ -96,6 +96,9 @@ export function LeadsFilters({
               <SelectItem value="אתר" className="justify-end text-right">אתר</SelectItem>
               <SelectItem value="המלצה" className="justify-end text-right">המלצה</SelectItem>
               <SelectItem value="טלפון" className="justify-end text-right">טלפון</SelectItem>
+              <SelectItem value="קארוויז" className="justify-end text-right">קארוויז</SelectItem>
+              <SelectItem value="יד 2" className="justify-end text-right">יד 2</SelectItem>
+              <SelectItem value="נכנס לעסק" className="justify-end text-right">נכנס לעסק</SelectItem>
             </SelectContent>
           </Select>
         </div>
