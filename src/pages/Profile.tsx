@@ -14,6 +14,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileContainer } from "@/components/mobile/MobileContainer";
 import { InventorySettingsTab } from "@/components/profile/InventorySettingsTab";
 import { AutomationSettingsTab } from "@/components/automations/AutomationSettingsTab";
+import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
+
 
 
 export default function Profile() {
@@ -260,7 +262,9 @@ export default function Profile() {
                   </form>
                 </CardContent>
               </Card>
+              <DeleteAccountSection />
             </TabsContent>
+
 
             <TabsContent value="inventory">
               <Card className="shadow-lg rounded-2xl border-2">
