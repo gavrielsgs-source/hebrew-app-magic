@@ -473,7 +473,11 @@ export default function Profile() {
                 </form>
               </CardContent>
             </Card>
+            <div className="mt-6">
+              <DeleteAccountSection />
+            </div>
           </TabsContent>
+
 
           <TabsContent value="company">
             <Card className="shadow-lg rounded-2xl border-2">
