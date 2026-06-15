@@ -16,7 +16,9 @@ export function CarGridEmpty() {
   const { checkEntitlement } = useSubscription();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { toast } = useToast();
-  const canAddCar = checkEntitlement('carLimit', cars.length + 1);
+  // נספור רק רכבים פעילים (לא נמכרו) לצורך מגבלת החבילה
+  const activeCarsCount = (cars || []).filter((c: any) => c.status !== 'sold').length;
+  const canAddCar = checkEntitlement('carLimit', activeCarsCount + 1);
 
   const onCarAdded = () => {
     setShowAddDialog(false);

@@ -25,7 +25,9 @@ import { Car as CarType } from "@/types/car";
 export function CarsTable() {
   const { cars, isLoading } = useCars();
   const { checkEntitlement } = useSubscription();
-  const canAddCar = checkEntitlement('carLimit', cars.length + 1);
+  // נספור רק רכבים פעילים (לא נמכרו) לצורך מגבלת החבילה
+  const activeCarsCount = (cars || []).filter((c: any) => c.status !== 'sold').length;
+  const canAddCar = checkEntitlement('carLimit', activeCarsCount + 1);
   const [selectedCar, setSelectedCar] = useState<CarType | null>(null);
   const [isWhatsappOpen, setIsWhatsappOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
