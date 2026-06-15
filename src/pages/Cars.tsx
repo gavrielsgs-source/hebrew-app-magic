@@ -57,7 +57,7 @@ export default function Cars() {
       <MobileContainer withPadding={false}>
         <SubscriptionLimitAlert 
           resourceType="car" 
-          currentCount={cars.length} 
+          currentCount={activeCarsCount} 
         />
 
         <CarsMobileHeader
@@ -119,7 +119,7 @@ export default function Cars() {
     <>
       <SubscriptionLimitAlert 
         resourceType="car" 
-        currentCount={cars.length} 
+        currentCount={activeCarsCount} 
       />
       
       {/* Header inside container */}
