@@ -25,7 +25,9 @@ export default function Cars() {
   const { cars = [], isLoading, addCar } = useCars();
   const { checkEntitlement } = useSubscription();
   const { toast } = useToast();
-  const canAddCar = checkEntitlement('carLimit', cars.length + 1);
+  // נספור רק רכבים פעילים (לא נמכרו) לצורך מגבלת החבילה
+  const activeCarsCount = cars.filter((c: any) => c.status !== 'sold').length;
+  const canAddCar = checkEntitlement('carLimit', activeCarsCount + 1);
   const isMobile = useIsMobile();
 
   const onCarAdded = () => {
