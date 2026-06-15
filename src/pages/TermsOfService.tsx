@@ -113,11 +113,26 @@ export default function TermsOfService() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">13. יצירת קשר</h2>
+              <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">13. מחיקת חשבון ונתונים אישיים</h2>
+              <div className="space-y-3 text-gray-700">
+                <p><strong>13.1</strong> בהתאם לדרישות Meta (Facebook/Instagram) ו־GDPR, לכל משתמש זכות לבקש בכל עת מחיקה מלאה של חשבונו וכל הנתונים האישיים המשויכים אליו במערכת — לרבות לידים שהתקבלו מ-Facebook/Instagram, פרטי לקוחות, רכבים, מסמכים, טוקני גישה והגדרות.</p>
+                <p><strong>13.2</strong> ניתן להגיש בקשת מחיקה בשתי דרכים:</p>
+                <ul className="mr-6 space-y-1">
+                  <li>• דרך אזור "פרופיל המשתמש" במערכת – לחיצה על "בקש מחיקת חשבון ונתונים".</li>
+                  <li>• בשליחת אימייל לכתובת <a href="mailto:itscarslead@gmail.com" className="text-[#2F3C7E] underline">itscarslead@gmail.com</a> מכתובת המייל הרשומה בחשבון, עם הנושא: "בקשה למחיקת חשבון ונתונים".</li>
+                </ul>
+                <p><strong>13.3</strong> הבקשה תטופל תוך 30 ימי עסקים לכל היותר. עם השלמת המחיקה תישלח הודעת אישור. הפעולה בלתי הפיכה ולא ניתן יהיה לשחזר את הנתונים לאחר מכן.</p>
+                <p><strong>13.4</strong> נתונים מסוימים שחובה לשמר לפי דין (למשל מסמכים חשבונאיים) יישמרו בארכיון מאובטח עד תום תקופת השמירה הקבועה בחוק, ולאחר מכן יימחקו.</p>
+              </div>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">14. יצירת קשר</h2>
               <p className="text-gray-700">
                 itscarslead@gmail.com | עמוד "צור קשר" | מושב מעגלים, השלדג 78
               </p>
             </section>
+
           </div>
 
           <div className="mt-12 pt-8 border-t border-gray-200 text-center">

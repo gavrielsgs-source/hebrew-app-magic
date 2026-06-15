@@ -69,12 +69,20 @@ export default function PrivacyPolicy() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">7. זכויות משתמש</h2>
+              <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">7. זכויות משתמש ומחיקת חשבון ונתונים</h2>
               <div className="space-y-3 text-gray-700">
                 <p>• עיון, תיקון, מחיקה ("הזכות להישכח"), הגבלת עיבוד, ניידות.</p>
-                <p>• בקשה במייל itscarslead@gmail.com; מענה תוך 30 יום.</p>
+                <p>
+                  <strong>מחיקת חשבון ונתונים (כולל לידים מ-Facebook/Instagram):</strong>{" "}
+                  ניתן להגיש בקשה ישירות דרך מסך "פרופיל המשתמש" במערכת בלחיצה על
+                  "בקש מחיקת חשבון ונתונים", או בשליחת אימייל לכתובת{" "}
+                  <a href="mailto:itscarslead@gmail.com" className="text-[#2F3C7E] underline">itscarslead@gmail.com</a>{" "}
+                  עם הנושא "בקשה למחיקת חשבון ונתונים".
+                </p>
+                <p>• הבקשה תטופל ויינתן מענה תוך 30 יום. עם השלמת המחיקה כל הנתונים האישיים יימחקו לצמיתות, למעט נתונים שחובה לשמרם על-פי דין.</p>
               </div>
             </section>
+
 
             <section className="mb-8">
               <h2 className="text-xl font-bold text-[#2F3C7E] mb-4">8. עוגיות (Cookies)</h2>
