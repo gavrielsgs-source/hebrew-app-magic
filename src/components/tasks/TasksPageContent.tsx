@@ -49,17 +49,13 @@ export function TasksPageContent() {
     }
   };
 
-  // לחיצה בודדת על משימה ביומן – פותחת את חלון פרטי המשימה המלא
+  // לחיצה על משימה ביומן – פותחת את חלון פרטי המשימה המלא
   const handleTaskClick = (task: Task) => {
     setEditingTask(task);
     setShowEditDialog(true);
   };
 
-  // לחיצה כפולה – פותחת את אותו חלון פרטים מלא (לפי בקשת המשתמש)
-  const handleTaskDoubleClick = (task: Task) => {
-    setEditingTask(task);
-    setShowEditDialog(true);
-  };
+
 
   const handleTaskDelete = (taskId: string) => {
     deleteTask.mutate(taskId);
