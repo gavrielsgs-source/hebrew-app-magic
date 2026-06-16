@@ -88,7 +88,6 @@ export function TasksPageContent() {
           onTaskStatusChange={handleTaskStatusChange}
           onTaskDelete={handleTaskDelete}
           onTaskClick={handleTaskClick}
-          onTaskDoubleClick={handleTaskDoubleClick}
           onTasksFilter={handleTasksFilter}
         />
       ) : (
@@ -100,7 +99,6 @@ export function TasksPageContent() {
           onTaskStatusChange={handleTaskStatusChange}
           onTaskDelete={handleTaskDelete}
           onTaskClick={handleTaskClick}
-          onTaskDoubleClick={handleTaskDoubleClick}
           onTaskUpdate={handleTaskUpdate}
           onTasksFilter={handleTasksFilter}
         />
