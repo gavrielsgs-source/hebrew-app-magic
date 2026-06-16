@@ -8,40 +8,32 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileTasksView } from "./MobileTasksView";
 import { DesktopTasksView } from "./DesktopTasksView";
+import { EditTaskDialog } from "./EditTaskDialog";
 import { type Task } from "@/types/task";
 
 type ViewMode = "calendar" | "cards";
 
 export function TasksPageContent() {
   const { tasks = [], isLoading, error, refetch, updateTask, deleteTask } = useTasks();
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTask] = useState<Task | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("calendar");
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const isMobile = useIsMobile();
 
-  // Update filtered tasks when tasks change
   useEffect(() => {
     if (tasks) {
       setFilteredTasks(tasks);
     }
   }, [tasks]);
 
-  console.log('TasksPageContent rendering:', { 
-    tasksLength: tasks?.length || 0, 
-    isLoading, 
-    error: !!error, 
-    isMobile,
-    viewMode
-  });
-
   const handleTaskStatusChange = async (taskId: string, isCompleted: boolean) => {
     try {
       await updateTask.mutateAsync({
         id: taskId,
-        data: {
-          status: isCompleted ? 'completed' : 'pending'
-        }
+        data: { status: isCompleted ? 'completed' : 'pending' }
       });
     } catch (error) {
       console.error("Failed to update task status:", error);
@@ -50,20 +42,20 @@ export function TasksPageContent() {
 
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
     try {
-      await updateTask.mutateAsync({
-        id: taskId,
-        data: updates
-      });
+      await updateTask.mutateAsync({ id: taskId, data: updates });
     } catch (error) {
       console.error("Failed to update task:", error);
       throw error;
     }
   };
 
+  // לחיצה על משימה ביומן – פותחת את חלון פרטי המשימה המלא
   const handleTaskClick = (task: Task) => {
-    setSelectedTask(task);
-    setShowNotifications(true);
+    setEditingTask(task);
+    setShowEditDialog(true);
   };
+
+
 
   const handleTaskDelete = (taskId: string) => {
     deleteTask.mutate(taskId);
@@ -108,7 +100,18 @@ export function TasksPageContent() {
         />
       )}
 
-      {/* Task Notifications Dialog */}
+      {/* דיאלוג פרטי המשימה המלא – נפתח מלחיצה ביומן */}
+      {editingTask && (
+        <EditTaskDialog
+          task={editingTask}
+          open={showEditDialog}
+          onOpenChange={(open) => {
+            setShowEditDialog(open);
+            if (!open) setEditingTask(null);
+          }}
+        />
+      )}
+
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
         <DialogContent aria-describedby="task-notifications-description">
           <DialogHeader>
