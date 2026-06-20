@@ -29,6 +29,7 @@ export function EditLeadStatusField({ control }: Props) {
               <SelectItem value="no_answer" className="justify-end text-right">אין מענה</SelectItem>
               <SelectItem value="call_back" className="justify-end text-right">לחזור</SelectItem>
               <SelectItem value="searching_specific_car" className="justify-end text-right">מחפש רכב ספציפי</SelectItem>
+              <SelectItem value="deal_closed" className="justify-end text-right">נסגרה עסקה</SelectItem>
               <SelectItem value="not_relevant" className="justify-end text-right">לא רלוונטי</SelectItem>
             </SelectContent>
           </Select>
