@@ -26,6 +26,7 @@ export function EditLeadSourceField({ control }: Props) {
               <SelectItem value="אינסטגרם" className="justify-end text-right">אינסטגרם</SelectItem>
               <SelectItem value="קארוויז" className="justify-end text-right">קארוויז</SelectItem>
               <SelectItem value="יד 2" className="justify-end text-right">יד 2</SelectItem>
+              <SelectItem value="טיקטוק" className="justify-end text-right">טיקטוק</SelectItem>
               <SelectItem value="נכנס לעסק" className="justify-end text-right">נכנס לעסק</SelectItem>
               <SelectItem value="אחר" className="justify-end text-right">אחר</SelectItem>
             </SelectContent>

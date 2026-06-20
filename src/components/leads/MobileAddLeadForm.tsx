@@ -221,6 +221,7 @@ export function MobileAddLeadForm({ carId, onSuccess }: MobileAddLeadFormProps) 
             <SelectItem value="המלצה">המלצה</SelectItem>
             <SelectItem value="קארוויז">קארוויז</SelectItem>
             <SelectItem value="יד 2">יד 2</SelectItem>
+            <SelectItem value="טיקטוק">טיקטוק</SelectItem>
             <SelectItem value="נכנס לעסק">נכנס לעסק</SelectItem>
           </SelectContent>
         </Select>
