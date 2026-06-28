@@ -15,14 +15,14 @@ import { toast } from "sonner";
 
 const RECORD_TYPE_ROWS = [
   { code: 'A000', label: 'רשומה כללית (INI.TXT)', future: false },
-  { code: '100A', label: 'רשומת פתיחה', future: false },
-  { code: '100C', label: 'כותרת מסמך', future: false },
-  { code: '110D', label: 'שורת פירוט מסמך', future: false },
-  { code: '120D', label: 'פרטי תשלום', future: false },
-  { code: '100B', label: 'כותרת חשבון (חשבונאי)', future: true },
-  { code: '110B', label: 'תנועת יומן חשבונאי', future: true },
-  { code: '100M', label: 'מלאי', future: true },
-  { code: '900Z', label: 'רשומת סגירה', future: false },
+  { code: 'A100', label: 'רשומת פתיחה', future: false },
+  { code: 'C100', label: 'כותרת מסמך', future: false },
+  { code: 'D110', label: 'שורת פירוט מסמך', future: false },
+  { code: 'D120', label: 'פרטי תשלום', future: false },
+  { code: 'B100', label: 'תנועה בהנהלת חשבונות', future: true },
+  { code: 'B110', label: 'חשבון בהנהלת חשבונות', future: false },
+  { code: 'M100', label: 'פריט במלאי', future: true },
+  { code: 'Z900', label: 'רשומת סגירה', future: false },
 ];
 
 const ARTIFACT_CHECKS = [
