@@ -1062,6 +1062,7 @@ serve(async (req) => {
           lineTotal: inv.subtotal || inv.total_amount || 0,
           vatRate: Math.round(vatRate),
           invoiceDate: inv.date,
+          internalId: docInternalId,
         }));
         counts['D110']++;
       }
