@@ -1044,6 +1044,7 @@ serve(async (req) => {
             lineTotal: Number((item as any).total || (item as any).amount) || 0,
             vatRate: Number(itemVatRate),
             invoiceDate: inv.date,
+            internalId: docInternalId, // 1273 — מקשר ל-C100
           }));
           counts['D110']++;
         }
