@@ -955,10 +955,20 @@ serve(async (req) => {
     const disabledTypes = new Set<string>();
     if (dbMappings && dbMappings.length > 0) {
       for (const m of dbMappings) {
-        if (m.enabled) docTypeMappings[m.internal_type] = m.tax_authority_code;
-        else disabledTypes.add(m.internal_type);
+        if (!m.enabled) { disabledTypes.add(m.internal_type); continue; }
+        // Ignore legacy invalid '900' codes — fall back to DEFAULT mapping (per OF 2.6 spec)
+        if (m.tax_authority_code && m.tax_authority_code !== '900' && m.tax_authority_code !== '000') {
+          docTypeMappings[m.internal_type] = m.tax_authority_code;
+        }
       }
     }
+
+    // Internal linking ID counter — shared between C100/D110/D120 of same document
+    let internalDocSeq = 0;
+    const nextInternalId = () => {
+      internalDocSeq++;
+      return String(internalDocSeq).padStart(7, '0');
+    };
 
     // A100 opening record
     records.push(buildA100({ recordNum: recordNum++, companyTaxId: companyTaxId9, primaryId }));
