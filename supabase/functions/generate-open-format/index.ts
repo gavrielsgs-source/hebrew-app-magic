@@ -1155,6 +1155,9 @@ serve(async (req) => {
       const customerTaxId = (customer?.id_number || '').replace(/\D/g, '');
       const customerAddress = customer?.address || '';
 
+      const docInternalIdC = nextInternalId();
+      const customerKey = customerTaxId || (doc.customer_id ? String(doc.customer_id).replace(/-/g, '').slice(0, 15) : '');
+
       records.push(buildC100({
         recordNum: recordNum++,
         companyTaxId: companyTaxId9,
@@ -1168,6 +1171,8 @@ serve(async (req) => {
         vatAmount: 0,
         totalAmount: doc.amount || 0,
         cancelled: false,
+        accountNumber: customerKey, // 1225 — מפתח חשבון לקוח
+        internalId: docInternalIdC, // 1234
       }));
       counts['C100']++;
 
@@ -1194,6 +1199,7 @@ serve(async (req) => {
         lineTotal: doc.amount || 0,
         vatRate: 0,
         invoiceDate: doc.date || '',
+        internalId: docInternalIdC, // 1273
       }));
       counts['D110']++;
 
@@ -1212,6 +1218,7 @@ serve(async (req) => {
               paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
               amount: pay.amount || 0,
               receiptDate: pay.payment_date || doc.date || '',
+              receiptId: docInternalIdC, // 1323
             }));
             counts['D120']++;
           }
@@ -1225,6 +1232,7 @@ serve(async (req) => {
             paymentTypeCode: '0',
             amount: doc.amount || 0,
             receiptDate: doc.date || '',
+            receiptId: docInternalIdC,
           }));
           counts['D120']++;
         }
