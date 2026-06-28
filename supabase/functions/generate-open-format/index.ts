@@ -446,13 +446,24 @@ export function resolveLogicalPathCollision(basePath: string, existingPaths: str
   return basePath;
 }
 
+// Tax Authority document type codes (Open Format spec)
+// 100 = הזמנה / הסכם מכר, 200 = תעודת משלוח, 305 = חשבונית מס,
+// 320 = חשבונית מס/קבלה, 330 = חשבונית זיכוי, 400 = קבלה
 const DEFAULT_DOC_TYPE_CODES: Record<string, string> = {
   'tax-invoice': '305',
+  'tax_invoice': '305',
+  'invoice': '305',
   'receipt': '400',
   'tax-invoice-receipt': '320',
+  'tax_invoice_receipt': '320',
+  'invoice-receipt': '320',
   'credit-invoice': '330',
+  'tax-invoice-credit': '330',
   'delivery-note': '200',
   'purchase-order': '100',
+  'order': '100',
+  'contract': '100', // הסכם מכר נחשב כהזמנה לצרכי דיווח
+  'sales-agreement': '100',
   'price-quote': '000',
   'proforma-invoice': '000',
 };
