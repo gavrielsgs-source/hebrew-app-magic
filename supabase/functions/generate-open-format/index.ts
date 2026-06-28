@@ -822,7 +822,13 @@ serve(async (req) => {
 
     const runStarted = new Date();
     const primaryId = generate15DigitId();
-    const effectiveTaxYear = taxYear || new Date(startDate).getFullYear();
+    // Tax year for INI.TXT (A000) — single_year uses the chosen year; multi_year uses the END year
+    // (the most recent tax year covered by the export). Fallback: current year.
+    const effectiveTaxYear =
+      taxYear ||
+      (endDate ? new Date(endDate).getFullYear() : undefined) ||
+      (startDate ? new Date(startDate).getFullYear() : undefined) ||
+      new Date().getFullYear();
 
     // Profile
     const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', user.id).single();
