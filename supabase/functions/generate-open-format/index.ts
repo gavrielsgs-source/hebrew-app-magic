@@ -1038,6 +1038,47 @@ serve(async (req) => {
         }));
         counts['D110']++;
       }
+
+      // D120 — Payment lines for the invoice
+      // Prefer customer_payments linked via lead_id (no direct FK from tax_invoices); fallback to a single D120 for the total.
+      let invoicePayments: any[] = [];
+      if (inv.lead_id) {
+        const { data: linkedPays } = await supabaseAdmin
+          .from('customer_payments')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('purchase_id', inv.lead_id);
+        invoicePayments = linkedPays || [];
+      }
+      if (invoicePayments.length > 0) {
+        let payNum = 1;
+        for (const pay of invoicePayments) {
+          records.push(buildD120({
+            recordNum: recordNum++,
+            companyTaxId: companyTaxId9,
+            docTypeCode,
+            docNumber: inv.invoice_number || '',
+            paymentNum: payNum++,
+            paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
+            amount: pay.amount || 0,
+            receiptDate: pay.payment_date || inv.date,
+          }));
+          counts['D120']++;
+        }
+      } else {
+        // Fallback: one D120 covering the full invoice total
+        records.push(buildD120({
+          recordNum: recordNum++,
+          companyTaxId: companyTaxId9,
+          docTypeCode,
+          docNumber: inv.invoice_number || '',
+          paymentNum: 1,
+          paymentTypeCode: '0', // other / unspecified
+          amount: inv.total_amount || 0,
+          receiptDate: inv.date,
+        }));
+        counts['D120']++;
+      }
     }
 
     // =============================================
