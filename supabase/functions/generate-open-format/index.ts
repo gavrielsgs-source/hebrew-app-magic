@@ -1090,6 +1090,7 @@ serve(async (req) => {
             paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
             amount: pay.amount || 0,
             receiptDate: pay.payment_date || inv.date,
+            receiptId: docInternalId, // 1323 — מקשר ל-C100
           }));
           counts['D120']++;
         }
@@ -1104,6 +1105,7 @@ serve(async (req) => {
           paymentTypeCode: '0', // other / unspecified
           amount: inv.total_amount || 0,
           receiptDate: inv.date,
+          receiptId: docInternalId,
         }));
         counts['D120']++;
       }
