@@ -1000,6 +1000,9 @@ serve(async (req) => {
       const vatRate = (inv.subtotal && inv.subtotal > 0) ? ((inv.vat_amount || 0) / inv.subtotal) * 100 : 17;
       const customerTaxId = (inv.customer_hp || '').replace(/\D/g, '');
 
+      const docInternalId = nextInternalId();
+      const customerAccountKey = customerTaxId || (inv.lead_id ? String(inv.lead_id).replace(/-/g, '').slice(0, 15) : '');
+
       records.push(buildC100({
         recordNum: recordNum++,
         companyTaxId: companyTaxId9,
@@ -1013,6 +1016,8 @@ serve(async (req) => {
         vatAmount: inv.vat_amount || 0,
         totalAmount: inv.total_amount || 0,
         cancelled: false,
+        accountNumber: customerAccountKey, // 1225 — מפתח חשבון לקוח
+        internalId: docInternalId,         // 1234 — מספר ייחודי מקשר
       }));
       counts['C100']++;
 
