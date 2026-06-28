@@ -955,10 +955,20 @@ serve(async (req) => {
     const disabledTypes = new Set<string>();
     if (dbMappings && dbMappings.length > 0) {
       for (const m of dbMappings) {
-        if (m.enabled) docTypeMappings[m.internal_type] = m.tax_authority_code;
-        else disabledTypes.add(m.internal_type);
+        if (!m.enabled) { disabledTypes.add(m.internal_type); continue; }
+        // Ignore legacy invalid '900' codes — fall back to DEFAULT mapping (per OF 2.6 spec)
+        if (m.tax_authority_code && m.tax_authority_code !== '900' && m.tax_authority_code !== '000') {
+          docTypeMappings[m.internal_type] = m.tax_authority_code;
+        }
       }
     }
+
+    // Internal linking ID counter — shared between C100/D110/D120 of same document
+    let internalDocSeq = 0;
+    const nextInternalId = () => {
+      internalDocSeq++;
+      return String(internalDocSeq).padStart(7, '0');
+    };
 
     // A100 opening record
     records.push(buildA100({ recordNum: recordNum++, companyTaxId: companyTaxId9, primaryId }));
@@ -990,6 +1000,9 @@ serve(async (req) => {
       const vatRate = (inv.subtotal && inv.subtotal > 0) ? ((inv.vat_amount || 0) / inv.subtotal) * 100 : 17;
       const customerTaxId = (inv.customer_hp || '').replace(/\D/g, '');
 
+      const docInternalId = nextInternalId();
+      const customerAccountKey = customerTaxId || (inv.lead_id ? String(inv.lead_id).replace(/-/g, '').slice(0, 15) : '');
+
       records.push(buildC100({
         recordNum: recordNum++,
         companyTaxId: companyTaxId9,
@@ -1003,6 +1016,8 @@ serve(async (req) => {
         vatAmount: inv.vat_amount || 0,
         totalAmount: inv.total_amount || 0,
         cancelled: false,
+        accountNumber: customerAccountKey, // 1225 — מפתח חשבון לקוח
+        internalId: docInternalId,         // 1234 — מספר ייחודי מקשר
       }));
       counts['C100']++;
 
@@ -1029,6 +1044,7 @@ serve(async (req) => {
             lineTotal: Number((item as any).total || (item as any).amount) || 0,
             vatRate: Number(itemVatRate),
             invoiceDate: inv.date,
+            internalId: docInternalId, // 1273 — מקשר ל-C100
           }));
           counts['D110']++;
         }
@@ -1046,6 +1062,7 @@ serve(async (req) => {
           lineTotal: inv.subtotal || inv.total_amount || 0,
           vatRate: Math.round(vatRate),
           invoiceDate: inv.date,
+          internalId: docInternalId,
         }));
         counts['D110']++;
       }
@@ -1073,6 +1090,7 @@ serve(async (req) => {
             paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
             amount: pay.amount || 0,
             receiptDate: pay.payment_date || inv.date,
+            receiptId: docInternalId, // 1323 — מקשר ל-C100
           }));
           counts['D120']++;
         }
@@ -1087,6 +1105,7 @@ serve(async (req) => {
           paymentTypeCode: '0', // other / unspecified
           amount: inv.total_amount || 0,
           receiptDate: inv.date,
+          receiptId: docInternalId,
         }));
         counts['D120']++;
       }
@@ -1136,6 +1155,9 @@ serve(async (req) => {
       const customerTaxId = (customer?.id_number || '').replace(/\D/g, '');
       const customerAddress = customer?.address || '';
 
+      const docInternalIdC = nextInternalId();
+      const customerKey = customerTaxId || (doc.customer_id ? String(doc.customer_id).replace(/-/g, '').slice(0, 15) : '');
+
       records.push(buildC100({
         recordNum: recordNum++,
         companyTaxId: companyTaxId9,
@@ -1149,6 +1171,8 @@ serve(async (req) => {
         vatAmount: 0,
         totalAmount: doc.amount || 0,
         cancelled: false,
+        accountNumber: customerKey, // 1225 — מפתח חשבון לקוח
+        internalId: docInternalIdC, // 1234
       }));
       counts['C100']++;
 
@@ -1175,6 +1199,7 @@ serve(async (req) => {
         lineTotal: doc.amount || 0,
         vatRate: 0,
         invoiceDate: doc.date || '',
+        internalId: docInternalIdC, // 1273
       }));
       counts['D110']++;
 
@@ -1193,6 +1218,7 @@ serve(async (req) => {
               paymentTypeCode: paymentTypeCode(pay.payment_method || 'other'),
               amount: pay.amount || 0,
               receiptDate: pay.payment_date || doc.date || '',
+              receiptId: docInternalIdC, // 1323
             }));
             counts['D120']++;
           }
@@ -1206,6 +1232,7 @@ serve(async (req) => {
             paymentTypeCode: '0',
             amount: doc.amount || 0,
             receiptDate: doc.date || '',
+            receiptId: docInternalIdC,
           }));
           counts['D120']++;
         }
