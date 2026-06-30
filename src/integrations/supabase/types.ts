@@ -1563,6 +1563,45 @@ export type Database = {
           },
         ]
       }
+      posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          meta_description: string | null
+          published_at: string | null
+          slug: string
+          status: string | null
+          title: string
+          topic_key: string
+          word_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          meta_description?: string | null
+          published_at?: string | null
+          slug: string
+          status?: string | null
+          title: string
+          topic_key: string
+          word_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          meta_description?: string | null
+          published_at?: string | null
+          slug?: string
+          status?: string | null
+          title?: string
+          topic_key?: string
+          word_count?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           accountant_email: string | null
