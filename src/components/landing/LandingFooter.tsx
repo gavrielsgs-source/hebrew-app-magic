@@ -30,7 +30,7 @@ export function LandingFooter() {
             <h4 className="font-bold mb-4">החברה</h4>
             <ul className="space-y-2 text-gray-400">
               <li><a href="/about-us" className="hover:text-white">אודותינו</a></li>
-              <li><a href="#" className="hover:text-white">הבלוג שלנו</a></li>
+              <li><a href="/blog" className="hover:text-white">הבלוג שלנו</a></li>
               <li><a href="#" className="hover:text-white">משרות</a></li>
             </ul>
           </div>

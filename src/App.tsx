@@ -69,6 +69,8 @@ import SharedDocument from "./pages/SharedDocument";
 import OpenFormat from "./pages/OpenFormat";
 import MetaAppReview from "./pages/MetaAppReview";
 import AdminAttribution from "./pages/AdminAttribution";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const App = () => {
   // Create QueryClient with useMemo to ensure stability
@@ -100,6 +102,8 @@ const App = () => {
                     <Route path="/why-choose-us" element={<WhyChooseUs />} />
                     <Route path="/features" element={<Features />} />
                     <Route path="/contact" element={<Contact />} />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:slug" element={<BlogPost />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="/login" element={<Login />} />

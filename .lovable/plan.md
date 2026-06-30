@@ -1,46 +1,41 @@
-# תכנית תיקון
 
-## 1. סטטוסי לידים חדשים נכשלים בשמירה
+# תוכנית: עמוד בלוג חדש
 
-**הסיבה:** ה-CHECK constraint על `public.leads.status` במסד מתיר רק:
-`new, in_treatment, waiting, meeting_scheduled, handled, not_relevant`
+## מטרה
+להציג את הכתבות מטבלת `posts` בעמוד בלוג ציבורי, בעיצוב תואם לשאר המערכת (RTL, גוונים #2F3C7E, רובik, gradient cards).
 
-הסטטוסים `no_answer`, `call_back`, `searching_specific_car` קיימים ב-UI (`QuickStatusChange`, `EditLeadStatusField`, `LeadsFilters`, `lead-status.tsx`) אבל ה-DB דוחה אותם → הופך לשגיאה בעדכון.
+## עמודים חדשים
+1. **`/blog`** — רשימת כל הכתבות שפורסמו (`status = 'published'`), מיון לפי `published_at` יורד.
+   - כותרת עמוד עם `StandardPageHeader` (אייקון BookOpen, כותרת "בלוג", תיאור).
+   - רשת כרטיסים (3 עמודות בדסקטופ, 1 במובייל) עם: כותרת, `meta_description`, תאריך פרסום, מספר מילים, כפתור "קרא עוד".
+   - State לטעינה ו-empty state.
 
-**התיקון:** מיגרציה שמרחיבה את ה-constraint:
-```sql
-ALTER TABLE public.leads DROP CONSTRAINT IF EXISTS leads_status_check;
-ALTER TABLE public.leads ADD CONSTRAINT leads_status_check
-  CHECK (status = ANY (ARRAY[
-    'new','in_treatment','waiting','meeting_scheduled',
-    'handled','not_relevant','no_answer','call_back','searching_specific_car'
-  ]));
-```
-ללא שינויי קוד נוספים.
+2. **`/blog/:slug`** — עמוד כתבה בודדת.
+   - כותרת H1, תאריך, מספר מילים, תוכן הכתבה (מ-`content`) ב-`prose` rtl.
+   - כפתור חזרה לבלוג.
+   - SEO: `<title>`, meta description, canonical, JSON-LD Article.
 
-## 2. לחיצה כפולה על משימה ביומן תפתח את פרטי המשימה המלאים
+## גישה לנתונים
+- הכתבות הן ציבוריות (תוכן שיווקי) → אם אין כבר policy של `anon SELECT` על `posts WHERE status='published'`, נוסיף migration קצר עם GRANT + policy. אבדוק לפני.
+- שימוש ב-`@tanstack/react-query` עם `supabase.from('posts')`.
 
-**מצב נוכחי:** לחיצה בודדת על משימה ב-`CalendarView` / `WeekView` / `SelectedDateTasks` / `AgendaView` / `DetailedDayView` קוראת ל-`onTaskClick` → `TasksPageContent.handleTaskClick` שפותח רק את דיאלוג ההתראות (`TaskNotifications`), בלי הפרטים שמולאו (לקוח, רכב, תיאור, תאריך וכו').
+## ניווט
+- הוספת קישור "בלוג" ב-Landing/Footer הציבורי (לא בסיידבר של המערכת המאובטחת, כי זה דף שיווקי חיצוני).
+- רישום הראוטים ב-`src/App.tsx` כ-public routes (לצד `/`, `/about-us` וכו').
 
-**התיקון (frontend בלבד):**
+## עיצוב
+- שימוש בטוקנים קיימים: `bg-gradient-to-br from-white via-gray-50 to-blue-50`, `from-[#2F3C7E] to-[#4A5A8C]`, פונט `font-rubik`.
+- כרטיסי בלוג עם `shadow-lg`, `rounded-2xl`, hover scale עדין.
+- תוכן כתבה ב-`prose prose-lg max-w-3xl` עם RTL.
 
-א. ב-`TasksPageContent.tsx`:
-- להחליף את הדיאלוג של `TaskNotifications` בדיאלוג עריכה מלא שמשתמש ב-`EditTaskForm` (אותו טופס המשמש את `EditTaskDialog`), כך שכל הפרטים שמולאו מוצגים.
-- להוסיף state `editingTask` נפרד ו-handler `handleTaskDoubleClick` שמציב אותו ופותח את הדיאלוג.
-- `handleTaskClick` (לחיצה בודדת) יישאר לבחירה/הדגשה בלבד — לא יפתח את דיאלוג ההתראות באופן אוטומטי (מסיר את הבלבול הקיים).
+## קבצים
+- `src/pages/Blog.tsx` (חדש) — רשימה.
+- `src/pages/BlogPost.tsx` (חדש) — כתבה בודדת.
+- `src/components/blog/BlogCard.tsx` (חדש).
+- `src/hooks/blog/use-posts.ts` + `use-post.ts` (חדשים).
+- עדכון `src/App.tsx` — שני ראוטים ציבוריים חדשים.
+- עדכון פוטר/לנדינג להוספת קישור "בלוג".
+- במידת הצורך: migration קצר ל-RLS על `posts` לקריאה ציבורית של published בלבד.
 
-ב. בקומפוננטות היומן להוסיף `onTaskDoubleClick` ולחבר `onDoubleClick` על כרטיס המשימה במקביל ל-`onClick` הקיים:
-- `src/components/tasks/calendar/CalendarView.tsx` (כרטיסי המשימה בשורות ~199-225)
-- `src/components/tasks/calendar/WeekView.tsx` (כרטיס משימה בשורה ~183)
-- `src/components/tasks/calendar/SelectedDateTasks.tsx` (שורה ~77)
-- `src/components/tasks/calendar/AgendaView.tsx` (שורה ~64)
-- `src/components/tasks/calendar/DetailedDayView.tsx` (שורה ~203)
-- `src/components/tasks/calendar/MobileTaskCalendarCard.tsx` — מובייל: לחיצה בודדת תפתח ישירות (אין double-click נוח במגע)
-- העברה דרך `TaskCalendar.tsx` → `DesktopTasksView`/`MobileTasksView` → `TasksPageContent`
-
-ג. שימוש חוזר ב-`EditTaskForm` הקיים בדיאלוג חדש (Dialog/Drawer לפי `isMobile`) — בלי לשכפל לוגיקה.
-
-## טכני קצר
-- מיגרציה אחת ל-Supabase.
-- שינויי props (`onTaskDoubleClick?: (task) => void`) בשרשרת קומפוננטות היומן.
-- דיאלוג עריכה חדש ב-`TasksPageContent` במקום (או לצד) דיאלוג ההתראות.
+## שאלה פתוחה
+התוכן ב-`content` נראה כ-Markdown/HTML? אבדוק בזמן הבנייה ואטפל בהתאם (react-markdown אם Markdown, או `dangerouslySetInnerHTML` עם sanitize אם HTML).
