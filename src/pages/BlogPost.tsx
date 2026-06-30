@@ -6,8 +6,10 @@ import { usePost } from "@/hooks/blog/use-posts";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function BlogPost() {
+  const { user, loading } = useAuth();
   const { slug } = useParams<{ slug: string }>();
   const { data: post, isLoading, error } = usePost(slug);
 
@@ -38,7 +40,7 @@ export default function BlogPost() {
         </>
       )}
 
-      <LandingHeader />
+      <LandingHeader user={user} loading={loading} />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12">
         <Link to="/blog">

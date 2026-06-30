@@ -4,8 +4,10 @@ import { BlogCard } from "@/components/blog/BlogCard";
 import { StandardPageHeader } from "@/components/common/StandardPageHeader";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { LandingFooter } from "@/components/landing/LandingFooter";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Blog() {
+  const { user, loading } = useAuth();
   const { data: posts, isLoading, error } = usePosts();
 
   return (
@@ -14,7 +16,7 @@ export default function Blog() {
       <meta name="description" content="כתבות, מדריכים וטרנדים מעולם סחר הרכב בישראל — מאת CarsLead." />
       <link rel="canonical" href="https://www.carsleadapp.com/blog" />
 
-      <LandingHeader />
+      <LandingHeader user={user} loading={loading} />
 
       <StandardPageHeader
         title="הבלוג שלנו"
